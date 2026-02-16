@@ -1,0 +1,978 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "D:\\Git\\CognitiveFit\\Backend\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\MSBuild\\Current\\Bin\\amd64\\Microsoft.Common.CurrentVersion.targets||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{CF04A7F2-E5BE-41BF-8D9B-2C1883C49E41}|ProjectApp.API\\ProjectApp.API.csproj|d:\\git\\cognitivefit\\backend\\projectapp.api\\controllers\\masters\\role\\testcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{CF04A7F2-E5BE-41BF-8D9B-2C1883C49E41}|ProjectApp.API\\ProjectApp.API.csproj|solutionrelative:projectapp.api\\controllers\\masters\\role\\testcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{CF04A7F2-E5BE-41BF-8D9B-2C1883C49E41}|ProjectApp.API\\ProjectApp.API.csproj|d:\\git\\cognitivefit\\backend\\projectapp.api\\controllers\\masters\\role\\rolecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{CF04A7F2-E5BE-41BF-8D9B-2C1883C49E41}|ProjectApp.API\\ProjectApp.API.csproj|solutionrelative:projectapp.api\\controllers\\masters\\role\\rolecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{CF04A7F2-E5BE-41BF-8D9B-2C1883C49E41}|ProjectApp.API\\ProjectApp.API.csproj|d:\\git\\cognitivefit\\backend\\projectapp.api\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{CF04A7F2-E5BE-41BF-8D9B-2C1883C49E41}|ProjectApp.API\\ProjectApp.API.csproj|solutionrelative:projectapp.api\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FA505BED-9696-435D-9DAE-27B562FE8FFD}|ProjectApp.Repository\\ProjectApp.Repository.csproj|d:\\git\\cognitivefit\\backend\\projectapp.repository\\services\\common\\spservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{FA505BED-9696-435D-9DAE-27B562FE8FFD}|ProjectApp.Repository\\ProjectApp.Repository.csproj|solutionrelative:projectapp.repository\\services\\common\\spservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{CF04A7F2-E5BE-41BF-8D9B-2C1883C49E41}|ProjectApp.API\\ProjectApp.API.csproj|d:\\git\\cognitivefit\\backend\\projectapp.api\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{CF04A7F2-E5BE-41BF-8D9B-2C1883C49E41}|ProjectApp.API\\ProjectApp.API.csproj|solutionrelative:projectapp.api\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{CF04A7F2-E5BE-41BF-8D9B-2C1883C49E41}|ProjectApp.API\\ProjectApp.API.csproj|d:\\git\\cognitivefit\\backend\\projectapp.api\\extentions\\servicecollections.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{CF04A7F2-E5BE-41BF-8D9B-2C1883C49E41}|ProjectApp.API\\ProjectApp.API.csproj|solutionrelative:projectapp.api\\extentions\\servicecollections.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{CF04A7F2-E5BE-41BF-8D9B-2C1883C49E41}|ProjectApp.API\\ProjectApp.API.csproj|d:\\git\\cognitivefit\\backend\\projectapp.api\\extentions\\mapperconfig.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{CF04A7F2-E5BE-41BF-8D9B-2C1883C49E41}|ProjectApp.API\\ProjectApp.API.csproj|solutionrelative:projectapp.api\\extentions\\mapperconfig.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FA505BED-9696-435D-9DAE-27B562FE8FFD}|ProjectApp.Repository\\ProjectApp.Repository.csproj|d:\\git\\cognitivefit\\backend\\projectapp.repository\\interfaces\\common\\ispservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{FA505BED-9696-435D-9DAE-27B562FE8FFD}|ProjectApp.Repository\\ProjectApp.Repository.csproj|solutionrelative:projectapp.repository\\interfaces\\common\\ispservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FA505BED-9696-435D-9DAE-27B562FE8FFD}|ProjectApp.Repository\\ProjectApp.Repository.csproj|d:\\git\\cognitivefit\\backend\\projectapp.repository\\interfaces\\masters\\role\\iroleservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{FA505BED-9696-435D-9DAE-27B562FE8FFD}|ProjectApp.Repository\\ProjectApp.Repository.csproj|solutionrelative:projectapp.repository\\interfaces\\masters\\role\\iroleservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FA505BED-9696-435D-9DAE-27B562FE8FFD}|ProjectApp.Repository\\ProjectApp.Repository.csproj|d:\\git\\cognitivefit\\backend\\projectapp.repository\\services\\masters\\role\\roleservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{FA505BED-9696-435D-9DAE-27B562FE8FFD}|ProjectApp.Repository\\ProjectApp.Repository.csproj|solutionrelative:projectapp.repository\\services\\masters\\role\\roleservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FA505BED-9696-435D-9DAE-27B562FE8FFD}|ProjectApp.Repository\\ProjectApp.Repository.csproj|d:\\git\\cognitivefit\\backend\\projectapp.repository\\utilities\\sp\\pageresult.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{FA505BED-9696-435D-9DAE-27B562FE8FFD}|ProjectApp.Repository\\ProjectApp.Repository.csproj|solutionrelative:projectapp.repository\\utilities\\sp\\pageresult.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FA505BED-9696-435D-9DAE-27B562FE8FFD}|ProjectApp.Repository\\ProjectApp.Repository.csproj|d:\\git\\cognitivefit\\backend\\projectapp.repository\\utilities\\sp\\searchrequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{FA505BED-9696-435D-9DAE-27B562FE8FFD}|ProjectApp.Repository\\ProjectApp.Repository.csproj|solutionrelative:projectapp.repository\\utilities\\sp\\searchrequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B21901EE-72F2-4D87-947A-A7633FE96863}|ProjectApp.Core\\ProjectApp.Core.csproj|d:\\git\\cognitivefit\\backend\\projectapp.core\\dtos\\masters\\department\\departmentdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B21901EE-72F2-4D87-947A-A7633FE96863}|ProjectApp.Core\\ProjectApp.Core.csproj|solutionrelative:projectapp.core\\dtos\\masters\\department\\departmentdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FA505BED-9696-435D-9DAE-27B562FE8FFD}|ProjectApp.Repository\\ProjectApp.Repository.csproj|d:\\git\\cognitivefit\\backend\\projectapp.repository\\utilities\\auth\\jwtservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{FA505BED-9696-435D-9DAE-27B562FE8FFD}|ProjectApp.Repository\\ProjectApp.Repository.csproj|solutionrelative:projectapp.repository\\utilities\\auth\\jwtservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FA505BED-9696-435D-9DAE-27B562FE8FFD}|ProjectApp.Repository\\ProjectApp.Repository.csproj|d:\\git\\cognitivefit\\backend\\projectapp.repository\\services\\masters\\section\\sectionservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{FA505BED-9696-435D-9DAE-27B562FE8FFD}|ProjectApp.Repository\\ProjectApp.Repository.csproj|solutionrelative:projectapp.repository\\services\\masters\\section\\sectionservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FA505BED-9696-435D-9DAE-27B562FE8FFD}|ProjectApp.Repository\\ProjectApp.Repository.csproj|d:\\git\\cognitivefit\\backend\\projectapp.repository\\services\\user\\userservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{FA505BED-9696-435D-9DAE-27B562FE8FFD}|ProjectApp.Repository\\ProjectApp.Repository.csproj|solutionrelative:projectapp.repository\\services\\user\\userservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FA505BED-9696-435D-9DAE-27B562FE8FFD}|ProjectApp.Repository\\ProjectApp.Repository.csproj|d:\\git\\cognitivefit\\backend\\projectapp.repository\\interfaces\\common\\icommonservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{FA505BED-9696-435D-9DAE-27B562FE8FFD}|ProjectApp.Repository\\ProjectApp.Repository.csproj|solutionrelative:projectapp.repository\\interfaces\\common\\icommonservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FA505BED-9696-435D-9DAE-27B562FE8FFD}|ProjectApp.Repository\\ProjectApp.Repository.csproj|d:\\git\\cognitivefit\\backend\\projectapp.repository\\interfaces\\user\\iuserservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{FA505BED-9696-435D-9DAE-27B562FE8FFD}|ProjectApp.Repository\\ProjectApp.Repository.csproj|solutionrelative:projectapp.repository\\interfaces\\user\\iuserservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FA505BED-9696-435D-9DAE-27B562FE8FFD}|ProjectApp.Repository\\ProjectApp.Repository.csproj|d:\\git\\cognitivefit\\backend\\projectapp.repository\\services\\common\\commonservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{FA505BED-9696-435D-9DAE-27B562FE8FFD}|ProjectApp.Repository\\ProjectApp.Repository.csproj|solutionrelative:projectapp.repository\\services\\common\\commonservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{CF04A7F2-E5BE-41BF-8D9B-2C1883C49E41}|ProjectApp.API\\ProjectApp.API.csproj|d:\\git\\cognitivefit\\backend\\projectapp.api\\controllers\\account\\user\\usercontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{CF04A7F2-E5BE-41BF-8D9B-2C1883C49E41}|ProjectApp.API\\ProjectApp.API.csproj|solutionrelative:projectapp.api\\controllers\\account\\user\\usercontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FA505BED-9696-435D-9DAE-27B562FE8FFD}|ProjectApp.Repository\\ProjectApp.Repository.csproj|d:\\git\\cognitivefit\\backend\\projectapp.repository\\interfaces\\masters\\section\\isectionservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{FA505BED-9696-435D-9DAE-27B562FE8FFD}|ProjectApp.Repository\\ProjectApp.Repository.csproj|solutionrelative:projectapp.repository\\interfaces\\masters\\section\\isectionservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{CF04A7F2-E5BE-41BF-8D9B-2C1883C49E41}|ProjectApp.API\\ProjectApp.API.csproj|d:\\git\\cognitivefit\\backend\\projectapp.api\\projectapp.api.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{CF04A7F2-E5BE-41BF-8D9B-2C1883C49E41}|ProjectApp.API\\ProjectApp.API.csproj|solutionrelative:projectapp.api\\projectapp.api.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{CF04A7F2-E5BE-41BF-8D9B-2C1883C49E41}|ProjectApp.API\\ProjectApp.API.csproj|d:\\git\\cognitivefit\\backend\\projectapp.api\\controllers\\masters\\section\\sectioncontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{CF04A7F2-E5BE-41BF-8D9B-2C1883C49E41}|ProjectApp.API\\ProjectApp.API.csproj|solutionrelative:projectapp.api\\controllers\\masters\\section\\sectioncontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FA505BED-9696-435D-9DAE-27B562FE8FFD}|ProjectApp.Repository\\ProjectApp.Repository.csproj|d:\\git\\cognitivefit\\backend\\projectapp.repository\\utilities\\sp\\spparameterbuilder.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{FA505BED-9696-435D-9DAE-27B562FE8FFD}|ProjectApp.Repository\\ProjectApp.Repository.csproj|solutionrelative:projectapp.repository\\utilities\\sp\\spparameterbuilder.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B21901EE-72F2-4D87-947A-A7633FE96863}|ProjectApp.Core\\ProjectApp.Core.csproj|d:\\git\\cognitivefit\\backend\\projectapp.core\\dtos\\masters\\section\\sectionviewdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B21901EE-72F2-4D87-947A-A7633FE96863}|ProjectApp.Core\\ProjectApp.Core.csproj|solutionrelative:projectapp.core\\dtos\\masters\\section\\sectionviewdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B21901EE-72F2-4D87-947A-A7633FE96863}|ProjectApp.Core\\ProjectApp.Core.csproj|d:\\git\\cognitivefit\\backend\\projectapp.core\\dtos\\masters\\section\\sectionresponsedto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B21901EE-72F2-4D87-947A-A7633FE96863}|ProjectApp.Core\\ProjectApp.Core.csproj|solutionrelative:projectapp.core\\dtos\\masters\\section\\sectionresponsedto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FA505BED-9696-435D-9DAE-27B562FE8FFD}|ProjectApp.Repository\\ProjectApp.Repository.csproj|d:\\git\\cognitivefit\\backend\\projectapp.repository\\services\\masters\\department\\departmentservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{FA505BED-9696-435D-9DAE-27B562FE8FFD}|ProjectApp.Repository\\ProjectApp.Repository.csproj|solutionrelative:projectapp.repository\\services\\masters\\department\\departmentservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FA505BED-9696-435D-9DAE-27B562FE8FFD}|ProjectApp.Repository\\ProjectApp.Repository.csproj|d:\\git\\cognitivefit\\backend\\projectapp.repository\\interfaces\\masters\\department\\idepartmentservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{FA505BED-9696-435D-9DAE-27B562FE8FFD}|ProjectApp.Repository\\ProjectApp.Repository.csproj|solutionrelative:projectapp.repository\\interfaces\\masters\\department\\idepartmentservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{CF04A7F2-E5BE-41BF-8D9B-2C1883C49E41}|ProjectApp.API\\ProjectApp.API.csproj|d:\\git\\cognitivefit\\backend\\projectapp.api\\controllers\\account\\login\\logincontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{CF04A7F2-E5BE-41BF-8D9B-2C1883C49E41}|ProjectApp.API\\ProjectApp.API.csproj|solutionrelative:projectapp.api\\controllers\\account\\login\\logincontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FA505BED-9696-435D-9DAE-27B562FE8FFD}|ProjectApp.Repository\\ProjectApp.Repository.csproj|d:\\git\\cognitivefit\\backend\\projectapp.repository\\utilities\\auth\\idencoder.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{FA505BED-9696-435D-9DAE-27B562FE8FFD}|ProjectApp.Repository\\ProjectApp.Repository.csproj|solutionrelative:projectapp.repository\\utilities\\auth\\idencoder.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FA505BED-9696-435D-9DAE-27B562FE8FFD}|ProjectApp.Repository\\ProjectApp.Repository.csproj|d:\\git\\cognitivefit\\backend\\projectapp.repository\\utilities\\auth\\authservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{FA505BED-9696-435D-9DAE-27B562FE8FFD}|ProjectApp.Repository\\ProjectApp.Repository.csproj|solutionrelative:projectapp.repository\\utilities\\auth\\authservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FA505BED-9696-435D-9DAE-27B562FE8FFD}|ProjectApp.Repository\\ProjectApp.Repository.csproj|d:\\git\\cognitivefit\\backend\\projectapp.repository\\utilities\\auth\\iauthservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{FA505BED-9696-435D-9DAE-27B562FE8FFD}|ProjectApp.Repository\\ProjectApp.Repository.csproj|solutionrelative:projectapp.repository\\utilities\\auth\\iauthservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{CF04A7F2-E5BE-41BF-8D9B-2C1883C49E41}|ProjectApp.API\\ProjectApp.API.csproj|d:\\git\\cognitivefit\\backend\\projectapp.api\\controllers\\masters\\department\\departmentcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{CF04A7F2-E5BE-41BF-8D9B-2C1883C49E41}|ProjectApp.API\\ProjectApp.API.csproj|solutionrelative:projectapp.api\\controllers\\masters\\department\\departmentcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B21901EE-72F2-4D87-947A-A7633FE96863}|ProjectApp.Core\\ProjectApp.Core.csproj|d:\\git\\cognitivefit\\backend\\projectapp.core\\dtos\\account\\user\\userdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B21901EE-72F2-4D87-947A-A7633FE96863}|ProjectApp.Core\\ProjectApp.Core.csproj|solutionrelative:projectapp.core\\dtos\\account\\user\\userdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B21901EE-72F2-4D87-947A-A7633FE96863}|ProjectApp.Core\\ProjectApp.Core.csproj|d:\\git\\cognitivefit\\backend\\projectapp.core\\dtos\\account\\role\\roledto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B21901EE-72F2-4D87-947A-A7633FE96863}|ProjectApp.Core\\ProjectApp.Core.csproj|solutionrelative:projectapp.core\\dtos\\account\\role\\roledto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B21901EE-72F2-4D87-947A-A7633FE96863}|ProjectApp.Core\\ProjectApp.Core.csproj|d:\\git\\cognitivefit\\backend\\projectapp.core\\dtos\\masters\\section\\sectionstatusdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B21901EE-72F2-4D87-947A-A7633FE96863}|ProjectApp.Core\\ProjectApp.Core.csproj|solutionrelative:projectapp.core\\dtos\\masters\\section\\sectionstatusdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B21901EE-72F2-4D87-947A-A7633FE96863}|ProjectApp.Core\\ProjectApp.Core.csproj|d:\\git\\cognitivefit\\backend\\projectapp.core\\dtos\\masters\\section\\sectiondto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B21901EE-72F2-4D87-947A-A7633FE96863}|ProjectApp.Core\\ProjectApp.Core.csproj|solutionrelative:projectapp.core\\dtos\\masters\\section\\sectiondto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B21901EE-72F2-4D87-947A-A7633FE96863}|ProjectApp.Core\\ProjectApp.Core.csproj|d:\\git\\cognitivefit\\backend\\projectapp.core\\dtos\\account\\login\\logindto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B21901EE-72F2-4D87-947A-A7633FE96863}|ProjectApp.Core\\ProjectApp.Core.csproj|solutionrelative:projectapp.core\\dtos\\account\\login\\logindto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FA505BED-9696-435D-9DAE-27B562FE8FFD}|ProjectApp.Repository\\ProjectApp.Repository.csproj|d:\\git\\cognitivefit\\backend\\projectapp.repository\\projectapp.repository.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{FA505BED-9696-435D-9DAE-27B562FE8FFD}|ProjectApp.Repository\\ProjectApp.Repository.csproj|solutionrelative:projectapp.repository\\projectapp.repository.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B21901EE-72F2-4D87-947A-A7633FE96863}|ProjectApp.Core\\ProjectApp.Core.csproj|d:\\git\\cognitivefit\\backend\\projectapp.core\\context\\departmentconfig.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B21901EE-72F2-4D87-947A-A7633FE96863}|ProjectApp.Core\\ProjectApp.Core.csproj|solutionrelative:projectapp.core\\context\\departmentconfig.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B21901EE-72F2-4D87-947A-A7633FE96863}|ProjectApp.Core\\ProjectApp.Core.csproj|d:\\git\\cognitivefit\\backend\\projectapp.core\\entities\\roles.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B21901EE-72F2-4D87-947A-A7633FE96863}|ProjectApp.Core\\ProjectApp.Core.csproj|solutionrelative:projectapp.core\\entities\\roles.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B21901EE-72F2-4D87-947A-A7633FE96863}|ProjectApp.Core\\ProjectApp.Core.csproj|d:\\git\\cognitivefit\\backend\\projectapp.core\\context\\projectdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B21901EE-72F2-4D87-947A-A7633FE96863}|ProjectApp.Core\\ProjectApp.Core.csproj|solutionrelative:projectapp.core\\context\\projectdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B21901EE-72F2-4D87-947A-A7633FE96863}|ProjectApp.Core\\ProjectApp.Core.csproj|d:\\git\\cognitivefit\\backend\\projectapp.core\\context\\workerconfig.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B21901EE-72F2-4D87-947A-A7633FE96863}|ProjectApp.Core\\ProjectApp.Core.csproj|solutionrelative:projectapp.core\\context\\workerconfig.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B21901EE-72F2-4D87-947A-A7633FE96863}|ProjectApp.Core\\ProjectApp.Core.csproj|d:\\git\\cognitivefit\\backend\\projectapp.core\\context\\userconfig.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B21901EE-72F2-4D87-947A-A7633FE96863}|ProjectApp.Core\\ProjectApp.Core.csproj|solutionrelative:projectapp.core\\context\\userconfig.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B21901EE-72F2-4D87-947A-A7633FE96863}|ProjectApp.Core\\ProjectApp.Core.csproj|d:\\git\\cognitivefit\\backend\\projectapp.core\\context\\sectionconfig.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B21901EE-72F2-4D87-947A-A7633FE96863}|ProjectApp.Core\\ProjectApp.Core.csproj|solutionrelative:projectapp.core\\context\\sectionconfig.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B21901EE-72F2-4D87-947A-A7633FE96863}|ProjectApp.Core\\ProjectApp.Core.csproj|d:\\git\\cognitivefit\\backend\\projectapp.core\\context\\roleconfig.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B21901EE-72F2-4D87-947A-A7633FE96863}|ProjectApp.Core\\ProjectApp.Core.csproj|solutionrelative:projectapp.core\\context\\roleconfig.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B21901EE-72F2-4D87-947A-A7633FE96863}|ProjectApp.Core\\ProjectApp.Core.csproj|d:\\git\\cognitivefit\\backend\\projectapp.core\\entities\\departments.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B21901EE-72F2-4D87-947A-A7633FE96863}|ProjectApp.Core\\ProjectApp.Core.csproj|solutionrelative:projectapp.core\\entities\\departments.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B21901EE-72F2-4D87-947A-A7633FE96863}|ProjectApp.Core\\ProjectApp.Core.csproj|d:\\git\\cognitivefit\\backend\\projectapp.core\\dtos\\worker\\workerdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B21901EE-72F2-4D87-947A-A7633FE96863}|ProjectApp.Core\\ProjectApp.Core.csproj|solutionrelative:projectapp.core\\dtos\\worker\\workerdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B21901EE-72F2-4D87-947A-A7633FE96863}|ProjectApp.Core\\ProjectApp.Core.csproj|d:\\git\\cognitivefit\\backend\\projectapp.core\\dtos\\account\\user\\userresdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B21901EE-72F2-4D87-947A-A7633FE96863}|ProjectApp.Core\\ProjectApp.Core.csproj|solutionrelative:projectapp.core\\dtos\\account\\user\\userresdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B21901EE-72F2-4D87-947A-A7633FE96863}|ProjectApp.Core\\ProjectApp.Core.csproj|d:\\git\\cognitivefit\\backend\\projectapp.core\\dtos\\masters\\section\\sectionupdatedto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B21901EE-72F2-4D87-947A-A7633FE96863}|ProjectApp.Core\\ProjectApp.Core.csproj|solutionrelative:projectapp.core\\dtos\\masters\\section\\sectionupdatedto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B21901EE-72F2-4D87-947A-A7633FE96863}|ProjectApp.Core\\ProjectApp.Core.csproj|d:\\git\\cognitivefit\\backend\\projectapp.core\\dtos\\account\\login\\loginresdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B21901EE-72F2-4D87-947A-A7633FE96863}|ProjectApp.Core\\ProjectApp.Core.csproj|solutionrelative:projectapp.core\\dtos\\account\\login\\loginresdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B21901EE-72F2-4D87-947A-A7633FE96863}|ProjectApp.Core\\ProjectApp.Core.csproj|d:\\git\\cognitivefit\\backend\\projectapp.core\\entities\\workers.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B21901EE-72F2-4D87-947A-A7633FE96863}|ProjectApp.Core\\ProjectApp.Core.csproj|solutionrelative:projectapp.core\\entities\\workers.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B21901EE-72F2-4D87-947A-A7633FE96863}|ProjectApp.Core\\ProjectApp.Core.csproj|d:\\git\\cognitivefit\\backend\\projectapp.core\\entities\\users.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B21901EE-72F2-4D87-947A-A7633FE96863}|ProjectApp.Core\\ProjectApp.Core.csproj|solutionrelative:projectapp.core\\entities\\users.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B21901EE-72F2-4D87-947A-A7633FE96863}|ProjectApp.Core\\ProjectApp.Core.csproj|d:\\git\\cognitivefit\\backend\\projectapp.core\\entities\\sections.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B21901EE-72F2-4D87-947A-A7633FE96863}|ProjectApp.Core\\ProjectApp.Core.csproj|solutionrelative:projectapp.core\\entities\\sections.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B21901EE-72F2-4D87-947A-A7633FE96863}|ProjectApp.Core\\ProjectApp.Core.csproj|d:\\git\\cognitivefit\\backend\\projectapp.core\\entities\\apiresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B21901EE-72F2-4D87-947A-A7633FE96863}|ProjectApp.Core\\ProjectApp.Core.csproj|solutionrelative:projectapp.core\\entities\\apiresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B21901EE-72F2-4D87-947A-A7633FE96863}|ProjectApp.Core\\ProjectApp.Core.csproj|d:\\git\\cognitivefit\\backend\\projectapp.core\\projectapp.core.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{B21901EE-72F2-4D87-947A-A7633FE96863}|ProjectApp.Core\\ProjectApp.Core.csproj|solutionrelative:projectapp.core\\projectapp.core.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B21901EE-72F2-4D87-947A-A7633FE96863}|ProjectApp.Core\\ProjectApp.Core.csproj|d:\\git\\cognitivefit\\backend\\projectapp.core\\migrations\\20260209094606_firstmigration.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B21901EE-72F2-4D87-947A-A7633FE96863}|ProjectApp.Core\\ProjectApp.Core.csproj|solutionrelative:projectapp.core\\migrations\\20260209094606_firstmigration.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 6,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{0ad07096-bba9-4900-a651-0598d26f6d24}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{34e76e81-ee4a-11d0-ae2e-00a0c90fffc3}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{aa2115a1-9712-457b-9047-dbb71ca2cdd2}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{a83394e3-39c2-4678-a3c8-364b69d78fd3}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{74946827-37a0-11d2-a273-00c04f8ef4ff}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{3ae79031-e1bc-11d0-8f78-00a0c9110057}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Microsoft.Common.CurrentVersion.targets",
+              "DocumentMoniker": "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\MSBuild\\Current\\Bin\\amd64\\Microsoft.Common.CurrentVersion.targets",
+              "ToolTip": "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\MSBuild\\Current\\Bin\\amd64\\Microsoft.Common.CurrentVersion.targets",
+              "ViewState": "AgIAAMsVAAAAAAAAAAAmwOEVAAAUAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003801|",
+              "WhenOpened": "2026-02-16T13:00:19.676Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:1:0:{d212f56b-c48a-434c-a121-1c5d80b59b9f}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "TestController.cs",
+              "DocumentMoniker": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.API\\Controllers\\Masters\\Role\\TestController.cs",
+              "RelativeDocumentMoniker": "ProjectApp.API\\Controllers\\Masters\\Role\\TestController.cs",
+              "ToolTip": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.API\\Controllers\\Masters\\Role\\TestController.cs",
+              "RelativeToolTip": "ProjectApp.API\\Controllers\\Masters\\Role\\TestController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAArAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-16T10:38:49.788Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "SPService.cs",
+              "DocumentMoniker": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.Repository\\Services\\Common\\SPService.cs",
+              "RelativeDocumentMoniker": "ProjectApp.Repository\\Services\\Common\\SPService.cs",
+              "ToolTip": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.Repository\\Services\\Common\\SPService.cs",
+              "RelativeToolTip": "ProjectApp.Repository\\Services\\Common\\SPService.cs",
+              "ViewState": "AgIAAA8AAAAAAAAAAAAWwE4AAAANAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-16T10:29:54.915Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "Program.cs",
+              "DocumentMoniker": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.API\\Program.cs",
+              "RelativeDocumentMoniker": "ProjectApp.API\\Program.cs",
+              "ToolTip": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.API\\Program.cs",
+              "RelativeToolTip": "ProjectApp.API\\Program.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAAiAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-16T10:29:54.925Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "ISPService.cs",
+              "DocumentMoniker": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.Repository\\Interfaces\\Common\\ISPService.cs",
+              "RelativeDocumentMoniker": "ProjectApp.Repository\\Interfaces\\Common\\ISPService.cs",
+              "ToolTip": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.Repository\\Interfaces\\Common\\ISPService.cs",
+              "RelativeToolTip": "ProjectApp.Repository\\Interfaces\\Common\\ISPService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAuwAwAAAATAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-16T10:29:54.935Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "PageResult.cs",
+              "DocumentMoniker": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.Repository\\Utilities\\SP\\PageResult.cs",
+              "RelativeDocumentMoniker": "ProjectApp.Repository\\Utilities\\SP\\PageResult.cs",
+              "ToolTip": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.Repository\\Utilities\\SP\\PageResult.cs",
+              "RelativeToolTip": "ProjectApp.Repository\\Utilities\\SP\\PageResult.cs",
+              "ViewState": "AgIAAAEAAAAAAAAAAAAcwA8AAAAFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-16T10:29:54.946Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
+              "Title": "SearchRequest.cs",
+              "DocumentMoniker": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.Repository\\Utilities\\SP\\SearchRequest.cs",
+              "RelativeDocumentMoniker": "ProjectApp.Repository\\Utilities\\SP\\SearchRequest.cs",
+              "ToolTip": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.Repository\\Utilities\\SP\\SearchRequest.cs",
+              "RelativeToolTip": "ProjectApp.Repository\\Utilities\\SP\\SearchRequest.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAuwBIAAAAFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-16T10:29:54.956Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "RoleController.cs",
+              "DocumentMoniker": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.API\\Controllers\\Masters\\Role\\RoleController.cs",
+              "RelativeDocumentMoniker": "ProjectApp.API\\Controllers\\Masters\\Role\\RoleController.cs",
+              "ToolTip": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.API\\Controllers\\Masters\\Role\\RoleController.cs",
+              "RelativeToolTip": "ProjectApp.API\\Controllers\\Masters\\Role\\RoleController.cs",
+              "ViewState": "AgIAAAkAAAAAAAAAAAAAABMAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-16T10:29:54.99Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "IRoleService.cs",
+              "DocumentMoniker": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.Repository\\Interfaces\\Masters\\Role\\IRoleService.cs",
+              "RelativeDocumentMoniker": "ProjectApp.Repository\\Interfaces\\Masters\\Role\\IRoleService.cs",
+              "ToolTip": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.Repository\\Interfaces\\Masters\\Role\\IRoleService.cs",
+              "RelativeToolTip": "ProjectApp.Repository\\Interfaces\\Masters\\Role\\IRoleService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-16T10:29:54.906Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "appsettings.json",
+              "DocumentMoniker": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.API\\appsettings.json",
+              "RelativeDocumentMoniker": "ProjectApp.API\\appsettings.json",
+              "ToolTip": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.API\\appsettings.json",
+              "RelativeToolTip": "ProjectApp.API\\appsettings.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAIAAAAVAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2026-02-16T10:29:54.968Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "RoleService.cs",
+              "DocumentMoniker": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.Repository\\Services\\Masters\\Role\\RoleService.cs",
+              "RelativeDocumentMoniker": "ProjectApp.Repository\\Services\\Masters\\Role\\RoleService.cs",
+              "ToolTip": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.Repository\\Services\\Masters\\Role\\RoleService.cs",
+              "RelativeToolTip": "ProjectApp.Repository\\Services\\Masters\\Role\\RoleService.cs",
+              "ViewState": "AgIAAAYAAAAAAAAAAAAAABcAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-16T10:29:54.897Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "ServiceCollections.cs",
+              "DocumentMoniker": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.API\\Extentions\\ServiceCollections.cs",
+              "RelativeDocumentMoniker": "ProjectApp.API\\Extentions\\ServiceCollections.cs",
+              "ToolTip": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.API\\Extentions\\ServiceCollections.cs",
+              "RelativeToolTip": "ProjectApp.API\\Extentions\\ServiceCollections.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABYAAAAqAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-16T10:29:54.817Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "MapperConfig.cs",
+              "DocumentMoniker": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.API\\Extentions\\MapperConfig.cs",
+              "RelativeDocumentMoniker": "ProjectApp.API\\Extentions\\MapperConfig.cs",
+              "ToolTip": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.API\\Extentions\\MapperConfig.cs",
+              "RelativeToolTip": "ProjectApp.API\\Extentions\\MapperConfig.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAuwAwAAAARAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-16T10:29:54.978Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 13,
+              "Title": "DepartmentDTO.cs",
+              "DocumentMoniker": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.Core\\DTOs\\Masters\\Department\\DepartmentDTO.cs",
+              "RelativeDocumentMoniker": "ProjectApp.Core\\DTOs\\Masters\\Department\\DepartmentDTO.cs",
+              "ToolTip": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.Core\\DTOs\\Masters\\Department\\DepartmentDTO.cs",
+              "RelativeToolTip": "ProjectApp.Core\\DTOs\\Masters\\Department\\DepartmentDTO.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAAKAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-16T10:29:55.006Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 14,
+              "Title": "JWTService.cs",
+              "DocumentMoniker": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.Repository\\Utilities\\Auth\\JWTService.cs",
+              "RelativeDocumentMoniker": "ProjectApp.Repository\\Utilities\\Auth\\JWTService.cs",
+              "ToolTip": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.Repository\\Utilities\\Auth\\JWTService.cs",
+              "RelativeToolTip": "ProjectApp.Repository\\Utilities\\Auth\\JWTService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAAAJAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-16T10:29:55.026Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 17,
+              "Title": "ICommonService.cs",
+              "DocumentMoniker": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.Repository\\Interfaces\\Common\\ICommonService.cs",
+              "RelativeDocumentMoniker": "ProjectApp.Repository\\Interfaces\\Common\\ICommonService.cs",
+              "ToolTip": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.Repository\\Interfaces\\Common\\ICommonService.cs",
+              "RelativeToolTip": "ProjectApp.Repository\\Interfaces\\Common\\ICommonService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAuwA0AAABdAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-16T10:29:55.045Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 19,
+              "Title": "CommonService.cs",
+              "DocumentMoniker": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.Repository\\Services\\Common\\CommonService.cs",
+              "RelativeDocumentMoniker": "ProjectApp.Repository\\Services\\Common\\CommonService.cs",
+              "ToolTip": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.Repository\\Services\\Common\\CommonService.cs",
+              "RelativeToolTip": "ProjectApp.Repository\\Services\\Common\\CommonService.cs",
+              "ViewState": "AgIAACgAAAAAAAAAAAAkwEAAAAAyAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-16T10:29:55.057Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 15,
+              "Title": "SectionService.cs",
+              "DocumentMoniker": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.Repository\\Services\\Masters\\Section\\SectionService.cs",
+              "RelativeDocumentMoniker": "ProjectApp.Repository\\Services\\Masters\\Section\\SectionService.cs",
+              "ToolTip": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.Repository\\Services\\Masters\\Section\\SectionService.cs",
+              "RelativeToolTip": "ProjectApp.Repository\\Services\\Masters\\Section\\SectionService.cs",
+              "ViewState": "AgIAAGcAAAAAAAAAAAA9wKMAAAARAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-16T10:29:55.07Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 18,
+              "Title": "IUserService.cs",
+              "DocumentMoniker": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.Repository\\Interfaces\\User\\IUserService.cs",
+              "RelativeDocumentMoniker": "ProjectApp.Repository\\Interfaces\\User\\IUserService.cs",
+              "ToolTip": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.Repository\\Interfaces\\User\\IUserService.cs",
+              "RelativeToolTip": "ProjectApp.Repository\\Interfaces\\User\\IUserService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAuwA0AAAAcAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-16T10:29:55.082Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 16,
+              "Title": "UserService.cs",
+              "DocumentMoniker": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.Repository\\Services\\User\\UserService.cs",
+              "RelativeDocumentMoniker": "ProjectApp.Repository\\Services\\User\\UserService.cs",
+              "ToolTip": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.Repository\\Services\\User\\UserService.cs",
+              "RelativeToolTip": "ProjectApp.Repository\\Services\\User\\UserService.cs",
+              "ViewState": "AgIAAEcAAAAAAAAAAAAEwFIAAABVAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-16T10:29:55.093Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 20,
+              "Title": "UserController.cs",
+              "DocumentMoniker": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.API\\Controllers\\Account\\User\\UserController.cs",
+              "RelativeDocumentMoniker": "ProjectApp.API\\Controllers\\Account\\User\\UserController.cs",
+              "ToolTip": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.API\\Controllers\\Account\\User\\UserController.cs",
+              "RelativeToolTip": "ProjectApp.API\\Controllers\\Account\\User\\UserController.cs",
+              "ViewState": "AgIAAA4AAAAAAAAAAAAAwB8AAAA8AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-16T10:29:55.109Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 21,
+              "Title": "ISectionService.cs",
+              "DocumentMoniker": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.Repository\\Interfaces\\Masters\\Section\\ISectionService.cs",
+              "RelativeDocumentMoniker": "ProjectApp.Repository\\Interfaces\\Masters\\Section\\ISectionService.cs",
+              "ToolTip": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.Repository\\Interfaces\\Masters\\Section\\ISectionService.cs",
+              "RelativeToolTip": "ProjectApp.Repository\\Interfaces\\Masters\\Section\\ISectionService.cs",
+              "ViewState": "AgIAAAwAAAAAAAAAAAAWwBYAAAApAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-16T10:29:55.125Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 22,
+              "Title": "ProjectApp.API.csproj",
+              "DocumentMoniker": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.API\\ProjectApp.API.csproj",
+              "RelativeDocumentMoniker": "ProjectApp.API\\ProjectApp.API.csproj",
+              "ToolTip": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.API\\ProjectApp.API.csproj",
+              "RelativeToolTip": "ProjectApp.API\\ProjectApp.API.csproj",
+              "ViewState": "AgIAAAYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2026-02-16T10:29:55.148Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 23,
+              "Title": "SectionController.cs",
+              "DocumentMoniker": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.API\\Controllers\\Masters\\Section\\SectionController.cs",
+              "RelativeDocumentMoniker": "ProjectApp.API\\Controllers\\Masters\\Section\\SectionController.cs",
+              "ToolTip": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.API\\Controllers\\Masters\\Section\\SectionController.cs",
+              "RelativeToolTip": "ProjectApp.API\\Controllers\\Masters\\Section\\SectionController.cs",
+              "ViewState": "AgIAAO4AAAAAAAAAAAAgwBABAAANAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-16T10:29:55.308Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 24,
+              "Title": "SpParameterBuilder.cs",
+              "DocumentMoniker": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.Repository\\Utilities\\SP\\SpParameterBuilder.cs",
+              "RelativeDocumentMoniker": "ProjectApp.Repository\\Utilities\\SP\\SpParameterBuilder.cs",
+              "ToolTip": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.Repository\\Utilities\\SP\\SpParameterBuilder.cs",
+              "RelativeToolTip": "ProjectApp.Repository\\Utilities\\SP\\SpParameterBuilder.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAA6AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-16T10:29:55.327Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 25,
+              "Title": "SectionViewDTO.cs",
+              "DocumentMoniker": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.Core\\DTOs\\Masters\\Section\\SectionViewDTO.cs",
+              "RelativeDocumentMoniker": "ProjectApp.Core\\DTOs\\Masters\\Section\\SectionViewDTO.cs",
+              "ToolTip": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.Core\\DTOs\\Masters\\Section\\SectionViewDTO.cs",
+              "RelativeToolTip": "ProjectApp.Core\\DTOs\\Masters\\Section\\SectionViewDTO.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-16T10:29:55.342Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 26,
+              "Title": "SectionResponseDTO.cs",
+              "DocumentMoniker": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.Core\\DTOs\\Masters\\Section\\SectionResponseDTO.cs",
+              "RelativeDocumentMoniker": "ProjectApp.Core\\DTOs\\Masters\\Section\\SectionResponseDTO.cs",
+              "ToolTip": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.Core\\DTOs\\Masters\\Section\\SectionResponseDTO.cs",
+              "RelativeToolTip": "ProjectApp.Core\\DTOs\\Masters\\Section\\SectionResponseDTO.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABEAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-16T10:29:55.354Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 27,
+              "Title": "DepartmentService.cs",
+              "DocumentMoniker": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.Repository\\Services\\Masters\\Department\\DepartmentService.cs",
+              "RelativeDocumentMoniker": "ProjectApp.Repository\\Services\\Masters\\Department\\DepartmentService.cs",
+              "ToolTip": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.Repository\\Services\\Masters\\Department\\DepartmentService.cs",
+              "RelativeToolTip": "ProjectApp.Repository\\Services\\Masters\\Department\\DepartmentService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAIBJwBcAAAAsAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-16T10:29:55.367Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 28,
+              "Title": "IDepartmentService.cs",
+              "DocumentMoniker": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.Repository\\Interfaces\\Masters\\Department\\IDepartmentService.cs",
+              "RelativeDocumentMoniker": "ProjectApp.Repository\\Interfaces\\Masters\\Department\\IDepartmentService.cs",
+              "ToolTip": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.Repository\\Interfaces\\Masters\\Department\\IDepartmentService.cs",
+              "RelativeToolTip": "ProjectApp.Repository\\Interfaces\\Masters\\Department\\IDepartmentService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAAnAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-16T10:29:55.379Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 29,
+              "Title": "LoginController.cs",
+              "DocumentMoniker": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.API\\Controllers\\Account\\Login\\LoginController.cs",
+              "RelativeDocumentMoniker": "ProjectApp.API\\Controllers\\Account\\Login\\LoginController.cs",
+              "ToolTip": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.API\\Controllers\\Account\\Login\\LoginController.cs",
+              "RelativeToolTip": "ProjectApp.API\\Controllers\\Account\\Login\\LoginController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAIBJwBgAAAAJAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-16T10:29:55.392Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 30,
+              "Title": "IdEncoder.cs",
+              "DocumentMoniker": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.Repository\\Utilities\\Auth\\IdEncoder.cs",
+              "RelativeDocumentMoniker": "ProjectApp.Repository\\Utilities\\Auth\\IdEncoder.cs",
+              "ToolTip": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.Repository\\Utilities\\Auth\\IdEncoder.cs",
+              "RelativeToolTip": "ProjectApp.Repository\\Utilities\\Auth\\IdEncoder.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAAuAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-16T10:29:55.405Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 31,
+              "Title": "AuthService.cs",
+              "DocumentMoniker": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.Repository\\Utilities\\Auth\\AuthService.cs",
+              "RelativeDocumentMoniker": "ProjectApp.Repository\\Utilities\\Auth\\AuthService.cs",
+              "ToolTip": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.Repository\\Utilities\\Auth\\AuthService.cs",
+              "RelativeToolTip": "ProjectApp.Repository\\Utilities\\Auth\\AuthService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAIBJwA8AAAAMAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-16T10:29:55.417Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 32,
+              "Title": "IAuthService.cs",
+              "DocumentMoniker": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.Repository\\Utilities\\Auth\\IAuthService.cs",
+              "RelativeDocumentMoniker": "ProjectApp.Repository\\Utilities\\Auth\\IAuthService.cs",
+              "ToolTip": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.Repository\\Utilities\\Auth\\IAuthService.cs",
+              "RelativeToolTip": "ProjectApp.Repository\\Utilities\\Auth\\IAuthService.cs",
+              "ViewState": "AgIAAAEAAAAAAAAAAIBJwAwAAAAFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-16T10:29:55.426Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 34,
+              "Title": "UserDTO.cs",
+              "DocumentMoniker": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.Core\\DTOs\\Account\\User\\UserDTO.cs",
+              "RelativeDocumentMoniker": "ProjectApp.Core\\DTOs\\Account\\User\\UserDTO.cs",
+              "ToolTip": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.Core\\DTOs\\Account\\User\\UserDTO.cs",
+              "RelativeToolTip": "ProjectApp.Core\\DTOs\\Account\\User\\UserDTO.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAowBYAAAApAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-16T10:29:55.437Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 36,
+              "Title": "SectionStatusDTO.cs",
+              "DocumentMoniker": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.Core\\DTOs\\Masters\\Section\\SectionStatusDTO.cs",
+              "RelativeDocumentMoniker": "ProjectApp.Core\\DTOs\\Masters\\Section\\SectionStatusDTO.cs",
+              "ToolTip": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.Core\\DTOs\\Masters\\Section\\SectionStatusDTO.cs",
+              "RelativeToolTip": "ProjectApp.Core\\DTOs\\Masters\\Section\\SectionStatusDTO.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAAARAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-16T10:29:55.447Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 37,
+              "Title": "SectionDTO.cs",
+              "DocumentMoniker": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.Core\\DTOs\\Masters\\Section\\SectionDTO.cs",
+              "RelativeDocumentMoniker": "ProjectApp.Core\\DTOs\\Masters\\Section\\SectionDTO.cs",
+              "ToolTip": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.Core\\DTOs\\Masters\\Section\\SectionDTO.cs",
+              "RelativeToolTip": "ProjectApp.Core\\DTOs\\Masters\\Section\\SectionDTO.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAMAAAARAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-16T10:29:55.456Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 35,
+              "Title": "RoleDTO.cs",
+              "DocumentMoniker": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.Core\\DTOs\\Account\\Role\\RoleDTO.cs",
+              "RelativeDocumentMoniker": "ProjectApp.Core\\DTOs\\Account\\Role\\RoleDTO.cs",
+              "ToolTip": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.Core\\DTOs\\Account\\Role\\RoleDTO.cs",
+              "RelativeToolTip": "ProjectApp.Core\\DTOs\\Account\\Role\\RoleDTO.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAIAAAAjAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-16T10:29:55.467Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 33,
+              "Title": "DepartmentController.cs",
+              "DocumentMoniker": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.API\\Controllers\\Masters\\Department\\DepartmentController.cs",
+              "RelativeDocumentMoniker": "ProjectApp.API\\Controllers\\Masters\\Department\\DepartmentController.cs",
+              "ToolTip": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.API\\Controllers\\Masters\\Department\\DepartmentController.cs",
+              "RelativeToolTip": "ProjectApp.API\\Controllers\\Masters\\Department\\DepartmentController.cs",
+              "ViewState": "AgIAABQAAAAAAAAAAAAUwBEAAAArAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-16T10:29:55.482Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 38,
+              "Title": "LoginDTO.cs",
+              "DocumentMoniker": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.Core\\DTOs\\Account\\Login\\LoginDTO.cs",
+              "RelativeDocumentMoniker": "ProjectApp.Core\\DTOs\\Account\\Login\\LoginDTO.cs",
+              "ToolTip": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.Core\\DTOs\\Account\\Login\\LoginDTO.cs",
+              "RelativeToolTip": "ProjectApp.Core\\DTOs\\Account\\Login\\LoginDTO.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAIAAAAkAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-16T10:29:55.503Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 57,
+              "Title": "20260209094606_FirstMigration.cs",
+              "DocumentMoniker": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.Core\\Migrations\\20260209094606_FirstMigration.cs",
+              "RelativeDocumentMoniker": "ProjectApp.Core\\Migrations\\20260209094606_FirstMigration.cs",
+              "ToolTip": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.Core\\Migrations\\20260209094606_FirstMigration.cs",
+              "RelativeToolTip": "ProjectApp.Core\\Migrations\\20260209094606_FirstMigration.cs",
+              "ViewState": "AgIAAAEAAAAAAAAAAAAmwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-16T10:29:55.516Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 39,
+              "Title": "ProjectApp.Repository.csproj",
+              "DocumentMoniker": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.Repository\\ProjectApp.Repository.csproj",
+              "RelativeDocumentMoniker": "ProjectApp.Repository\\ProjectApp.Repository.csproj",
+              "ToolTip": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.Repository\\ProjectApp.Repository.csproj",
+              "RelativeToolTip": "ProjectApp.Repository\\ProjectApp.Repository.csproj",
+              "ViewState": "AgIAAAEAAAAAAAAAAGBnwBsAAAAXAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2026-02-16T10:29:55.53Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 40,
+              "Title": "DepartmentConfig.cs",
+              "DocumentMoniker": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.Core\\Context\\DepartmentConfig.cs",
+              "RelativeDocumentMoniker": "ProjectApp.Core\\Context\\DepartmentConfig.cs",
+              "ToolTip": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.Core\\Context\\DepartmentConfig.cs",
+              "RelativeToolTip": "ProjectApp.Core\\Context\\DepartmentConfig.cs",
+              "ViewState": "AgIAABMAAAAAAAAAAAAQwAQAAAAhAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-16T10:29:55.555Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 42,
+              "Title": "ProjectDBContext.cs",
+              "DocumentMoniker": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.Core\\Context\\ProjectDBContext.cs",
+              "RelativeDocumentMoniker": "ProjectApp.Core\\Context\\ProjectDBContext.cs",
+              "ToolTip": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.Core\\Context\\ProjectDBContext.cs",
+              "RelativeToolTip": "ProjectApp.Core\\Context\\ProjectDBContext.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAIBJwBEAAAAaAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-16T10:29:55.568Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 46,
+              "Title": "RoleConfig.cs",
+              "DocumentMoniker": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.Core\\Context\\RoleConfig.cs",
+              "RelativeDocumentMoniker": "ProjectApp.Core\\Context\\RoleConfig.cs",
+              "ToolTip": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.Core\\Context\\RoleConfig.cs",
+              "RelativeToolTip": "ProjectApp.Core\\Context\\RoleConfig.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAQAAAAhAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-16T10:29:55.585Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 45,
+              "Title": "SectionConfig.cs",
+              "DocumentMoniker": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.Core\\Context\\SectionConfig.cs",
+              "RelativeDocumentMoniker": "ProjectApp.Core\\Context\\SectionConfig.cs",
+              "ToolTip": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.Core\\Context\\SectionConfig.cs",
+              "RelativeToolTip": "ProjectApp.Core\\Context\\SectionConfig.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAUAAAAhAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-16T10:29:55.598Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 44,
+              "Title": "UserConfig.cs",
+              "DocumentMoniker": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.Core\\Context\\UserConfig.cs",
+              "RelativeDocumentMoniker": "ProjectApp.Core\\Context\\UserConfig.cs",
+              "ToolTip": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.Core\\Context\\UserConfig.cs",
+              "RelativeToolTip": "ProjectApp.Core\\Context\\UserConfig.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAQAAAAhAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-16T10:29:55.613Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 43,
+              "Title": "WorkerConfig.cs",
+              "DocumentMoniker": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.Core\\Context\\WorkerConfig.cs",
+              "RelativeDocumentMoniker": "ProjectApp.Core\\Context\\WorkerConfig.cs",
+              "ToolTip": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.Core\\Context\\WorkerConfig.cs",
+              "RelativeToolTip": "ProjectApp.Core\\Context\\WorkerConfig.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAQAAAAhAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-16T10:29:55.623Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 41,
+              "Title": "Roles.cs",
+              "DocumentMoniker": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.Core\\Entities\\Roles.cs",
+              "RelativeDocumentMoniker": "ProjectApp.Core\\Entities\\Roles.cs",
+              "ToolTip": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.Core\\Entities\\Roles.cs",
+              "RelativeToolTip": "ProjectApp.Core\\Entities\\Roles.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAIAAAARAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-16T10:29:55.633Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 47,
+              "Title": "Departments.cs",
+              "DocumentMoniker": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.Core\\Entities\\Departments.cs",
+              "RelativeDocumentMoniker": "ProjectApp.Core\\Entities\\Departments.cs",
+              "ToolTip": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.Core\\Entities\\Departments.cs",
+              "RelativeToolTip": "ProjectApp.Core\\Entities\\Departments.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAuwAsAAAApAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-16T10:29:55.643Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 48,
+              "Title": "WorkerDTO.cs",
+              "DocumentMoniker": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.Core\\DTOs\\Worker\\WorkerDTO.cs",
+              "RelativeDocumentMoniker": "ProjectApp.Core\\DTOs\\Worker\\WorkerDTO.cs",
+              "ToolTip": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.Core\\DTOs\\Worker\\WorkerDTO.cs",
+              "RelativeToolTip": "ProjectApp.Core\\DTOs\\Worker\\WorkerDTO.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAASAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-16T10:29:55.651Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 49,
+              "Title": "UserResDTO.cs",
+              "DocumentMoniker": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.Core\\DTOs\\Account\\User\\UserResDTO.cs",
+              "RelativeDocumentMoniker": "ProjectApp.Core\\DTOs\\Account\\User\\UserResDTO.cs",
+              "ToolTip": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.Core\\DTOs\\Account\\User\\UserResDTO.cs",
+              "RelativeToolTip": "ProjectApp.Core\\DTOs\\Account\\User\\UserResDTO.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAIAAAAjAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-16T10:29:55.662Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 50,
+              "Title": "SectionUpdateDTO.cs",
+              "DocumentMoniker": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.Core\\DTOs\\Masters\\Section\\SectionUpdateDTO.cs",
+              "RelativeDocumentMoniker": "ProjectApp.Core\\DTOs\\Masters\\Section\\SectionUpdateDTO.cs",
+              "ToolTip": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.Core\\DTOs\\Masters\\Section\\SectionUpdateDTO.cs",
+              "RelativeToolTip": "ProjectApp.Core\\DTOs\\Masters\\Section\\SectionUpdateDTO.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAAARAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-16T10:29:55.671Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 51,
+              "Title": "LoginResDTO.cs",
+              "DocumentMoniker": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.Core\\DTOs\\Account\\Login\\LoginResDTO.cs",
+              "RelativeDocumentMoniker": "ProjectApp.Core\\DTOs\\Account\\Login\\LoginResDTO.cs",
+              "ToolTip": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.Core\\DTOs\\Account\\Login\\LoginResDTO.cs",
+              "RelativeToolTip": "ProjectApp.Core\\DTOs\\Account\\Login\\LoginResDTO.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAkAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-16T10:29:55.68Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 52,
+              "Title": "Workers.cs",
+              "DocumentMoniker": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.Core\\Entities\\Workers.cs",
+              "RelativeDocumentMoniker": "ProjectApp.Core\\Entities\\Workers.cs",
+              "ToolTip": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.Core\\Entities\\Workers.cs",
+              "RelativeToolTip": "ProjectApp.Core\\Entities\\Workers.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAAVAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-16T10:29:55.687Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 53,
+              "Title": "Users.cs",
+              "DocumentMoniker": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.Core\\Entities\\Users.cs",
+              "RelativeDocumentMoniker": "ProjectApp.Core\\Entities\\Users.cs",
+              "ToolTip": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.Core\\Entities\\Users.cs",
+              "RelativeToolTip": "ProjectApp.Core\\Entities\\Users.cs",
+              "ViewState": "AgIAAAIAAAAAAAAAAAAxwAEAAAACAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-16T10:29:55.696Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 54,
+              "Title": "Sections.cs",
+              "DocumentMoniker": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.Core\\Entities\\Sections.cs",
+              "RelativeDocumentMoniker": "ProjectApp.Core\\Entities\\Sections.cs",
+              "ToolTip": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.Core\\Entities\\Sections.cs",
+              "RelativeToolTip": "ProjectApp.Core\\Entities\\Sections.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAiAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-16T10:29:55.705Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 55,
+              "Title": "APIResponse.cs",
+              "DocumentMoniker": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.Core\\Entities\\APIResponse.cs",
+              "RelativeDocumentMoniker": "ProjectApp.Core\\Entities\\APIResponse.cs",
+              "ToolTip": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.Core\\Entities\\APIResponse.cs",
+              "RelativeToolTip": "ProjectApp.Core\\Entities\\APIResponse.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAIAAAAiAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-16T10:29:55.714Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 56,
+              "Title": "ProjectApp.Core.csproj",
+              "DocumentMoniker": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.Core\\ProjectApp.Core.csproj",
+              "RelativeDocumentMoniker": "ProjectApp.Core\\ProjectApp.Core.csproj",
+              "ToolTip": "D:\\Git\\CognitiveFit\\Backend\\ProjectApp.Core\\ProjectApp.Core.csproj",
+              "RelativeToolTip": "ProjectApp.Core\\ProjectApp.Core.csproj",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2026-02-16T10:29:55.724Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

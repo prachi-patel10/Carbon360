@@ -1,0 +1,14 @@
+.sortable {
+  cursor: pointer !important;
+  user-select: none;
+}
+
+.sortable:hover {
+  background-color: #f8f9fa;
+}
+
+.sortable i {
+  font-size: 14px;
+  margin-left: 6px;
+  color: #0d6efd;
+}

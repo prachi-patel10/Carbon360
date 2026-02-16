@@ -1,0 +1,25 @@
+  <nav class="navbar navbar-expand-lg bg-body-tertiary">
+    <div class="container-fluid">
+          Navbar
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item">
+            <a class="nav-link" routerLink="user">Users</a>
+          </li>
+           <li class="nav-item">
+            <a class="nav-link" routerLink="section">Section</a>
+          </li>
+        </ul>
+        <form class="d-flex">
+
+          @if (loggedUserName == '') {
+            <button class="btn btn-outline-success" routerLink="login" type="button">Login</button>
+          }@else{
+              <button class="btn btn-outline-success" routerLink="login" type="button">{{loggedUserName}}</button>
+              <button class="btn btn-outline-warning" routerLink="login" type="button" (click)="onLogout()">Logout</button>
+          } 
+        </form>
+      </div>
+    </div>
+  </nav>
+  <router-outlet></router-outlet>
