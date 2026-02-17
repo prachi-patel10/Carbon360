@@ -18,6 +18,7 @@ namespace ProjectApp.API.Controllers.Masters.Role
 
         }
 
+
         [HttpGet]
         [Route("All", Name = "GetAllRoles")]
         [ProducesResponseType(StatusCodes.Status200OK)]

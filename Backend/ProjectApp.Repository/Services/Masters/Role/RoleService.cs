@@ -32,6 +32,7 @@ namespace ProjectApp.Repository.Services.Masters.Role
         //    return _mapper.Map<List<RoleDTO>>(role);
         //}
 
+
         public async Task<List<RoleDTO>> GetAllRolesAsync()
         {
             // ✅ Execute Stored Procedure
