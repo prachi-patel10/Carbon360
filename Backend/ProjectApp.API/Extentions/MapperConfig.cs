@@ -7,6 +7,7 @@ using ProjectApp.Core.DTOs.Masters.Department;
 using ProjectApp.Core.DTOs.Masters.Section;
 using ProjectApp.Core.DTOs.Worker;
 using ProjectApp.Core.Entities;
+using ProjectApp.Core.Models;
 
 namespace ProjectApp.API.Extentions
 {
@@ -14,13 +15,9 @@ namespace ProjectApp.API.Extentions
     {
         public MapperConfig()
         {
-            CreateMap<RoleDTO, Roles>().ReverseMap();
-            CreateMap<UserDTO, Users>().ReverseMap();
-            CreateMap<RegisterDTO, Users>().ReverseMap();
-            CreateMap<WorkerDTO, Workers>().ReverseMap();
-            CreateMap<SectionDTO, Sections>().ReverseMap();
-            CreateMap<SectionViewDTO, Sections>().ReverseMap();
-            CreateMap<DepartmentDTO, Departments>().ReverseMap();
+            CreateMap<RoleDTO, CB_Role>().ReverseMap();
+            CreateMap<UserDTO, CB_User>().ReverseMap();
+            CreateMap<UserResDTO, CB_User>().ReverseMap();
         }
 
     }
