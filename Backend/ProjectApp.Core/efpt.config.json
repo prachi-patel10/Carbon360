@@ -1,6 +1,6 @@
 ﻿{
    "CodeGenerationMode": 4,
-   "ContextClassName": "ATSContext",
+   "ContextClassName": "CBContext",
    "ContextNamespace": null,
    "FilterSchemas": false,
    "IncludeConnectionString": false,
@@ -19,19 +19,19 @@
    "T4TemplatePath": null,
    "Tables": [
       {
-         "Name": "[dbo].[Tbl_Department]",
+         "Name": "[dbo].[CB_Departments]",
          "ObjectType": 0
       },
       {
-         "Name": "[dbo].[Tbl_Role]",
+         "Name": "[dbo].[CB_Roles]",
          "ObjectType": 0
       },
       {
-         "Name": "[dbo].[Tbl_Section]",
+         "Name": "[dbo].[CB_User]",
          "ObjectType": 0
       },
       {
-         "Name": "[dbo].[Tbl_Users]",
+         "Name": "[dbo].[CB_UserRoleMapping]",
          "ObjectType": 0
       }
    ],
