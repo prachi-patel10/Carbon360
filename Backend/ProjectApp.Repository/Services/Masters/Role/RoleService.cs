@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using ProjectApp.Core.DTOs.Account.Role;
 using ProjectApp.Core.Entities;
+using ProjectApp.Core.Models;
 using ProjectApp.Repository.Interfaces.Common;
 using ProjectApp.Repository.Interfaces.Masters.Role;
 using ProjectApp.Repository.Services.Common;
@@ -15,9 +16,9 @@ namespace ProjectApp.Repository.Services.Masters.Role
     public class RoleService : IRoleService
     {
         private readonly IMapper _mapper;
-        private readonly ICommonService<Roles> _roleService;
+        private readonly ICommonService<CB_Role> _roleService;
         private readonly ISPService _spService;
-        public RoleService(IMapper mapper, ICommonService<Roles> common, ISPService sP)
+        public RoleService(IMapper mapper, ICommonService<CB_Role> common, ISPService sP)
         {
             _mapper = mapper;
             _roleService = common;

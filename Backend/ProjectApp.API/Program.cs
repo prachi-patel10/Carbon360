@@ -5,12 +5,13 @@ using Microsoft.OpenApi.Models;
 using ProjectApp.Core.Context;
 using ProjectApp.API.Extentions;
 using System.Text;
+using ProjectApp.Core.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 
-builder.Services.AddDbContext<ProjectDBContext>(op =>
+builder.Services.AddDbContext<CBContext>(op =>
 {
     op.UseSqlServer(builder.Configuration.GetConnectionString("DbString"));
 });

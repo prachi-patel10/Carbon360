@@ -9,12 +9,10 @@ using pr.Repository.Services.Auth;
 using ProjectApp.Repository.Interfaces.Common;
 using ProjectApp.Repository.Interfaces.Masters.Department;
 using ProjectApp.Repository.Interfaces.Masters.Role;
-using ProjectApp.Repository.Interfaces.Masters.Section;
 using ProjectApp.Repository.Interfaces.User;
 using ProjectApp.Repository.Services.Common;
 using ProjectApp.Repository.Services.Masters.Department;
 using ProjectApp.Repository.Services.Masters.Role;
-using ProjectApp.Repository.Services.Masters.Section;
 using ProjectApp.Repository.Services.User;
 using ProjectApp.Repository.Utilities.Auth;
 
@@ -33,7 +31,6 @@ namespace ProjectApp.API.Extentions
             services.AddSingleton<IdEncoder>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IRoleService, RoleService>();
-            services.AddScoped<ISectionService, SectionService>();
             services.AddScoped(typeof(ICommonService<>), typeof(CommonService<>));
 
             return services;
