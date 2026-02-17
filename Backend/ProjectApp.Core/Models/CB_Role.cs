@@ -24,6 +24,4 @@ public partial class CB_Role
     public DateTime? UpdateDate { get; set; }
 
     public virtual ICollection<CB_UserRoleMapping> CB_UserRoleMappings { get; set; } = new List<CB_UserRoleMapping>();
-
-    public virtual ICollection<CB_User> CB_Users { get; set; } = new List<CB_User>();
 }

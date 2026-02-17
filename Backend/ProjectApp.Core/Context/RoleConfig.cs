@@ -1,24 +1,42 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using ProjectApp.Core.Entities;
+using ProjectApp.Core.Models;
 
 namespace ProjectApp.Core.Context
 {
-    public class RoleConfig : IEntityTypeConfiguration<Roles>
+    public class RoleConfig : IEntityTypeConfiguration<CB_Role>
     {
-        public void Configure(EntityTypeBuilder<Roles> builder)
+        public void Configure(EntityTypeBuilder<CB_Role> builder)
         {
-            
-            builder.ToTable("Tbl_Roles");
-            builder.HasKey(r => r.Id);
-            builder.Property(r => r.Id).UseIdentityColumn();
-            builder.Property(r => r.RoleName).IsRequired().HasMaxLength(100);
-            builder.Property(r => r.RoleDescription).HasMaxLength(250);
-            builder.Property(r => r.IsActive).IsRequired();
-            builder.Property(r => r.CreatedAt).IsRequired();
-            builder.Property(r => r.UpdatedAt).IsRequired();
+            builder.ToTable("CB_Roles");
 
+            // Primary Key
+            builder.HasKey(r => r.RoleId);
 
+            builder.Property(r => r.RoleId)
+                   .ValueGeneratedNever(); // Because DB is NOT Identity
+
+            builder.Property(r => r.RoleName)
+                   .HasMaxLength(50)
+                   .IsUnicode(false);
+
+            builder.Property(r => r.Description)
+                   .HasMaxLength(100)
+                   .IsUnicode(false);
+
+            builder.Property(r => r.EntryDate)
+                   .HasColumnType("datetime");
+
+            builder.Property(r => r.UpdateDate)
+                   .HasColumnType("datetime");
+
+          
+
+            // Relationship with UserRoleMapping (if using many-to-many)
+            builder.HasMany(r => r.CB_UserRoleMappings)
+                   .WithOne(m => m.Role)
+                   .HasForeignKey(m => m.RoleId)
+                   .HasConstraintName("FK_Roles_UserRoleMapping");
         }
     }
 }

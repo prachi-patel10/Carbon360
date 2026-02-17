@@ -15,8 +15,6 @@ public partial class CB_User
 
     public string Password { get; set; }
 
-    public int? RoleId { get; set; }
-
     public int? DepartmentId { get; set; }
 
     public bool? IsActive { get; set; }
@@ -32,6 +30,4 @@ public partial class CB_User
     public virtual ICollection<CB_UserRoleMapping> CB_UserRoleMappings { get; set; } = new List<CB_UserRoleMapping>();
 
     public virtual CB_Department Department { get; set; }
-
-    public virtual CB_Role Role { get; set; }
 }
