@@ -27,6 +27,8 @@ public partial class CB_User
 
     public DateTime? UpdateDate { get; set; }
 
+    public bool IsDeleted { get; set; }
+
     public virtual ICollection<CB_UserRoleMapping> CB_UserRoleMappings { get; set; } = new List<CB_UserRoleMapping>();
 
     public virtual CB_Department Department { get; set; }

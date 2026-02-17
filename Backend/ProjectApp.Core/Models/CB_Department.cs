@@ -21,5 +21,7 @@ public partial class CB_Department
 
     public DateTime? UpdateDate { get; set; }
 
+    public bool IsDeleted { get; set; }
+
     public virtual ICollection<CB_User> CB_Users { get; set; } = new List<CB_User>();
 }
