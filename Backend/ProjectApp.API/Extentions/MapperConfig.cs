@@ -16,7 +16,7 @@ namespace ProjectApp.API.Extentions
         {
             CreateMap<RoleDTO, Roles>().ReverseMap();
             CreateMap<UserDTO, Users>().ReverseMap();
-            CreateMap<UserResDTO, Users>().ReverseMap();
+            CreateMap<RegisterDTO, Users>().ReverseMap();
             CreateMap<WorkerDTO, Workers>().ReverseMap();
             CreateMap<SectionDTO, Sections>().ReverseMap();
             CreateMap<SectionViewDTO, Sections>().ReverseMap();
