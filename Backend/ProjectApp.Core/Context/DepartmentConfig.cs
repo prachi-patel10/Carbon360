@@ -8,7 +8,7 @@ namespace ProjectApp.Core.Context
     {
         public void Configure(EntityTypeBuilder<Departments> builder)
         {
-            builder.ToTable("Departments");
+            builder.ToTable("Tbl_Departments");
             builder.HasKey(d => d.id);
             builder.Property(d => d.id).UseIdentityColumn();
             builder.Property(d => d.DepartmentName).IsRequired().HasMaxLength(50);

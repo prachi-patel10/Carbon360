@@ -9,7 +9,7 @@ namespace ProjectApp.Core.Context
     {
         public void Configure(EntityTypeBuilder<Sections> builder)
         {
-            builder.ToTable("Sections");
+            builder.ToTable("Tbl_Sections");
             builder.HasKey(s => s.id);
             builder.Property(s => s.id).UseIdentityColumn();
             builder.Property(s => s.SectionName).IsRequired().HasMaxLength(100);

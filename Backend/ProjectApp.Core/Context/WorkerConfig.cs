@@ -8,7 +8,7 @@ namespace ProjectApp.Core.Context
     {
         public void Configure(EntityTypeBuilder<Workers> builder)
         {
-            builder.ToTable("Workers");
+            builder.ToTable("Tbl_Workers");
             builder.HasKey(w => w.id);
             builder.Property(w => w.id).UseIdentityColumn();
             builder.Property(w => w.FullName).IsRequired().HasMaxLength(150);

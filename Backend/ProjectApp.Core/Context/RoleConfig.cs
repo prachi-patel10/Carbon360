@@ -9,7 +9,7 @@ namespace ProjectApp.Core.Context
         public void Configure(EntityTypeBuilder<Roles> builder)
         {
             
-            builder.ToTable("Roles");
+            builder.ToTable("Tbl_Roles");
             builder.HasKey(r => r.Id);
             builder.Property(r => r.Id).UseIdentityColumn();
             builder.Property(r => r.RoleName).IsRequired().HasMaxLength(100);

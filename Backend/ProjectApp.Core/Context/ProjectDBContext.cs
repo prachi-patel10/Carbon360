@@ -15,12 +15,12 @@ namespace ProjectApp.Core.Context
             modelBuilder.Entity<SectionViewDTO>().HasNoKey();
         }
 
-        public DbSet<Roles> Role { get; set; }
-        public DbSet<Users> Users { get; set; }
-        public DbSet<Workers> Worker { get; set; }
+        public DbSet<Roles> Tbl_Role { get; set; }
+        public DbSet<Users> Tbl_Users { get; set; }
+        public DbSet<Workers> Tbl_Worker { get; set; }
 
-        public DbSet<Sections> Section { get; set; }
-        public DbSet<Departments> Department { get; set; }
-        
+        public DbSet<Sections> Tbl_Section { get; set; }
+        public DbSet<Departments> Tbl_Department { get; set; }
+
     }
 }
