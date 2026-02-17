@@ -14,6 +14,6 @@ namespace ProjectApp.Repository.Interfaces.User
         Task<UserResDTO> GetUserByIdAsync(int id);
         Task<UserResDTO> GetUserByUsernameAsync(string name);
         Task<List<UserResDTO>> GetUsersAsync();
-        Task<bool> UpdateUserAsync(UserDTO dto);
+        Task<bool> UpdateUserAsync(UserUpdateDTO dto);
     }
 }

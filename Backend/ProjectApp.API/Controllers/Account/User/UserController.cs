@@ -45,31 +45,20 @@ namespace ProjectApp.API.Controllers.Account.User
         }
 
         [HttpPost("Create")]
-        [ProducesResponseType(StatusCodes.Status201Created)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        //[ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        public async Task<ActionResult<APIResponse>> CreateUserAsync(UserDTO dto)
+        public async Task<ActionResult<APIResponse>> CreateUserAsync([FromBody] UserDTO dto)
         {
             try
             {
-
                 var userCreated = await _userService.CreateUserAsync(dto);
-                //dto.Id = userCreated.Id;
-                _apiResponse.status = true;
-                _apiResponse.StatusCode = HttpStatusCode.OK;
-                _apiResponse.data = userCreated;
-                return Ok(_apiResponse);
-                //return CreatedAtRoute("GetUserById", new { id = u.Id}, _mapper.Map<UserResDTO>(userCreated));
 
+                _apiResponse.status = true;
+                _apiResponse.StatusCode = HttpStatusCode.Created;
+                _apiResponse.data = userCreated;
+
+                return StatusCode(201, _apiResponse);
             }
             catch (Exception ex)
             {
-                _apiResponse ??= new APIResponse();
-                _apiResponse.Errors ??= new List<string>();
-
                 _apiResponse.status = false;
                 _apiResponse.StatusCode = HttpStatusCode.InternalServerError;
                 _apiResponse.Errors.Add(ex.Message);
@@ -77,6 +66,7 @@ namespace ProjectApp.API.Controllers.Account.User
                 return StatusCode(500, _apiResponse);
             }
         }
+
 
 
         [HttpGet]
@@ -160,5 +150,28 @@ namespace ProjectApp.API.Controllers.Account.User
             }
 
         }
+
+        [HttpPut("Update")]
+        public async Task<ActionResult<APIResponse>> UpdateUserAsync([FromBody] UserUpdateDTO dto)
+        {
+            try
+            {
+                await _userService.UpdateUserAsync(dto);
+
+                _apiResponse.status = true;
+                _apiResponse.StatusCode = HttpStatusCode.OK;
+
+                return Ok(_apiResponse);
+            }
+            catch (Exception ex)
+            {
+                _apiResponse.status = false;
+                _apiResponse.StatusCode = HttpStatusCode.InternalServerError;
+                _apiResponse.Errors.Add(ex.Message);
+
+                return StatusCode(500, _apiResponse);
+            }
+        }
+
     }
 }

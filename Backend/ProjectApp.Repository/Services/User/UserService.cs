@@ -23,8 +23,11 @@ namespace ProjectApp.Repository.Services.User
             if (dto == null)
                 throw new ArgumentNullException(nameof(dto));
 
+            if (dto.Password != dto.ConfirmPassword)
+                throw new Exception("Password and Confirm Password do not match");
+
             var existingUser = await _userRepository
-                .GetAllByFilterAsync(u => u.FullName == dto.UserName && !u.IsDeleted);
+                .GetAllByFilterAsync(u => u.FullName == dto.FullName && !u.IsDeleted);
 
             if (existingUser != null)
                 throw new Exception("Username already exists");
@@ -41,12 +44,35 @@ namespace ProjectApp.Repository.Services.User
             return _mapper.Map<UserResDTO>(userCreated);
         }
 
+        // UPDATE
+        public async Task<bool> UpdateUserAsync(UserUpdateDTO dto)
+        {
+            if (dto == null)
+                throw new Exception("Invalid data");
+
+            var user = await _userRepository
+                .GetAllByFilterAsync(u => u.UserId == dto.UserId && !u.IsDeleted, true);
+
+            if (user == null)
+                throw new Exception("User not found");
+
+            user.FullName = dto.FullName;
+            user.Email = dto.Email;
+            user.DepartmentId = dto.DepartmentId;
+            user.IsActive = dto.IsActive;
+            user.UpdateDate = DateTime.Now;
+
+            if (!string.IsNullOrEmpty(dto.Password))
+                user.Password = HashPassword(dto.Password);
+
+            await _userRepository.UpdateAsync(user);
+
+            return true;
+        }
+
         // DELETE (Soft Delete)
         public async Task<bool> DeleteUserAsync(int id)
         {
-            if (id <= 0)
-                throw new Exception("Invalid user id");
-
             var user = await _userRepository
                 .GetAllByFilterAsync(u => u.UserId == id, true);
 
@@ -73,18 +99,6 @@ namespace ProjectApp.Repository.Services.User
             return _mapper.Map<UserResDTO>(user);
         }
 
-        // GET BY USERNAME
-        public async Task<UserResDTO> GetUserByUsernameAsync(string name)
-        {
-            var user = await _userRepository
-                .GetAllByFilterAsync(u => u.FullName == name && !u.IsDeleted);
-
-            if (user == null)
-                throw new Exception("User not found");
-
-            return _mapper.Map<UserResDTO>(user);
-        }
-
         // GET ALL
         public async Task<List<UserResDTO>> GetUsersAsync()
         {
@@ -94,34 +108,25 @@ namespace ProjectApp.Repository.Services.User
             return _mapper.Map<List<UserResDTO>>(users);
         }
 
-        // UPDATE
-        public async Task<bool> UpdateUserAsync(UserDTO dto)
-        {
-            if (dto == null)
-                throw new Exception("Invalid data");
-
-            var user = await _userRepository
-                .GetAllByFilterAsync(u => u.UserId == dto.Id && !u.IsDeleted, true);
-
-            if (user == null)
-                throw new Exception("User not found");
-
-            user.FullName = dto.UserName;
-            user.Email = dto.Email;
-            user.IsActive = dto.IsActive;
-            user.UpdateDate = DateTime.Now;
-
-            if (!string.IsNullOrEmpty(dto.Password))
-                user.Password = HashPassword(dto.Password);
-
-            await _userRepository.UpdateAsync(user);
-
-            return true;
-        }
-
         private string HashPassword(string password)
         {
             return BCrypt.Net.BCrypt.HashPassword(password);
         }
+
+        // GET BY USERNAME
+        public async Task<UserResDTO> GetUserByUsernameAsync(string name)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+                throw new Exception("Username is required");
+
+            var user = await _userRepository
+                .GetAllByFilterAsync(u => u.FullName == name && !u.IsDeleted);
+
+            if (user == null)
+                throw new Exception("User not found");
+
+            return _mapper.Map<UserResDTO>(user);
+        }
+
     }
 }
