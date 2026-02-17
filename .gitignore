@@ -1,0 +1,80 @@
+# ================================
+# ANGULAR
+# ================================
+
+# Compiled output
+/dist
+/tmp
+/out-tsc
+/bazel-out
+
+# Angular cache
+/.angular/cache
+
+# Node
+/node_modules
+npm-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Coverage
+/coverage
+
+# ================================
+# ASP.NET CORE
+# ================================
+
+# Build folders
+bin/
+obj/
+
+# Publish folder
+publish/
+
+# Logs
+logs/
+*.log
+
+# ================================
+# VISUAL STUDIO
+# ================================
+
+# Visual Studio folder
+.vs/
+
+# User-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Rider
+.idea/
+
+# VS Code
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# ================================
+# SYSTEM FILES
+# ================================
+
+.DS_Store
+Thumbs.db
+
+# ================================
+# DATABASE
+# ================================
+
+*.mdf
+*.ldf
+
+# ================================
+# ENV FILES
+# ================================
+
+.env
+.env.*
