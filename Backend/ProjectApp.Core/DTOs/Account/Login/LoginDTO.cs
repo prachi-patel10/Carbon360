@@ -10,5 +10,6 @@ namespace ProjectApp.Core.DTOs.Account.Login
         public string Email { get; set; }
         [Required]
         public string Password { get; set; }
+
     }
 }

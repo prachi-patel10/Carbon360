@@ -10,5 +10,6 @@ namespace ProjectApp.Repository.Utilities.Auth
     public interface IAuthService
     {
         Task<LoginResDTO> LoginAsyc(LoginDTO loginDTO);
+        Task LogoutAsync(int userId);
     }
 }
