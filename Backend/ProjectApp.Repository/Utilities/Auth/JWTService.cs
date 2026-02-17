@@ -19,9 +19,10 @@ namespace ProjectApp.Repository.Utilities.Auth
         {
             var claims = new List<Claim>
         {
+            new Claim("UserId", user.UserId.ToString()),
             new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
-            new Claim(ClaimTypes.Name, user.FullName),
-            new Claim(ClaimTypes.Email, user.Email)
+            new Claim(ClaimTypes.Name, user.FullName ?? ""),
+            new Claim(ClaimTypes.Email, user.Email ?? "")
         };
 
             foreach (var role in roles)

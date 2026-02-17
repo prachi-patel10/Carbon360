@@ -1,7 +1,10 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using ProjectApp.Core.DTOs.Account.Login;
 using ProjectApp.Repository.Utilities.Auth;
+using System.Security.Claims;
 
 namespace ProjectApp.API.Controllers.Account.Login
 {
@@ -21,7 +24,32 @@ namespace ProjectApp.API.Controllers.Account.Login
             var res = await _authService
                  .LoginAsyc(logindto);
 
-            return Ok(res);
+            return Ok(new
+            {
+                success = true,
+                message = "Login successful",
+                data = res
+            });
+        }
+
+        //[Authorize]
+        [HttpPost("logout")]
+        public async Task<IActionResult> Logout()
+        {
+            var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == "UserId");
+
+            if (userIdClaim == null)
+                return Unauthorized("Invalid token");
+
+            int userId = Convert.ToInt32(userIdClaim.Value);
+
+            await _authService.LogoutAsync(userId);
+
+            return Ok(new
+            {
+                success = true,
+                message = "Logged out successfully"
+            });
         }
     }
 }
