@@ -25,6 +25,7 @@ namespace ProjectApp.Repository.Services.Masters.Role
             _spService = sP;
         }
 
+
         //public async Task<List<RoleDTO>> GetAllRolesAsync()
         //{
         //    var role = await _roleService.GetAllAsync();
