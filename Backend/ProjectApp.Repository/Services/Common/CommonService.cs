@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using ProjectApp.Core.Context;
+using ProjectApp.Core.Models;
 using ProjectApp.Repository.Interfaces.Common;
 
 namespace ProjectApp.Repository.Services.Common
@@ -13,10 +14,10 @@ namespace ProjectApp.Repository.Services.Common
     public class CommonService<T> : ICommonService<T> where T : class
     {
 
-        private readonly ProjectDBContext _dBContext;
+        private readonly CBContext  _dBContext;
         private DbSet<T> _dbSet;
 
-        public CommonService(ProjectDBContext projectDBContext)
+        public CommonService(CBContext projectDBContext)
         {
             _dBContext = projectDBContext;
             _dbSet = _dBContext.Set<T>();

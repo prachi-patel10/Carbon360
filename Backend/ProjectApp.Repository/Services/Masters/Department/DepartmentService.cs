@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using ProjectApp.Core.DTOs.Masters.Department;
 using ProjectApp.Core.Entities;
+using ProjectApp.Core.Models;
 using ProjectApp.Repository.Interfaces.Common;
 using ProjectApp.Repository.Interfaces.Masters.Department;
 
@@ -14,9 +15,9 @@ namespace ProjectApp.Repository.Services.Masters.Department
     public class DepartmentService : IDepartmentService
     {
         private readonly IMapper _mapper;
-        private readonly ICommonService<Departments> _deptService;
+        private readonly ICommonService<CB_Department> _deptService;
 
-        public DepartmentService(IMapper mapper, ICommonService<Departments> common)
+        public DepartmentService(IMapper mapper, ICommonService<CB_Department> common)
         {
             _mapper = mapper;
             _deptService = common;
