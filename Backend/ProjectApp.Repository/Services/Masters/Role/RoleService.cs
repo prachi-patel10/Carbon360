@@ -39,15 +39,16 @@ namespace ProjectApp.Repository.Services.Masters.Role
         {
             var userId = GetCurrentUserId();
 
-            var roleId = await _context.Database
-                .SqlQueryRaw<int>(
-                    "EXEC USP_CB_RoleInsert @RoleName={0}, @Description={1}, @EntryBy={2}",
-                    dto.RoleName,
-                    dto.RoleDescription,
-                    userId)
-                .FirstAsync();
+            var result = await _context.Database
+     .SqlQueryRaw<int>(
+         "EXEC USP_CB_RoleInsert @RoleName={0}, @Description={1}, @EntryBy={2}",
+         dto.RoleName,
+         dto.RoleDescription,
+         userId)
+     .ToListAsync();
 
-            return roleId;
+            return result.FirstOrDefault();
+
         }
 
         public async Task<bool> DeleteRoleAsync(int id)
@@ -72,12 +73,11 @@ namespace ProjectApp.Repository.Services.Masters.Role
 
         public async Task<List<RoleDTO>> GetAllRolesAsync()
         {
-            var roles = await _context.CB_Roles
-                .FromSqlRaw("EXEC USP_CB_RoleGetAll")
-                .AsNoTracking()
-                .ToListAsync();
+            var roles = await _context.Database
+      .SqlQueryRaw<RoleDTO>("EXEC USP_CB_RoleGetAll")
+      .ToListAsync();
 
-            return _mapper.Map<List<RoleDTO>>(roles);
+            return roles;
         }
 
         public async Task<RoleDTO> GetRoleByIdAsync(int id)
@@ -86,6 +86,8 @@ namespace ProjectApp.Repository.Services.Masters.Role
                .FirstOrDefaultAsync(x => x.RoleId == id && x.IsDeleted == false);
 
             return _mapper.Map<RoleDTO>(role);
+
+          
         }
 
         public async Task<bool> UpdateRoleAsync(RoleDTO dto)
