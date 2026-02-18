@@ -2,10 +2,12 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using ProjectApp.Core.Context;
 using ProjectApp.API.Extentions;
-using System.Text;
+using ProjectApp.Core.Context;
 using ProjectApp.Core.Models;
+using ProjectApp.Repository.Interfaces.User;
+using ProjectApp.Repository.Services.User;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -77,6 +79,10 @@ builder.Services.AddSwaggerGen(options =>
 
 //Mapper
 builder.Services.AddAutoMapper(typeof(MapperConfig));
+
+//services
+builder.Services.AddScoped<IUserContext, UserContext>();
+
 //DI
 builder.Services.AddProjectServices(builder.Configuration);
 //CORS
