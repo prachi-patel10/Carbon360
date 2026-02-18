@@ -9,7 +9,7 @@ namespace ProjectApp.Repository.Interfaces.User
 {
     public interface IUserService
     {
-        Task<UserResDTO> CreateUserAsync(UserDTO dto);
+        Task<UserResDTO> CreateUserAsync(UserDTO dto, int? loggedInUserId);
         Task<bool> DeleteUserAsync(int id);
         Task<UserResDTO> GetUserByIdAsync(int id);
         Task<UserResDTO> GetUserByUsernameAsync(string name);

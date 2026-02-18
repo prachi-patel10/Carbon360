@@ -34,11 +34,11 @@ namespace pr.Repository.Services.Auth
         }
         public async Task<LoginResDTO> LoginAsyc(LoginDTO loginDTO)
         {
-            var user = await _cbContext.CB_Users
-                .FromSqlRaw("EXEC SP_LoginUser @Email",
+            var user = _cbContext.CB_Users
+                .FromSqlRaw("EXEC USP_CB_LoginUser @Email",
                     new SqlParameter("@Email", loginDTO.Email))
-                .AsNoTracking()
-                .FirstOrDefaultAsync();
+                .AsEnumerable()
+                .FirstOrDefault();
 
             if (user == null)
                 throw new Exception("User not found");
@@ -46,25 +46,22 @@ namespace pr.Repository.Services.Auth
             if (!BCrypt.Net.BCrypt.Verify(loginDTO.Password, user.Password))
                 throw new Exception("Invalid password");
 
-            // 🔹 Get Roles using SP
             var roles = await _cbContext.Database
                 .SqlQueryRaw<string>(
-                    "EXEC SP_GetUserRoles @UserId",
+                    "EXEC USP_CB_GetUserRoles @UserId",
                     new SqlParameter("@UserId", user.UserId))
                 .ToListAsync();
 
-            // 🔹 Generate JWT
             var token = _jwtService.GenerateToken(user, roles);
 
             return new LoginResDTO
             {
-                
                 FullName = user.FullName,
                 RoleName = roles.FirstOrDefault(),
-                token = token,
-               
+                token = token
             };
         }
+
 
         public async Task LogoutAsync(int userId)
         {

@@ -49,7 +49,14 @@ namespace ProjectApp.API.Controllers.Account.User
         {
             try
             {
-                var userCreated = await _userService.CreateUserAsync(dto);
+                int? loggedInUserId = null;
+
+                var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == "UserId");
+
+                if (userIdClaim != null)
+                    loggedInUserId = Convert.ToInt32(userIdClaim.Value);
+
+                var userCreated = await _userService.CreateUserAsync(dto, loggedInUserId);
 
                 _apiResponse.status = true;
                 _apiResponse.StatusCode = HttpStatusCode.Created;

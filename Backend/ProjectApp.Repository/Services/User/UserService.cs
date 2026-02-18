@@ -1,4 +1,6 @@
 ﻿using AutoMapper;
+using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
 using ProjectApp.Core.DTOs.Account.User;
 using ProjectApp.Core.Models;
 using ProjectApp.Repository.Interfaces.Common;
@@ -8,119 +10,61 @@ namespace ProjectApp.Repository.Services.User
 {
     public class UserService : IUserService
     {
+        private readonly CBContext _context;
         private readonly IMapper _mapper;
         private readonly ICommonService<CB_User> _userRepository;
 
-        public UserService(ICommonService<CB_User> userRepository, IMapper mapper)
+        public UserService(ICommonService<CB_User> userRepository, IMapper mapper, CBContext context)
         {
             _userRepository = userRepository;
             _mapper = mapper;
+            _context = context;
         }
 
-        // CREATE
-        public async Task<UserResDTO> CreateUserAsync(UserDTO dto)
+        // ================= CREATE =================
+        public async Task<UserResDTO> CreateUserAsync(UserDTO dto, int? loggedInUserId)
         {
-            if (dto == null)
-                throw new ArgumentNullException(nameof(dto));
-
             if (dto.Password != dto.ConfirmPassword)
-                throw new Exception("Password and Confirm Password do not match");
+                throw new Exception("Password mismatch");
 
-            var existingUser = await _userRepository
-                .GetAllByFilterAsync(u => u.FullName == dto.FullName && !u.IsDeleted);
+            var hashedPassword = BCrypt.Net.BCrypt.HashPassword(dto.Password);
 
-            if (existingUser != null)
-                throw new Exception("Username already exists");
-
-            var user = _mapper.Map<CB_User>(dto);
-
-            user.Password = HashPassword(dto.Password);
-            user.EntryDate = DateTime.Now;
-            user.UpdateDate = DateTime.Now;
-            user.IsDeleted = false;
-
-            var userCreated = await _userRepository.CreateAsync(user);
-
-            return _mapper.Map<UserResDTO>(userCreated);
-        }
-
-        // UPDATE
-        public async Task<bool> UpdateUserAsync(UserUpdateDTO dto)
-        {
-            if (dto == null)
-                throw new Exception("Invalid data");
-
-            var user = await _userRepository
-                .GetAllByFilterAsync(u => u.UserId == dto.UserId && !u.IsDeleted, true);
-
-            if (user == null)
-                throw new Exception("User not found");
-
-            user.FullName = dto.FullName;
-            user.Email = dto.Email;
-            user.DepartmentId = dto.DepartmentId;
-            user.IsActive = dto.IsActive;
-            user.UpdateDate = DateTime.Now;
-
-            if (!string.IsNullOrEmpty(dto.Password))
-                user.Password = HashPassword(dto.Password);
-
-            await _userRepository.UpdateAsync(user);
-
-            return true;
-        }
-
-        // DELETE (Soft Delete)
-        public async Task<bool> DeleteUserAsync(int id)
-        {
-            var user = await _userRepository
-                .GetAllByFilterAsync(u => u.UserId == id, true);
-
-            if (user == null)
-                throw new Exception("User not found");
-
-            user.IsDeleted = true;
-            user.UpdateDate = DateTime.Now;
-
-            await _userRepository.UpdateAsync(user);
-
-            return true;
-        }
-
-        // GET BY ID
-        public async Task<UserResDTO> GetUserByIdAsync(int id)
-        {
-            var user = await _userRepository
-                .GetAllByFilterAsync(u => u.UserId == id && !u.IsDeleted, true);
-
-            if (user == null)
-                throw new Exception("User not found");
+            var user = _context.CB_Users
+    .FromSqlRaw(
+        "EXEC USP_CB_UserInsert @FullName, @Email, @Password, @DepartmentId, @IsActive, @EntryBy",
+        new SqlParameter("@FullName", dto.FullName),
+        new SqlParameter("@Email", dto.Email),
+        new SqlParameter("@Password", hashedPassword),
+        new SqlParameter("@DepartmentId", dto.DepartmentId),
+        new SqlParameter("@IsActive", dto.IsActive),
+        new SqlParameter("@EntryBy", loggedInUserId ?? (object)DBNull.Value)
+    )
+    .AsEnumerable()
+    .FirstOrDefault();
 
             return _mapper.Map<UserResDTO>(user);
         }
 
-        // GET ALL
+        // ================= GET ALL =================
         public async Task<List<UserResDTO>> GetUsersAsync()
         {
-            var users = await _userRepository
-                .GetAllData(u => !u.IsDeleted, true);
+            var users = _context.CB_Users
+    .FromSqlRaw("EXEC USP_CB_UserGetAll")
+    .AsEnumerable()
+    .ToList();
+
 
             return _mapper.Map<List<UserResDTO>>(users);
         }
 
-        private string HashPassword(string password)
+        // ================= GET BY ID =================
+        public async Task<UserResDTO> GetUserByIdAsync(int id)
         {
-            return BCrypt.Net.BCrypt.HashPassword(password);
-        }
-
-        // GET BY USERNAME
-        public async Task<UserResDTO> GetUserByUsernameAsync(string name)
-        {
-            if (string.IsNullOrWhiteSpace(name))
-                throw new Exception("Username is required");
-
-            var user = await _userRepository
-                .GetAllByFilterAsync(u => u.FullName == name && !u.IsDeleted);
+            var user = await _context.CB_Users
+                .FromSqlRaw("EXEC USP_CB_UserGetById @UserId",
+                    new SqlParameter("@UserId", id))
+                .AsNoTracking()
+                .FirstOrDefaultAsync();
 
             if (user == null)
                 throw new Exception("User not found");
@@ -128,5 +72,50 @@ namespace ProjectApp.Repository.Services.User
             return _mapper.Map<UserResDTO>(user);
         }
 
+        // ================= GET BY USERNAME =================
+        public async Task<UserResDTO> GetUserByUsernameAsync(string name)
+        {
+            var user = await _context.CB_Users
+                .FromSqlRaw("EXEC USP_CB_UserGetByUsername @FullName",
+                    new SqlParameter("@FullName", name))
+                .AsNoTracking()
+                .FirstOrDefaultAsync();
+
+            if (user == null)
+                throw new Exception("User not found");
+
+            return _mapper.Map<UserResDTO>(user);
+        }
+
+        // ================= UPDATE =================
+        public async Task<bool> UpdateUserAsync(UserUpdateDTO dto)
+        {
+            var password = string.IsNullOrEmpty(dto.Password)
+                ? null
+                : BCrypt.Net.BCrypt.HashPassword(dto.Password);
+
+            await _context.Database.ExecuteSqlRawAsync(
+                "EXEC USP_CB_UserUpdate @UserId, @FullName, @Email, @Password, @DepartmentId, @IsActive",
+                new SqlParameter("@UserId", dto.UserId),
+                new SqlParameter("@FullName", dto.FullName),
+                new SqlParameter("@Email", dto.Email),
+                new SqlParameter("@Password", (object?)password ?? DBNull.Value),
+                new SqlParameter("@DepartmentId", dto.DepartmentId),
+                new SqlParameter("@IsActive", dto.IsActive)
+            );
+
+            return true;
+        }
+
+        // ================= DELETE =================
+        public async Task<bool> DeleteUserAsync(int id)
+        {
+            await _context.Database.ExecuteSqlRawAsync(
+                "EXEC USP_CB_UserDelete @UserId",
+                new SqlParameter("@UserId", id)
+            );
+
+            return true;
+        }
     }
 }
