@@ -1,4 +1,6 @@
 ﻿using System.Net;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using ProjectApp.Core.DTOs.Account.User;
@@ -44,6 +46,7 @@ namespace ProjectApp.API.Controllers.Account.User
             }
         }
 
+        [Authorize]
         [HttpPost("Create")]
         public async Task<ActionResult<APIResponse>> CreateUserAsync([FromBody] UserDTO dto)
         {
@@ -51,7 +54,7 @@ namespace ProjectApp.API.Controllers.Account.User
             {
                 int? loggedInUserId = null;
 
-                var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == "UserId");
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
 
                 if (userIdClaim != null)
                     loggedInUserId = Convert.ToInt32(userIdClaim.Value);
@@ -73,6 +76,7 @@ namespace ProjectApp.API.Controllers.Account.User
                 return StatusCode(500, _apiResponse);
             }
         }
+
 
 
 

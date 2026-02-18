@@ -29,21 +29,23 @@ namespace ProjectApp.Repository.Services.User
 
             var hashedPassword = BCrypt.Net.BCrypt.HashPassword(dto.Password);
 
-            var user = _context.CB_Users
-    .FromSqlRaw(
-        "EXEC USP_CB_UserInsert @FullName, @Email, @Password, @DepartmentId, @IsActive, @EntryBy",
-        new SqlParameter("@FullName", dto.FullName),
-        new SqlParameter("@Email", dto.Email),
-        new SqlParameter("@Password", hashedPassword),
-        new SqlParameter("@DepartmentId", dto.DepartmentId),
-        new SqlParameter("@IsActive", dto.IsActive),
-        new SqlParameter("@EntryBy", loggedInUserId ?? (object)DBNull.Value)
-    )
-    .AsEnumerable()
-    .FirstOrDefault();
+            await _context.Database.ExecuteSqlRawAsync(
+                "EXEC USP_CB_UserInsertWithRoles @FullName, @Email, @Password, @DepartmentId, @RoleIds, @EntryBy",
+                new SqlParameter("@FullName", dto.FullName),
+                new SqlParameter("@Email", dto.Email),
+                new SqlParameter("@Password", hashedPassword),
+                new SqlParameter("@DepartmentId", dto.DepartmentId ?? (object)DBNull.Value),
+                new SqlParameter("@RoleIds", dto.RoleId.ToString()),
+                new SqlParameter("@EntryBy", loggedInUserId ?? (object)DBNull.Value)
+            );
 
-            return _mapper.Map<UserResDTO>(user);
+            return new UserResDTO
+            {
+                FullName = dto.FullName,
+                Email = dto.Email
+            };
         }
+
 
         // ================= GET ALL =================
         public async Task<List<UserResDTO>> GetUsersAsync()
