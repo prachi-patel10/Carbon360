@@ -9,7 +9,7 @@ import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-section',
-  imports: [RouterLink, CommonModule, ReactiveFormsModule, FormsModule],
+  imports: [ CommonModule, ReactiveFormsModule, FormsModule],
   templateUrl: './section.html',
   styleUrl: './section.css',
 })

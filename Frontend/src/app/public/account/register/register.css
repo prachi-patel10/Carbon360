@@ -1,120 +1,316 @@
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: "Segoe UI", sans-serif;
+/* =========================
+   BACKGROUND
+========================= */
+
+.register-page {
+  position: relative;
+  min-height: 100vh;
+  background: url('/assets/bg3.png') no-repeat center center;
+  background-size: cover;
+  overflow: hidden;
+    padding: 20px 0;
+
 }
 
-body {
-    min-height: 100vh;
-    background: linear-gradient(135deg, #4f46e5, #06b6d4);
-    display: flex;
-    justify-content: center;
-    align-items: center;
+
+
+/* =========================
+   CARD
+========================= */
+
+.register-card {
+  background: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(15px);
+  border-radius: 20px !important;
+  border: none !important;
+  position: relative;
+  z-index: 1;
+
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+
+  animation: fadeInUp 0.8s ease forwards;
+  transform: translateY(30px);
+  opacity: 0;
 }
 
-.register-container {
-    width: 100%;
-    max-width: 650px;
-    padding: 20px;
+.col-lg-8 .register-card {
+  padding: 10px 20px;
 }
 
-.register-box {
-    background: #ffffff;
-    padding: 35px;
-    border-radius: 14px;
-    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.15);
+/* =========================
+   ANIMATION
+========================= */
+
+@keyframes fadeInUp {
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
-.register-box h2 {
+/* =========================
+   TITLE
+========================= */
+
+.register-title {
+  color: #1b5e20;
+  font-weight: 700;
+  font-size: 28px;
+  letter-spacing: 0.5px;
+}
+
+.register-icon {
+  display: inline-block;
+  animation: floatIcon 2s ease-in-out infinite;
+}
+
+@keyframes floatIcon {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+  100% { transform: translateY(0); }
+}
+
+.register-subtitle {
+  color: #555;
+  font-size: 14px;
+}
+
+/* =========================
+   LABELS
+========================= */
+
+.register-label {
+  color: #2e7d32;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+/* =========================
+   INPUTS
+========================= */
+
+.register-input {
+  background: #f8f9fa !important;
+  border: 1px solid #dcdcdc !important;
+  border-radius: 12px !important;
+  padding: 10px 12px !important;
+  transition: all 0.3s ease;
+  font-size: 14px;
+}
+
+.register-input:focus {
+  border-color: #4caf50 !important;
+  box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.25) !important;
+  background: #ffffff !important;
+}
+
+.form-select.register-input {
+  cursor: pointer;
+}
+
+/* =========================
+   RADIO BUTTONS
+========================= */
+
+.form-check-label {
+  color: #2e7d32;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.form-check-input:checked {
+  background-color: #4caf50;
+  border-color: #4caf50;
+}
+
+/* =========================
+   BUTTON
+========================= */
+
+.register-btn {
+  background: linear-gradient(135deg, #08300a, #2e7d32);
+  border: none;
+  border-radius: 12px;
+  font-weight: 600;
+  padding: 10px;
+  color: white;
+  transition: all 0.3s ease;
+  font-size: 15px;
+}
+
+.register-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(76, 175, 80, 0.4);
+}
+
+.register-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* =========================
+   FOOTER LINK
+========================= */
+
+.register-footer-text {
+  color: #555;
+  font-size: 14px;
+}
+
+.register-footer-link {
+  color: #2e7d32;
+  font-weight: 600;
+  text-decoration: none;
+  transition: 0.3s;
+}
+
+.register-footer-link:hover {
+  color: #1b5e20;
+  text-decoration: underline;
+}
+
+/* Eye Icon */
+.password-toggle {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: #2e7d32;
+  font-size: 18px;
+  transition: 0.3s ease;
+}
+
+.password-toggle:hover {
+  color: #1b5e20;
+}
+
+/* Wrapper to control spacing */
+.active-status-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 15px; /* control space between label & toggle */
+}
+
+/* Remove default extra margin */
+.active-switch {
+  margin-bottom: 0;
+  display: flex;
+  align-items: center;
+}
+
+/* Switch size */
+.form-check-input {
+  width: 50px;
+  height: 25px;
+  cursor: pointer;
+  margin-top: 0;
+}
+
+/* Space between toggle and Active/Inactive text */
+.form-check-label {
+  margin-left: 8px !important;
+  font-weight: 500;
+  color: #2e7d32;
+}
+
+/* Green active color */
+.form-check-input:checked {
+  background-color: #2e7d32;
+  border-color: #2e7d32;
+}
+
+
+/* ===================================
+   RESPONSIVE DESIGN
+=================================== */
+
+/* Large tablets */
+@media (max-width: 992px) {
+
+  .register-card {
+    margin: 20px;
+    padding: 20px !important;
+  }
+
+  .register-title {
+    font-size: 24px;
     text-align: center;
-    margin-bottom: 6px;
-    color: #1f2937;
-}
+  }
 
-.register-box p {
+  .register-subtitle {
+    font-size: 13px;
     text-align: center;
-    margin-bottom: 25px;
-    color: #6b7280;
-    font-size: 14px;
+  }
 }
 
-.form-row {
-    display: flex;
-    gap: 20px;
-    margin-bottom: 18px;
-}
 
-.input-group {
-    flex: 1;
-}
+/* Tablets & small screens */
+@media (max-width: 768px) {
 
-.input-group label {
-    display: block;
-    margin-bottom: 6px;
-    font-size: 14px;
-    color: #374151;
-}
+  .container {
+    padding: 15px;
+  }
 
-.input-group input,
-.input-group select {
+  .register-card {
+    border-radius: 16px !important;
+    padding: 18px !important;
+  }
+
+  /* Stack columns properly */
+  .row > div {
     width: 100%;
-    padding: 12px;
-    border-radius: 8px;
-    border: 1px solid #d1d5db;
-    outline: none;
-    transition: 0.3s;
-}
+  }
 
-.input-group input:focus,
-.input-group select:focus {
-    border-color: #4f46e5;
-}
+  .register-title {
+    font-size: 22px;
+  }
 
-.radio-group {
-    display: flex;
-    gap: 20px;
-    margin-top: 5px;
-}
+  .register-subtitle {
+    font-size: 13px;
+  }
 
-.radio-group label {
+  .register-input {
     font-size: 14px;
-    color: #374151;
-}
+    padding: 9px 10px !important;
+  }
 
-.checkbox-group {
-    margin: 20px 0;
+  .register-label {
+    font-size: 13px;
+  }
+
+  .register-btn {
     font-size: 14px;
+    padding: 9px;
+  }
 }
 
-button {
-    width: 100%;
-    padding: 14px;
-    border: none;
-    border-radius: 10px;
-    background: #4f46e5;
-    color: white;
-    font-size: 16px;
-    cursor: pointer;
-    transition: 0.3s;
-}
 
-button:hover {
-    background: #4338ca;
-}
+/* Small phones */
+@media (max-width: 480px) {
 
-.login-link {
-    text-align: center;
-    margin-top: 18px;
-    font-size: 14px;
-}
+  .register-card {
+    padding: 15px !important;
+    border-radius: 14px !important;
+  }
 
-.login-link a {
-    color: #4f46e5;
-    font-weight: 600;
-    text-decoration: none;
-}
+  .register-title {
+    font-size: 20px;
+  }
 
-.login-link a:hover {
-    text-decoration: underline;
+  .register-subtitle {
+    font-size: 12px;
+  }
+
+  .register-input {
+    font-size: 13px;
+  }
+
+  .register-btn {
+    font-size: 13px;
+  }
+
+  .form-check-label {
+    font-size: 13px;
+  }
 }

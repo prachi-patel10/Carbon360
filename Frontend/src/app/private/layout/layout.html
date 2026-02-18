@@ -1,4 +1,26 @@
-  <nav class="navbar navbar-expand-lg bg-body-tertiary">
+  <!-- ================= NAVBAR ================= -->
+<header class="navbar">
+  <div class="nav-container">
+    <div class="logo">
+<img [src]="'/assets/Carbon360-removebg-preview.png'" width="150" alt="Carbon 360 Logo">
+    </div>
+  <div class="menu-toggle" (click)="toggleMenu()">
+    ☰
+  </div>
+    <nav  [class.active]="isMenuOpen">
+      <ul>
+        <li><a routerLink="/">Home</a></li>
+        <li><a routerLink="/features">Features</a></li>
+        <li><a routerLink="/about">About Us</a></li>
+        <li><a routerLink="/reports">Reports</a></li>
+        <li><a routerLink="/dashboard" class="btn-dashboard">Dashboard</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+  <router-outlet></router-outlet>
+
+  <!-- <nav class="navbar navbar-expand-lg bg-body-tertiary">
     <div class="container-fluid">
           Navbar
       <div class="collapse navbar-collapse" id="navbarSupportedContent">
@@ -22,4 +44,4 @@
       </div>
     </div>
   </nav>
-  <router-outlet></router-outlet>
+  <router-outlet></router-outlet> -->

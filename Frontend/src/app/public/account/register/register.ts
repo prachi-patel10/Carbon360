@@ -5,6 +5,8 @@ import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } 
 import { Route, Router, RouterEvent, RouterLink } from '@angular/router';
 import { RegisterService } from './register-service';
 import { ToastService } from '../../../core/toast/toastservice';
+import { AbstractControl, ValidationErrors } from '@angular/forms';
+
 
 @Component({
   selector: 'app-register',
@@ -15,28 +17,38 @@ import { ToastService } from '../../../core/toast/toastservice';
 export class Register {
 
   roles : any [] = [];
+  departments: any[] = [];
+  userData!: FormGroup;
+
+showPassword = false;
+showConfirmPassword = false;
   http = Inject(HttpClient);
   roleId : number = 0;
 
- userData: FormGroup = new FormGroup({
-  UserName: new FormControl('', Validators.required),
+ constructor(
+  private _userService: RegisterService,
+  private _router: Router,
+  private dct: ChangeDetectorRef,
+  private toastr: ToastService
+) {
+
+ this.userData = new FormGroup({
+  Name: new FormControl('', Validators.required),
   Email: new FormControl('', [Validators.required, Validators.email]),
   Password: new FormControl('', [Validators.required, Validators.minLength(6)]),
-  DateOfBirth: new FormControl('', Validators.required),
-  Gender: new FormControl('', Validators.required),
-  PhoneNumber: new FormControl('', [
-    Validators.required,
-    Validators.pattern('^[0-9]{10}$') // only numbers, exactly 10 digits
-  ]),
-  BloodGroup: new FormControl('', Validators.required),
-  RoleId: new FormControl('', Validators.required)
+  ConfirmPassword: new FormControl('', Validators.required),
+  DepartmentId: new FormControl('', Validators.required),
+  RoleId: new FormControl('', Validators.required),
+  IsActive: new FormControl(true)
+}, {
+  validators: this.passwordMatchValidator
 });
+  this.getRoles();
+  // this.getDepartments();
+}
 
 
-  constructor(private _userService: RegisterService, private _router : Router, private dct : ChangeDetectorRef, private toastr : ToastService) {
-      this.getRoles();
-  }
-
+ 
 
   getInvalidControls(): string[] {
   return Object.keys(this.userData.controls).filter(key => {
@@ -55,7 +67,7 @@ export class Register {
         this.toastr.success("Registration Successful");
         this._router.navigate(['/login']);
       },error:(err)=>{
-        this.toastr.error(err.error.errors.join(","));
+        this.toastr.error('Registration Failed!');
         console.log(err);
       }
     });
@@ -73,5 +85,30 @@ export class Register {
       }
     })
   }
+
+  passwordMatchValidator(control: AbstractControl): ValidationErrors | null {
+
+  const password = control.get('Password')?.value;
+  const confirm = control.get('ConfirmPassword')?.value;
+
+  if (password !== confirm) {
+    return { passwordMismatch: true };
+  }
+
+  return null;
+}
+
+
+  // getDepartments(){
+  // this._userService.getAllDepartments().subscribe({
+  //   next:(res:any)=>{
+  //     this.departments = res.data;
+  //     this.dct.detectChanges();
+  //   },
+  //   error:(err)=>{
+  //     console.log(err);
+  //   }
+  // });
+// }
   
 }
