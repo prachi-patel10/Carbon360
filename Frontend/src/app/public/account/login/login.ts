@@ -7,18 +7,21 @@ import { ToastService } from '../../../core/toast/toastservice';
 
 @Component({
   selector: 'app-login',
-  imports: [ RouterLink,ReactiveFormsModule, CommonModule],
+  imports: [ReactiveFormsModule, CommonModule],
   templateUrl: './login.html',
-  styleUrl: './login.css',
+  styleUrls: ['./login.css'],
 })
 export class Login {
-  
+
   loginData: FormGroup = new FormGroup({
-    UserName: new FormControl('',Validators.required),
-    Password: new FormControl('',Validators.required)
-  })
-  constructor(private _router: Router, private _userService: LoginService,
-    private dct: ChangeDetectorRef, private toastr : ToastService
+     Email: new FormControl('', Validators.required),
+    Password: new FormControl('', Validators.required)
+  });
+
+  constructor(
+    private _router: Router,
+    private _userService: LoginService,
+    private toastr: ToastService
   ) { }
 
   login() {
@@ -28,18 +31,24 @@ export class Login {
     }
 
     const loginObj = this.loginData.value;
+
     this._userService.loginUser(loginObj).subscribe({
       next: (res: any) => {
-       this.toastr.success("Login Successful");
+        console.log(res); // Debug the actual response
+
+        const data = res.data; // adjust this if needed based on console.log
+
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('loggedUserName', data.fullName);
+        localStorage.setItem('roleName', data.roleName);
+
+        this.toastr.success("Login Successful");
         this._router.navigate(['layout/section']);
-        localStorage.setItem("token", res.token);
-        localStorage.setItem("loggedUserName", res.userName);
-      }, error: (err) => {
+      },
+      error: (err) => {
+        console.log('HTTP error:', err);
         this.toastr.error("Invalid username or password");
-        console.log(err);
       }
-    })
+    });
   }
-
-
 }

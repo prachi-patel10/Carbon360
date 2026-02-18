@@ -20,6 +20,11 @@ export class RegisterService {
     return this.http.get(`${this.baseUrl}/Role/All`, this.getHeaders());
   }
 
+  getAllDepartments() {
+  return this.http.get(`${this.baseUrl}/Department/All`, this.getHeaders());
+}
+
+
 
   private getHeaders() {
     return {

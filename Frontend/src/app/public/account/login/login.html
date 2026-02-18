@@ -21,53 +21,27 @@
           <p class="text-center mb-4 subtitle-text">Enter your credentials</p>
 
           <form [formGroup]="loginData" (ngSubmit)="login()">
-
-            <!-- Username -->
             <div class="mb-3">
-              <label class="form-label custom-label">Username</label>
-
-              <input type="text" class="form-control custom-input" formControlName="UserName"
-                placeholder="Enter username" />
-
-              @if (
-              loginData.get('UserName')?.touched &&
-              loginData.get('UserName')?.hasError('required')
-              ) {
-              <small class="text-danger"> Username is required </small>
-              }
-            </div>
-
-            <!-- Password -->
-            <div class="mb-3">
-              <label class="form-label custom-label">Password</label>
-
-              <input type="password" class="form-control custom-input" formControlName="Password"
-                placeholder="Enter password" />
-
-              @if (
-              loginData.get('Password')?.touched &&
-              loginData.get('Password')?.hasError('required')
-              ) {
-              <small class="text-danger"> Password is required </small>
-              }
-            </div>
-
-            <!-- Login Button -->
-            <button type="submit" class="btn login-btn w-100 mt-2" [disabled]="loginData.invalid">
-              Login
-            </button>
-
-            <!-- Register Link -->
-            <div class="text-center mt-3">
-              <small class="register-text">
-                Not registered?
-                <a routerLink="/register" class="register-link">
-                  Create account
-                </a>
+              <label class="form-label">Email</label>
+              <input type="text" class="form-control" formControlName="Email" placeholder="Enter Email" />
+              <small class="text-danger"
+                *ngIf="loginData.get('Email')?.touched && loginData.get('Email')?.hasError('required')">
+                Email is required
               </small>
             </div>
 
+            <div class="mb-3">
+              <label class="form-label">Password</label>
+              <input type="password" class="form-control" formControlName="Password" placeholder="Enter password" />
+              <small class="text-danger"
+                *ngIf="loginData.get('Password')?.touched && loginData.get('Password')?.hasError('required')">
+                Password is required
+              </small>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100" [disabled]="loginData.invalid">Login</button>
           </form>
+
         </div>
       </div>
     </div>
