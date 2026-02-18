@@ -17,5 +17,5 @@ public partial class CB_UserRoleMapping
 
     public virtual CB_Role Role { get; set; }
 
-    public virtual CB_User User { get; set; }
+    public virtual CB_User User { get; set; }  
 }

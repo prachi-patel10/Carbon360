@@ -25,9 +25,10 @@ public partial class CBContext : DbContext
     {
         modelBuilder.Entity<CB_Department>(entity =>
         {
-            entity.HasKey(e => e.DepartmentId);
+            entity.HasKey(e => e.DepartmentId).HasName("PK__CB_Depar__B2079BED8E6AD1B5");
 
-            entity.Property(e => e.DepartmentId).ValueGeneratedNever();
+            entity.ToTable("CB_Department");
+
             entity.Property(e => e.DepartmentName)
                 .HasMaxLength(50)
                 .IsUnicode(false);
@@ -37,9 +38,10 @@ public partial class CBContext : DbContext
 
         modelBuilder.Entity<CB_Role>(entity =>
         {
-            entity.HasKey(e => e.RoleId).HasName("PK__CB_Roles__8AFACE1A9AA4651F");
+            entity.HasKey(e => e.RoleId).HasName("PK__CB_Role__8AFACE1A4E6560C1");
 
-            entity.Property(e => e.RoleId).ValueGeneratedNever();
+            entity.ToTable("CB_Role");
+
             entity.Property(e => e.Description)
                 .HasMaxLength(100)
                 .IsUnicode(false);
@@ -52,11 +54,10 @@ public partial class CBContext : DbContext
 
         modelBuilder.Entity<CB_User>(entity =>
         {
-            entity.HasKey(e => e.UserId);
+            entity.HasKey(e => e.UserId).HasName("PK__CB_User__1788CC4C129F2098");
 
             entity.ToTable("CB_User");
 
-            entity.Property(e => e.UserId).ValueGeneratedNever();
             entity.Property(e => e.Email)
                 .HasMaxLength(100)
                 .IsUnicode(false);
@@ -71,22 +72,22 @@ public partial class CBContext : DbContext
 
             entity.HasOne(d => d.Department).WithMany(p => p.CB_Users)
                 .HasForeignKey(d => d.DepartmentId)
-                .HasConstraintName("FK_Users_Department");
+                .HasConstraintName("FK_CBUser_Department");
         });
 
         modelBuilder.Entity<CB_UserRoleMapping>(entity =>
         {
-            entity.ToTable("CB_UserRoleMapping");
+            entity.HasKey(e => e.id).HasName("PK__CB_UserR__3213E83F76D89AD1");
 
-            entity.Property(e => e.id).ValueGeneratedNever();
+            entity.ToTable("CB_UserRoleMapping");
 
             entity.HasOne(d => d.Role).WithMany(p => p.CB_UserRoleMappings)
                 .HasForeignKey(d => d.RoleId)
-                .HasConstraintName("FK_Roles_UserRoleMapping");
+                .HasConstraintName("FK_UserRoleMapping_Roles");
 
             entity.HasOne(d => d.User).WithMany(p => p.CB_UserRoleMappings)
                 .HasForeignKey(d => d.UserId)
-                .HasConstraintName("FK_Users_UserRoleMapping");
+                .HasConstraintName("FK_UserRoleMapping_Users");
         });
 
         OnModelCreatingPartial(modelBuilder);

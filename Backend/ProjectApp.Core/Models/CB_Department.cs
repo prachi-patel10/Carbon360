@@ -15,13 +15,13 @@ public partial class CB_Department
 
     public int? EntryBy { get; set; }
 
-    public int? Updateby { get; set; }
+    public int? UpdateBy { get; set; }
 
     public DateTime? EntryDate { get; set; }
 
     public DateTime? UpdateDate { get; set; }
 
-    public bool IsDeleted { get; set; }
+    public bool? IsDeleted { get; set; }
 
     public virtual ICollection<CB_User> CB_Users { get; set; } = new List<CB_User>();
 }
