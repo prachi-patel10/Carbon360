@@ -77,11 +77,10 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
+builder.Services.AddHttpContextAccessor();
+
 //Mapper
 builder.Services.AddAutoMapper(typeof(MapperConfig));
-
-//services
-builder.Services.AddScoped<IUserContext, UserContext>();
 
 //DI
 builder.Services.AddProjectServices(builder.Configuration);

@@ -19,6 +19,7 @@ namespace ProjectApp.API.Extentions
             CreateMap<UserDTO, CB_User>().ReverseMap();
             CreateMap<UserResDTO, CB_User>().ReverseMap();
             CreateMap<UserUpdateDTO, CB_User>().ReverseMap();
+            CreateMap<DepartmentDTO, CB_Department>().ReverseMap();
         }
 
     }

@@ -35,7 +35,7 @@ namespace ProjectApp.Repository.Services.Masters.Department
 
             var result = await _context.Database
                 .SqlQueryRaw<int>(
-                    "EXEC SP_Department_Insert @DepartmentName={0}, @UserId={1}",
+                    "EXEC USP_CB_DepartmentInsert @DepartmentName={0}, @UserId={1}",
                     dto.DepartmentName, userId)
                 .FirstAsync();
 
@@ -47,7 +47,7 @@ namespace ProjectApp.Repository.Services.Masters.Department
             int userId = GetCurrentUserId();
 
             var rows = await _context.Database.ExecuteSqlRawAsync(
-                "EXEC SP_Department_Delete @DepartmentId={0}, @UserId={1}",
+                "EXEC USP_CB_DepartmentDelete @DepartmentId={0}, @UserId={1}",
                 id, userId);
 
             return rows > 0;
@@ -68,7 +68,7 @@ namespace ProjectApp.Repository.Services.Masters.Department
             var department = await _context.CB_Departments
             .FromSqlRaw("EXEC USP_CB_DepartmentGetById @DepartmentId={0}", id)
             .AsNoTracking()
-            .FirstOrDefaultAsync();
+             .ToListAsync();
 
             return _mapper.Map<DepartmentDTO>(department);
         }
@@ -78,8 +78,8 @@ namespace ProjectApp.Repository.Services.Masters.Department
             int userId = GetCurrentUserId();
 
             var rows = await _context.Database.ExecuteSqlRawAsync(
-                "EXEC SP_Department_Update @DepartmentId={0}, @DepartmentName={1}, @UserId={2}",
-                dto.Id, dto.DepartmentName, userId);
+                "EXEC USP_CB_DepartmentUpdate @DepartmentId={0}, @DepartmentName={1}, @UserId={2}",
+                dto.id, dto.DepartmentName, userId);
 
             return rows > 0;
         }

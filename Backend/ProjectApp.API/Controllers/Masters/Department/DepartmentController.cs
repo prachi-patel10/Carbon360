@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using ProjectApp.Core.DTOs.Masters.Department;
@@ -8,6 +9,7 @@ using ProjectApp.Repository.Services.Common;
 
 namespace ProjectApp.API.Controllers.Masters.Department
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class DepartmentController : ControllerBase

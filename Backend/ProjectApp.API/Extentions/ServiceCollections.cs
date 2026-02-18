@@ -31,6 +31,7 @@ namespace ProjectApp.API.Extentions
             services.AddSingleton<IdEncoder>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IRoleService, RoleService>();
+            services.AddScoped<IUserContext, UserContext>();
             services.AddScoped(typeof(ICommonService<>), typeof(CommonService<>));
 
             return services;
