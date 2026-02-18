@@ -6,16 +6,22 @@ import { ToastService } from '../../core/toast/toastservice';
   selector: 'app-layout',
   imports: [RouterOutlet,RouterLink],
   templateUrl: './layout.html',
-  styleUrl: './layout.css',
+  styleUrls: ['./layout.css'],
 })
 export class Layout {
 
-  constructor(private _router: Router, private toastr: ToastService) { }
-  loggedUserName = localStorage.getItem("loggedUserName") || 'Guest User';
+  // constructor(private _router: Router, private toastr: ToastService) { }
+  // loggedUserName = localStorage.getItem("loggedUserName") || 'Guest User';
 
-  onLogout() {
-    localStorage.clear();
-    this.toastr.success("Logged out successfully");
-    this._router.navigate(['/login']);
+  // onLogout() {
+  //   localStorage.clear();
+  //   this.toastr.success("Logged out successfully");
+  //   this._router.navigate(['/login']);
+  // }
+
+    isMenuOpen = false;
+
+  toggleMenu() {
+    this.isMenuOpen = !this.isMenuOpen;
   }
 }

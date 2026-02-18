@@ -6,42 +6,56 @@ import { authGuard } from './core/guards/auth-guard';
 import { Section } from './private/masters/section/section';
 import { Unauthorized } from './public/unauthorized/unauthorized';
 import { User } from './private/masters/user/user';
+import { Home } from './private/masters/home/home';
 
 export const routes: Routes = [
-    {
-        path: '',
-        redirectTo: 'login',
-        pathMatch: 'full'
-    },
-    {
-        path: 'login',
-        component: Login
-    }, {
-        path: 'register',
-        component: Register
-    },
-    {
-        path : 'unauthorized',
-        component : Unauthorized
-    }, {
-        path: 'layout',
-        component: Layout,
-        canActivate:[authGuard],
-        children: [
-            {
-                path: 'section',
-                component: Section,
-                
-            },
-            {
-                path:'user',
-                component : User,
-                
-            }
-        ]
-    },
-//     {
-//     path: '**',
-//     redirectTo: 'login'
-//   }
+
+  // Default Redirect
+  {
+    path: '',
+    redirectTo: 'home',
+    pathMatch: 'full'
+  },
+
+  // Public Routes (No Navbar)
+  {
+    path: 'login',
+    component: Login
+  },
+  {
+    path: 'register',
+    component: Register
+  },
+  {
+    path: 'unauthorized',
+    component: Unauthorized
+  },
+
+  // Protected Routes (With Navbar Layout)
+  {
+    path: '',
+    component: Layout,
+    canActivate: [authGuard],
+    children: [
+      {
+        path: 'home',
+        component: Home
+      },
+      {
+        path: 'section',
+        component: Section
+      },
+      {
+        path: 'user',
+        component: User
+      }
+    ]
+  },
+
+  // Optional wildcard
+  // {
+  //   path: '**',
+  //   redirectTo: 'login'
+  // }
+
 ];
