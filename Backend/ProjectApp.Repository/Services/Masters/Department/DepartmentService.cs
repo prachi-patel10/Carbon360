@@ -37,9 +37,9 @@ namespace ProjectApp.Repository.Services.Masters.Department
                 .SqlQueryRaw<int>(
                     "EXEC USP_CB_DepartmentInsert @DepartmentName={0}, @UserId={1}",
                     dto.DepartmentName, userId)
-                .FirstAsync();
+                  .ToListAsync();
 
-            return result;
+            return result.FirstOrDefault();
         }
 
         public async Task<bool> DeleteDepartmentAsync(int id)
@@ -65,10 +65,12 @@ namespace ProjectApp.Repository.Services.Masters.Department
 
         public async Task<DepartmentDTO> GetDepartmentByIdAsync(int id)
         {
-            var department = await _context.CB_Departments
-            .FromSqlRaw("EXEC USP_CB_DepartmentGetById @DepartmentId={0}", id)
-            .AsNoTracking()
-             .ToListAsync();
+            var departments = await _context.CB_Departments
+         .FromSqlRaw("EXEC USP_CB_DepartmentGetById @DepartmentId={0}", id)
+         .AsNoTracking()
+         .ToListAsync();  
+
+            var department = departments.FirstOrDefault();  
 
             return _mapper.Map<DepartmentDTO>(department);
         }
@@ -79,7 +81,7 @@ namespace ProjectApp.Repository.Services.Masters.Department
 
             var rows = await _context.Database.ExecuteSqlRawAsync(
                 "EXEC USP_CB_DepartmentUpdate @DepartmentId={0}, @DepartmentName={1}, @UserId={2}",
-                dto.id, dto.DepartmentName, userId);
+                dto.Id, dto.DepartmentName, userId);
 
             return rows > 0;
         }

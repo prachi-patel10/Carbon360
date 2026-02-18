@@ -6,6 +6,7 @@ using ProjectApp.Core.DTOs.Masters.Department;
 using ProjectApp.Core.Entities;
 using ProjectApp.Repository.Interfaces.Masters.Department;
 using ProjectApp.Repository.Services.Common;
+using System.Net;
 
 namespace ProjectApp.API.Controllers.Masters.Department
 {
@@ -93,44 +94,58 @@ namespace ProjectApp.API.Controllers.Masters.Department
             return Ok(_apiResponse);
         }
 
+        //[HttpPut]
+        //public async Task<IActionResult> Update(DepartmentDTO dto)
+        //{
+        //    var success = await _deptService.UpdateDepartmentAsync(dto);
+
+        //    if (!success)
+        //    {
+        //        _apiResponse.status = false;
+        //        _apiResponse.StatusCode = System.Net.HttpStatusCode.BadRequest;
+        //        _apiResponse.Errors = new List<string> { "Update failed." };
+
+        //        return BadRequest(_apiResponse);
+        //    }
+
+        //    _apiResponse.status = true;
+        //    _apiResponse.StatusCode = System.Net.HttpStatusCode.OK;
+
+        //    return Ok(_apiResponse);
+        //}
+
         [HttpPut]
         public async Task<IActionResult> Update(DepartmentDTO dto)
         {
             var success = await _deptService.UpdateDepartmentAsync(dto);
 
+            _apiResponse.data = success;
+            _apiResponse.status = success;
+            _apiResponse.StatusCode = success
+                ? HttpStatusCode.OK
+                : HttpStatusCode.BadRequest;
+
             if (!success)
-            {
-                _apiResponse.status = false;
-                _apiResponse.StatusCode = System.Net.HttpStatusCode.BadRequest;
                 _apiResponse.Errors = new List<string> { "Update failed." };
 
-                return BadRequest(_apiResponse);
-            }
-
-            _apiResponse.status = true;
-            _apiResponse.StatusCode = System.Net.HttpStatusCode.OK;
-
-            return Ok(_apiResponse);
+            return StatusCode((int)_apiResponse.StatusCode, _apiResponse);
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            var success = await _deptService.DeleteDepartmentAsync(id);
+             var success = await _deptService.DeleteDepartmentAsync(id);
+
+            _apiResponse.data = success;
+            _apiResponse.status = success;
+            _apiResponse.StatusCode = success
+                ? HttpStatusCode.OK
+                : HttpStatusCode.BadRequest;
 
             if (!success)
-            {
-                _apiResponse.status = false;
-                _apiResponse.StatusCode = System.Net.HttpStatusCode.BadRequest;
                 _apiResponse.Errors = new List<string> { "Delete failed." };
 
-                return BadRequest(_apiResponse);
-            }
-
-            _apiResponse.status = true;
-            _apiResponse.StatusCode = System.Net.HttpStatusCode.OK;
-
-            return Ok(_apiResponse);
+            return StatusCode((int)_apiResponse.StatusCode, _apiResponse);
         }
     }
 }

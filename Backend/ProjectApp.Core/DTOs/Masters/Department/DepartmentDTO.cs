@@ -1,4 +1,5 @@
-﻿using System;
+﻿
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -10,7 +11,7 @@ namespace ProjectApp.Core.DTOs.Masters.Department
     public class DepartmentDTO
     {
         [Required]
-        public int id { get; set; }
+        public int Id { get; set; }
         [Required]
         public string DepartmentName
         {
