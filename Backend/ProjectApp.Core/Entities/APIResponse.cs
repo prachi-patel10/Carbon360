@@ -16,5 +16,8 @@ namespace ProjectApp.Core.Entities
         {
             get; set;
         } = new List<string>();
+
+        public string? Message { get; set; }
+
     }
 }

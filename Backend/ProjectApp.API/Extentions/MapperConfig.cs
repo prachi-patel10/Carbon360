@@ -20,14 +20,17 @@ namespace ProjectApp.API.Extentions
             CreateMap<UserDTO, CB_User>().ReverseMap();
             CreateMap<UserResDTO, CB_User>().ReverseMap();
             CreateMap<UserUpdateDTO, CB_User>().ReverseMap();
-            CreateMap<CB_Department, DepartmentDTO>()
-     .ForMember(dest => dest.Id,
-                opt => opt.MapFrom(src => src.DepartmentId))
-     .ReverseMap()
-     .ForMember(dest => dest.DepartmentId,
-                opt => opt.MapFrom(src => src.Id));
+            CreateMap<CB_Department, DepartmentResponseDTO>()
+     .ForMember(dest => dest.Id, opt => opt.Ignore());
+
+            CreateMap<DepartmentCreateDTO, CB_Department>()
+                .ForMember(dest => dest.DepartmentId, opt => opt.Ignore())
+                .ForMember(dest => dest.IsDeleted, opt => opt.Ignore());
+
+            CreateMap<DepartmentUpdateDTO, CB_Department>()
+                .ForMember(dest => dest.DepartmentId, opt => opt.Ignore())
+                .ForMember(dest => dest.IsDeleted, opt => opt.Ignore());
 
         }
-
     }
 }
