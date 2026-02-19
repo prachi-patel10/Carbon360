@@ -19,8 +19,12 @@ namespace ProjectApp.Repository.Services.User
         public int UserId =>
             int.Parse(_http.HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier));
 
+        //public string Role =>
+        //    _http.HttpContext.User.FindFirstValue(ClaimTypes.Role);
+
         public string Role =>
-            _http.HttpContext.User.FindFirstValue(ClaimTypes.Role);
+    _http.HttpContext?.User?.FindFirstValue(ClaimTypes.Role) ?? "";
+
 
     }
 }

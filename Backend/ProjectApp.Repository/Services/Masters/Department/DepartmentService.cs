@@ -8,6 +8,7 @@ using ProjectApp.Repository.Interfaces.Masters.Department;
 using ProjectApp.Repository.Interfaces.User;
 using ProjectApp.Repository.Services.Common;
 using ProjectApp.Repository.Services.User;
+using ProjectApp.Repository.Utilities.Auth;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,12 +22,16 @@ namespace ProjectApp.Repository.Services.Masters.Department
         private readonly IMapper _mapper;
         private readonly ICommonService<CB_Department> _deptService;
         private readonly CBContext _context;
+        private readonly IdEncoder _idEncoder;
 
-        public DepartmentService(IMapper mapper, ICommonService<CB_Department> common,CBContext context, IUserContext userContext) : base(common, mapper, userContext)
+
+
+        public DepartmentService(IMapper mapper, ICommonService<CB_Department> common,CBContext context, IUserContext userContext, IdEncoder idEncoder) : base(common, mapper, userContext)
         {
             _mapper = mapper;
             _deptService = common;
             _context = context;
+            _idEncoder = idEncoder;
         }
 
         public async Task<int> CreateDepartmentAsync(DepartmentDTO dto)
@@ -42,8 +47,9 @@ namespace ProjectApp.Repository.Services.Masters.Department
             return result.FirstOrDefault();
         }
 
-        public async Task<bool> DeleteDepartmentAsync(int id)
+        public async Task<bool> DeleteDepartmentAsync(string encryptedId)
         {
+            int id = _idEncoder.Decode(encryptedId);
             int userId = GetCurrentUserId();
 
             var rows = await _context.Database.ExecuteSqlRawAsync(
@@ -53,6 +59,7 @@ namespace ProjectApp.Repository.Services.Masters.Department
             return rows > 0;
         }
 
+
         public async Task<List<DepartmentDTO>> GetAllDepartmentsAsync()
         {
             var departments = await _context.CB_Departments
@@ -60,20 +67,39 @@ namespace ProjectApp.Repository.Services.Masters.Department
             .AsNoTracking()
             .ToListAsync();
 
-            return _mapper.Map<List<DepartmentDTO>>(departments);
+            var dtos = _mapper.Map<List<DepartmentDTO>>(departments);
+
+            foreach (var dto in dtos)
+            {
+                dto.Id = _idEncoder.Encode(_idEncoder.Decode(dto.Id));
+            }
+
+            return dtos;
+
         }
 
-        public async Task<DepartmentDTO> GetDepartmentByIdAsync(int id)
+        public async Task<DepartmentDTO> GetDepartmentByIdAsync(string encryptedId)
         {
+            int id = _idEncoder.Decode(encryptedId);
+
             var departments = await _context.CB_Departments
-         .FromSqlRaw("EXEC USP_CB_DepartmentGetById @DepartmentId={0}", id)
-         .AsNoTracking()
-         .ToListAsync();  
+                .FromSqlRaw("EXEC USP_CB_DepartmentGetById @DepartmentId={0}", id)
+                .AsNoTracking()
+                .ToListAsync();
 
-            var department = departments.FirstOrDefault();  
+            var department = departments.FirstOrDefault();
 
-            return _mapper.Map<DepartmentDTO>(department);
+            if (department == null)
+                return null;
+
+            var dto = _mapper.Map<DepartmentDTO>(department);
+
+            // Encrypt ID before returning
+            dto.Id = _idEncoder.Encode(department.DepartmentId);
+
+            return dto;
         }
+
 
         public async Task<bool> UpdateDepartmentAsync(DepartmentDTO dto)
         {

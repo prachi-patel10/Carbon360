@@ -11,7 +11,7 @@ namespace ProjectApp.Core.DTOs.Masters.Department
     public class DepartmentDTO
     {
         [Required]
-        public int Id { get; set; }
+        public string Id { get; set; }
         [Required]
         public string DepartmentName
         {

@@ -22,13 +22,7 @@ namespace ProjectApp.API.Controllers.Masters.Role
         }
 
 
-        [HttpGet]
-        [Route("All", Name = "GetAllRoles")]
-        //[ProducesResponseType(StatusCodes.Status200OK)]
-        //[ProducesResponseType(StatusCodes.Status400BadRequest)]
-        //[ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        //[ProducesResponseType(StatusCodes.Status403Forbidden)]
-        //[ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [HttpGet("All")]
         public async Task<ActionResult<APIResponse>> GetAllRoleAsync()
         {
             var result = await _roleService.GetAllRolesAsync();
@@ -38,40 +32,28 @@ namespace ProjectApp.API.Controllers.Masters.Role
             _apiResponse.data = result;
 
             return Ok(_apiResponse);
-
         }
 
-        [HttpGet("{id:int}", Name = "GetRoleById")]
-        public async Task<ActionResult<APIResponse>> GetRoleById(int id)
+
+        [HttpGet("{id}")]
+        public async Task<ActionResult<APIResponse>> GetRoleById(string id)
         {
             var role = await _roleService.GetRoleByIdAsync(id);
 
             if (role == null)
-            {
-                _apiResponse.status = false;
-                _apiResponse.StatusCode = HttpStatusCode.NotFound;
-                return NotFound(_apiResponse);
-            }
+                return NotFound();
 
-            _apiResponse.data  = role;
-            _apiResponse.StatusCode = HttpStatusCode.OK;
             _apiResponse.status = true;
+            _apiResponse.StatusCode = HttpStatusCode.OK;
+            _apiResponse.data = role;
 
             return Ok(_apiResponse);
         }
 
+
         [HttpPost]
         public async Task<ActionResult<APIResponse>> CreateRole([FromBody] RoleDTO dto)
         {
-            if (!ModelState.IsValid)
-            {
-                _apiResponse.status = false;
-                _apiResponse.StatusCode = HttpStatusCode.BadRequest;
-                _apiResponse.Errors.Add("Invalid model state.");
-
-                return BadRequest(_apiResponse);
-            }
-
             var id = await _roleService.CreateRoleAsync(dto);
 
             _apiResponse.status = true;
@@ -81,28 +63,25 @@ namespace ProjectApp.API.Controllers.Masters.Role
             return Ok(_apiResponse);
         }
 
-        [HttpPut]
-        public async Task<ActionResult<APIResponse>> UpdateRole([FromBody] RoleDTO dto)
-        {
-            if (!ModelState.IsValid)
-            {
-                _apiResponse.status = false;
-                _apiResponse.StatusCode = HttpStatusCode.BadRequest;
-                _apiResponse.Errors.Add("Invalid model state.");
 
-                return BadRequest(_apiResponse);
-            }
+        [HttpPut("{id}")]
+        public async Task<ActionResult<APIResponse>> UpdateRole(string id, [FromBody] RoleDTO dto)
+        {
+            int decodedId = _roleService.DecodeId(id);
+            dto.Id = decodedId;
 
             await _roleService.UpdateRoleAsync(dto);
 
             _apiResponse.status = true;
             _apiResponse.StatusCode = HttpStatusCode.OK;
             _apiResponse.data = "Role updated successfully.";
+
             return Ok(_apiResponse);
         }
 
-        [HttpDelete("{id:int}")]
-        public async Task<ActionResult<APIResponse>> DeleteRole(int id)
+
+        [HttpDelete("{id}")]
+        public async Task<ActionResult<APIResponse>> DeleteRole(string id)
         {
             await _roleService.DeleteRoleAsync(id);
 
@@ -112,7 +91,6 @@ namespace ProjectApp.API.Controllers.Masters.Role
 
             return Ok(_apiResponse);
         }
-
 
     }
 }

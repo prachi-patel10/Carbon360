@@ -7,6 +7,7 @@ using ProjectApp.Repository.Interfaces.Common;
 using ProjectApp.Repository.Interfaces.Masters.Role;
 using ProjectApp.Repository.Interfaces.User;
 using ProjectApp.Repository.Services.Common;
+using ProjectApp.Repository.Utilities.Auth;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,12 +22,15 @@ namespace ProjectApp.Repository.Services.Masters.Role
         private readonly ICommonService<CB_Role> _roleService;
         private readonly CBContext _context;
         private readonly IUserContext _userContext;
-        public RoleService(IMapper mapper, ICommonService<CB_Role> common,CBContext context, IUserContext userContext)
+        private readonly IdEncoder _idEncoder;
+
+        public RoleService(IMapper mapper, ICommonService<CB_Role> common,CBContext context, IUserContext userContext, IdEncoder idEncoder)
         {
             _mapper = mapper;
             _roleService = common;
             _context = context;
             _userContext = userContext;
+            _idEncoder = idEncoder;
 
         }
         private int GetCurrentUserId()
@@ -35,24 +39,28 @@ namespace ProjectApp.Repository.Services.Masters.Role
         }
 
 
-        public async Task<int> CreateRoleAsync(RoleDTO dto)
+        public async Task<string> CreateRoleAsync(RoleDTO dto)
         {
             var userId = GetCurrentUserId();
 
             var result = await _context.Database
-     .SqlQueryRaw<int>(
-         "EXEC USP_CB_RoleInsert @RoleName={0}, @Description={1}, @EntryBy={2}",
-         dto.RoleName,
-         dto.RoleDescription,
-         userId)
-     .ToListAsync();
+                .SqlQueryRaw<int>(
+                    "EXEC USP_CB_RoleInsert @RoleName={0}, @Description={1}, @EntryBy={2}",
+                    dto.RoleName,
+                    dto.RoleDescription,
+                    userId)
+                .ToListAsync();
 
-            return result.FirstOrDefault();
+            var newId = result.FirstOrDefault();
 
+            return _idEncoder.Encode(newId);
         }
 
-        public async Task<bool> DeleteRoleAsync(int id)
+
+
+        public async Task<bool> DeleteRoleAsync(string encryptedId)
         {
+            int id = _idEncoder.Decode(encryptedId);
             var userId = GetCurrentUserId();
 
             await _context.Database.ExecuteSqlRawAsync(
@@ -64,31 +72,43 @@ namespace ProjectApp.Repository.Services.Masters.Role
         }
 
 
-        //public async Task<List<RoleDTO>> GetAllRolesAsync()
-        //{
-        //    var role = await _roleService.GetAllAsync();
-        //    return _mapper.Map<List<RoleDTO>>(role);
-        //}
 
-
-        public async Task<List<RoleDTO>> GetAllRolesAsync()
+        public async Task<List<RoleResponseDTO>> GetAllRolesAsync()
         {
             var roles = await _context.Database
-      .SqlQueryRaw<RoleDTO>("EXEC USP_CB_RoleGetAll")
-      .ToListAsync();
+                .SqlQueryRaw<RoleDTO>("EXEC USP_CB_RoleGetAll")
+                .ToListAsync();
 
-            return roles;
+            return roles.Select(role => new RoleResponseDTO
+            {
+                Id = _idEncoder.Encode(role.Id),
+                RoleName = role.RoleName,
+                RoleDescription = role.RoleDescription,
+                IsActive = role.IsActive
+            }).ToList();
         }
 
-        public async Task<RoleDTO> GetRoleByIdAsync(int id)
+
+
+        public async Task<RoleResponseDTO> GetRoleByIdAsync(string encryptedId)
         {
+            int id = _idEncoder.Decode(encryptedId);
+
             var role = await _context.CB_Roles
-               .FirstOrDefaultAsync(x => x.RoleId == id && x.IsDeleted == false);
+                .FirstOrDefaultAsync(x => x.RoleId == id && x.IsDeleted == false);
 
-            return _mapper.Map<RoleDTO>(role);
+            if (role == null)
+                return null;
 
-          
+            return new RoleResponseDTO
+            {
+                Id = _idEncoder.Encode(role.RoleId),
+                RoleName = role.RoleName,
+                RoleDescription = role.Description,
+                IsActive = role.IsActive ?? false
+            };
         }
+
 
         public async Task<bool> UpdateRoleAsync(RoleDTO dto)
         {
@@ -104,5 +124,13 @@ namespace ProjectApp.Repository.Services.Masters.Role
 
             return true;
         }
+
+
+        public int DecodeId(string encryptedId)
+        {
+            return _idEncoder.Decode(encryptedId);
+        }
+
+
     }
 }

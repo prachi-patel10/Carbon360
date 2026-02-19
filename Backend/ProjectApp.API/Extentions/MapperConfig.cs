@@ -16,6 +16,7 @@ namespace ProjectApp.API.Extentions
         public MapperConfig()
         {
             CreateMap<RoleDTO, CB_Role>().ReverseMap();
+            CreateMap<RoleResponseDTO, CB_Role>().ReverseMap();
             CreateMap<UserDTO, CB_User>().ReverseMap();
             CreateMap<UserResDTO, CB_User>().ReverseMap();
             CreateMap<UserUpdateDTO, CB_User>().ReverseMap();

@@ -10,9 +10,9 @@ namespace ProjectApp.Repository.Interfaces.Masters.Department
     public interface IDepartmentService
     {
         Task<List<DepartmentDTO>> GetAllDepartmentsAsync();
-        Task<DepartmentDTO> GetDepartmentByIdAsync(int id);
+        Task<DepartmentDTO> GetDepartmentByIdAsync(string encryptedId);
         Task<int> CreateDepartmentAsync(DepartmentDTO dto);
         Task<bool> UpdateDepartmentAsync(DepartmentDTO dto);
-        Task<bool> DeleteDepartmentAsync(int id);
+        Task<bool> DeleteDepartmentAsync(string encryptedId);
     }
 }
