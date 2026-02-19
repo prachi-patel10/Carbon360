@@ -5,6 +5,7 @@ using ProjectApp.Core.DTOs.Account.User;
 using ProjectApp.Core.Models;
 using ProjectApp.Repository.Interfaces.Common;
 using ProjectApp.Repository.Interfaces.User;
+using ProjectApp.Repository.Utilities.Auth;
 
 namespace ProjectApp.Repository.Services.User
 {
@@ -13,14 +14,18 @@ namespace ProjectApp.Repository.Services.User
         private readonly CBContext _context;
         private readonly IMapper _mapper;
         private readonly ICommonService<CB_User> _userRepository;
+        private readonly IdEncoder _idEncoder;
 
-        public UserService(ICommonService<CB_User> userRepository, IMapper mapper, CBContext context)
+
+        public UserService(ICommonService<CB_User> userRepository, IMapper mapper, CBContext context, IdEncoder idEncoder)
         {
             _userRepository = userRepository;
             _mapper = mapper;
             _context = context;
+            _idEncoder = idEncoder;
         }
 
+        // ================= CREATE =================
         // ================= CREATE =================
         public async Task<UserResDTO> CreateUserAsync(UserDTO dto, int? loggedInUserId)
         {
@@ -34,44 +39,31 @@ namespace ProjectApp.Repository.Services.User
                 ? string.Join(",", dto.RoleId)
                 : null;
 
-            int newUserId = 0;
+            // ✅ CALL STORED PROCEDURE (NO manual connection)
+            await _context.Database.ExecuteSqlRawAsync(
+                "EXEC USP_CB_UserInsertWithRoles @FullName, @Email, @Password, @DepartmentId, @RoleIds, @EntryBy",
+                new SqlParameter("@FullName", dto.FullName),
+                new SqlParameter("@Email", dto.Email),
+                new SqlParameter("@Password", hashedPassword),
+                new SqlParameter("@DepartmentId", (object?)dto.DepartmentId ?? DBNull.Value),
+                new SqlParameter("@RoleIds", (object?)roleIdsCsv ?? DBNull.Value),
+                new SqlParameter("@EntryBy", (object?)loggedInUserId ?? DBNull.Value)
+            );
 
-            // Use ADO style call because SP returns scalar value
-            using (var connection = _context.Database.GetDbConnection())
-            {
-                await connection.OpenAsync();
-
-                using (var command = connection.CreateCommand())
-                {
-                    command.CommandText = "USP_CB_UserInsertWithRoles";
-                    command.CommandType = System.Data.CommandType.StoredProcedure;
-
-                    command.Parameters.Add(new SqlParameter("@FullName", dto.FullName));
-                    command.Parameters.Add(new SqlParameter("@Email", dto.Email));
-                    command.Parameters.Add(new SqlParameter("@Password", hashedPassword));
-                    command.Parameters.Add(new SqlParameter("@DepartmentId", (object?)dto.DepartmentId ?? DBNull.Value));
-                    command.Parameters.Add(new SqlParameter("@RoleIds", (object?)roleIdsCsv ?? DBNull.Value));
-                    command.Parameters.Add(new SqlParameter("@EntryBy", (object?)loggedInUserId ?? DBNull.Value));
-
-                    var result = await command.ExecuteScalarAsync();
-
-                    newUserId = Convert.ToInt32(result);
-                }
-            }
-
-            // Fetch full user with roles
+            // ✅ Get latest inserted user (safe approach for now)
             var user = await _context.CB_Users
+                .OrderByDescending(u => u.UserId)
                 .Include(u => u.CB_UserRoleMappings)
                     .ThenInclude(ur => ur.Role)
                 .Include(u => u.Department)
-                .FirstOrDefaultAsync(u => u.UserId == newUserId);
+                .FirstOrDefaultAsync();
 
             if (user == null)
                 throw new Exception("User creation failed");
 
             return new UserResDTO
             {
-                UserId = user.UserId,
+                UserId = _idEncoder.Encode(user.UserId),
                 FullName = user.FullName,
                 Email = user.Email,
                 DepartmentId = user.DepartmentId,
@@ -83,8 +75,6 @@ namespace ProjectApp.Repository.Services.User
                     .ToList()
             };
         }
-
-
 
 
 
@@ -100,7 +90,7 @@ namespace ProjectApp.Repository.Services.User
 
             return users.Select(u => new UserResDTO
             {
-                UserId = u.UserId,
+                UserId = _idEncoder.Encode(u.UserId),
                 FullName = u.FullName,
                 Email = u.Email,
                 DepartmentId = u.DepartmentId,
@@ -114,8 +104,9 @@ namespace ProjectApp.Repository.Services.User
         }
 
         // ================= GET BY ID =================
-        public async Task<UserResDTO> GetUserByIdAsync(int id)
+        public async Task<UserResDTO> GetUserByIdAsync(string encryptedId)
         {
+            int id = _idEncoder.Decode(encryptedId);
             var user = await _context.CB_Users
                 .Include(u => u.CB_UserRoleMappings)
                     .ThenInclude(ur => ur.Role)
@@ -126,7 +117,7 @@ namespace ProjectApp.Repository.Services.User
 
             return new UserResDTO
             {
-                UserId = user.UserId,
+                UserId = _idEncoder.Encode(user.UserId),
                 FullName = user.FullName,
                 Email = user.Email,
                 DepartmentId = user.DepartmentId,
@@ -163,7 +154,7 @@ namespace ProjectApp.Repository.Services.User
 
             await _context.Database.ExecuteSqlRawAsync(
                 "EXEC USP_CB_UserUpdate @UserId, @FullName, @Email, @Password, @DepartmentId, @IsActive",
-                new SqlParameter("@UserId", dto.UserId),
+                new SqlParameter("@UserId", _idEncoder.Decode(dto.UserId)),
                 new SqlParameter("@FullName", dto.FullName),
                 new SqlParameter("@Email", dto.Email),
                 new SqlParameter("@Password", (object?)password ?? DBNull.Value),
@@ -175,8 +166,9 @@ namespace ProjectApp.Repository.Services.User
         }
 
         // ================= DELETE =================
-        public async Task<bool> DeleteUserAsync(int id)
+        public async Task<bool> DeleteUserAsync(string encryptedId)
         {
+            int id = _idEncoder.Decode(encryptedId);
             var user = await _context.CB_Users.FindAsync(id);
             if (user == null) throw new Exception("User not found");
 

@@ -10,7 +10,7 @@ namespace ProjectApp.Core.DTOs.Account.User
     public class UserUpdateDTO
     {
         [Required]
-        public int UserId { get; set; }
+        public string UserId { get; set; }
 
         [Required]
         public string FullName { get; set; }

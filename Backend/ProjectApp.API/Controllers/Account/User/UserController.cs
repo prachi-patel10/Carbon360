@@ -102,13 +102,13 @@ namespace ProjectApp.API.Controllers.Account.User
         }
 
         [HttpGet]
-        [Route("{id:int}", Name = "GetUserById")]
+        [Route("{id}", Name = "GetUserById")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<APIResponse>> GetUserById(int id)
+        public async Task<ActionResult<APIResponse>> GetUserById(string id)
         {
             try
             {
@@ -131,13 +131,13 @@ namespace ProjectApp.API.Controllers.Account.User
 
 
         [HttpDelete]
-        [Route("Delete/{id:int}", Name = "DeleteUserById")]
+        [Route("Delete/{id}", Name = "DeleteUserById")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<APIResponse>> DeleteUserAsync(int id)
+        public async Task<ActionResult<APIResponse>> DeleteUserAsync(string id)
         {
             try
             {

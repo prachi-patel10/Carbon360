@@ -10,8 +10,8 @@ namespace ProjectApp.Repository.Interfaces.User
     public interface IUserService
     {
         Task<UserResDTO> CreateUserAsync(UserDTO dto, int? loggedInUserId);
-        Task<bool> DeleteUserAsync(int id);
-        Task<UserResDTO> GetUserByIdAsync(int id);
+        Task<bool> DeleteUserAsync(string id);
+        Task<UserResDTO> GetUserByIdAsync(string id);
         Task<UserResDTO> GetUserByUsernameAsync(string name);
         Task<List<UserResDTO>> GetUsersAsync();
         Task<bool> UpdateUserAsync(UserUpdateDTO dto);
