@@ -124,22 +124,24 @@
   box-shadow: 0 10px 20px rgba(30, 77, 31, 0.4);
 }
 
-/* Register text */
-.register-text {
+
+.register-footer-text {
   color: #555;
+  font-size: 14px;
 }
 
-.register-link {
+.register-footer-link {
   color: #2e7d32;
   font-weight: 600;
   text-decoration: none;
+  transition: 0.3s;
 }
 
-.register-link:hover {
+.register-footer-link:hover {
   color: #1b5e20;
-    text-decoration: underline;
-
+  text-decoration: underline;
 }
+
 /* ===============================
    RESPONSIVE DESIGN
 ================================= */

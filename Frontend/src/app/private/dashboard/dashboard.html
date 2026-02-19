@@ -1,0 +1,41 @@
+<!-- Dashboard Page -->
+<div class="dashboard-container">
+
+  <!-- Topbar -->
+  <div class="topbar">
+    <div class="logo-section">
+      <img src="/assets/Carbon360-removebg-preview.png" alt="Logo" class="logo-img" />
+      <span class="logo-text">Admin Panel</span>
+    </div>
+
+    <div class="user-section">
+      <span class="welcome">Welcome, {{ loggedInUser }}</span>
+      <button class="logout-btn" (click)="logout()">Logout</button>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="content">
+    <h2 class="dashboard-title">Dashboard</h2>
+
+    <div class="card-container">
+
+      <!-- Role Master Card -->
+      <div class="dashboard-card" (click)="navigateTo('role')">
+        <div class="icon">👥</div>
+        <h3>Role Master</h3>
+        <p>Manage system roles and permissions</p>
+      </div>
+
+      <!-- Department Card -->
+      <div class="dashboard-card" (click)="navigateTo('department')">
+        <div class="icon">🏢</div>
+        <h3>Department</h3>
+        <p>Manage departments and structure</p>
+      </div>
+
+    </div>
+
+    <!-- Child Routes Render Here -->
+  </div>
+</div>

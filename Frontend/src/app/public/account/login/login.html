@@ -39,7 +39,12 @@
               </small>
             </div>
 
-            <button type="submit" class="btn btn-primary w-100" [disabled]="loginData.invalid">Login</button>
+            <button type="submit" class="btn login-btn w-100" [disabled]="loginData.invalid">Login</button>
+             <div class="text-center mt-3">
+              <small class="register-footer-text">
+                Don't Have Account <a routerLink="/register" class="register-footer-link">Register here</a>
+              </small>
+            </div>
           </form>
 
         </div>

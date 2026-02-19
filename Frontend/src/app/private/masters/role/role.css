@@ -1,0 +1,492 @@
+/* ================= ROOT ================= */
+:root {
+  --primary: #4f46e5;
+  --success: #16a34a;
+  --danger: #dc2626;
+  --bg: #f9fafb;
+  --border: #e5e7eb;
+  --radius: 8px;
+}
+
+/* ================= PAGE ================= */
+body {
+  background: var(--bg);
+  font-family: "Segoe UI", system-ui, sans-serif;
+}
+
+
+
+/* ================= PAGE HEADER (NAVBAR STYLE LOOK) ================= */
+.dashboard-container {
+  min-height: 100vh;
+  font-family: 'Segoe UI', sans-serif;
+  padding: 20px;
+  background: url('/assets/bg3.png') no-repeat center center;
+  background-size: cover;
+}
+
+/* Topbar */
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #abf1b1;
+  padding: 15px 30px;
+  color: #1b5e20;
+  border-radius: 6px;
+  margin-bottom: 30px;
+  position: relative;
+  z-index: 1;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+.logo-section {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.logo-img {
+  width: 40px;
+  height: 40px;
+}
+
+.logo-text {
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+
+/* Logout button */
+.user-section {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.welcome {
+  font-size: 14px;
+}
+
+.logout-btn {
+  background: #66bb6a;
+  border: none;
+  padding: 6px 14px;
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.logout-btn:hover {
+  background: #1b5e20;
+}
+
+
+.sort-dropdown {
+  height: 40px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.sort-dropdown:focus {
+  border-color: #1b5e20;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(79,70,229,0.2);
+}
+
+
+/* ================= FORM CARD ================= */
+.form-card {
+  background: #fff;
+  padding: 22px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+}
+
+/* ================= FORM GRID ================= */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+
+label {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  display: block;
+}
+
+/* ================= INPUTS ================= */
+input[type="text"],
+input[type="number"] {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+}
+
+input:focus {
+  border-color: #1b5e20;
+  outline: none;
+}
+
+/* ================= CHECKBOX ================= */
+/* ================= ADD FORM TOGGLE SWITCH ================= */
+.toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 26px;
+}
+
+.toggle-label {
+  font-weight: 600;
+  color: #374151;
+}
+
+/* Switch container */
+.toggle-switch {
+  position: relative;
+  width: 52px;
+  height: 26px;
+}
+
+/* Hide checkbox */
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* Slider */
+.toggle-slider {
+  position: absolute;
+  inset: 0;
+  background-color: #e5e7eb;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+/* Circle */
+.toggle-slider::before {
+  content: "";
+  position: absolute;
+  height: 22px;
+  width: 22px;
+  left: 2px;
+  bottom: 2px;
+  background-color: white;
+  border-radius: 50%;
+  transition: 0.3s;
+}
+
+/* Checked = Active */
+.toggle-switch input:checked + .toggle-slider {
+  background-color: #16a34a; /* green */
+}
+
+.toggle-switch input:checked + .toggle-slider::before {
+  transform: translateX(26px);
+}
+
+/* Active / Inactive text */
+.toggle-text {
+  font-weight: 600;
+  font-size: 13px;
+  color: #374151;
+}
+
+
+/* ================= VALIDATION ================= */
+.validation {
+  color: #dc2626;
+  font-size: 12px;
+}
+
+/* ================= BUTTON ROW ================= */
+.btn-row {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+/* 🔥 IMPORTANT: DO NOT USE global button selector */
+.btn-row button {
+  display: inline-flex;              /* ← FIX */
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  padding: 0 18px;
+  border-radius: var(--radius);
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+}
+
+/* ✅ SAVE BUTTON (FORCED) */
+.btn-save {
+  background-color: #1b5e20 !important;
+  color: #ffffff !important;
+}
+
+/* RESET BUTTON */
+.btn-reset {
+  background-color: #e5e7eb;
+  color: #111827;
+}
+
+
+/* ================= SECTION HEADER ================= */
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  margin: 22px 0 8px;
+  background: linear-gradient(to right, #eef2ff, #ffffff);
+  border-left: 4px solid #1b5e20;
+  border-radius: var(--radius);
+  font-weight: 700;
+  color: #1b5e20;
+}
+
+.section-header .hint {
+  font-size: 12px;
+  font-weight: 500;
+  color: #6b7280;
+}
+
+.field-hint {
+  font-size: 11px;
+  color: #6b7280;
+  margin-left: 4px;
+}
+
+th,
+td {
+  padding: 12px;
+  border-bottom: 1px solid var(--border);
+  text-align: center;
+  vertical-align: middle;
+}
+
+
+/* ================= FILTER BAR ================= */
+/* ================= FILTER BAR (ONE LINE ONLY) ================= */
+.filter-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  background: #ffffff;
+  padding: 14px 20px;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+  margin-bottom: 18px;
+  flex-wrap: nowrap;              /* 🚫 NEVER GO DOWN */
+}
+
+/* ================= LEFT : SEARCH ================= */
+.filter-bar .search {
+  width: 260px;
+  height: 40px;
+  padding: 8px 12px;
+  border: 1.5px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: 0.25s;
+}
+
+/* 🔥 Highlight on focus */
+.filter-bar .search:focus {
+  border-color: #1b5e20;
+  box-shadow: 0 0 0 3px #1b5e20(79,70,229,0.2);
+  outline: none;
+  background: #f8faff;
+}
+
+/* ================= CENTER : RECORDS ================= */
+.records-group {
+  display: flex;
+  align-items: center;
+  gap: 0;                     /* ❌ NO SPACE */
+}
+
+/* 📌 RECORD TEXT */
+.field-hint {
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+  margin: 0;                  /* ❌ REMOVE MARGIN */
+  padding-right: 6px;
+  padding-left: 500px;         /* ✔ very small breathing space */
+  white-space: nowrap;
+}
+/* ================= RIGHT : ACTIVE TOGGLE ================= */
+.search-toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  white-space: nowrap;
+}
+
+.search-toggle-row .toggle-label {
+  font-weight: 600;
+  color: #374151;
+}
+
+/* ================= MOBILE (SCROLL, NOT WRAP) ================= */
+@media (max-width: 768px) {
+  .filter-bar {
+    overflow-x: auto;         /* ↔ scroll instead of wrapping */
+  }
+}
+
+
+
+/* ================= TABLE ================= */
+.role-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #ffffff;
+}
+
+/* ================= HEADER ================= */
+.role-table thead tr {
+  background: #e5e7eb;
+}
+
+.role-table th {
+  padding: 14px 12px;
+  text-align: center;              /* ✅ center headers */
+  font-weight: 700;
+  color: #111827;
+}
+
+/* ================= BODY ================= */
+.role-table td {
+  padding: 14px 12px;
+  text-align: center;              /* ✅ center all columns */
+  border-bottom: 1px solid #e5e7eb;
+  vertical-align: middle;          /* ✅ prevent top alignment */
+}
+
+/* ================= ACTIONS COLUMN ================= */
+.actions-head {
+  width: 160px;                    /* ✅ small fixed width */
+}
+
+.action-cell {
+  display: flex;
+  justify-content: center;         /* ✅ center buttons */
+  align-items: center;
+  gap: 10px;                       /* ✅ small space between buttons */
+}
+
+/* ================= ACTION BUTTONS ================= */
+.btn-edit {
+  height: 38px;
+  padding: 0 16px;
+  border-radius: 8px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  background: #e0f2fe;             /* 🌤 light sky blue */
+  color: #0369a1;
+}
+
+.btn-delete {
+  height: 38px;
+  padding: 0 16px;
+  border-radius: 8px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+/* Hover effect */
+.btn-edit:hover {
+  background: #bae6fd;
+}
+
+.btn-delete:hover {
+  background: #fecaca;
+}
+
+.table-center {
+  display: flex;
+  justify-content: center;
+    padding-left: 60px;          /* 👈 left side space */
+  padding-right: 24px;                 /* slightly tighter side padding */
+}
+
+.role-table {
+  max-width: 1500px;               /* ✅ little bit larger table */
+}
+
+.badge {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+.badge-active {
+  background-color: #e6f7ec;
+  color: #1e7e34;
+  border: 1px solid #28a745;
+}
+
+.badge-inactive {
+  background-color: #fdecea;
+  color: #c82333;
+  border: 1px solid #dc3545;
+}
+
+.badge:hover {
+  transform: scale(1.05);
+}
+
+.pagination {
+  margin-top: 20px;
+  text-align: center;
+}
+
+.pagination button {
+  margin: 4px;
+  padding: 6px 12px;
+  border: none;
+  background: #e0e0e0;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.pagination button.active-page {
+  background: #1976d2;
+  color: white;
+  font-weight: bold;
+}
+
+.pagination button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.record-count {
+  margin-top: 10px;
+  text-align: right;
+  font-weight: 500;
+  color: #444;
+}
+

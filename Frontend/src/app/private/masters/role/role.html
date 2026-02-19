@@ -1,0 +1,162 @@
+<div class="topbar">
+    <div class="logo-section">
+      <img src="/assets/Carbon360-removebg-preview.png" alt="Logo" class="logo-img" />
+      <h1>Role Master</h1>
+    <span class="page-subtitle">Create, update and manage roles</span>
+    </div>
+
+    <div class="user-section">
+      <button class="logout-btn" (click)="logout()">Logout</button>
+    </div>
+  </div>
+
+<!-- FORM -->
+<form [formGroup]="roleForm" (ngSubmit)="submit()" class="form-card">
+  <div class="grid">
+
+    <div>
+      <label>Role Name</label>
+      <input type="text" formControlName="RoleName">
+      <div class="validation"
+        *ngIf="roleForm.get('RoleName')?.touched && roleForm.get('RoleName')?.invalid">
+        Role Name is required
+      </div>
+    </div>
+
+    <div>
+      <label>Short Code</label>
+      <input type="text" maxlength="3"
+        formControlName="ShortCode"
+        (blur)="checkShortCode()" />
+
+      <div class="validation"
+        *ngIf="roleForm.get('ShortCode')?.touched && roleForm.get('ShortCode')?.errors">
+
+        <div *ngIf="roleForm.get('ShortCode')?.errors?.['required']">
+          Short Code is required
+        </div>
+
+        <div *ngIf="roleForm.get('ShortCode')?.errors?.['minlength']
+          || roleForm.get('ShortCode')?.errors?.['maxlength']">
+          Short Code must be 2–3 characters
+        </div>
+
+        <div *ngIf="roleForm.get('ShortCode')?.errors?.['duplicate']">
+          Short Code already exists
+        </div>
+      </div>
+    </div>
+
+    <!-- ACTIVE TOGGLE -->
+    <div class="toggle-row">
+      <label class="toggle-label">Active</label>
+
+      <label class="toggle-switch">
+        <input type="checkbox" formControlName="IsActive">
+        <span class="toggle-slider"></span>
+      </label>
+
+      <span class="toggle-text">
+        {{ roleForm.get('IsActive')?.value ? 'Active' : 'Inactive' }}
+      </span>
+    </div>
+
+  </div>
+
+  <div class="btn-row">
+    <button type="submit" class="btn-save">
+      {{ roleForm.value.RoleId === 0 ? 'Save' : 'Update' }}
+    </button>
+
+    <button type="button" class="btn-reset" (click)="resetForm()">
+      Reset
+    </button>
+  </div>
+
+  <div class="section-header">
+    <span>Role List</span>
+    <span class="hint">Search • Filter • Page size</span>
+  </div>
+
+  <!-- FILTER BAR -->
+<div [formGroup]="searchForm" class="filter-bar">
+
+    <input class="search"
+      placeholder="Search role"
+      formControlName="searchText">
+
+    <small class="field-hint">
+      Number of records per page
+    </small>
+
+    <input type="number"
+      min="1"
+      class="records"
+      [value]="requestedRecords()"
+      (change)="onRecordsChange($event)">
+
+    <div class="search-toggle-row">
+      <label class="toggle-label">Active Only</label>
+
+      <label class="toggle-switch">
+        <input type="checkbox"
+          [checked]="onlyActive()"
+          (change)="onActiveFilterChange($event)">
+        <span class="toggle-slider"></span>
+      </label>
+
+      <span class="toggle-text">
+        {{ onlyActive() ? 'Active' : 'All' }}
+      </span>
+    </div>
+
+</div>
+
+  <div class="table-wrapper">
+    <table class="role-table">
+      <thead>
+        <tr>
+         <th (click)="previousPageByRoleName()">Role Name</th>
+<th (click)="nextPageByShortCode()">Short Code</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr *ngFor="let r of roles()">
+          <td>{{ r.RoleName }}</td>
+          <td>{{ r.ShortCode }}</td>
+
+          <td>
+            <span
+              class="badge"
+              [ngClass]="{
+                'badge-active': r.IsActive,
+                'badge-inactive': !r.IsActive
+              }"
+              (click)="toggleActive(r)">
+              {{ r.IsActive ? 'Active' : 'Inactive' }}
+            </span>
+          </td>
+
+          <td class="action-cell">
+            <button type="button"
+              class="btn-edit"
+              (click)="edit(r)">Edit</button>
+
+            <button type="button"
+              class="btn-delete"
+              (click)="deleteUI(r)">Delete</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- PAGINATION -->
+
+<div class="record-count">
+  Showing {{ roles().length }} of {{ totalRecords() }} records
+</div>
+</form>

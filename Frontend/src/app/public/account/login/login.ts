@@ -43,7 +43,7 @@ export class Login {
         localStorage.setItem('roleName', data.roleName);
 
         this.toastr.success("Login Successful");
-        this._router.navigate(['layout/section']);
+        this._router.navigate(['/dashboard']);
       },
       error: (err) => {
         console.log('HTTP error:', err);

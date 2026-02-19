@@ -7,6 +7,8 @@ import { Section } from './private/masters/section/section';
 import { Unauthorized } from './public/unauthorized/unauthorized';
 import { User } from './private/masters/user/user';
 import { Home } from './private/masters/home/home';
+import { DashboardComponent } from './private/dashboard/dashboard';
+import { MasterRoleComponent } from './private/masters/role/role';
 
 export const routes: Routes = [
 
@@ -30,6 +32,15 @@ export const routes: Routes = [
     path: 'unauthorized',
     component: Unauthorized
   },
+    {
+        path: 'role',
+        component: MasterRoleComponent
+      },
+   {
+        path: 'dashboard',
+        component: DashboardComponent
+      },
+      
 
   // Protected Routes (With Navbar Layout)
   {
@@ -47,7 +58,9 @@ export const routes: Routes = [
       {
         path: 'user',
         component: User
-      }
+      },
+     
+      
     ]
   },
 
