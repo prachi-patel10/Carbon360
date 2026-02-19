@@ -25,8 +25,12 @@ namespace ProjectApp.Repository.Utilities.Auth
             new Claim(ClaimTypes.Email, user.Email ?? "")
         };
 
-            foreach (var role in roles)
-                claims.Add(new Claim(ClaimTypes.Role, role));
+            if (roles != null)
+            {
+                foreach (var role in roles)
+                    claims.Add(new Claim(ClaimTypes.Role, role));
+            }
+          
 
             var key = new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(_configuration["JwtSettings:Key"]));

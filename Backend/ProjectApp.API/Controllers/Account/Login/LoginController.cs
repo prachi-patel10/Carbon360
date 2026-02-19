@@ -8,7 +8,7 @@ using System.Security.Claims;
 
 namespace ProjectApp.API.Controllers.Account.Login
 {
-    [Route("api/[controller]")]
+    [Route("api/")]
     [ApiController]
     public class LoginController : ControllerBase
     {
@@ -51,5 +51,18 @@ namespace ProjectApp.API.Controllers.Account.Login
                 message = "Logged out successfully"
             });
         }
+
+        [HttpPost]
+        [Route("SwitchRole")]
+        public async Task<ActionResult<LoginResDTO>> SwitchRole([FromBody] SwitchRoleDTO dto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest("Invalid request");
+
+            var result = await _authService.SwitchRoleAsync(dto);
+
+            return Ok(result); // returns FullName, RoleName, and refreshed token
+        }
+
     }
 }

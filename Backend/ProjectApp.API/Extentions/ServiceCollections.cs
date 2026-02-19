@@ -33,6 +33,7 @@ namespace ProjectApp.API.Extentions
             services.AddScoped<IRoleService, RoleService>();
             services.AddScoped<IUserContext, UserContext>();
             services.AddScoped(typeof(ICommonService<>), typeof(CommonService<>));
+            services.AddHttpContextAccessor();
 
             return services;
         }

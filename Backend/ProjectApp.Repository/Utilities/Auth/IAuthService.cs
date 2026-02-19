@@ -11,5 +11,7 @@ namespace ProjectApp.Repository.Utilities.Auth
     {
         Task<LoginResDTO> LoginAsyc(LoginDTO loginDTO);
         Task LogoutAsync(int userId);
+        Task<LoginResDTO> SwitchRoleAsync(SwitchRoleDTO dto);
+
     }
 }
