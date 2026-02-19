@@ -52,12 +52,9 @@ namespace ProjectApp.API.Controllers.Account.User
         {
             try
             {
-                int? loggedInUserId = null;
-
-                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-
-                if (userIdClaim != null)
-                    loggedInUserId = Convert.ToInt32(userIdClaim.Value);
+                int? loggedInUserId = User.FindFirst(ClaimTypes.NameIdentifier) != null
+                    ? Convert.ToInt32(User.FindFirst(ClaimTypes.NameIdentifier).Value)
+                    : null;
 
                 var userCreated = await _userService.CreateUserAsync(dto, loggedInUserId);
 
@@ -76,8 +73,6 @@ namespace ProjectApp.API.Controllers.Account.User
                 return StatusCode(500, _apiResponse);
             }
         }
-
-
 
 
         [HttpGet]

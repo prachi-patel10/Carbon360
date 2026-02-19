@@ -29,49 +29,114 @@ namespace ProjectApp.Repository.Services.User
 
             var hashedPassword = BCrypt.Net.BCrypt.HashPassword(dto.Password);
 
-            await _context.Database.ExecuteSqlRawAsync(
-                "EXEC USP_CB_UserInsertWithRoles @FullName, @Email, @Password, @DepartmentId, @RoleIds, @EntryBy",
-                new SqlParameter("@FullName", dto.FullName),
-                new SqlParameter("@Email", dto.Email),
-                new SqlParameter("@Password", hashedPassword),
-                new SqlParameter("@DepartmentId", dto.DepartmentId ?? (object)DBNull.Value),
-                new SqlParameter("@RoleIds", dto.RoleId.ToString()),
-                new SqlParameter("@EntryBy", loggedInUserId ?? (object)DBNull.Value)
-            );
+            // Convert List<int> to CSV string
+            var roleIdsCsv = dto.RoleId != null && dto.RoleId.Any()
+                ? string.Join(",", dto.RoleId)
+                : null;
+
+            int newUserId = 0;
+
+            // Use ADO style call because SP returns scalar value
+            using (var connection = _context.Database.GetDbConnection())
+            {
+                await connection.OpenAsync();
+
+                using (var command = connection.CreateCommand())
+                {
+                    command.CommandText = "USP_CB_UserInsertWithRoles";
+                    command.CommandType = System.Data.CommandType.StoredProcedure;
+
+                    command.Parameters.Add(new SqlParameter("@FullName", dto.FullName));
+                    command.Parameters.Add(new SqlParameter("@Email", dto.Email));
+                    command.Parameters.Add(new SqlParameter("@Password", hashedPassword));
+                    command.Parameters.Add(new SqlParameter("@DepartmentId", (object?)dto.DepartmentId ?? DBNull.Value));
+                    command.Parameters.Add(new SqlParameter("@RoleIds", (object?)roleIdsCsv ?? DBNull.Value));
+                    command.Parameters.Add(new SqlParameter("@EntryBy", (object?)loggedInUserId ?? DBNull.Value));
+
+                    var result = await command.ExecuteScalarAsync();
+
+                    newUserId = Convert.ToInt32(result);
+                }
+            }
+
+            // Fetch full user with roles
+            var user = await _context.CB_Users
+                .Include(u => u.CB_UserRoleMappings)
+                    .ThenInclude(ur => ur.Role)
+                .Include(u => u.Department)
+                .FirstOrDefaultAsync(u => u.UserId == newUserId);
+
+            if (user == null)
+                throw new Exception("User creation failed");
 
             return new UserResDTO
             {
-                FullName = dto.FullName,
-                Email = dto.Email
+                UserId = user.UserId,
+                FullName = user.FullName,
+                Email = user.Email,
+                DepartmentId = user.DepartmentId,
+                IsActive = user.IsActive,
+                EntryDate = user.EntryDate,
+                Roles = user.CB_UserRoleMappings
+                    .Where(x => x.IsActive == true)
+                    .Select(x => x.Role.RoleName)
+                    .ToList()
             };
         }
+
+
+
 
 
         // ================= GET ALL =================
         public async Task<List<UserResDTO>> GetUsersAsync()
         {
-            var users = _context.CB_Users
-    .FromSqlRaw("EXEC USP_CB_UserGetAll")
-    .AsEnumerable()
-    .ToList();
+            var users = await _context.CB_Users
+                .Where(u => u.IsDeleted == false)
+                .Include(u => u.CB_UserRoleMappings)
+                    .ThenInclude(ur => ur.Role)
+                .Include(u => u.Department)
+                .ToListAsync();
 
-
-            return _mapper.Map<List<UserResDTO>>(users);
+            return users.Select(u => new UserResDTO
+            {
+                UserId = u.UserId,
+                FullName = u.FullName,
+                Email = u.Email,
+                DepartmentId = u.DepartmentId,
+                IsActive = u.IsActive,
+                EntryDate = u.EntryDate,
+                Roles = u.CB_UserRoleMappings
+                    .Where(ur => ur.IsActive == true)
+                    .Select(ur => ur.Role.RoleName)
+                    .ToList()
+            }).ToList();
         }
 
         // ================= GET BY ID =================
         public async Task<UserResDTO> GetUserByIdAsync(int id)
         {
             var user = await _context.CB_Users
-                .FromSqlRaw("EXEC USP_CB_UserGetById @UserId",
-                    new SqlParameter("@UserId", id))
-                .AsNoTracking()
-                .FirstOrDefaultAsync();
+                .Include(u => u.CB_UserRoleMappings)
+                    .ThenInclude(ur => ur.Role)
+                .Include(u => u.Department)
+                .FirstOrDefaultAsync(u => u.UserId == id && u.IsDeleted == false);
 
-            if (user == null)
-                throw new Exception("User not found");
+            if (user == null) throw new Exception("User not found");
 
-            return _mapper.Map<UserResDTO>(user);
+            return new UserResDTO
+            {
+                UserId = user.UserId,
+                FullName = user.FullName,
+                Email = user.Email,
+                DepartmentId = user.DepartmentId,
+                IsActive = user.IsActive,
+                EntryDate = user.EntryDate,
+                Roles = user.CB_UserRoleMappings
+                    .Where(ur => ur.IsActive == true)
+                    .Select(ur => ur.Role.RoleName)
+                    .ToList()
+            };
         }
 
         // ================= GET BY USERNAME =================
@@ -112,11 +177,12 @@ namespace ProjectApp.Repository.Services.User
         // ================= DELETE =================
         public async Task<bool> DeleteUserAsync(int id)
         {
-            await _context.Database.ExecuteSqlRawAsync(
-                "EXEC USP_CB_UserDelete @UserId",
-                new SqlParameter("@UserId", id)
-            );
+            var user = await _context.CB_Users.FindAsync(id);
+            if (user == null) throw new Exception("User not found");
 
+            // Soft delete
+            user.IsDeleted = true;
+            await _context.SaveChangesAsync();
             return true;
         }
     }

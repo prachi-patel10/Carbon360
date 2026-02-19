@@ -28,6 +28,6 @@ namespace ProjectApp.Core.DTOs.Account.User
 
         // For role dropdown selection
         [Required]
-        public int RoleId { get; set; }
+        public List<int> RoleId { get; set; }
     }
 }
