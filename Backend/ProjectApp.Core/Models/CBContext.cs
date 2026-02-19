@@ -62,13 +62,25 @@ public partial class CBContext : DbContext
                 .HasMaxLength(100)
                 .IsUnicode(false);
             entity.Property(e => e.EntryDate).HasColumnType("datetime");
-            entity.Property(e => e.FullName)
+            entity.Property(e => e.Fname)
+                .IsRequired()
                 .HasMaxLength(100)
-                .IsUnicode(false);
+                .IsUnicode(false)
+                .HasDefaultValue("");
+            entity.Property(e => e.Lname)
+                .IsRequired()
+                .HasMaxLength(100)
+                .IsUnicode(false)
+                .HasDefaultValue("");
             entity.Property(e => e.Password)
                 .HasMaxLength(100)
                 .IsUnicode(false);
             entity.Property(e => e.UpdateDate).HasColumnType("datetime");
+            entity.Property(e => e.UserName)
+                .IsRequired()
+                .HasMaxLength(100)
+                .IsUnicode(false)
+                .HasDefaultValue("");
 
             entity.HasOne(d => d.Department).WithMany(p => p.CB_Users)
                 .HasForeignKey(d => d.DepartmentId)

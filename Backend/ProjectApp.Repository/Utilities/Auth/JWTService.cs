@@ -21,7 +21,7 @@ namespace ProjectApp.Repository.Utilities.Auth
         {
             new Claim("UserId", user.UserId.ToString()),
             new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
-            new Claim(ClaimTypes.Name, user.FullName ?? ""),
+            new Claim(ClaimTypes.Name, user.UserName ?? ""),
             new Claim(ClaimTypes.Email, user.Email ?? "")
         };
 

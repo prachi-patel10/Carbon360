@@ -5,8 +5,8 @@ import { enviornment } from '../../../enviorments/enviornment'; // 👈 import t
 
 export interface MasterRole {
   RoleId: number;
-  RoleName: string;
-  ShortCode: string;
+  roleName: string;
+  roleDescription: string;
   IsActive: boolean;
   IsDeleted: boolean;
   EntryBy?: string;
@@ -23,10 +23,9 @@ export class RoleService {
 
   constructor(private http: HttpClient) {}
 
-  getAll(): Observable<MasterRole[]> {
-    return this.http.get<MasterRole[]>(this.apiUrl);
-  }
-
+getAll() {
+  return this.http.get<any>(`${this.apiUrl}/All`);
+}
   search(searchText: string): Observable<MasterRole[]> {
     const params = new HttpParams().set('q', searchText);
     return this.http.get<MasterRole[]>(`${this.apiUrl}/search`, { params });
@@ -64,12 +63,6 @@ export class RoleService {
     return this.http.get<any>(`${this.apiUrl}/search`, { params });
   }
 
-  checkShortCode(shortCode: string, roleId: number) {
-    return this.http.get<boolean>(
-      `${this.apiUrl}/check-shortcode`,
-      { params: { shortCode, roleId } }
-    );
-  }
 
   toggleActive(id: number) {
     return this.http.put(`${this.apiUrl}/toggle/${id}`, {});

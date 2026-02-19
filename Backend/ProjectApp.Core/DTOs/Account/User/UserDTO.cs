@@ -7,7 +7,10 @@ namespace ProjectApp.Core.DTOs.Account.User
         [Required]
         [MinLength(3)]
         [MaxLength(50)]
-        public string FullName { get; set; }
+        public string FName { get; set; }
+        public string LName { get; set; }
+        public string UserName { get; set; }
+
 
         [Required]
         [EmailAddress]

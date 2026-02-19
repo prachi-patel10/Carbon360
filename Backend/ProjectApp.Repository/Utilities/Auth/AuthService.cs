@@ -56,7 +56,7 @@ namespace pr.Repository.Services.Auth
 
             return new LoginResDTO
             {
-                FullName = user.FullName,
+                UserName = user.UserName,
                 RoleName = roles.FirstOrDefault(),
                 token = token
             };

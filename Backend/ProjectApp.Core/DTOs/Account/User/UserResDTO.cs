@@ -5,7 +5,10 @@ namespace ProjectApp.Core.DTOs.Account.User
     public class UserResDTO
     {
         public string UserId { get; set; }
-        public string FullName { get; set; }
+        public string FName { get; set; }
+        public string LName { get; set; }
+        public string UserName { get; set; }
+
         public string Email { get; set; }
         public int? DepartmentId { get; set; }
         public bool? IsActive { get; set; }

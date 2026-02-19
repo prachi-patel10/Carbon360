@@ -41,20 +41,16 @@ export class MasterRoleComponent implements OnInit {
     private toastr: ToastrService
   ) {
     effect(() => {
-      this.service.getPaged(
-        this.currentPage(),
-        this.requestedRecords(),
-        this.searchText(),
-        this.onlyActive(),
-        this.sortColumn,
-        this.sortDirection
-      ).subscribe(res => {
-        this.roles.set(res?.data ?? []);
-        this.totalPages.set(res?.totalPages ?? 0);
-        this.totalRecords.set(res?.totalRecords ?? 0);
-
-      });
-    });
+  this.service.getAll().subscribe({
+    next: (res: any) => {
+      this.roles.set(res?.data ?? []);
+    },
+    error: (err) => {
+      console.error(err);
+      this.toastr.error('Failed to load roles');
+    }
+  });
+});
   }
 
   ngOnInit(): void {
@@ -72,10 +68,8 @@ export class MasterRoleComponent implements OnInit {
     this.roleForm = this.fb.group({
       RoleId: [0],
       RoleName: ['', Validators.required],
-      ShortCode: ['', [
+      RoleDescription: ['', [
         Validators.required,
-        Validators.minLength(2),
-        Validators.maxLength(3)
       ]],
       IsActive: [true]
     });
@@ -183,8 +177,8 @@ export class MasterRoleComponent implements OnInit {
   edit(role: MasterRole) {
     this.roleForm.patchValue({
       RoleId: role.RoleId,
-      RoleName: role.RoleName,
-      ShortCode: role.ShortCode,
+      roleName: role.roleName,
+      roleDescription: role.roleDescription,
       IsActive: role.IsActive
     });
   }
@@ -239,33 +233,6 @@ export class MasterRoleComponent implements OnInit {
     window.location.href = '/login';
   }
 
-  checkShortCode() {
-    const control = this.roleForm.get('ShortCode');
-
-    if (!control) return;
-
-    const shortCode = control.value?.trim();
-
-    if (!shortCode || shortCode.length < 2) return;
-
-    const roleId = this.roleForm.get('RoleId')?.value || 0;
-
-    this.service.checkShortCode(shortCode, roleId)
-      .subscribe({
-        next: (exists: boolean) => {
-          if (exists) {
-            control.setErrors({ duplicate: true });
-          } else {
-            // remove duplicate error if exists
-            if (control.hasError('duplicate')) {
-              control.updateValueAndValidity();
-            }
-          }
-        },
-        error: () => {
-          console.error('ShortCode validation failed');
-        }
-      });
-  }
+ 
 
 }

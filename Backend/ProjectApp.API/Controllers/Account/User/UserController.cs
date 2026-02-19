@@ -14,42 +14,45 @@ namespace ProjectApp.API.Controllers.Account.User
     public class UserController : ControllerBase
     {
         private readonly IUserService _userService;
-        private APIResponse _apiResponse;
+
         public UserController(IUserService userService)
         {
-            _apiResponse = new APIResponse();
             _userService = userService;
-
         }
 
-        [HttpGet]
-        [Route("All", Name = "GetAllUsers")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        public async Task<ActionResult<APIResponse>> GetAllRolesAsync()
+        // ================= GET ALL =================
+        [Authorize]
+        [HttpGet("All", Name = "GetAllUsers")]
+        public async Task<ActionResult<APIResponse>> GetAllUsersAsync()
         {
+            var response = new APIResponse();
+
             try
             {
                 var users = await _userService.GetUsersAsync();
-                _apiResponse.data = users;
-                _apiResponse.status = true;
-                _apiResponse.StatusCode = HttpStatusCode.OK;
-                return Ok(_apiResponse);
+                response.data = users;
+                response.status = true;
+                response.StatusCode = HttpStatusCode.OK;
+
+                return Ok(response);
             }
             catch (Exception ex)
             {
-                _apiResponse.status = false;
-                _apiResponse.StatusCode = HttpStatusCode.InternalServerError;
-                _apiResponse.Errors.Add(ex.Message);
-                return _apiResponse;
+                response.status = false;
+                response.StatusCode = HttpStatusCode.InternalServerError;
+                response.Errors.Add(ex.Message);
+
+                return StatusCode(500, response);
             }
         }
 
+        // ================= CREATE =================
         [Authorize]
         [HttpPost("Create")]
         public async Task<ActionResult<APIResponse>> CreateUserAsync([FromBody] UserDTO dto)
         {
+            var response = new APIResponse();
+
             try
             {
                 int? loggedInUserId = User.FindFirst(ClaimTypes.NameIdentifier) != null
@@ -58,126 +61,125 @@ namespace ProjectApp.API.Controllers.Account.User
 
                 var userCreated = await _userService.CreateUserAsync(dto, loggedInUserId);
 
-                _apiResponse.status = true;
-                _apiResponse.StatusCode = HttpStatusCode.Created;
-                _apiResponse.data = userCreated;
+                response.status = true;
+                response.StatusCode = HttpStatusCode.Created;
+                response.data = userCreated;
 
-                return StatusCode(201, _apiResponse);
+                return StatusCode(201, response);
             }
             catch (Exception ex)
             {
-                _apiResponse.status = false;
-                _apiResponse.StatusCode = HttpStatusCode.InternalServerError;
-                _apiResponse.Errors.Add(ex.Message);
+                response.status = false;
+                response.StatusCode = HttpStatusCode.InternalServerError;
+                response.Errors.Add(ex.Message);
 
-                return StatusCode(500, _apiResponse);
+                return StatusCode(500, response);
             }
         }
 
-
-        [HttpGet]
-        [Route("{name:alpha}", Name = "GetUserByName")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<APIResponse>> GetUserByUsername(string name)
+        // ================= GET BY USERNAME =================
+        [Authorize]
+        [HttpGet("ByUsername/{username}")]
+        public async Task<ActionResult<APIResponse>> GetUserByUsername(string username)
         {
+            var response = new APIResponse();
+
             try
             {
-                var user = await _userService.GetUserByUsernameAsync(name);
-                _apiResponse.data = user;
-                _apiResponse.status = true;
-                _apiResponse.StatusCode = HttpStatusCode.OK;
-                return Ok(_apiResponse);
+                var user = await _userService.GetUserByUsernameAsync(username);
+                response.data = user;
+                response.status = true;
+                response.StatusCode = HttpStatusCode.OK;
+
+                return Ok(response);
             }
             catch (Exception ex)
             {
-                _apiResponse.status = false;
-                _apiResponse.StatusCode = HttpStatusCode.InternalServerError;
-                _apiResponse.Errors.Add(ex.Message);
-                return _apiResponse;
+                response.status = false;
+                response.StatusCode = HttpStatusCode.InternalServerError;
+                response.Errors.Add(ex.Message);
+
+                return StatusCode(500, response);
             }
         }
 
-        [HttpGet]
-        [Route("{id}", Name = "GetUserById")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        // ================= GET BY ID =================
+        [Authorize]
+        [HttpGet("ById/{id}")]
         public async Task<ActionResult<APIResponse>> GetUserById(string id)
         {
+            var response = new APIResponse();
+
             try
             {
-
                 var user = await _userService.GetUserByIdAsync(id);
-                _apiResponse.data = user;
-                _apiResponse.status = true;
-                _apiResponse.StatusCode = HttpStatusCode.OK;
-                return Ok(_apiResponse);
+                response.data = user;
+                response.status = true;
+                response.StatusCode = HttpStatusCode.OK;
+
+                return Ok(response);
             }
             catch (Exception ex)
             {
-                _apiResponse.status = false;
-                _apiResponse.StatusCode = HttpStatusCode.InternalServerError;
-                _apiResponse.Errors.Add(ex.Message);
-                return _apiResponse;
+                response.status = false;
+                response.StatusCode = HttpStatusCode.InternalServerError;
+                response.Errors.Add(ex.Message);
+
+                return StatusCode(500, response);
             }
         }
 
-
-
-        [HttpDelete]
-        [Route("Delete/{id}", Name = "DeleteUserById")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<APIResponse>> DeleteUserAsync(string id)
-        {
-            try
-            {
-                await _userService.DeleteUserAsync(id);
-                _apiResponse.status = true;
-                _apiResponse.StatusCode = HttpStatusCode.OK;
-                return Ok(_apiResponse);
-            }
-            catch (Exception ex)
-            {
-                _apiResponse.status = false;
-                _apiResponse.StatusCode = HttpStatusCode.InternalServerError;
-                _apiResponse.Errors.Add(ex.Message);
-
-                return _apiResponse;
-            }
-
-        }
-
+        // ================= UPDATE =================
+        [Authorize]
         [HttpPut("Update")]
         public async Task<ActionResult<APIResponse>> UpdateUserAsync([FromBody] UserUpdateDTO dto)
         {
+            var response = new APIResponse();
+
             try
             {
                 await _userService.UpdateUserAsync(dto);
 
-                _apiResponse.status = true;
-                _apiResponse.StatusCode = HttpStatusCode.OK;
+                response.status = true;
+                response.StatusCode = HttpStatusCode.OK;
 
-                return Ok(_apiResponse);
+                return Ok(response);
             }
             catch (Exception ex)
             {
-                _apiResponse.status = false;
-                _apiResponse.StatusCode = HttpStatusCode.InternalServerError;
-                _apiResponse.Errors.Add(ex.Message);
+                response.status = false;
+                response.StatusCode = HttpStatusCode.InternalServerError;
+                response.Errors.Add(ex.Message);
 
-                return StatusCode(500, _apiResponse);
+                return StatusCode(500, response);
             }
         }
 
+        // ================= DELETE =================
+        [Authorize]
+        [HttpDelete("Delete/{id}")]
+        public async Task<ActionResult<APIResponse>> DeleteUserAsync(string id)
+        {
+            var response = new APIResponse();
+
+            try
+            {
+                await _userService.DeleteUserAsync(id);
+
+                response.status = true;
+                response.StatusCode = HttpStatusCode.OK;
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                response.status = false;
+                response.StatusCode = HttpStatusCode.InternalServerError;
+                response.Errors.Add(ex.Message);
+
+                return StatusCode(500, response);
+            }
+        }
     }
+
 }

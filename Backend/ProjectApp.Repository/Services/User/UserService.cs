@@ -16,8 +16,11 @@ namespace ProjectApp.Repository.Services.User
         private readonly ICommonService<CB_User> _userRepository;
         private readonly IdEncoder _idEncoder;
 
-
-        public UserService(ICommonService<CB_User> userRepository, IMapper mapper, CBContext context, IdEncoder idEncoder)
+        public UserService(
+            ICommonService<CB_User> userRepository,
+            IMapper mapper,
+            CBContext context,
+            IdEncoder idEncoder)
         {
             _userRepository = userRepository;
             _mapper = mapper;
@@ -26,7 +29,6 @@ namespace ProjectApp.Repository.Services.User
         }
 
         // ================= CREATE =================
-        // ================= CREATE =================
         public async Task<UserResDTO> CreateUserAsync(UserDTO dto, int? loggedInUserId)
         {
             if (dto.Password != dto.ConfirmPassword)
@@ -34,15 +36,15 @@ namespace ProjectApp.Repository.Services.User
 
             var hashedPassword = BCrypt.Net.BCrypt.HashPassword(dto.Password);
 
-            // Convert List<int> to CSV string
             var roleIdsCsv = dto.RoleId != null && dto.RoleId.Any()
                 ? string.Join(",", dto.RoleId)
                 : null;
 
-            // ✅ CALL STORED PROCEDURE (NO manual connection)
             await _context.Database.ExecuteSqlRawAsync(
-                "EXEC USP_CB_UserInsertWithRoles @FullName, @Email, @Password, @DepartmentId, @RoleIds, @EntryBy",
-                new SqlParameter("@FullName", dto.FullName),
+                "EXEC USP_CB_UserInsertWithRoles @Fname, @Lname, @UserName, @Email, @Password, @DepartmentId, @RoleIds, @EntryBy",
+                new SqlParameter("@Fname", dto.FName),
+                new SqlParameter("@Lname", dto.LName),
+                new SqlParameter("@UserName", dto.UserName),
                 new SqlParameter("@Email", dto.Email),
                 new SqlParameter("@Password", hashedPassword),
                 new SqlParameter("@DepartmentId", (object?)dto.DepartmentId ?? DBNull.Value),
@@ -50,7 +52,6 @@ namespace ProjectApp.Repository.Services.User
                 new SqlParameter("@EntryBy", (object?)loggedInUserId ?? DBNull.Value)
             );
 
-            // ✅ Get latest inserted user (safe approach for now)
             var user = await _context.CB_Users
                 .OrderByDescending(u => u.UserId)
                 .Include(u => u.CB_UserRoleMappings)
@@ -61,22 +62,8 @@ namespace ProjectApp.Repository.Services.User
             if (user == null)
                 throw new Exception("User creation failed");
 
-            return new UserResDTO
-            {
-                UserId = _idEncoder.Encode(user.UserId),
-                FullName = user.FullName,
-                Email = user.Email,
-                DepartmentId = user.DepartmentId,
-                IsActive = user.IsActive,
-                EntryDate = user.EntryDate,
-                Roles = user.CB_UserRoleMappings
-                    .Where(x => x.IsActive == true)
-                    .Select(x => x.Role.RoleName)
-                    .ToList()
-            };
+            return MapToResponse(user);
         }
-
-
 
         // ================= GET ALL =================
         public async Task<List<UserResDTO>> GetUsersAsync()
@@ -88,61 +75,36 @@ namespace ProjectApp.Repository.Services.User
                 .Include(u => u.Department)
                 .ToListAsync();
 
-            return users.Select(u => new UserResDTO
-            {
-                UserId = _idEncoder.Encode(u.UserId),
-                FullName = u.FullName,
-                Email = u.Email,
-                DepartmentId = u.DepartmentId,
-                IsActive = u.IsActive,
-                EntryDate = u.EntryDate,
-                Roles = u.CB_UserRoleMappings
-                    .Where(ur => ur.IsActive == true)
-                    .Select(ur => ur.Role.RoleName)
-                    .ToList()
-            }).ToList();
+            return users.Select(u => MapToResponse(u)).ToList();
         }
 
         // ================= GET BY ID =================
         public async Task<UserResDTO> GetUserByIdAsync(string encryptedId)
         {
             int id = _idEncoder.Decode(encryptedId);
+
             var user = await _context.CB_Users
                 .Include(u => u.CB_UserRoleMappings)
                     .ThenInclude(ur => ur.Role)
                 .Include(u => u.Department)
                 .FirstOrDefaultAsync(u => u.UserId == id && u.IsDeleted == false);
 
-            if (user == null) throw new Exception("User not found");
+            if (user == null)
+                throw new Exception("User not found");
 
-            return new UserResDTO
-            {
-                UserId = _idEncoder.Encode(user.UserId),
-                FullName = user.FullName,
-                Email = user.Email,
-                DepartmentId = user.DepartmentId,
-                IsActive = user.IsActive,
-                EntryDate = user.EntryDate,
-                Roles = user.CB_UserRoleMappings
-                    .Where(ur => ur.IsActive == true)
-                    .Select(ur => ur.Role.RoleName)
-                    .ToList()
-            };
+            return MapToResponse(user);
         }
 
         // ================= GET BY USERNAME =================
-        public async Task<UserResDTO> GetUserByUsernameAsync(string name)
+        public async Task<UserResDTO> GetUserByUsernameAsync(string username)
         {
             var user = await _context.CB_Users
-                .FromSqlRaw("EXEC USP_CB_UserGetByUsername @FullName",
-                    new SqlParameter("@FullName", name))
-                .AsNoTracking()
-                .FirstOrDefaultAsync();
+                .FirstOrDefaultAsync(u => u.UserName == username && u.IsDeleted == false);
 
             if (user == null)
                 throw new Exception("User not found");
 
-            return _mapper.Map<UserResDTO>(user);
+            return MapToResponse(user);
         }
 
         // ================= UPDATE =================
@@ -153,9 +115,11 @@ namespace ProjectApp.Repository.Services.User
                 : BCrypt.Net.BCrypt.HashPassword(dto.Password);
 
             await _context.Database.ExecuteSqlRawAsync(
-                "EXEC USP_CB_UserUpdate @UserId, @FullName, @Email, @Password, @DepartmentId, @IsActive",
+                "EXEC USP_CB_UserUpdate @UserId, @Fname, @Lname, @UserName, @Email, @Password, @DepartmentId, @IsActive",
                 new SqlParameter("@UserId", _idEncoder.Decode(dto.UserId)),
-                new SqlParameter("@FullName", dto.FullName),
+                new SqlParameter("@Fname", dto.FName),
+                new SqlParameter("@Lname", dto.LName),
+                new SqlParameter("@UserName", dto.UserName),
                 new SqlParameter("@Email", dto.Email),
                 new SqlParameter("@Password", (object?)password ?? DBNull.Value),
                 new SqlParameter("@DepartmentId", dto.DepartmentId),
@@ -169,13 +133,35 @@ namespace ProjectApp.Repository.Services.User
         public async Task<bool> DeleteUserAsync(string encryptedId)
         {
             int id = _idEncoder.Decode(encryptedId);
-            var user = await _context.CB_Users.FindAsync(id);
-            if (user == null) throw new Exception("User not found");
 
-            // Soft delete
+            var user = await _context.CB_Users.FindAsync(id);
+            if (user == null)
+                throw new Exception("User not found");
+
             user.IsDeleted = true;
             await _context.SaveChangesAsync();
+
             return true;
+        }
+
+        // ================= PRIVATE MAPPER =================
+        private UserResDTO MapToResponse(CB_User user)
+        {
+            return new UserResDTO
+            {
+                UserId = _idEncoder.Encode(user.UserId),
+                FName = user.Fname,
+                LName = user.Lname,
+                UserName = user.UserName,
+                Email = user.Email,
+                DepartmentId = user.DepartmentId,
+                IsActive = user.IsActive,
+                EntryDate = user.EntryDate,
+                Roles = user.CB_UserRoleMappings?
+                    .Where(x => x.IsActive == true)
+                    .Select(x => x.Role.RoleName)
+                    .ToList()
+            };
         }
     }
 }

@@ -13,7 +13,11 @@ namespace ProjectApp.Core.DTOs.Account.User
         public string UserId { get; set; }
 
         [Required]
-        public string FullName { get; set; }
+        public string FName { get; set; }
+        [Required]
+        public string LName { get; set; }
+        [Required]
+        public string UserName { get; set; }
 
         [Required]
         [EmailAddress]

@@ -17,7 +17,15 @@ namespace ProjectApp.Core.Context
             builder.Property(u => u.UserId)
                    .ValueGeneratedNever(); // Because DB is not Identity
 
-            builder.Property(u => u.FullName)
+            builder.Property(u => u.Fname)
+                   .HasMaxLength(100)
+                   .IsUnicode(false);
+
+            builder.Property(u => u.Lname)
+                   .HasMaxLength(100)
+                   .IsUnicode(false);
+
+            builder.Property(u => u.UserName)
                    .HasMaxLength(100)
                    .IsUnicode(false);
 

@@ -23,27 +23,13 @@
       </div>
     </div>
 
+
     <div>
-      <label>Short Code</label>
-      <input type="text" maxlength="3"
-        formControlName="ShortCode"
-        (blur)="checkShortCode()" />
-
+      <label>Description</label>
+      <input type="text" formControlName="RoleDescription">
       <div class="validation"
-        *ngIf="roleForm.get('ShortCode')?.touched && roleForm.get('ShortCode')?.errors">
-
-        <div *ngIf="roleForm.get('ShortCode')?.errors?.['required']">
-          Short Code is required
-        </div>
-
-        <div *ngIf="roleForm.get('ShortCode')?.errors?.['minlength']
-          || roleForm.get('ShortCode')?.errors?.['maxlength']">
-          Short Code must be 2–3 characters
-        </div>
-
-        <div *ngIf="roleForm.get('ShortCode')?.errors?.['duplicate']">
-          Short Code already exists
-        </div>
+        *ngIf="roleForm.get('RoleDescription')?.touched && roleForm.get('RoleDescription')?.invalid">
+        Role Name is required
       </div>
     </div>
 
@@ -117,7 +103,7 @@
       <thead>
         <tr>
          <th (click)="previousPageByRoleName()">Role Name</th>
-<th (click)="nextPageByShortCode()">Short Code</th>
+<th (click)="nextPageByShortCode()">Description</th>
           <th>Status</th>
           <th>Actions</th>
         </tr>
@@ -125,8 +111,8 @@
 
       <tbody>
         <tr *ngFor="let r of roles()">
-          <td>{{ r.RoleName }}</td>
-          <td>{{ r.ShortCode }}</td>
+          <td>{{ r.roleName }}</td>
+          <td>{{ r.roleDescription }}</td>
 
           <td>
             <span

@@ -19,11 +19,11 @@
    "T4TemplatePath": null,
    "Tables": [
       {
-         "Name": "[dbo].[CB_Departments]",
+         "Name": "[dbo].[CB_Department]",
          "ObjectType": 0
       },
       {
-         "Name": "[dbo].[CB_Roles]",
+         "Name": "[dbo].[CB_Role]",
          "ObjectType": 0
       },
       {

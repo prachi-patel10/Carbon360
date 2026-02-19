@@ -9,8 +9,6 @@ public partial class CB_User
 {
     public int UserId { get; set; }
 
-    public string FullName { get; set; }
-
     public string Email { get; set; }
 
     public string Password { get; set; }
@@ -28,6 +26,12 @@ public partial class CB_User
     public DateTime? UpdateDate { get; set; }
 
     public bool? IsDeleted { get; set; }
+
+    public string Fname { get; set; }
+
+    public string Lname { get; set; }
+
+    public string UserName { get; set; }
 
     public virtual ICollection<CB_UserRoleMapping> CB_UserRoleMappings { get; set; } = new List<CB_UserRoleMapping>();
 
