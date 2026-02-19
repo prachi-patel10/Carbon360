@@ -5,7 +5,7 @@ import { Layout } from './private/layout/layout';
 import { authGuard } from './core/guards/auth-guard';
 import { Section } from './private/masters/section/section';
 import { Unauthorized } from './public/unauthorized/unauthorized';
-import { User } from './private/masters/user/user';
+import { MasterUserComponent } from './private/masters/user/user';
 import { Home } from './private/masters/home/home';
 import { DashboardComponent } from './private/dashboard/dashboard';
 import { MasterRoleComponent } from './private/masters/role/role';
@@ -39,8 +39,11 @@ export const routes: Routes = [
    {
         path: 'dashboard',
         component: DashboardComponent
+      },   {
+        path: 'user',
+        component: MasterUserComponent
       },
-      
+     
 
   // Protected Routes (With Navbar Layout)
   {
@@ -55,11 +58,6 @@ export const routes: Routes = [
         path: 'section',
         component: Section
       },
-      {
-        path: 'user',
-        component: User
-      },
-     
       
     ]
   },

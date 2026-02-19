@@ -1,0 +1,215 @@
+:root {
+  --primary: #4f46e5;
+  --success: #16a34a;
+  --danger: #dc2626;
+  --bg: #f9fafb;
+  --border: #e5e7eb;
+  --radius: 8px;
+}
+
+.dashboard-container {
+  min-height: 100vh;
+  font-family: 'Segoe UI', sans-serif;
+  padding: 20px;
+  background: url('/assets/bg3.png') no-repeat center center;
+  background-size: cover;
+}
+
+/* ================= FORM CARD ================= */
+.form-card {
+  background: #fff;
+  padding: 22px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  margin-bottom: 25px;
+}
+
+/* ================= GRID ================= */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+
+label {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  display: block;
+}
+
+/* ================= INPUTS ================= */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+select {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+}
+
+input:focus,
+select:focus {
+  border-color: #1b5e20;
+  outline: none;
+}
+
+/* ================= TOGGLE ================= */
+.toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 26px;
+}
+
+.toggle-switch {
+  position: relative;
+  width: 52px;
+  height: 26px;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-slider {
+  position: absolute;
+  inset: 0;
+  background-color: #e5e7eb;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.toggle-slider::before {
+  content: "";
+  position: absolute;
+  height: 22px;
+  width: 22px;
+  left: 2px;
+  bottom: 2px;
+  background-color: white;
+  border-radius: 50%;
+  transition: 0.3s;
+}
+
+.toggle-switch input:checked + .toggle-slider {
+  background-color: #16a34a;
+}
+
+.toggle-switch input:checked + .toggle-slider::before {
+  transform: translateX(26px);
+}
+
+.toggle-text {
+  font-weight: 600;
+  font-size: 13px;
+}
+
+/* ================= VALIDATION ================= */
+.validation {
+  color: #dc2626;
+  font-size: 12px;
+}
+
+/* ================= BUTTONS ================= */
+.btn-row {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.btn-row button {
+  height: 40px;
+  padding: 0 18px;
+  border-radius: var(--radius);
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+}
+
+.btn-save {
+  background-color: #1b5e20;
+  color: #ffffff;
+}
+
+.btn-reset {
+  background-color: #e5e7eb;
+  color: #111827;
+}
+
+/* ================= TABLE ================= */
+.role-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #ffffff;
+}
+
+.role-table th,
+.role-table td {
+  padding: 14px 12px;
+  text-align: center;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.role-table thead {
+  background: #e5e7eb;
+}
+
+.action-cell {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.btn-edit {
+  height: 38px;
+  padding: 0 16px;
+  border-radius: 8px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  background: #e0f2fe;
+  color: #0369a1;
+}
+
+.btn-delete {
+  height: 38px;
+  padding: 0 16px;
+  border-radius: 8px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.badge {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.badge-active {
+  background-color: #e6f7ec;
+  color: #1e7e34;
+  border: 1px solid #28a745;
+}
+
+.badge-inactive {
+  background-color: #fdecea;
+  color: #c82333;
+  border: 1px solid #dc3545;
+}
+
+.record-count {
+  margin-top: 10px;
+  text-align: right;
+  font-weight: 500;
+  color: #444;
+}
