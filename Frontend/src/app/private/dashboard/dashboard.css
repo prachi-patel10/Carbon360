@@ -38,35 +38,22 @@
   margin-bottom: 30px;
 }
 
-.menu {
+/* Parent menu */
+.menu-parent {
+  margin-bottom: 10px;
   list-style: none;
 }
-.menu li i {
-  font-size: 16px;
-}
 
-.menu li {
-  margin-bottom: 8px;
-  border-radius: 8px;
-  transition: all 0.3s ease;
-}
-
-/* Main menu clickable title */
+/* Main title */
 .menu-title {
   display: flex;
   align-items: center;
   gap: 12px;
   padding: 14px;
   cursor: pointer;
-  font-weight: 500;
   border-radius: 8px;
+  font-weight: 600;
   transition: 0.3s;
-}
-
-.menu-title i {
-  width: 20px;
-  text-align: center;
-  font-size: 16px;
 }
 
 .menu-title:hover {
@@ -74,26 +61,31 @@
   transform: translateX(5px);
 }
 
-/* Active main menu */
-.menu li.active > .menu-title {
-  background: #ffffff;
-  color: #0f5132;
-  font-weight: bold;
+/* Arrow icon */
+.arrow {
+  margin-left: auto;
+  transition: 0.3s;
+  font-size: 12px;
 }
 
-/* ================= SUBMENU ================= */
+.arrow.rotate {
+  transform: rotate(180deg);
+}
 
+/* Submenu */
 .submenu {
-  list-style: none;
-  padding-left: 15px;
+  list-style-type: none;
+  padding-left: 20px;
   margin-top: 5px;
-  display: block;
 }
 
 .submenu li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   padding: 10px 12px;
-  font-size: 14px;
   border-radius: 6px;
+  font-size: 14px;
   cursor: pointer;
   transition: 0.2s;
 }
@@ -103,6 +95,11 @@
   transform: translateX(5px);
 }
 
+.active-link {
+  background: #ffffff;
+  color: #0f5132;
+  font-weight: 600;
+}
 /* ================= MAIN ================= */
 
 .main-section {
