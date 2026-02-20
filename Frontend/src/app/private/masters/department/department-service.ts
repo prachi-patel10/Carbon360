@@ -36,7 +36,7 @@ export class DepartmentService {
 create(data: MasterDepartment) {
 
   const payload = {
-    departmentId: data.DepartmentId.toString(),  // backend expects string
+    id: data.DepartmentId,  // backend expects string
     departmentName: data.DepartmentName,
     isActive: data.IsActive
   };
@@ -47,7 +47,7 @@ create(data: MasterDepartment) {
 update(data: MasterDepartment) {
 
   const payload = {
-    departmentId: data.DepartmentId.toString(),
+    id: data.DepartmentId,
     departmentName: data.DepartmentName,
     isActive: data.IsActive
   };
