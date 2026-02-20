@@ -8,8 +8,14 @@
     </div>
 
     <ul class="menu">
-      <li routerLink="/dashboard/user" routerLinkActive="active">Users</li>
-      <li routerLink="/dashboard/role" routerLinkActive="active">Role</li>
+  <li [class.active]="isActive('user')" (click)="goTo('user')">
+    Users
+  </li>
+
+  <li [class.active]="isActive('role')" (click)="goTo('role')">
+    Role
+  </li>
+
       <li routerLink="/dashboard/department" routerLinkActive="active">Department</li>
       <li routerLink="/dashboard/vehicle" routerLinkActive="active">Vehicle</li>
       <li routerLink="/dashboard/waste" routerLinkActive="active">Waste</li>
@@ -21,9 +27,21 @@
   <div class="main-section">
 
     <header class="topbar">
-      <!-- your topbar content -->
+      <div class="left"> <button class="menu-toggle" (click)="toggleSidebar()">☰</button> </div>
+      <div class="right"> <!-- Admin Icon -->
+        <div class="admin-wrapper">
+          <div class="admin-avatar" (click)="toggleProfile($event)"> {{ loggedInUser.charAt(0) }} </div>
+          <div class="admin-dropdown" *ngIf="showProfileCard" (click)="$event.stopPropagation()">
+            <h4>Switch Role</h4> <select [(ngModel)]="selectedRole" (change)="onRoleChange()" class="role-select">
+              <option value="Admin">Admin</option>
+              <option value="Manager">Manager</option>
+              <option value="Viewer">Viewer</option>
+            </select>
+            <div class="divider"></div> <button class="logout-btn" (click)="logout()">Logout</button>
+          </div>
+        </div>
+      </div>
     </header>
-
     <!-- CHILD PAGES LOAD HERE -->
     <div class="page-content">
       <router-outlet></router-outlet>

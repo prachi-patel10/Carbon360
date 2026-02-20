@@ -39,15 +39,15 @@ export const routes: Routes = [
 },
 
   // Protected Routes with Layout
-  {
-    path: '',
-    component: Layout,
-    children: [
-      { path: 'home', component: Home },
-      { path: 'section', component: Section },
-      // Add more protected routes here if needed
-    ]
-  },
+  // {
+  //   path: '',
+  //   component: Layout,
+  //   children: [
+  //     { path: 'home', component: Home },
+  //     { path: 'section', component: Section },
+  //     // Add more protected routes here if needed
+  //   ]
+  // },
 
   // Wildcard route (redirect unknown paths to login or 404)
   {

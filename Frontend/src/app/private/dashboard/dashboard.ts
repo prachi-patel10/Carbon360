@@ -1,5 +1,5 @@
 import { Component, HostListener } from '@angular/core';
-import { Router,RouterOutlet } from '@angular/router';
+import { Router,RouterOutlet,ActivatedRoute  } from '@angular/router';
 import { AuthService } from '../../core/guards/auth-service';
 import { FormsModule } from '@angular/forms';
 import {CommonModule } from '@angular/common';
@@ -16,7 +16,8 @@ export class DashboardComponent {
   selectedRole: string = 'Admin';
   showProfileCard: boolean = false;
 
-  constructor(private authService: AuthService, private router: Router) {
+  constructor(private authService: AuthService, private router: Router,  private route: ActivatedRoute
+) {
     const user = this.authService.getLoggedInUser();
     if (!user) {
       this.router.navigate(['/login']);
@@ -31,6 +32,14 @@ export class DashboardComponent {
       this.selectedRole = savedRole;
     }
   }
+
+  goTo(path: string) {
+  this.router.navigate([path], { relativeTo: this.route });
+}
+
+isActive(path: string): boolean {
+  return this.router.url.includes(path);
+}
 
   /* ✅ FIXED DROPDOWN */
 
