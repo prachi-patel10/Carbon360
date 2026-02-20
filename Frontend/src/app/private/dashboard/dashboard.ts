@@ -16,6 +16,7 @@ export class DashboardComponent {
   roles: string[] = [];
   selectedRole: string = '';
   showProfileCard: boolean = false;
+  sidebarOpen = false;
 
   constructor(
     private authService: AuthService,
@@ -45,6 +46,8 @@ export class DashboardComponent {
   isActive(path: string): boolean {
     return this.router.url.includes(path);
   }
+
+ 
 
   /* Dropdown */
 

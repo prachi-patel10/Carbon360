@@ -13,92 +13,6 @@ body {
   background: var(--bg);
   font-family: "Segoe UI", system-ui, sans-serif;
 }
-
-
-
-/* ================= PAGE HEADER (NAVBAR STYLE LOOK) ================= */
-.dashboard-container {
-  min-height: 100vh;
-  font-family: 'Segoe UI', sans-serif;
-  padding: 20px;
-  background: url('/assets/bg3.png') no-repeat center center;
-  background-size: cover;
-}
-
-/* Topbar */
-.topbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: #abf1b1;
-  padding: 15px 30px;
-  color: #1b5e20;
-  border-radius: 6px;
-  margin-bottom: 30px;
-  position: relative;
-  z-index: 1;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-}
-
-.logo-section {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-}
-
-.logo-img {
-  width: 40px;
-  height: 40px;
-}
-
-.logo-text {
-  font-size: 20px;
-  font-weight: 600;
-  letter-spacing: 1px;
-}
-
-/* Logout button */
-.user-section {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-}
-
-.welcome {
-  font-size: 14px;
-}
-
-.logout-btn {
-  background: #66bb6a;
-  border: none;
-  padding: 6px 14px;
-  color: white;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: 0.3s;
-}
-
-.logout-btn:hover {
-  background: #1b5e20;
-}
-
-
-.sort-dropdown {
-  height: 40px;
-  padding: 6px 12px;
-  border-radius: 8px;
-  border: 1px solid #d1d5db;
-  font-weight: 500;
-  cursor: pointer;
-}
-
-.sort-dropdown:focus {
-  border-color: #1b5e20;
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(79,70,229,0.2);
-}
-
-
 /* ================= FORM CARD ================= */
 .form-card {
   background: #fff;
@@ -490,3 +404,109 @@ td {
   color: #444;
 }
 
+/* ================= RESPONSIVE DESIGN ================= */
+
+/* ----------- Large Tablets (≤ 1024px) ----------- */
+@media (max-width: 1024px) {
+
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .filter-bar {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .filter-bar .search {
+    width: 100%;
+  }
+
+  .records-group {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .search-toggle-row {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
+
+
+/* ----------- Tablets (≤ 768px) ----------- */
+@media (max-width: 768px) {
+
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .btn-row {
+    flex-direction: column;
+  }
+
+  .btn-row button {
+    width: 100%;
+  }
+
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .filter-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filter-bar .search {
+    width: 100%;
+  }
+
+  .records-group {
+    justify-content: space-between;
+  }
+
+  .search-toggle-row {
+    justify-content: space-between;
+  }
+
+  .table-wrapper {
+    overflow-x: auto; /* allow horizontal scroll */
+  }
+
+  .role-table {
+    min-width: 600px;
+  }
+}
+
+
+/* ----------- Mobile (≤ 480px) ----------- */
+@media (max-width: 480px) {
+
+  .form-card {
+    padding: 16px;
+  }
+
+  input[type="text"],
+  input[type="number"] {
+    font-size: 14px;
+  }
+
+  .btn-edit,
+  .btn-delete {
+    padding: 0 12px;
+    height: 34px;
+    font-size: 13px;
+  }
+
+  .badge {
+    font-size: 11px;
+    padding: 4px 10px;
+  }
+
+  .record-count {
+    text-align: center;
+  }
+}
