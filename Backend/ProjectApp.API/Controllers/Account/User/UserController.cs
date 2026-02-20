@@ -1,11 +1,11 @@
 ﻿using System.Net;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using ProjectApp.Core.DTOs.Account.User;
-using ProjectApp.Core.Entities;
 using ProjectApp.Repository.Interfaces.User;
+using ProjectApp.Core.Entities;
+using ProjectApp.Repository.Utilities.SP;
 
 namespace ProjectApp.API.Controllers.Account.User
 {
@@ -20,20 +20,17 @@ namespace ProjectApp.API.Controllers.Account.User
             _userService = userService;
         }
 
-        // ================= GET ALL =================
         [Authorize]
-        [HttpGet("All", Name = "GetAllUsers")]
+        [HttpGet("All")]
         public async Task<ActionResult<APIResponse>> GetAllUsersAsync()
         {
             var response = new APIResponse();
-
             try
             {
                 var users = await _userService.GetUsersAsync();
                 response.data = users;
                 response.status = true;
                 response.StatusCode = HttpStatusCode.OK;
-
                 return Ok(response);
             }
             catch (Exception ex)
@@ -41,10 +38,11 @@ namespace ProjectApp.API.Controllers.Account.User
                 response.status = false;
                 response.StatusCode = HttpStatusCode.InternalServerError;
                 response.Errors.Add(ex.Message);
-
                 return StatusCode(500, response);
             }
         }
+
+
 
         // ================= CREATE =================
         [Authorize]
@@ -52,7 +50,6 @@ namespace ProjectApp.API.Controllers.Account.User
         public async Task<ActionResult<APIResponse>> CreateUserAsync([FromBody] UserDTO dto)
         {
             var response = new APIResponse();
-
             try
             {
                 int? loggedInUserId = User.FindFirst(ClaimTypes.NameIdentifier) != null
@@ -72,51 +69,47 @@ namespace ProjectApp.API.Controllers.Account.User
                 response.status = false;
                 response.StatusCode = HttpStatusCode.InternalServerError;
                 response.Errors.Add(ex.Message);
-
                 return StatusCode(500, response);
             }
         }
 
-        // ================= GET BY USERNAME =================
         [Authorize]
-        [HttpGet("ByUsername/{username}")]
-        public async Task<ActionResult<APIResponse>> GetUserByUsername(string username)
+        [HttpPatch("Status")]
+        public async Task<ActionResult<APIResponse>> UpdateUserStatus([FromBody] UserStatusUpdateDTO dto)
         {
             var response = new APIResponse();
-
             try
             {
-                var user = await _userService.GetUserByUsernameAsync(username);
-                response.data = user;
+                await _userService.UpdateUserStatusAsync(dto);
+
+                response.data = new { dto.UserId, dto.IsActive };
                 response.status = true;
-                response.StatusCode = HttpStatusCode.OK;
+                response.StatusCode = System.Net.HttpStatusCode.OK;
 
                 return Ok(response);
             }
             catch (Exception ex)
             {
                 response.status = false;
-                response.StatusCode = HttpStatusCode.InternalServerError;
+                response.StatusCode = System.Net.HttpStatusCode.InternalServerError;
                 response.Errors.Add(ex.Message);
-
                 return StatusCode(500, response);
             }
         }
 
-        // ================= GET BY ID =================
+
+        // ================= OTHER CRUD =================
         [Authorize]
         [HttpGet("ById/{id}")]
         public async Task<ActionResult<APIResponse>> GetUserById(string id)
         {
             var response = new APIResponse();
-
             try
             {
                 var user = await _userService.GetUserByIdAsync(id);
                 response.data = user;
                 response.status = true;
                 response.StatusCode = HttpStatusCode.OK;
-
                 return Ok(response);
             }
             catch (Exception ex)
@@ -124,25 +117,42 @@ namespace ProjectApp.API.Controllers.Account.User
                 response.status = false;
                 response.StatusCode = HttpStatusCode.InternalServerError;
                 response.Errors.Add(ex.Message);
-
                 return StatusCode(500, response);
             }
         }
 
-        // ================= UPDATE =================
+        [Authorize]
+        [HttpGet("ByUsername/{username}")]
+        public async Task<ActionResult<APIResponse>> GetUserByUsername(string username)
+        {
+            var response = new APIResponse();
+            try
+            {
+                var user = await _userService.GetUserByUsernameAsync(username);
+                response.data = user;
+                response.status = true;
+                response.StatusCode = HttpStatusCode.OK;
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                response.status = false;
+                response.StatusCode = HttpStatusCode.InternalServerError;
+                response.Errors.Add(ex.Message);
+                return StatusCode(500, response);
+            }
+        }
+
         [Authorize]
         [HttpPut("Update")]
         public async Task<ActionResult<APIResponse>> UpdateUserAsync([FromBody] UserUpdateDTO dto)
         {
             var response = new APIResponse();
-
             try
             {
                 await _userService.UpdateUserAsync(dto);
-
                 response.status = true;
                 response.StatusCode = HttpStatusCode.OK;
-
                 return Ok(response);
             }
             catch (Exception ex)
@@ -150,25 +160,20 @@ namespace ProjectApp.API.Controllers.Account.User
                 response.status = false;
                 response.StatusCode = HttpStatusCode.InternalServerError;
                 response.Errors.Add(ex.Message);
-
                 return StatusCode(500, response);
             }
         }
 
-        // ================= DELETE =================
         [Authorize]
         [HttpDelete("Delete/{id}")]
         public async Task<ActionResult<APIResponse>> DeleteUserAsync(string id)
         {
             var response = new APIResponse();
-
             try
             {
                 await _userService.DeleteUserAsync(id);
-
                 response.status = true;
                 response.StatusCode = HttpStatusCode.OK;
-
                 return Ok(response);
             }
             catch (Exception ex)
@@ -176,10 +181,55 @@ namespace ProjectApp.API.Controllers.Account.User
                 response.status = false;
                 response.StatusCode = HttpStatusCode.InternalServerError;
                 response.Errors.Add(ex.Message);
+                return StatusCode(500, response);
+            }
+        }
 
+        [Authorize]
+        [HttpGet("Search")]
+        public async Task<ActionResult<APIResponse>> SearchUsers(
+    [FromQuery] string? searchText,
+    [FromQuery] int pageNumber = 1,
+    [FromQuery] int pageSize = 10,
+    [FromQuery] string? sortColumn = null,
+    [FromQuery] string? sortDirection = "asc",
+    [FromQuery] bool? isActive = null
+)
+        {
+            var response = new APIResponse();
+            try
+            {
+                var request = new SearchRequest
+                {
+                    Search = searchText,
+                    PageNumber = pageNumber,
+                    PageSize = pageSize,
+                    SortColumn = sortColumn,
+                    SortDirection = sortDirection,
+                    IsActive = isActive
+                };
+
+                var (users, totalRecords) = await _userService.SearchUsersPaginatedAsync(request);
+
+                response.data = new PageResult
+                {
+                    Data = users,
+                    TotalRecords = totalRecords,
+                    CurrentPage = pageNumber,
+                    TotalPages = (int)Math.Ceiling(totalRecords / (double)pageSize)
+                };
+                response.status = true;
+                response.StatusCode = System.Net.HttpStatusCode.OK;
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                response.status = false;
+                response.StatusCode = System.Net.HttpStatusCode.InternalServerError;
+                response.Errors.Add(ex.Message);
                 return StatusCode(500, response);
             }
         }
     }
-
 }

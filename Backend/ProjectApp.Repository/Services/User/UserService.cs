@@ -6,6 +6,7 @@ using ProjectApp.Core.Models;
 using ProjectApp.Repository.Interfaces.Common;
 using ProjectApp.Repository.Interfaces.User;
 using ProjectApp.Repository.Utilities.Auth;
+using ProjectApp.Repository.Utilities.SP;
 
 namespace ProjectApp.Repository.Services.User
 {
@@ -65,7 +66,7 @@ namespace ProjectApp.Repository.Services.User
             return MapToResponse(user);
         }
 
-        // ================= GET ALL =================
+        // GET ALL USERS
         public async Task<List<UserResDTO>> GetUsersAsync()
         {
             var users = await _context.CB_Users
@@ -122,9 +123,23 @@ namespace ProjectApp.Repository.Services.User
                 new SqlParameter("@UserName", dto.UserName),
                 new SqlParameter("@Email", dto.Email),
                 new SqlParameter("@Password", (object?)password ?? DBNull.Value),
-                new SqlParameter("@DepartmentId", dto.DepartmentId),
+                new SqlParameter("@DepartmentId", dto.DepartmentId.HasValue ? (object)dto.DepartmentId.Value : DBNull.Value),
                 new SqlParameter("@IsActive", dto.IsActive)
             );
+
+            return true;
+        }
+
+        // ================= PATCH ACTIVE/INACTIVE =================
+        public async Task<bool> UpdateUserStatusAsync(UserStatusUpdateDTO dto)
+        {
+            int userId = _idEncoder.Decode(dto.UserId);
+
+            var user = await _context.CB_Users.FindAsync(userId);
+            if (user == null) throw new Exception("User not found");
+
+            user.IsActive = dto.IsActive;
+            await _context.SaveChangesAsync();
 
             return true;
         }
@@ -135,14 +150,83 @@ namespace ProjectApp.Repository.Services.User
             int id = _idEncoder.Decode(encryptedId);
 
             var user = await _context.CB_Users.FindAsync(id);
-            if (user == null)
-                throw new Exception("User not found");
+            if (user == null) throw new Exception("User not found");
 
             user.IsDeleted = true;
             await _context.SaveChangesAsync();
 
             return true;
         }
+
+        // SEARCH USERS
+        public async Task<List<UserResDTO>> SearchUsersAsync(string search)
+        {
+            var query = _context.CB_Users
+                .Where(u => u.IsDeleted == false)
+                .Include(u => u.CB_UserRoleMappings)
+                    .ThenInclude(ur => ur.Role)
+                .Include(u => u.Department)
+                .AsQueryable();
+
+            if (!string.IsNullOrEmpty(search))
+                query = query.Where(u => u.Fname.Contains(search)
+                                      || u.Lname.Contains(search)
+                                      || u.UserName.Contains(search));
+
+            var users = await query.ToListAsync();
+            return users.Select(u => MapToResponse(u)).ToList();
+        }
+
+
+        //SEARCH WITH PAGINATION
+        public async Task<(List<UserResDTO> Users, int TotalRecords)> SearchUsersPaginatedAsync(SearchRequest request)
+        {
+            var usersFromDb = await _context.CB_Users // EF model is CB_User
+                .FromSqlRaw(
+                    "EXEC USP_CB_UserSearch @Search, @IsActive, @PageNumber, @PageSize, @SortColumn, @SortDirection",
+                    new SqlParameter("@Search", (object?)request.Search ?? DBNull.Value),
+                    new SqlParameter("@IsActive", (object?)request.IsActive ?? DBNull.Value),
+                    new SqlParameter("@PageNumber", request.PageNumber),
+                    new SqlParameter("@PageSize", request.PageSize),
+                    new SqlParameter("@SortColumn", (object?)request.SortColumn ?? "FName"),
+                    new SqlParameter("@SortDirection", (object?)request.SortDirection ?? "ASC")
+                )
+                .ToListAsync();
+
+            // Load navigation properties
+            foreach (var user in usersFromDb)
+            {
+                _context.Entry(user)
+                    .Collection(u => u.CB_UserRoleMappings)
+                    .Query()
+                    .Where(ur => ur.IsActive == true)
+                    .Include(ur => ur.Role)
+                    .Load();
+
+                _context.Entry(user)
+                    .Reference(u => u.Department)
+                    .Load();
+            }
+
+            var result = usersFromDb.Select(u => MapToResponse(u)).ToList();
+
+            // Total count
+            int totalRecords = 0;
+            using (var command = _context.Database.GetDbConnection().CreateCommand())
+            {
+                command.CommandText = "SELECT COUNT(*) FROM CB_USER WHERE IsDeleted = 0" +
+                    (string.IsNullOrEmpty(request.Search) ? "" : $" AND (FName LIKE '%{request.Search}%' OR LName LIKE '%{request.Search}%' OR UserName LIKE '%{request.Search}%')") +
+                    (request.IsActive.HasValue ? $" AND IsActive = {(request.IsActive.Value ? 1 : 0)}" : "");
+                command.CommandType = System.Data.CommandType.Text;
+
+                await _context.Database.OpenConnectionAsync();
+                totalRecords = Convert.ToInt32(await command.ExecuteScalarAsync());
+                await _context.Database.CloseConnectionAsync();
+            }
+
+            return (result, totalRecords);
+        }
+
 
         // ================= PRIVATE MAPPER =================
         private UserResDTO MapToResponse(CB_User user)
