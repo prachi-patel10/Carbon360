@@ -7,25 +7,87 @@
       <p>Track • Analyze • Improve</p>
     </div>
 
-    <ul class="menu">
-  <li *ngIf="isAdmin() || isCorporate()" [class.active]="isActive('user')" (click)="goTo('user')">
-    Users
+   <ul class="menu">
+
+  <!-- User Administration -->
+  <li *ngIf="isAdmin() || isCorporate()">
+   <div class="menu-title" (click)="toggleMenu('userAdmin')">
+  <i class="fas fa-user-cog"></i>
+  <span>User Administration</span>
+</div>
+    <ul class="submenu" *ngIf="openedMenu === 'userAdmin'">
+      <!-- <li (click)="goTo('add-user')">Add User</li>
+      <li (click)="goTo('user-list')">User Directory</li> -->
+      <li (click)="goTo('users')">User Activity Logs</li>
+    </ul>
   </li>
 
-  <li *ngIf="isAdmin() || isCorporate()" [class.active]="isActive('role')" (click)="goTo('role')">
-    Role
-  </li>
-    <li *ngIf="isAdmin() || isCorporate()" [class.active]="isActive('department')" (click)="goTo('department')">
-    department
-  </li>  <li *ngIf="isAdmin() || isReporter()" [class.active]="isActive('vehicle')" (click)="goTo('vehicle')">
-    vehicle
-  </li>  <li *ngIf="isAdmin() || isReporter()" [class.active]="isActive('waste')" (click)="goTo('waste')">
-    waste
-  </li>
-   <li *ngIf="isAdmin() || isReporter()" [class.active]="isActive('generator')" (click)="goTo('generator')">
-    generator
-  </li>
+  <!-- Access Control -->
+  <li *ngIf="isAdmin() || isCorporate()">
+    <div class="menu-title" (click)="toggleMenu('accessControl')">
+  <i class="fas fa-shield-alt"></i>
+  <span>Access Control</span>
+</div>
+    <ul class="submenu" *ngIf="openedMenu === 'accessControl'">
+      <!-- <li (click)="goTo('create-role')">Create Role</li> -->
+      <li (click)="goTo('roles')">Role List</li>
+      <!-- <li (click)="goTo('permissions')">Assign Permissions</li> -->
     </ul>
+  </li>
+
+  <!-- Organizational Units -->
+  <li *ngIf="isAdmin() || isCorporate()">
+    <div class="menu-title" (click)="toggleMenu('orgUnits')">
+  <i class="fas fa-sitemap"></i>
+  <span>Organizational Units</span>
+</div>
+    <ul class="submenu" *ngIf="openedMenu === 'orgUnits'">
+      <!-- <li (click)="goTo('add-department')">Add Department</li> -->
+      <li (click)="goTo('departments')">Department List</li>
+      <!-- <li (click)="goTo('dept-emission')">Emission Summary</li> -->
+    </ul>
+  </li>
+
+  <!-- Fleet & Transport -->
+  <li *ngIf="isAdmin() || isReporter()">
+    <div class="menu-title" (click)="toggleMenu('fleet')">
+  <i class="fas fa-truck"></i>
+  <span>Fleet & Transport</span>
+</div>
+    <ul class="submenu" *ngIf="openedMenu === 'fleet'">
+      <li (click)="goTo('add-vehicle')">Add Vehicle</li>
+      <li (click)="goTo('fuel-entry')">Fuel Entry</li>
+      <li (click)="goTo('transport-report')">Emission Report</li>
+    </ul>
+  </li>
+
+  <!-- Waste & Disposal -->
+  <li *ngIf="isAdmin() || isReporter()">
+    <div class="menu-title" (click)="toggleMenu('waste')">
+  <i class="fas fa-recycle"></i>
+  <span>Waste & Disposal</span>
+</div>
+    <ul class="submenu" *ngIf="openedMenu === 'waste'">
+      <li (click)="goTo('waste-category')">Waste Category</li>
+      <li (click)="goTo('waste-entry')">Waste Entry</li>
+      <li (click)="goTo('waste-report')">Emission Report</li>
+    </ul>
+  </li>
+
+  <!-- Power Generation -->
+  <li *ngIf="isAdmin() || isReporter()">
+    <div class="menu-title" (click)="toggleMenu('power')">
+  <i class="fas fa-bolt"></i>
+  <span>Power Generation</span>
+</div>
+    <ul class="submenu" *ngIf="openedMenu === 'power'">
+      <li (click)="goTo('add-generator')">Add Generator</li>
+      <li (click)="goTo('fuel-consumption')">Fuel Consumption</li>
+      <li (click)="goTo('power-report')">Emission Report</li>
+    </ul>
+  </li>
+
+</ul>
   </aside>
 
   <!-- Main Section -->

@@ -73,7 +73,7 @@ export class DashboardComponent {
     this.router.navigate(['/login']);
   }
 
-  /* ✅ CORRECT ROLE SWITCH */
+  /*CORRECT ROLE SWITCH */
 
   onRoleChange() {
 
@@ -96,6 +96,13 @@ export class DashboardComponent {
         }
       });
   }
+
+  /*SUBMENU */
+  openedMenu: string | null = null;
+
+toggleMenu(menu: string) {
+  this.openedMenu = this.openedMenu === menu ? null : menu;
+}
 
   isAdmin(): boolean {
   return this.selectedRole === 'Admin';
