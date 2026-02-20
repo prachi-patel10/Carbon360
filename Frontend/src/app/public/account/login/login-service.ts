@@ -13,6 +13,6 @@ export class LoginService {
   }
 
   loginUser(loginData: any) {
-    return this.http.post(`${this.baseUrl}/Login/Login`, loginData);
+    return this.http.post(`${this.baseUrl}/Login`, loginData);
   }
 }
