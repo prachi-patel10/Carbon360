@@ -8,6 +8,7 @@ import { MasterUserComponent } from './private/masters/user/user';
 import { Home } from './private/masters/home/home';
 import { DashboardComponent } from './private/dashboard/dashboard';
 import { MasterRoleComponent } from './private/masters/role/role';
+import { Department } from './private/masters/department/department';
 
 export const routes: Routes = [
 
@@ -30,8 +31,8 @@ export const routes: Routes = [
   children: [
     { path: '', redirectTo: 'user', pathMatch: 'full' },
       { path: 'user', component: MasterUserComponent },
-      { path: 'role', component: MasterRoleComponent }
-    // { path: 'department', component: DepartmentComponent }, // create/import DepartmentComponent
+      { path: 'role', component: MasterRoleComponent },
+    { path: 'department', component: Department }, // create/import DepartmentComponent
     // { path: 'vehicle', component: VehicleComponent },       // create/import VehicleComponent
     // { path: 'waste', component: WasteComponent },           // create/import WasteComponent
     // { path: 'generator', component: GeneratorComponent },   // create/import GeneratorComponent

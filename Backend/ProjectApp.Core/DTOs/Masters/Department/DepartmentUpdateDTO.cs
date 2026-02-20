@@ -11,8 +11,11 @@ namespace ProjectApp.Core.DTOs.Masters.Department
     {
         [Required]
         public string Id { get; set; }
+         [Required]
+        public string DepartmentName { get; set; }
+        public bool IsActive { get; set; }
 
-        [Required]
-        public string DepartmentName { get; set; } 
+       
+       
     }
 }

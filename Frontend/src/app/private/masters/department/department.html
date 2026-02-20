@@ -1,0 +1,148 @@
+<div class="topbar">
+    <div class="logo-section">
+      <img src="/assets/Carbon360-removebg-preview.png" alt="Logo" class="logo-img" />
+      <h1>Department Master</h1>
+    <span class="page-subtitle">Create, update and manage department</span>
+    </div>
+
+    <div class="user-section">
+      <button class="logout-btn" (click)="logoutdept()">Logout</button>
+    </div>
+  </div>
+
+<!-- FORM -->
+<form [formGroup]="departmentForm" (ngSubmit)="submitdept()" class="form-card">
+  <div class="grid">
+
+    <div>
+      <label>Department Name</label>
+      <input type="text" formControlName="DepartmentName">
+      <div class="validation"
+        *ngIf="departmentForm.get('DepartmentName')?.touched && departmentForm.get('DepartmentName')?.invalid">
+        Role Name is required
+      </div>
+    </div>
+
+
+    <!-- <div>
+      <label>Description</label>
+      <input type="text" formControlName="DepartmentDescription">
+      <div class="validation"
+        *ngIf="departmentForm.get('DepartmentDescription')?.touched && departmentForm.get('DepartmentDescription')?.invalid">
+        Department Name is required
+      </div>
+    </div> -->
+
+    <!-- ACTIVE TOGGLE -->
+    <div class="toggle-row">
+      <label class="toggle-label">Active</label>
+
+      <label class="toggle-switch">
+        <input type="checkbox" formControlName="IsActive">
+        <span class="toggle-slider"></span>
+      </label>
+
+      <span class="toggle-text">
+        {{ departmentForm.get('IsActive')?.value ? 'Active' : 'Inactive' }}
+      </span>
+    </div>
+
+  </div>
+
+  <div class="btn-row">
+    <button type="submit" class="btn-save">
+      {{ departmentForm.value.DepartmentId === 0 ? 'Save' : 'Update' }}
+    </button>
+
+    <button type="button" class="btn-reset" (click)="resetForm()">
+      Reset
+    </button>
+  </div>
+
+  <div class="section-header">
+    <span>Department List</span>
+    <span class="hint">Search • Filter • Page size</span>
+  </div>
+
+  <!-- FILTER BAR -->
+<div [formGroup]="searchForm" class="filter-bar">
+
+    <input class="search"
+      placeholder="Search Department"
+      formControlName="searchText">
+
+    <small class="field-hint">
+      Number of records per page
+    </small>
+
+    <input type="number"
+      min="1"
+      class="records"
+      [value]="requestedRecords()"
+      (change)="onRecordsChange($event)">
+
+    <div class="search-toggle-row">
+      <label class="toggle-label">Active Only</label>
+
+      <label class="toggle-switch">
+        <input type="checkbox"
+          [checked]="onlyActive()"
+          (change)="onActiveFilterChange($event)">
+        <span class="toggle-slider"></span>
+      </label>
+
+      <span class="toggle-text">
+        {{ onlyActive() ? 'Active' : 'All' }}
+      </span>
+    </div>
+
+</div>
+
+  <div class="table-wrapper">
+    <table class="role-table">
+      <thead>
+        <tr>
+         <th (click)="previousPageByDepartmentName()">Department Name</th>
+<!-- <th (click)="nextPageByShortCodeDept()">Description</th> -->
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr *ngFor="let d of departments()">
+          <td>{{ d.DepartmentName }}</td>
+          <!-- <td>{{ d.DepartmentDescription }}</td> -->
+
+          <td>
+            <span
+              class="badge"
+              [ngClass]="{
+                'badge-active': d.IsActive,
+                'badge-inactive': !d.IsActive
+              }"
+              (click)="toggleActive(d)">
+              {{ d.IsActive ? 'Active' : 'Inactive' }}
+            </span>
+          </td>
+
+          <td class="action-cell">
+            <button type="button"
+              class="btn-edit"
+              (click)="edit(d)">Edit</button>
+
+            <button type="button"
+              class="btn-delete"
+              (click)="deleteUI(d)">Delete</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- PAGINATION -->
+
+<div class="record-count">
+  Showing {{ departments().length }} of {{ totalRecords() }} records
+</div>
+</form>

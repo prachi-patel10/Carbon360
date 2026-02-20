@@ -15,8 +15,10 @@
   <li [class.active]="isActive('role')" (click)="goTo('role')">
     Role
   </li>
+  <li [class.active]="isActive('department')" (click)="goTo('department')">
+    Department
+  </li>
 
-      <li routerLink="/dashboard/department" routerLinkActive="active">Department</li>
       <li routerLink="/dashboard/vehicle" routerLinkActive="active">Vehicle</li>
       <li routerLink="/dashboard/waste" routerLinkActive="active">Waste</li>
       <li routerLink="/dashboard/generator" routerLinkActive="active">Generator</li>
