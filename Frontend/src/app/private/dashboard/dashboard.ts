@@ -90,11 +90,20 @@ export class DashboardComponent {
 
           // reload dashboard to apply new permissions
           window.location.reload();
-        },
-        error: () => {
-          alert("Role switch failed");
         }
       });
   }
+
+  isAdmin(): boolean {
+  return this.selectedRole === 'Admin';
+}
+
+isCorporate(): boolean {
+  return this.selectedRole === 'Corporate';
+}
+
+isReporter(): boolean {
+  return this.selectedRole === 'Reporter';
+}
 
 }

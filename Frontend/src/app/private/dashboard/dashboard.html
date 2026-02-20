@@ -8,33 +8,23 @@
     </div>
 
     <ul class="menu">
-  <li [class.active]="isActive('user')" (click)="goTo('user')">
+  <li *ngIf="isAdmin() || isCorporate()" [class.active]="isActive('user')" (click)="goTo('user')">
     Users
   </li>
 
-  <li [class.active]="isActive('role')" (click)="goTo('role')">
+  <li *ngIf="isAdmin() || isCorporate()" [class.active]="isActive('role')" (click)="goTo('role')">
     Role
   </li>
-<<<<<<< Updated upstream
-  <li [class.active]="isActive('department')" (click)="goTo('department')">
-    Department
-  </li>
-
-      <li routerLink="/dashboard/vehicle" routerLinkActive="active">Vehicle</li>
-      <li routerLink="/dashboard/waste" routerLinkActive="active">Waste</li>
-      <li routerLink="/dashboard/generator" routerLinkActive="active">Generator</li>
-=======
-    <li [class.active]="isActive('department')" (click)="goTo('department')">
+    <li *ngIf="isAdmin() || isCorporate()" [class.active]="isActive('department')" (click)="goTo('department')">
     department
-  </li>  <li [class.active]="isActive('vehicle')" (click)="goTo('vehicle')">
+  </li>  <li *ngIf="isAdmin() || isReporter()" [class.active]="isActive('vehicle')" (click)="goTo('vehicle')">
     vehicle
-  </li>  <li [class.active]="isActive('waste')" (click)="goTo('waste')">
+  </li>  <li *ngIf="isAdmin() || isReporter()" [class.active]="isActive('waste')" (click)="goTo('waste')">
     waste
   </li>
-   <li [class.active]="isActive('generator')" (click)="goTo('generator')">
+   <li *ngIf="isAdmin() || isReporter()" [class.active]="isActive('generator')" (click)="goTo('generator')">
     generator
   </li>
->>>>>>> Stashed changes
     </ul>
   </aside>
 
