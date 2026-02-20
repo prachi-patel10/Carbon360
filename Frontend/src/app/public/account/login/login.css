@@ -39,39 +39,25 @@
 
 /* Title */
 
-/* Welcome Title Styling */
-.welcome-title {
-  color: #1b5e20;
-  font-weight: 700;
-  font-size: 28px;
-  letter-spacing: 0.5px;
-
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 1px; 
+.brand h1 {
+  font-size: 24px;
+  letter-spacing: 1px;
   text-align: center;
+  align-items: center;
 }
 
-/* Waving hand animation */
-.wave {
-  display: inline-block;
-  animation: wave-animation 2s infinite;
-  transform-origin: 70% 70%;
+.brand span {
+  color: #1b5e20;
+  
 }
 
-/* Wave keyframes */
-@keyframes wave-animation {
-  0% { transform: rotate(0deg); }
-  15% { transform: rotate(14deg); }
-  30% { transform: rotate(-8deg); }
-  40% { transform: rotate(14deg); }
-  50% { transform: rotate(-4deg); }
-  60% { transform: rotate(10deg); }
-  70% { transform: rotate(0deg); }
-  100% { transform: rotate(0deg); }
+.brand p {
+  font-size: 12px;
+  opacity: 0.8;
+  margin-bottom: 30px;
+   text-align: center;
+  align-items: center;
 }
-
 
 .login-card h4 {
   color: #1b5e20;

@@ -2,88 +2,32 @@
 
   <!-- Sidebar -->
   <aside class="sidebar">
-    
-    <!-- Brand -->
     <div class="brand">
       <h1>CARBON<span>360</span></h1>
       <p>Track • Analyze • Improve</p>
     </div>
 
-    <!-- Navigation -->
     <ul class="menu">
-      <li routerLink="user" routerLinkActive="active">
-        <i class="fas fa-users"></i> Users
-      </li>
-
-      <li routerLink="/department" routerLinkActive="active">
-        <i class="fas fa-building"></i> Department
-      </li>
-
-      <li routerLink="/vehicle" routerLinkActive="active">
-        <i class="fas fa-truck"></i> Vehicle
-      </li>
-
-      <li routerLink="/waste" routerLinkActive="active">
-        <i class="fas fa-recycle"></i> Waste
-      </li>
-
-      <li routerLink="/generator" routerLinkActive="active">
-        <i class="fas fa-industry"></i> Generator
-      </li>
+      <li routerLink="/dashboard/user" routerLinkActive="active">Users</li>
+      <li routerLink="/dashboard/role" routerLinkActive="active">Role</li>
+      <li routerLink="/dashboard/department" routerLinkActive="active">Department</li>
+      <li routerLink="/dashboard/vehicle" routerLinkActive="active">Vehicle</li>
+      <li routerLink="/dashboard/waste" routerLinkActive="active">Waste</li>
+      <li routerLink="/dashboard/generator" routerLinkActive="active">Generator</li>
     </ul>
-
   </aside>
-
 
   <!-- Main Section -->
   <div class="main-section">
 
-    <!-- Topbar -->
-  <header class="topbar">
+    <header class="topbar">
+      <!-- your topbar content -->
+    </header>
 
-  <div class="left">
-    <button class="menu-toggle" (click)="toggleSidebar()">☰</button>
-  </div>
-
-  <div class="right">
-
-    <!-- Admin Icon -->
-   <div class="admin-wrapper">
-
-  <!-- Avatar -->
-  <div class="admin-avatar" (click)="toggleProfile($event)">
-    {{ loggedInUser.charAt(0) }}
-  </div>
-
-  <!-- Dropdown -->
-  <div class="admin-dropdown"
-       *ngIf="showProfileCard"
-       (click)="$event.stopPropagation()">
-
-    <h4>Switch Role</h4>
-
-    <select [(ngModel)]="selectedRole"
-            (change)="onRoleChange()"
-            class="role-select">
-      <option value="Admin">Admin</option>
-      <option value="Manager">Manager</option>
-      <option value="Viewer">Viewer</option>
-    </select>
-
-    <div class="divider"></div>
-
-    <button class="logout-btn" (click)="logout()">
-      Logout
-    </button>
-
-  </div>
-
-</div>
-</div>
-</header>
-
-
-    
+    <!-- CHILD PAGES LOAD HERE -->
+    <div class="page-content">
+      <router-outlet></router-outlet>
+    </div>
 
   </div>
 </div>

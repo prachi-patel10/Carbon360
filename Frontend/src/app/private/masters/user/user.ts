@@ -67,21 +67,20 @@ ngOnInit(): void {
 
 
   /* ================= LOAD USERS ================= */
-  /* ================= LOAD USERS ================= */
-loadUsers() {
+ loadUsers() {
   this.service.getAll().subscribe({
     next: (res: any) => {
-      const mapped = (res?.data ?? res ?? []).map((u: any) => ({
+      const mapped = (res?.data ?? []).map((u: any) => ({
         UserId: u.userId,
-        Fname: u.fName,        // map correctly
+        Fname: u.fName,
         Lname: u.lName,
         UserName: u.userName,
         Email: u.email,
         DepartmentId: u.departmentId,
-DepartmentName: this.departments().find(d => Number(d.id) === u.departmentId)?.departmentName ?? 'N/A',
-        RoleIds: [], 
-        RoleNames: u.roles?.join(', ') ?? '',
-        IsActive: u.isActive,
+        DepartmentName: this.departments().find(d => Number(d.id) === u.departmentId)?.departmentName ?? 'N/A',
+        RoleIds: u.roles?.map((r: any) => Number(r.id)) ?? [],
+        RoleNames: u.roles?.map((r: any) => r.roleName).join(', ') ?? '',
+        IsActive: u.isActive
       }));
 
       this.users.set(mapped);
@@ -89,7 +88,6 @@ DepartmentName: this.departments().find(d => Number(d.id) === u.departmentId)?.d
     error: () => this.toastr.error('Failed to load users')
   });
 }
-
 
 
   /* ================= LOAD DROPDOWNS ================= */
@@ -121,13 +119,12 @@ this.userForm = this.fb.group({
   UserName: ['', Validators.required],
   Email: ['', [Validators.required, Validators.email]],
   Password: ['', Validators.required],
-  ConfirmPassword: ['', Validators.required], // <-- Add this
+  ConfirmPassword: ['', Validators.required],
   DepartmentId: ['', Validators.required],
   RoleIds: [[], Validators.required],
   IsActive: [true]
 });
   }
-
   /* ================= SEARCH ================= */
   initSearchForm() {
     this.searchForm = this.fb.group({
@@ -176,35 +173,34 @@ submit() {
 
   const form = this.userForm.value;
 
-  // map frontend form to backend DTO
   const payload = {
-    dto: {
-      FName: form.Fname,
-      LName: form.Lname,
-      UserName: form.UserName,
-      Email: form.Email,
-      Password: form.Password,
-      ConfirmPassword: form.Password, // REQUIRED
-      DepartmentId: Number(form.DepartmentId),
-      RoleId: form.RoleIds.map((r: any) => Number(r)), // ensure numbers
-      IsActive: form.IsActive
-    }
+    FName: form.fname,
+    LName: form.lname,
+    UserName: form.userName,
+    Email: form.email,
+    Password: form.password,
+    ConfirmPassword: form.confirmPassword,
+    DepartmentId: form.departmentId ? Number(form.departmentId) : null,
+    RoleId: form.roleIds.filter((r: any) => r != null).map((r: any) => Number(r)),
+    IsActive: form.isActive
   };
 
-  this.service.create(payload).subscribe({
+  const obs = form.UserId === 0
+    ? this.service.create(payload)
+    : this.service.update({ ...payload, UserId: form.UserId });
+
+  obs.subscribe({
     next: () => {
-      this.toastr.success('User created successfully');
+      this.toastr.success(form.UserId === 0 ? 'User created successfully' : 'User updated successfully');
       this.resetForm();
-      this.loadUsers(); // reload list
+      this.loadUsers();
     },
     error: (err) => {
       console.error(err);
-      this.toastr.error('Failed to create user');
+      this.toastr.error('Operation failed. Check required fields.');
     }
   });
 }
-
-
 
   /* ================= EDIT ================= */
   edit(user: MasterUser) {

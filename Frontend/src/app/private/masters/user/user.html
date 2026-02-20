@@ -6,7 +6,7 @@
     <!-- FIRST NAME -->
     <div>
       <label>First Name</label>
-      <input type="text" formControlName="Fname">
+      <input type="text" formControlName="Fname" />
       <div class="validation"
         *ngIf="userForm.get('Fname')?.touched && userForm.get('Fname')?.invalid">
         First Name is required
@@ -16,7 +16,7 @@
     <!-- LAST NAME -->
     <div>
       <label>Last Name</label>
-      <input type="text" formControlName="Lname">
+      <input type="text" formControlName="Lname" />
       <div class="validation"
         *ngIf="userForm.get('Lname')?.touched && userForm.get('Lname')?.invalid">
         Last Name is required
@@ -26,7 +26,7 @@
     <!-- USERNAME -->
     <div>
       <label>Username</label>
-      <input type="text" formControlName="UserName">
+      <input type="text" formControlName="UserName" />
       <div class="validation"
         *ngIf="userForm.get('UserName')?.touched && userForm.get('UserName')?.invalid">
         Username is required
@@ -36,7 +36,7 @@
     <!-- EMAIL -->
     <div>
       <label>Email</label>
-      <input type="email" formControlName="Email">
+      <input type="email" formControlName="Email" />
       <div class="validation"
         *ngIf="userForm.get('Email')?.touched && userForm.get('Email')?.invalid">
         Valid Email is required
@@ -46,21 +46,22 @@
     <!-- PASSWORD -->
     <div>
       <label>Password</label>
-      <input type="password" formControlName="Password">
+      <input type="password" formControlName="Password" />
       <div class="validation"
         *ngIf="userForm.get('Password')?.touched && userForm.get('Password')?.invalid">
         Password is required
       </div>
     </div>
+
     <!-- CONFIRM PASSWORD -->
-<div>
-  <label>Confirm Password</label>
-  <input type="password" formControlName="ConfirmPassword">
-  <div class="validation"
-    *ngIf="userForm.get('ConfirmPassword')?.touched && userForm.get('ConfirmPassword')?.invalid">
-    Confirm Password is required
-  </div>
-</div>
+    <div>
+      <label>Confirm Password</label>
+      <input type="password" formControlName="ConfirmPassword" />
+      <div class="validation"
+        *ngIf="userForm.get('ConfirmPassword')?.touched && userForm.get('ConfirmPassword')?.invalid">
+        Confirm Password is required
+      </div>
+    </div>
 
     <!-- DEPARTMENT -->
     <div>
@@ -68,8 +69,8 @@
       <select formControlName="DepartmentId">
         <option value="">Select Department</option>
         <option *ngFor="let d of departments()" [value]="d.id">
-  {{ d.departmentName }}
-</option>
+          {{ d.departmentName }}
+        </option>
       </select>
       <div class="validation"
         *ngIf="userForm.get('DepartmentId')?.touched && userForm.get('DepartmentId')?.invalid">
@@ -96,7 +97,7 @@
       <label class="toggle-label">Active</label>
 
       <label class="toggle-switch">
-        <input type="checkbox" formControlName="IsActive">
+        <input type="checkbox" formControlName="IsActive" />
         <span class="toggle-slider"></span>
       </label>
 
@@ -110,7 +111,7 @@
   <!-- BUTTONS -->
   <div class="btn-row">
     <button type="submit" class="btn-save">
-      {{ userForm.value.UserId === 0 ? 'Save' : 'Update' }}
+      {{ userForm.get('UserId')?.value === 0 ? 'Save' : 'Update' }}
     </button>
 
     <button type="button" class="btn-reset" (click)="resetForm()">
@@ -162,15 +163,17 @@
         <td class="action-cell">
           <button type="button"
             class="btn-edit"
-            (click)="edit(u)">Edit</button>
+            (click)="edit(u)">
+            Edit
+          </button>
 
           <button type="button"
             class="btn-delete"
-            (click)="deleteUI(u)">Delete</button>
+            (click)="deleteUI(u)">
+            Delete
+          </button>
         </td>
       </tr>
     </tbody>
   </table>
 </div>
-
-

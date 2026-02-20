@@ -15,10 +15,12 @@
     <div class="col-md-4">
       <div class="card login-card shadow-lg border-0 rounded-4">
         <div class="card-body p-4">
-          <h4 class="text-center mb-2 welcome-title">
-            <span class="wave">👋</span> Welcome Back
-          </h4>
-          <p class="text-center mb-4 subtitle-text">Enter your credentials</p>
+           <div class="brand">
+      <h1>CARBON<span>360</span></h1>
+      <p>Track • Analyze • Improve</p>
+    </div>
+
+          <!-- <p class="text-center mb-4 subtitle-text">Enter your credentials</p> -->
 
           <form [formGroup]="loginData" (ngSubmit)="login()">
             <div class="mb-3">
@@ -40,11 +42,7 @@
             </div>
 
             <button type="submit" class="btn login-btn w-100" [disabled]="loginData.invalid">Login</button>
-             <div class="text-center mt-3">
-              <small class="register-footer-text">
-                Don't Have Account <a routerLink="/register" class="register-footer-link">Register here</a>
-              </small>
-            </div>
+            
           </form>
 
         </div>

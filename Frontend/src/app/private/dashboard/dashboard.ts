@@ -1,5 +1,5 @@
 import { Component, HostListener } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router,RouterOutlet } from '@angular/router';
 import { AuthService } from '../../core/guards/auth-service';
 import { FormsModule } from '@angular/forms';
 import {CommonModule } from '@angular/common';
@@ -7,7 +7,7 @@ import {CommonModule } from '@angular/common';
 @Component({
   selector: 'app-dashboard',
   templateUrl: './dashboard.html',
-  imports:[FormsModule,CommonModule],
+  imports:[FormsModule,CommonModule,RouterOutlet],
   styleUrls: ['./dashboard.css']
 })
 export class DashboardComponent {
