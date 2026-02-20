@@ -111,20 +111,25 @@ namespace ProjectApp.Repository.Services.User
         // ================= UPDATE =================
         public async Task<bool> UpdateUserAsync(UserUpdateDTO dto)
         {
-            var password = string.IsNullOrEmpty(dto.Password)
+            var password = string.IsNullOrWhiteSpace(dto.Password)
                 ? null
                 : BCrypt.Net.BCrypt.HashPassword(dto.Password);
 
+            var roleIdsCsv = dto.RoleIds != null && dto.RoleIds.Any()
+                ? string.Join(",", dto.RoleIds)
+                : null;
+
             await _context.Database.ExecuteSqlRawAsync(
-                "EXEC USP_CB_UserUpdate @UserId, @Fname, @Lname, @UserName, @Email, @Password, @DepartmentId, @IsActive",
+                "EXEC USP_CB_UserUpdateWithRoles @UserId, @Fname, @Lname, @UserName, @Email, @Password, @DepartmentId, @IsActive, @RoleIds",
                 new SqlParameter("@UserId", _idEncoder.Decode(dto.UserId)),
                 new SqlParameter("@Fname", dto.FName),
                 new SqlParameter("@Lname", dto.LName),
                 new SqlParameter("@UserName", dto.UserName),
                 new SqlParameter("@Email", dto.Email),
                 new SqlParameter("@Password", (object?)password ?? DBNull.Value),
-                new SqlParameter("@DepartmentId", dto.DepartmentId.HasValue ? (object)dto.DepartmentId.Value : DBNull.Value),
-                new SqlParameter("@IsActive", dto.IsActive)
+                new SqlParameter("@DepartmentId", (object?)dto.DepartmentId ?? DBNull.Value),
+                new SqlParameter("@IsActive", dto.IsActive),
+                new SqlParameter("@RoleIds", (object?)roleIdsCsv ?? DBNull.Value)
             );
 
             return true;
@@ -226,6 +231,7 @@ namespace ProjectApp.Repository.Services.User
 
             return (result, totalRecords);
         }
+
 
 
         // ================= PRIVATE MAPPER =================

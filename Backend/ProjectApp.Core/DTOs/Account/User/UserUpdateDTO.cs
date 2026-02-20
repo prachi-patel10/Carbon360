@@ -28,5 +28,7 @@ namespace ProjectApp.Core.DTOs.Account.User
         public bool IsActive { get; set; }
 
         public string? Password { get; set; }
+
+        public List<int>? RoleIds { get; set; }
     }
 }
