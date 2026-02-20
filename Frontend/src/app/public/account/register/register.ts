@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { ChangeDetectorRef, Component, Inject } from '@angular/core';
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Route, Router, RouterEvent, RouterLink } from '@angular/router';
+import { Router} from '@angular/router';
 import { RegisterService } from './register-service';
 import { ToastService } from '../../../core/toast/toastservice';
 import { AbstractControl, ValidationErrors } from '@angular/forms';
@@ -10,7 +10,7 @@ import { AbstractControl, ValidationErrors } from '@angular/forms';
 
 @Component({
   selector: 'app-register',
-  imports: [RouterLink, CommonModule, FormsModule, ReactiveFormsModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule],
   templateUrl: './register.html',
   styleUrls: ['./register.css'],
 })

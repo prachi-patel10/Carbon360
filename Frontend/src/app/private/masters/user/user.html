@@ -7,8 +7,7 @@
     <div>
       <label>First Name</label>
       <input type="text" formControlName="Fname" />
-      <div class="validation"
-        *ngIf="userForm.get('Fname')?.touched && userForm.get('Fname')?.invalid">
+      <div class="validation" *ngIf="userForm.get('Fname')?.touched && userForm.get('Fname')?.invalid">
         First Name is required
       </div>
     </div>
@@ -17,8 +16,7 @@
     <div>
       <label>Last Name</label>
       <input type="text" formControlName="Lname" />
-      <div class="validation"
-        *ngIf="userForm.get('Lname')?.touched && userForm.get('Lname')?.invalid">
+      <div class="validation" *ngIf="userForm.get('Lname')?.touched && userForm.get('Lname')?.invalid">
         Last Name is required
       </div>
     </div>
@@ -27,8 +25,7 @@
     <div>
       <label>Username</label>
       <input type="text" formControlName="UserName" />
-      <div class="validation"
-        *ngIf="userForm.get('UserName')?.touched && userForm.get('UserName')?.invalid">
+      <div class="validation" *ngIf="userForm.get('UserName')?.touched && userForm.get('UserName')?.invalid">
         Username is required
       </div>
     </div>
@@ -37,8 +34,7 @@
     <div>
       <label>Email</label>
       <input type="email" formControlName="Email" />
-      <div class="validation"
-        *ngIf="userForm.get('Email')?.touched && userForm.get('Email')?.invalid">
+      <div class="validation" *ngIf="userForm.get('Email')?.touched && userForm.get('Email')?.invalid">
         Valid Email is required
       </div>
     </div>
@@ -47,8 +43,7 @@
     <div>
       <label>Password</label>
       <input type="password" formControlName="Password" />
-      <div class="validation"
-        *ngIf="userForm.get('Password')?.touched && userForm.get('Password')?.invalid">
+      <div class="validation" *ngIf="userForm.get('Password')?.touched && userForm.get('Password')?.invalid">
         Password is required
       </div>
     </div>
@@ -68,29 +63,49 @@
       <label>Department</label>
       <select formControlName="DepartmentId">
         <option value="">Select Department</option>
-        <option *ngFor="let d of departments()" [value]="d.id">
+        <option *ngFor="let d of departments()" [value]="d.departmentId">
           {{ d.departmentName }}
         </option>
       </select>
-      <div class="validation"
-        *ngIf="userForm.get('DepartmentId')?.touched && userForm.get('DepartmentId')?.invalid">
+      <div class="validation" *ngIf="userForm.get('DepartmentId')?.touched && userForm.get('DepartmentId')?.invalid">
         Department is required
       </div>
     </div>
 
     <!-- ROLES -->
-    <div>
-      <label>Roles</label>
-      <select formControlName="RoleIds" multiple>
-        <option *ngFor="let r of rolesList()" [value]="r.roleId">
-          {{ r.roleName }}
-        </option>
-      </select>
-      <div class="validation"
-        *ngIf="userForm.get('RoleIds')?.touched && userForm.get('RoleIds')?.invalid">
-        At least one role is required
+<div>
+  <label>Roles</label>
+
+  <div class="multi-select" #dropdownWrapper>
+
+    <!-- Selected display -->
+    <div class="select-box" (click)="toggleDropdown()">
+      <span class="selected-text">
+        {{ getSelectedRoleNames() || 'Select Roles' }}
+      </span>
+      <span class="arrow">&#9662;</span>
+    </div>
+
+    <!-- Dropdown -->
+    <div class="dropdown-panel" *ngIf="isDropdownOpen">
+      <div class="dropdown-item" *ngFor="let r of rolesList()">
+        <input
+          type="checkbox"
+          [value]="r.roleId"
+          (change)="onRoleChange($event)"
+          [checked]="userForm.value.RoleIds?.includes(r.roleId)"
+        />
+        <label>{{ r.roleName }}</label>
       </div>
     </div>
+
+  </div>
+
+  <div class="validation"
+       *ngIf="userForm.get('RoleIds')?.touched && userForm.get('RoleIds')?.invalid">
+    At least one role is required
+  </div>
+</div>
 
     <!-- ACTIVE TOGGLE -->
     <div class="toggle-row">
@@ -111,7 +126,7 @@
   <!-- BUTTONS -->
   <div class="btn-row">
     <button type="submit" class="btn-save">
-      {{ userForm.get('UserId')?.value === 0 ? 'Save' : 'Update' }}
+      {{ !userForm.get('UserId')?.value ? 'Save' : 'Update' }}
     </button>
 
     <button type="button" class="btn-reset" (click)="resetForm()">
@@ -142,38 +157,70 @@
 
     <tbody>
       <tr *ngFor="let u of users()">
-        <td>{{ u.fname }}</td>
+        <td>{{ u.Fname }}</td>
         <td>{{ u.Lname }}</td>
         <td>{{ u.Email }}</td>
-        <td>{{ u.DepartmentName }}</td>
+        <td>{{ u.DepartmentName || 'N/A' }}</td>
         <td>{{ u.RoleNames }}</td>
 
         <td>
-          <span
-            class="badge"
-            [ngClass]="{
+          <span class="badge" [ngClass]="{
               'badge-active': u.IsActive,
               'badge-inactive': !u.IsActive
-            }"
-            (click)="toggleActive(u)">
+            }" (click)="toggleActive(u)">
             {{ u.IsActive ? 'Active' : 'Inactive' }}
           </span>
         </td>
 
         <td class="action-cell">
-          <button type="button"
-            class="btn-edit"
-            (click)="edit(u)">
+          <button type="button" class="btn-edit" (click)="edit(u)">
             Edit
           </button>
 
-          <button type="button"
-            class="btn-delete"
-            (click)="deleteUI(u)">
+          <button type="button" class="btn-delete" (click)="deleteUI(u)">
             Delete
           </button>
         </td>
       </tr>
     </tbody>
   </table>
+
+  <!-- PAGINATION -->
+  <div class="pagination-bar">
+
+    <div class="record-info">
+      Showing
+      {{ (currentPage() - 1) * requestedRecords() + 1 }}
+      -
+      {{ Math.min(currentPage() * requestedRecords(), totalRecords()) }}
+      of {{ totalRecords() }} records
+    </div>
+
+    <!-- PAGE SIZE -->
+    <div>
+      <label>Records per page:</label>
+      <select (change)="onRecordsChange($event)">
+        <option value="5">5</option>
+        <option value="10" selected>10</option>
+        <option value="20">20</option>
+        <option value="50">50</option>
+      </select>
+    </div>
+
+    <!-- PAGE BUTTONS -->
+    <div class="page-controls">
+
+      <button (click)="currentPage.set(currentPage() - 1)" [disabled]="currentPage() === 1">
+        Prev
+      </button>
+
+      <span>
+        Page {{ currentPage() }} of {{ totalPages() }}
+      </span>
+
+      <button (click)="currentPage.set(currentPage() + 1)" [disabled]="currentPage() === totalPages()">
+        Next
+      </button>
+    </div>
+  </div>
 </div>

@@ -3,22 +3,35 @@ import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { enviornment } from '../../../enviorments/enviornment';
 
+// export interface MasterUser {
+//   UserId: number;
+//   fname: string;
+//   Lname: string;
+//   UserName: string;
+//   Email: string;
+//   DepartmentId: number;
+//   DepartmentName?: string;
+//   RoleIds: number[];
+//   RoleNames?: string;
+//   IsActive: boolean;
+//   IsDeleted: boolean;
+//   EntryBy?: string;
+//   UpdateBy?: string;
+//   EntryDate?: string;
+//   UpdateDate?: string;
+// }
+
 export interface MasterUser {
-  UserId: number;
-  fname: string;
+  UserId: string;
+  Fname: string;
   Lname: string;
   UserName: string;
   Email: string;
-  DepartmentId: number;
+  DepartmentId: number | null;
   DepartmentName?: string;
   RoleIds: number[];
   RoleNames?: string;
   IsActive: boolean;
-  IsDeleted: boolean;
-  EntryBy?: string;
-  UpdateBy?: string;
-  EntryDate?: string;
-  UpdateDate?: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -27,16 +40,16 @@ export class UserService {
   // ✅ Using environment
   private apiUrl = `${enviornment.apiBaseUrl}/User`;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   /* ================= GET ALL ================= */
- getAll() {
-  const token = localStorage.getItem('token');
-  const headers = new HttpHeaders({
-    'Authorization': `Bearer ${token}`
-  });
-  return this.http.get<any[]>(`${this.apiUrl}/All`, { headers });
-}
+  getAll() {
+    const token = localStorage.getItem('token');
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`
+    });
+    return this.http.get<any[]>(`${this.apiUrl}/All`, { headers });
+  }
 
 
   /* ================= SEARCH ================= */
@@ -46,43 +59,49 @@ export class UserService {
   }
 
   /* ================= CREATE ================= */
-create(data: any) {
-  const token = localStorage.getItem('token');
-  const headers = new HttpHeaders({
-    'Authorization': `Bearer ${token}`,
-    'Content-Type': 'application/json'
-  });
+  create(data: any) {
+    const token = localStorage.getItem('token');
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    });
 
-  return this.http.post(`${this.apiUrl}/Create`, data, { headers });
-}
+    return this.http.post(`${this.apiUrl}/Create`, data, { headers });
+  }
   /* ================= UPDATE ================= */
   update(payload: any) {
     return this.http.put(`${this.apiUrl}/Update`, payload);
   }
 
   /* ================= DELETE ================= */
-  delete(id: number) {
-    return this.http.delete(`${this.apiUrl}/Delete/${id}`);
-  }
+  delete(id: string) {
+  return this.http.delete(`${this.apiUrl}/Delete/${id}`);
+}
 
   /* ================= PAGINATION ================= */
   getPaged(
     pageNumber: number,
-    requestedRecords: number,
-    search: string,
-    onlyActive?: boolean | null,
+    pageSize: number,
+    searchText?: string,
+    onlyActive?: boolean,
     sortColumn?: string,
     sortDirection?: string
   ) {
+    const token = localStorage.getItem('token');
+
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`
+    });
+
     let params = new HttpParams()
-      .set('page', pageNumber.toString())
-      .set('pageSize', requestedRecords.toString());
+      .set('pageNumber', pageNumber)
+      .set('pageSize', pageSize);
 
-    if (search)
-      params = params.set('search', search);
+    if (searchText)
+      params = params.set('searchText', searchText);
 
-    if (onlyActive === true)
-      params = params.set('isActive', 'true');
+    if (onlyActive !== undefined && onlyActive !== null)
+      params = params.set('isActive', onlyActive);
 
     if (sortColumn)
       params = params.set('sortColumn', sortColumn);
@@ -90,9 +109,11 @@ create(data: any) {
     if (sortDirection)
       params = params.set('sortDirection', sortDirection);
 
-    return this.http.get<any>(`${this.apiUrl}/search`, { params });
+    return this.http.get<any>(
+      `${this.apiUrl}/Search`,
+      { headers, params }
+    );
   }
-
   /* ================= TOGGLE ACTIVE ================= */
   toggleActive(id: number) {
     return this.http.put(`${this.apiUrl}/toggle/${id}`, {});
@@ -100,15 +121,15 @@ create(data: any) {
 
   /* ================= LOAD DEPARTMENTS ================= */
   getDepartments(): Observable<any[]> {
-  const token = localStorage.getItem('token');
+    const token = localStorage.getItem('token');
 
-  const headers = new HttpHeaders({
-    'Authorization': `Bearer ${token}`,
-    'Content-Type': 'application/json'
-  });
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    });
 
-  return this.http.get<any[]>(`${enviornment.apiBaseUrl}/Department/All`, { headers });
-}
+    return this.http.get<any[]>(`${enviornment.apiBaseUrl}/Department/All`, { headers });
+  }
 
   /* ================= LOAD ROLES ================= */
   getRoles(): Observable<any[]> {
@@ -121,6 +142,22 @@ create(data: any) {
 
     return this.http.get<any[]>(
       `${enviornment.apiBaseUrl}/Role/All`,
+      { headers }
+    );
+  }
+
+  updateStatus(userId: string, isActive: boolean) {
+
+    const token = localStorage.getItem('token');
+
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    });
+
+    return this.http.patch(
+      `${this.apiUrl}/Status`,
+      { userId: userId, isActive: isActive },
       { headers }
     );
   }

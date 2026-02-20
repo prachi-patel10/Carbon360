@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, effect } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { debounceTime } from 'rxjs/operators';
@@ -15,6 +15,7 @@ import type { MasterUser } from './user-service';
 })
 export class MasterUserComponent implements OnInit {
 
+  Math = Math;
   username: string | null = '';
   userId = 0;
 
@@ -36,104 +37,93 @@ export class MasterUserComponent implements OnInit {
   sortColumn = 'Fname';
   sortDirection: 'ASC' | 'DESC' = 'ASC';
 
+  isDropdownOpen = false;
+
   constructor(
     private fb: FormBuilder,
     private service: UserService,
     private toastr: ToastrService
-  ) {
-    /* ================= AUTO LOAD ================= */
-    effect(() => {
-      this.loadUsers();
+  ) { }
+
+  ngOnInit(): void {
+    this.initForm();
+    this.initSearchForm();
+
+    // Load Departments first
+    this.service.getDepartments().subscribe({
+      next: (res: any) => {
+        this.departments.set(res?.data ?? res ?? []);
+        this.loadUsers(); // load users after departments
+      },
+      error: () => this.toastr.error('Failed to load departments')
+    });
+
+    this.loadRoles();
+  }
+
+  /* ================= LOAD DATA ================= */
+  loadUsers() {
+    this.service.getAll().subscribe({
+      next: (res: any) => {
+        const usersArray = res?.data ?? [];
+        const mapped = usersArray.map((u: any) => ({
+          UserId: u.userId,
+          Fname: u.fName,
+          Lname: u.lName,
+          UserName: u.userName,
+          Email: u.email,
+          DepartmentId: u.departmentId,
+          DepartmentName:
+            this.departments().find(d => d.id === u.departmentId)?.departmentName ?? 'N/A',
+          RoleIds: u.roles?.map((x: any) => Number(x)) ?? [],
+          RoleNames: u.roles?.join(', ') ?? '',
+          IsActive: u.isActive
+        }));
+        this.users.set(mapped);
+        this.totalRecords.set(mapped.length);
+        this.totalPages.set(1);
+      },
+      error: (err) => {
+        console.error(err);
+        this.toastr.error('Failed to load users');
+      }
     });
   }
 
-ngOnInit(): void {
-  this.initForm();
-
-  // Load departments first
-  this.service.getDepartments().subscribe({
-    next: (res: any) => {
-      this.departments.set(res?.data ?? res ?? []);
-
-      // Now load users AFTER departments are loaded
-      this.loadUsers();
-    },
-    error: () => this.toastr.error('Failed to load departments')
-  });
-
-  // Load roles (can be parallel)
-  this.loadRoles();
-}
-
-
-  /* ================= LOAD USERS ================= */
- loadUsers() {
-  this.service.getAll().subscribe({
-    next: (res: any) => {
-      const mapped = (res?.data ?? []).map((u: any) => ({
-        UserId: u.userId,
-        Fname: u.fName,
-        Lname: u.lName,
-        UserName: u.userName,
-        Email: u.email,
-        DepartmentId: u.departmentId,
-        DepartmentName: this.departments().find(d => Number(d.id) === u.departmentId)?.departmentName ?? 'N/A',
-        RoleIds: u.roles?.map((r: any) => Number(r.id)) ?? [],
-        RoleNames: u.roles?.map((r: any) => r.roleName).join(', ') ?? '',
-        IsActive: u.isActive
-      }));
-
-      this.users.set(mapped);
-    },
-    error: () => this.toastr.error('Failed to load users')
-  });
-}
-
-
-  /* ================= LOAD DROPDOWNS ================= */
-loadDepartments() {
-  this.service.getDepartments().subscribe({
-    next: (res: any) => {
-      // Set the departments signal
-      this.departments.set(res?.data ?? res ?? []);
-    },
-    error: () => this.toastr.error('Failed to load departments')
-  });
-}
+  loadDepartments() {
+    this.service.getDepartments().subscribe({
+      next: (res: any) => this.departments.set(res?.data ?? res ?? []),
+      error: () => this.toastr.error('Failed to load departments')
+    });
+  }
 
   loadRoles() {
     this.service.getRoles().subscribe({
-      next: (res: any) => {
-        this.rolesList.set(res?.data ?? []);
-      },
+      next: (res: any) => this.rolesList.set(res?.data ?? []),
       error: () => this.toastr.error('Failed to load roles')
     });
   }
 
   /* ================= FORM ================= */
   initForm() {
-this.userForm = this.fb.group({
-  UserId: [0],
-  Fname: ['', Validators.required],
-  Lname: ['', Validators.required],
-  UserName: ['', Validators.required],
-  Email: ['', [Validators.required, Validators.email]],
-  Password: ['', Validators.required],
-  ConfirmPassword: ['', Validators.required],
-  DepartmentId: ['', Validators.required],
-  RoleIds: [[], Validators.required],
-  IsActive: [true]
-});
-  }
-  /* ================= SEARCH ================= */
-  initSearchForm() {
-    this.searchForm = this.fb.group({
-      searchText: ['']
+    this.userForm = this.fb.group({
+      UserId: [0],
+      Fname: ['', Validators.required],
+      Lname: ['', Validators.required],
+      UserName: ['', Validators.required],
+      Email: ['', [Validators.required, Validators.email]],
+      Password: ['', Validators.required],
+      ConfirmPassword: ['', Validators.required],
+      DepartmentId: [null, Validators.required],
+      RoleIds: [[], Validators.required],
+      IsActive: [true]
     });
+  }
 
+  initSearchForm() {
+    this.searchForm = this.fb.group({ searchText: [''] });
     this.searchForm.get('searchText')!
-      .valueChanges
-      .pipe(debounceTime(400))
+      .valueChanges.pipe(debounceTime(400))
       .subscribe(val => {
         this.searchText.set(val ?? '');
         this.currentPage.set(1);
@@ -165,105 +155,99 @@ this.userForm = this.fb.group({
   }
 
   /* ================= SUBMIT ================= */
-submit() {
-  if (this.userForm.invalid) {
-    this.userForm.markAllAsTouched();
-    return;
-  }
-
-  const form = this.userForm.value;
-
-  const payload = {
-    FName: form.fname,
-    LName: form.lname,
-    UserName: form.userName,
-    Email: form.email,
-    Password: form.password,
-    ConfirmPassword: form.confirmPassword,
-    DepartmentId: form.departmentId ? Number(form.departmentId) : null,
-    RoleId: form.roleIds.filter((r: any) => r != null).map((r: any) => Number(r)),
-    IsActive: form.isActive
-  };
-
-  const obs = form.UserId === 0
-    ? this.service.create(payload)
-    : this.service.update({ ...payload, UserId: form.UserId });
-
-  obs.subscribe({
-    next: () => {
-      this.toastr.success(form.UserId === 0 ? 'User created successfully' : 'User updated successfully');
-      this.resetForm();
-      this.loadUsers();
-    },
-    error: (err) => {
-      console.error(err);
-      this.toastr.error('Operation failed. Check required fields.');
+  submit() {
+    if (this.userForm.invalid) {
+      this.userForm.markAllAsTouched();
+      return;
     }
-  });
-}
+    const form = this.userForm.value;
+
+    // Fix payload: backend expects RoleIds array and DepartmentId number
+    const payload = {
+      dto: {
+        FName: form.Fname,
+        LName: form.Lname,
+        UserName: form.UserName,
+        Email: form.Email,
+        Password: form.Password,
+        ConfirmPassword: form.ConfirmPassword,
+        DepartmentId: form.DepartmentId ? Number(form.DepartmentId) : null,
+        RoleIds: (form.RoleIds ?? [])
+        .filter((r:any)=> r!=null)
+        .map((r: any )=> Number(r)),
+        IsActive: form.IsActive
+      }
+    };
+
+    this.service.create(payload).subscribe({
+      next: () => {
+        this.toastr.success('User created successfully');
+        this.resetForm();
+        this.loadUsers();
+      },
+      error: (err) => {
+        console.error(err);
+        // Show backend validation messages if available
+        if (err?.error?.errors) {
+          Object.keys(err.error.errors).forEach(key => {
+            this.toastr.error(err.error.errors[key][0]);
+          });
+        } else {
+          this.toastr.error('Create failed');
+        }
+      }
+    });
+  }
 
   /* ================= EDIT ================= */
   edit(user: MasterUser) {
     this.userForm.patchValue({
       UserId: user.UserId,
-      Fname: user.fname,
+      Fname: user.Fname,
       Lname: user.Lname,
       UserName: user.UserName,
       Email: user.Email,
       DepartmentId: user.DepartmentId,
-      RoleIds: user.RoleIds,
+      RoleIds: user.RoleIds ?? [],
       IsActive: user.IsActive
     });
 
-    // Password optional in edit
     this.userForm.get('Password')?.clearValidators();
     this.userForm.get('Password')?.updateValueAndValidity();
+    this.userForm.get('ConfirmPassword')?.clearValidators();
+    this.userForm.get('ConfirmPassword')?.updateValueAndValidity();
   }
 
   /* ================= DELETE ================= */
   deleteUI(user: MasterUser) {
     if (!confirm('Delete this user?')) return;
-
     this.service.delete(user.UserId).subscribe({
       next: () => {
         this.toastr.success('User deleted successfully');
-        this.users.update(list =>
-          list.filter(u => u.UserId !== user.UserId)
-        );
+        this.users.update(list => list.filter(u => u.UserId !== user.UserId));
       },
       error: () => this.toastr.error('Delete failed')
     });
   }
 
   /* ================= TOGGLE ACTIVE ================= */
-  toggleActive(user: MasterUser) {
+  toggleActive(user: MasterUser): void {
     const action = user.IsActive ? 'Deactivate' : 'Activate';
-
     if (!confirm(`Do you want to ${action} this user?`)) return;
-
-    this.service.toggleActive(user.UserId).subscribe({
+    this.service.updateStatus(user.UserId, !user.IsActive).subscribe({
       next: () => {
-        this.toastr.success(`User ${action}d successfully`);
-
         this.users.update(list =>
-          list.map(u =>
-            u.UserId === user.UserId
-              ? { ...u, IsActive: !u.IsActive }
-              : u
-          )
+          list.map(u => u.UserId === user.UserId ? { ...u, IsActive: !u.IsActive } : u)
         );
+        this.toastr.success(`User ${action}d successfully`);
       },
-      error: () => this.toastr.error('Action failed')
+      error: () => this.toastr.error('Status update failed')
     });
   }
-
+  
   /* ================= RESET ================= */
   resetForm() {
-    this.userForm.reset({
-      UserId: 0,
-      IsActive: true
-    });
-
+    this.userForm.reset({ UserId: 0, IsActive: true });
     this.userForm.get('Password')?.setValidators(Validators.required);
     this.userForm.get('Password')?.updateValueAndValidity();
   }
@@ -271,5 +255,31 @@ submit() {
   logout() {
     localStorage.clear();
     window.location.href = '/login';
+  }
+
+  /* ================= MULTI ROLE HANDLING ================= */
+  toggleDropdown() {
+    this.isDropdownOpen = !this.isDropdownOpen;
+  }
+
+  onRoleChange(event: any) {
+    let selectedRoles: number[] = this.userForm.value.RoleIds || [];
+    const value = Number(event.target.value);
+
+    if (event.target.checked) {
+      if (!selectedRoles.includes(value)) selectedRoles.push(value);
+    } else {
+      selectedRoles = selectedRoles.filter(x => x !== value);
+    }
+
+    this.userForm.patchValue({ RoleIds: selectedRoles });
+  }
+
+  getSelectedRoleNames(): string {
+    const selectedIds: number[] = this.userForm.value.RoleIds || [];
+    return this.rolesList()
+      .filter(r => selectedIds.includes(r.roleId))
+      .map(r => r.roleName)
+      .join(', ');
   }
 }

@@ -244,7 +244,9 @@ namespace ProjectApp.Repository.Services.User
                 LName = user.Lname,
                 UserName = user.UserName,
                 Email = user.Email,
-                DepartmentId = user.DepartmentId,
+                DepartmentId = user.DepartmentId.HasValue
+    ? _idEncoder.Encode(user.DepartmentId.Value)
+    : null,
                 IsActive = user.IsActive,
                 EntryDate = user.EntryDate,
                 Roles = user.CB_UserRoleMappings?
