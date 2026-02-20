@@ -21,7 +21,6 @@ namespace ProjectApp.API.Controllers.Account.User
             _userService = userService;
         }
 
-        [Authorize]
         [HttpGet("All")]
         public async Task<ActionResult<APIResponse>> GetAllUsersAsync()
         {
@@ -46,7 +45,6 @@ namespace ProjectApp.API.Controllers.Account.User
 
 
         // ================= CREATE =================
-        [Authorize]
         [HttpPost("Create")]
         public async Task<ActionResult<APIResponse>> CreateUserAsync([FromBody] UserDTO dto)
         {
@@ -74,7 +72,6 @@ namespace ProjectApp.API.Controllers.Account.User
             }
         }
 
-        [Authorize]
         [HttpPatch("Status")]
         public async Task<ActionResult<APIResponse>> UpdateUserStatus([FromBody] UserStatusUpdateDTO dto)
         {
@@ -100,7 +97,6 @@ namespace ProjectApp.API.Controllers.Account.User
 
 
         // ================= OTHER CRUD =================
-        [Authorize]
         [HttpGet("ById/{id}")]
         public async Task<ActionResult<APIResponse>> GetUserById(string id)
         {
@@ -122,7 +118,6 @@ namespace ProjectApp.API.Controllers.Account.User
             }
         }
 
-        [Authorize]
         [HttpGet("ByUsername/{username}")]
         public async Task<ActionResult<APIResponse>> GetUserByUsername(string username)
         {
@@ -144,7 +139,6 @@ namespace ProjectApp.API.Controllers.Account.User
             }
         }
 
-        [Authorize]
         [HttpPut("Update")]
         public async Task<ActionResult<APIResponse>> UpdateUserAsync([FromBody] UserUpdateDTO dto)
         {
@@ -165,7 +159,6 @@ namespace ProjectApp.API.Controllers.Account.User
             }
         }
 
-        [Authorize]
         [HttpDelete("Delete/{id}")]
         public async Task<ActionResult<APIResponse>> DeleteUserAsync(string id)
         {
@@ -186,7 +179,6 @@ namespace ProjectApp.API.Controllers.Account.User
             }
         }
 
-        [Authorize]
         [HttpGet("Search")]
         public async Task<ActionResult<APIResponse>> SearchUsers(
     [FromQuery] string? searchText,

@@ -59,7 +59,6 @@ export class Login {
   localStorage.setItem('user', JSON.stringify(userData));
   localStorage.setItem('token', token);
 
-  this.toastr.success("Login Successful");
   this._router.navigate(['/dashboard']);
 },
     error: (err) => {

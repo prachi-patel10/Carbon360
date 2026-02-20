@@ -107,16 +107,16 @@ export class MasterUserComponent implements OnInit {
   /* ================= FORM ================= */
   initForm() {
     this.userForm = this.fb.group({
-      UserId: [0],
-      Fname: ['', Validators.required],
-      Lname: ['', Validators.required],
-      UserName: ['', Validators.required],
-      Email: ['', [Validators.required, Validators.email]],
-      Password: ['', Validators.required],
-      ConfirmPassword: ['', Validators.required],
-      DepartmentId: [null, Validators.required],
-      RoleIds: [[], Validators.required],
-      IsActive: [true]
+  UserId: [0],
+  Fname: ['', Validators.required],
+  Lname: ['', Validators.required],
+  UserName: ['', Validators.required],
+  Email: ['', [Validators.required, Validators.email]],
+  Password: ['', Validators.required],
+  ConfirmPassword: ['', Validators.required],
+  DepartmentId: [null, Validators.required],
+    RoleIds: [[], Validators.required],  // 🔥 MUST BE EMPTY ARRAY
+  IsActive: [true]
     });
   }
 
@@ -154,50 +154,46 @@ export class MasterUserComponent implements OnInit {
     this.currentPage.set(1);
   }
 
-  /* ================= SUBMIT ================= */
   submit() {
-    if (this.userForm.invalid) {
-      this.userForm.markAllAsTouched();
-      return;
-    }
-    const form = this.userForm.value;
-
-    // Fix payload: backend expects RoleIds array and DepartmentId number
-    const payload = {
-      dto: {
-        FName: form.Fname,
-        LName: form.Lname,
-        UserName: form.UserName,
-        Email: form.Email,
-        Password: form.Password,
-        ConfirmPassword: form.ConfirmPassword,
-        DepartmentId: form.DepartmentId ? Number(form.DepartmentId) : null,
-        RoleIds: (form.RoleIds ?? [])
-        .filter((r:any)=> r!=null)
-        .map((r: any )=> Number(r)),
-        IsActive: form.IsActive
-      }
-    };
-
-    this.service.create(payload).subscribe({
-      next: () => {
-        this.toastr.success('User created successfully');
-        this.resetForm();
-        this.loadUsers();
-      },
-      error: (err) => {
-        console.error(err);
-        // Show backend validation messages if available
-        if (err?.error?.errors) {
-          Object.keys(err.error.errors).forEach(key => {
-            this.toastr.error(err.error.errors[key][0]);
-          });
-        } else {
-          this.toastr.error('Create failed');
-        }
-      }
-    });
+  if (this.userForm.invalid) {
+    this.userForm.markAllAsTouched();
+    return;
   }
+
+  const form = this.userForm.value;
+
+  const cleanRoles = (form.RoleIds || [])
+    .filter((r: any) => r !== null && r !== undefined)
+    .map((r: any) => Number(r));
+
+  const payload = {
+    FName: form.Fname,
+    LName: form.Lname,
+    UserName: form.UserName,
+    Email: form.Email,
+    Password: form.Password,
+    ConfirmPassword: form.ConfirmPassword,
+    DepartmentId: form.DepartmentId
+      ? Number(form.DepartmentId)
+      : null,
+    RoleId: cleanRoles,
+    IsActive: form.IsActive
+  };
+
+  console.log("FINAL PAYLOAD:", payload);
+
+  this.service.create(payload).subscribe({
+    next: () => {
+      this.toastr.success('User created successfully');
+      this.resetForm();
+      this.loadUsers();
+    },
+    error: (err) => {
+      console.error(err);
+      this.toastr.error('Create failed');
+    }
+  });
+}
 
   /* ================= EDIT ================= */
   edit(user: MasterUser) {
@@ -262,19 +258,21 @@ export class MasterUserComponent implements OnInit {
     this.isDropdownOpen = !this.isDropdownOpen;
   }
 
-  onRoleChange(event: any) {
-    let selectedRoles: number[] = this.userForm.value.RoleIds || [];
-    const value = Number(event.target.value);
+ onRoleChange(event: any) {
+  const value = Number(event.target.value);
+  let selectedRoles: number[] = this.userForm.value.RoleIds || [];
 
-    if (event.target.checked) {
-      if (!selectedRoles.includes(value)) selectedRoles.push(value);
-    } else {
-      selectedRoles = selectedRoles.filter(x => x !== value);
+  if (event.target.checked) {
+    if (!selectedRoles.includes(value)) {
+      selectedRoles.push(value);
     }
-
-    this.userForm.patchValue({ RoleIds: selectedRoles });
+  } else {
+    selectedRoles = selectedRoles.filter(x => x !== value);
   }
 
+  this.userForm.patchValue({ RoleIds: selectedRoles });
+  this.userForm.get('RoleIds')?.markAsTouched();
+}
   getSelectedRoleNames(): string {
     const selectedIds: number[] = this.userForm.value.RoleIds || [];
     return this.rolesList()

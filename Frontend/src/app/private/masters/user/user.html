@@ -89,12 +89,12 @@
     <!-- Dropdown -->
     <div class="dropdown-panel" *ngIf="isDropdownOpen">
       <div class="dropdown-item" *ngFor="let r of rolesList()">
-        <input
-          type="checkbox"
-          [value]="r.roleId"
-          (change)="onRoleChange($event)"
-          [checked]="userForm.value.RoleIds?.includes(r.roleId)"
-        />
+      <input
+  type="checkbox"
+  [value]="r.id"   
+  (change)="onRoleChange($event)"
+  [checked]="userForm.value.RoleIds?.includes(r.id)"
+/>
         <label>{{ r.roleName }}</label>
       </div>
     </div>
