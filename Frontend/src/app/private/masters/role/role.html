@@ -1,14 +1,3 @@
-<div class="topbar">
-    <div class="logo-section">
-      <img src="/assets/Carbon360-removebg-preview.png" alt="Logo" class="logo-img" />
-      <h1>Role Master</h1>
-    <span class="page-subtitle">Create, update and manage roles</span>
-    </div>
-
-    <div class="user-section">
-      <button class="logout-btn" (click)="logout()">Logout</button>
-    </div>
-  </div>
 
 <!-- FORM -->
 <form [formGroup]="roleForm" (ngSubmit)="submit()" class="form-card">
@@ -64,7 +53,7 @@
     <span class="hint">Search • Filter • Page size</span>
   </div>
 
-  <!-- FILTER BAR -->
+  <!-- FILTER BAR
 <div [formGroup]="searchForm" class="filter-bar">
 
     <input class="search"
@@ -96,7 +85,7 @@
       </span>
     </div>
 
-</div>
+</div> -->
 
   <div class="table-wrapper">
     <table class="role-table">

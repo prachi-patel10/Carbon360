@@ -9,6 +9,7 @@ using ProjectApp.Repository.Utilities.SP;
 
 namespace ProjectApp.API.Controllers.Account.User
 {
+    [Authorize(Roles = "Admin,Corporate")]
     [Route("api/[controller]")]
     [ApiController]
     public class UserController : ControllerBase

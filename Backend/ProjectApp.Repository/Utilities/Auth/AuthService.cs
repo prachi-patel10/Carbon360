@@ -69,8 +69,9 @@ namespace pr.Repository.Services.Auth
             return new LoginResDTO
             {
                 UserName = user.UserName,
-                RoleName = roles.FirstOrDefault(),
-                token = token
+                Roles = roles,                     // send all roles
+                CurrentRole = roles.FirstOrDefault(), // default role
+                Token = token
             };
         }
 
@@ -107,12 +108,12 @@ namespace pr.Repository.Services.Auth
 
             // Generate a new JWT for this selected role
             string newToken = _jwtService.GenerateToken(user, new List<string> { dto.SelectedRole });
-
             return new LoginResDTO
             {
                 UserName = user.UserName,
-                RoleName = dto.SelectedRole,
-                token = newToken
+                Roles = roles,
+                CurrentRole = dto.SelectedRole,
+                Token = newToken
             };
 
         }

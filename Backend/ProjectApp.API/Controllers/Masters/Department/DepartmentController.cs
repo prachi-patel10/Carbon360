@@ -11,7 +11,7 @@ using System.Net;
 
 namespace ProjectApp.API.Controllers.Masters.Department
 {
-    [Authorize]
+    [Authorize(Roles = "Admin")]
     [Route("api/[controller]")]
     [ApiController]
     public class DepartmentController : ControllerBase

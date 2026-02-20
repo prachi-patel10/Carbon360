@@ -1,47 +1,52 @@
 import { Component, HostListener } from '@angular/core';
-import { Router,RouterOutlet,ActivatedRoute  } from '@angular/router';
+import { Router, RouterOutlet, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../core/guards/auth-service';
 import { FormsModule } from '@angular/forms';
-import {CommonModule } from '@angular/common';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-dashboard',
   templateUrl: './dashboard.html',
-  imports:[FormsModule,CommonModule,RouterOutlet],
+  imports: [FormsModule, CommonModule, RouterOutlet],
   styleUrls: ['./dashboard.css']
 })
 export class DashboardComponent {
 
   loggedInUser: string = '';
-  selectedRole: string = 'Admin';
+  roles: string[] = [];
+  selectedRole: string = '';
   showProfileCard: boolean = false;
 
-  constructor(private authService: AuthService, private router: Router,  private route: ActivatedRoute
-) {
-    const user = this.authService.getLoggedInUser();
-    if (!user) {
-      this.router.navigate(['/login']);
-    } else {
-      this.loggedInUser = user.name;
-    }
+  constructor(
+    private authService: AuthService,
+    private router: Router,
+    private route: ActivatedRoute
+  ) {}
+
+ ngOnInit() {
+
+  const user = this.authService.getLoggedInUser();
+
+  if (!user) {
+    this.router.navigate(['/login']);
+    return;
   }
 
-  ngOnInit() {
-    const savedRole = localStorage.getItem('selectedRole');
-    if (savedRole) {
-      this.selectedRole = savedRole;
-    }
-  }
+  this.loggedInUser = user.name;
 
+  // SAFE ASSIGNMENT
+  this.roles = user.roles ?? [];
+  this.selectedRole = user.currentRole ?? '';
+}
   goTo(path: string) {
-  this.router.navigate([path], { relativeTo: this.route });
-}
+    this.router.navigate([path], { relativeTo: this.route });
+  }
 
-isActive(path: string): boolean {
-  return this.router.url.includes(path);
-}
+  isActive(path: string): boolean {
+    return this.router.url.includes(path);
+  }
 
-  /* ✅ FIXED DROPDOWN */
+  /* Dropdown */
 
   toggleProfile(event: Event) {
     event.stopPropagation();
@@ -54,18 +59,42 @@ isActive(path: string): boolean {
   }
 
   /* Sidebar */
+
   toggleSidebar() {
     const sidebar = document.querySelector('.sidebar');
     sidebar?.classList.toggle('show');
   }
 
   logout() {
-    localStorage.clear();
+    this.authService.logout();
     this.router.navigate(['/login']);
   }
 
+  /* ✅ CORRECT ROLE SWITCH */
+
   onRoleChange() {
-    localStorage.setItem('selectedRole', this.selectedRole);
+
+    this.authService.switchRole(this.selectedRole)
+      .subscribe({
+        next: (res: any) => {
+
+          const updatedUser = {
+            name: res.userName,
+            roles: res.roles,
+            currentRole: res.currentRole,
+            token: res.token
+          };
+
+          localStorage.setItem('user', JSON.stringify(updatedUser));
+          localStorage.setItem('token', res.token);
+
+          // reload dashboard to apply new permissions
+          window.location.reload();
+        },
+        error: () => {
+          alert("Role switch failed");
+        }
+      });
   }
 
 }

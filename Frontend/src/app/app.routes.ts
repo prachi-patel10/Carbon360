@@ -29,7 +29,7 @@ export const routes: Routes = [
   path: 'dashboard',
   component: DashboardComponent,
   children: [
-    { path: '', redirectTo: 'user', pathMatch: 'full' },
+    { path: '', redirectTo: 'login', pathMatch: 'full' },
       { path: 'user', component: MasterUserComponent },
       { path: 'role', component: MasterRoleComponent },
     { path: 'department', component: Department }, // create/import DepartmentComponent

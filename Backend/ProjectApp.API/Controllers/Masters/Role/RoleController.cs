@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using ProjectApp.Core.DTOs.Account.Role;
 using ProjectApp.Core.Entities;
@@ -8,6 +9,7 @@ using System.Net;
 
 namespace ProjectApp.API.Controllers.Masters.Role
 {
+    [Authorize(Roles = "Admin,Corporate")]
     [Route("api/[controller]")]
     [ApiController]
     public class RoleController : ControllerBase
