@@ -1,16 +1,38 @@
-import { Component, signal } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
-import { FormsModule } from '@angular/forms';
-import {CommonModule } from '@angular/common';
-
+import { Component } from '@angular/core';
+import { Router, NavigationStart, NavigationEnd, NavigationCancel, NavigationError, RouterOutlet } from '@angular/router';
+import { LoaderComponent } from './core/loader/loader';
+import { LoaderService } from './core/loader/loader-service';
 
 @Component({
   selector: 'app-root',
-  standalone: true,  // <-- Add this
-  imports: [RouterOutlet,FormsModule,CommonModule ],
-  templateUrl: './app.html',
-  styleUrls: ['./app.css']
+  standalone: true,
+  imports: [RouterOutlet, LoaderComponent],
+  template: `
+    <app-loader></app-loader>
+    <router-outlet></router-outlet>
+  `
 })
 export class App {
-  protected readonly title = signal('ProjectApp');
+
+  constructor(private router: Router, private loader: LoaderService) {
+
+    this.router.events.subscribe(event => {
+
+      if (event instanceof NavigationStart) {
+        this.loader.show();
+      }
+
+      if (
+        event instanceof NavigationEnd ||
+        event instanceof NavigationCancel ||
+        event instanceof NavigationError
+      ) {
+        setTimeout(() => {
+          this.loader.hide();
+        }, 600);   // 🔥 Change time here if needed
+      }
+
+    });
+
+  }
 }
