@@ -1,0 +1,68 @@
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using ProjectApp.Core.DTOs.Masters.Fuel;
+using ProjectApp.Repository.Interfaces.Masters.Fuel;
+
+namespace ProjectApp.API.Controllers.Masters.Fuel
+{
+    [Route("api/[controller]")]
+    [ApiController]
+    public class FuelController : ControllerBase
+    {
+        private readonly IFuelService _fuelService;
+
+        public FuelController(IFuelService fuelService)
+        {
+            _fuelService = fuelService;
+        }
+
+        [HttpPost("Create")]
+        public async Task<IActionResult> Create([FromBody] FuelResponseDTO dto)
+        {
+            var result = await _fuelService.CreateAsync(dto);
+            return Ok(result);
+        }
+
+        [HttpPut("Update")]
+        public async Task<IActionResult> Update([FromBody] FuelResponseDTO dto)
+        {
+            var result = await _fuelService.UpdateAsync(dto);
+
+            if (!result)
+                return BadRequest("Update failed");
+
+            return Ok("Updated Successfully");
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var result = await _fuelService.DeleteAsync(id);
+
+            if (!result)
+                return BadRequest("Delete failed");
+
+            return Ok("Deleted Successfully");
+        }
+
+        [HttpGet("All")]
+        public async Task<IActionResult> GetAll()
+        {
+            var result = await _fuelService.GetAllAsync();
+            return Ok(result);
+        }
+
+ 
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(int id)
+        {
+            var result = await _fuelService.GetByIdAsync(id);
+
+            if (result == null)
+                return NotFound("Fuel not found");
+
+            return Ok(result);
+        }
+    }
+}
+

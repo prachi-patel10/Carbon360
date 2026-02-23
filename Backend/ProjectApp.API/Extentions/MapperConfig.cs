@@ -1,13 +1,13 @@
-﻿using System;
-
-using AutoMapper;
+﻿using AutoMapper;
 using ProjectApp.Core.DTOs.Account.Role;
 using ProjectApp.Core.DTOs.Account.User;
 using ProjectApp.Core.DTOs.Masters.Department;
+using ProjectApp.Core.DTOs.Masters.Fuel;
 using ProjectApp.Core.DTOs.Masters.Section;
 using ProjectApp.Core.DTOs.Worker;
 using ProjectApp.Core.Entities;
 using ProjectApp.Core.Models;
+using System;
 
 namespace ProjectApp.API.Extentions
 {
@@ -30,6 +30,13 @@ namespace ProjectApp.API.Extentions
             CreateMap<DepartmentUpdateDTO, CB_Department>()
                 .ForMember(dest => dest.DepartmentId, opt => opt.Ignore())
                 .ForMember(dest => dest.IsDeleted, opt => opt.Ignore());
+
+            CreateMap<CB_Master_Fuel, FuelResponseDTO>().ReverseMap();
+            CreateMap<CB_Master_Fuel, FuelCreateUpdateDTO>().ReverseMap();
+            //CreateMap<CB_Master_Vehicle_Type,VehicleTypeCreateDTO>.ReverseMap();
+            //CreateMap<CB_Master_Vehicle_Type, VehicleTypeDTO>.ReverseMap();
+            //CreateMap<CB_Master_Vehicle_Type, VehicleTypeResponseDTO>.ReverseMap();
+            //CreateMap<CB_Master_Vehicle_Type, VehicleTypeUpdateDTO>.ReverseMap();
 
         }
     }
