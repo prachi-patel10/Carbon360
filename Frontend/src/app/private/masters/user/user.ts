@@ -52,6 +52,8 @@ export class MasterUserComponent implements OnInit {
     // Load Departments first
     this.service.getDepartments().subscribe({
       next: (res: any) => {
+          console.log("DEPARTMENTS RAW RESPONSE:", res);   // 👈 ADD THIS
+      console.log("DEPARTMENTS DATA:", res?.data);  
         this.departments.set(res?.data ?? res ?? []);
         this.loadUsers(); // load users after departments
       },
@@ -99,7 +101,10 @@ export class MasterUserComponent implements OnInit {
 
   loadRoles() {
     this.service.getRoles().subscribe({
-      next: (res: any) => this.rolesList.set(res?.data ?? []),
+      next: (res: any) => { 
+         console.log("ROLES RAW RESPONSE:", res);   // 👈 ADD THIS
+      console.log("ROLES DATA:", res?.data);  
+        this.rolesList.set(res?.data ?? [])},
       error: () => this.toastr.error('Failed to load roles')
     });
   }
@@ -153,8 +158,7 @@ export class MasterUserComponent implements OnInit {
     this.requestedRecords.set(Number(e.target.value));
     this.currentPage.set(1);
   }
-
-  submit() {
+submit() {
   if (this.userForm.invalid) {
     this.userForm.markAllAsTouched();
     return;
@@ -162,37 +166,62 @@ export class MasterUserComponent implements OnInit {
 
   const form = this.userForm.value;
 
-  const cleanRoles = (form.RoleIds || [])
-    .filter((r: any) => r !== null && r !== undefined)
-    .map((r: any) => Number(r));
+  const cleanRoles = (form.RoleIds || []).filter((r: any) => r);
 
-  const payload = {
-    FName: form.Fname,
-    LName: form.Lname,
-    UserName: form.UserName,
-    Email: form.Email,
-    Password: form.Password,
-    ConfirmPassword: form.ConfirmPassword,
-    DepartmentId: form.DepartmentId
-      ? Number(form.DepartmentId)
-      : null,
-    RoleId: cleanRoles,
-    IsActive: form.IsActive
-  };
+  const isEdit = form.UserId && form.UserId !== 0;
 
-  console.log("FINAL PAYLOAD:", payload);
+  if (isEdit) {
+    // ================= UPDATE =================
+    const updatePayload = {
+      UserId: form.UserId,
+      FName: form.Fname,
+      LName: form.Lname,
+      UserName: form.UserName,
+      Email: form.Email,
+      Password: form.Password || null,
+      DepartmentId: form.DepartmentId,
+      RoleIds: cleanRoles,
+      IsActive: form.IsActive
+    };
 
-  this.service.create(payload).subscribe({
-    next: () => {
-      this.toastr.success('User created successfully');
-      this.resetForm();
-      this.loadUsers();
-    },
-    error: (err) => {
-      console.error(err);
-      this.toastr.error('Create failed');
-    }
-  });
+    this.service.update(updatePayload).subscribe({
+      next: () => {
+        this.toastr.success('User updated successfully');
+        this.resetForm();
+        this.loadUsers();
+      },
+      error: (err) => {
+        console.error(err);
+        this.toastr.error('Update failed');
+      }
+    });
+
+  } else {
+    // ================= CREATE =================
+    const createPayload = {
+      FName: form.Fname,
+      LName: form.Lname,
+      UserName: form.UserName,
+      Email: form.Email,
+      Password: form.Password,
+      ConfirmPassword: form.ConfirmPassword,
+      DepartmentId: form.DepartmentId,
+      RoleId: cleanRoles,
+      IsActive: form.IsActive
+    };
+
+    this.service.create(createPayload).subscribe({
+      next: () => {
+        this.toastr.success('User created successfully');
+        this.resetForm();
+        this.loadUsers();
+      },
+      error: (err) => {
+        console.error(err);
+        this.toastr.error('Create failed');
+      }
+    });
+  }
 }
 
   /* ================= EDIT ================= */
@@ -258,21 +287,21 @@ export class MasterUserComponent implements OnInit {
     this.isDropdownOpen = !this.isDropdownOpen;
   }
 
- onRoleChange(event: any) {
-  const value = Number(event.target.value);
-  let selectedRoles: number[] = this.userForm.value.RoleIds || [];
+onRoleChange(event: any) {
+  const selectedRoles = this.userForm.get('RoleIds')?.value || [];
 
   if (event.target.checked) {
-    if (!selectedRoles.includes(value)) {
-      selectedRoles.push(value);
-    }
+    selectedRoles.push(event.target.value);
   } else {
-    selectedRoles = selectedRoles.filter(x => x !== value);
+    const index = selectedRoles.indexOf(event.target.value);
+    if (index >= 0) {
+      selectedRoles.splice(index, 1);
+    }
   }
 
-  this.userForm.patchValue({ RoleIds: selectedRoles });
-  this.userForm.get('RoleIds')?.markAsTouched();
+  this.userForm.get('RoleIds')?.setValue(selectedRoles);
 }
+
   getSelectedRoleNames(): string {
     const selectedIds: number[] = this.userForm.value.RoleIds || [];
     return this.rolesList()

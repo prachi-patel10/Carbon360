@@ -23,12 +23,11 @@ namespace ProjectApp.Core.DTOs.Account.User
         [EmailAddress]
         public string Email { get; set; }
 
-        public int? DepartmentId { get; set; }
-
+        public string? DepartmentId { get; set; }
         public bool IsActive { get; set; }
 
         public string? Password { get; set; }
 
-        public List<int>? RoleIds { get; set; }
+        public List<string>? RoleIds { get; set; }
     }
 }

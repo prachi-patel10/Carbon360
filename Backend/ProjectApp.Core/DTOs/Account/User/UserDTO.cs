@@ -24,13 +24,13 @@ namespace ProjectApp.Core.DTOs.Account.User
         [Compare("Password", ErrorMessage = "Password and Confirm Password must match")]
         public string ConfirmPassword { get; set; }
 
-        public int? DepartmentId { get; set; }
+        public string? DepartmentId { get; set; }
 
         [Required]
         public bool IsActive { get; set; }
 
         // For role dropdown selection
         [Required]
-        public List<int> RoleId { get; set; }
+        public List<string> RoleId { get; set; } = new();
     }
 }

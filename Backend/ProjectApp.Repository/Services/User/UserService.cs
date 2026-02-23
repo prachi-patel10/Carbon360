@@ -37,8 +37,15 @@ namespace ProjectApp.Repository.Services.User
 
             var hashedPassword = BCrypt.Net.BCrypt.HashPassword(dto.Password);
 
+            int? departmentId = null;
+
+            if (!string.IsNullOrEmpty(dto.DepartmentId))
+            {
+                departmentId = _idEncoder.Decode(dto.DepartmentId);
+            }
+
             var roleIdsCsv = dto.RoleId != null && dto.RoleId.Any()
-                ? string.Join(",", dto.RoleId)
+                ? string.Join(",", dto.RoleId.Select(r => _idEncoder.Decode(r)))
                 : null;
 
             await _context.Database.ExecuteSqlRawAsync(
@@ -48,11 +55,10 @@ namespace ProjectApp.Repository.Services.User
                 new SqlParameter("@UserName", dto.UserName),
                 new SqlParameter("@Email", dto.Email),
                 new SqlParameter("@Password", hashedPassword),
-                new SqlParameter("@DepartmentId", (object?)dto.DepartmentId ?? DBNull.Value),
+                new SqlParameter("@DepartmentId", (object?)departmentId ?? DBNull.Value),
                 new SqlParameter("@RoleIds", (object?)roleIdsCsv ?? DBNull.Value),
                 new SqlParameter("@EntryBy", (object?)loggedInUserId ?? DBNull.Value)
             );
-
             var user = await _context.CB_Users
                 .OrderByDescending(u => u.UserId)
                 .Include(u => u.CB_UserRoleMappings)
@@ -111,30 +117,49 @@ namespace ProjectApp.Repository.Services.User
         // ================= UPDATE =================
         public async Task<bool> UpdateUserAsync(UserUpdateDTO dto)
         {
-            var password = string.IsNullOrWhiteSpace(dto.Password)
-                ? null
-                : BCrypt.Net.BCrypt.HashPassword(dto.Password);
+            // 🔐 Decode UserId
+            int userId = _idEncoder.Decode(dto.UserId);
 
-            var roleIdsCsv = dto.RoleIds != null && dto.RoleIds.Any()
-                ? string.Join(",", dto.RoleIds)
-                : null;
+            // 🔐 Decode DepartmentId (if exists)
+            int? departmentId = null;
+            if (!string.IsNullOrEmpty(dto.DepartmentId))
+            {
+                departmentId = _idEncoder.Decode(dto.DepartmentId);
+            }
+
+            // 🔐 Decode RoleIds (if exists)
+            string? roleIdsCsv = null;
+            if (dto.RoleIds != null && dto.RoleIds.Any())
+            {
+                var decodedRoleIds = dto.RoleIds
+                    .Select(r => _idEncoder.Decode(r))
+                    .ToList();
+
+                roleIdsCsv = string.Join(",", decodedRoleIds);
+            }
+
+            // 🔐 Hash password only if provided
+            string? password = null;
+            if (!string.IsNullOrWhiteSpace(dto.Password))
+            {
+                password = BCrypt.Net.BCrypt.HashPassword(dto.Password);
+            }
 
             await _context.Database.ExecuteSqlRawAsync(
                 "EXEC USP_CB_UserUpdateWithRoles @UserId, @Fname, @Lname, @UserName, @Email, @Password, @DepartmentId, @IsActive, @RoleIds",
-                new SqlParameter("@UserId", _idEncoder.Decode(dto.UserId)),
+                new SqlParameter("@UserId", userId),
                 new SqlParameter("@Fname", dto.FName),
                 new SqlParameter("@Lname", dto.LName),
                 new SqlParameter("@UserName", dto.UserName),
                 new SqlParameter("@Email", dto.Email),
                 new SqlParameter("@Password", (object?)password ?? DBNull.Value),
-                new SqlParameter("@DepartmentId", (object?)dto.DepartmentId ?? DBNull.Value),
+                new SqlParameter("@DepartmentId", (object?)departmentId ?? DBNull.Value),
                 new SqlParameter("@IsActive", dto.IsActive),
                 new SqlParameter("@RoleIds", (object?)roleIdsCsv ?? DBNull.Value)
             );
 
             return true;
         }
-
         // ================= PATCH ACTIVE/INACTIVE =================
         public async Task<bool> UpdateUserStatusAsync(UserStatusUpdateDTO dto)
         {
