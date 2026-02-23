@@ -23,6 +23,22 @@
          "ObjectType": 0
       },
       {
+         "Name": "[dbo].[CB_Master_City]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[CB_Master_Fuel]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[CB_Master_Vehicle]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[CB_Master_Vehicle_Type]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[dbo].[CB_Role]",
          "ObjectType": 0
       },
