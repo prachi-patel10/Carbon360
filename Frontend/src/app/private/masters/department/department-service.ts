@@ -4,7 +4,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 
 
 export interface MasterDepartment {
-  DepartmentId: number;
+  DepartmentId: string;
   DepartmentName: string;
   // DepartmentDescription :string;
   IsActive: boolean;
@@ -54,27 +54,27 @@ update(data: MasterDepartment) {
 
   return this.http.put(this.apiUrl, payload);
 }
-  delete(id: number) {
-    return this.http.delete(`${this.apiUrl}/${id}`);
-  }
+  delete(id: string) {
+  return this.http.delete(`${this.apiUrl}/${id}`);
+}
 
-  toggleActive(id: number) {
-    return this.http.put(`${this.apiUrl}/toggle/${id}`, {});
-  }
+  toggleActive(id: string) {
+  return this.http.patch(`${this.apiUrl}/${id}/toggle-status`, {});
+}
 
   getPaged(
-    pageNumber: number,
-    requestedRecords: number,
-    search: string,
-    onlyActive?: boolean | null
-  ) {
-    let params = new HttpParams()
-      .set('page', pageNumber.toString())
-      .set('pageSize', requestedRecords.toString());
+  pageNumber: number,
+  pageSize: number,
+  search: string = '',
+  onlyActive?: boolean
+) {
+  let params = new HttpParams()
+    .set('pageNumber', pageNumber.toString())
+    .set('pageSize', pageSize.toString());
 
-    if (search) params = params.set('search', search);
-    if (onlyActive === true) params = params.set('isActive', 'true');
+  if (search) params = params.set('searchText', search);
+  if (onlyActive) params = params.set('isActive', 'true');
 
-    return this.http.get<any>(`${this.apiUrl}/search`, { params });
-  }
+  return this.http.get<any>(`${this.apiUrl}/Search`, { params });
+}
 }

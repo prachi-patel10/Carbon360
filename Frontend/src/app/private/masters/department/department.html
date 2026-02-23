@@ -1,99 +1,101 @@
+<div class="department-page">
 
+  <!-- ================= INPUT FORM ================= -->
+  <div class="card form-card">
+    <h2 class="card-title">Add / Update Department</h2>
 
-<!-- FORM -->
-<form [formGroup]="departmentForm" (ngSubmit)="submitdept()" class="form-card">
-  <div class="grid">
+    <form [formGroup]="departmentForm" (ngSubmit)="submitdept()">
 
-    <div>
-      <label>Department Name</label>
-      <input type="text" formControlName="DepartmentName">
-      <div class="validation"
-        *ngIf="departmentForm.get('DepartmentName')?.touched && departmentForm.get('DepartmentName')?.invalid">
-        Role Name is required
+      <div class="form-row">
+
+        <!-- Department Name -->
+        <div class="form-group">
+          <label>Department Name</label>
+          <input type="text" formControlName="DepartmentName" placeholder="Enter department name">
+          <div class="validation"
+            *ngIf="departmentForm.get('DepartmentName')?.touched && departmentForm.get('DepartmentName')?.invalid">
+            Department Name is required
+          </div>
+        </div>
+
+        <!-- Status Toggle -->
+        <div class="form-group status-group">
+          <label for="statusToggle">Status</label>
+
+          <div class="toggle-wrapper">
+
+            <label class="toggle-switch">
+              <input id="statusToggle" type="checkbox" formControlName="IsActive">
+              <span class="toggle-slider"></span>
+            </label>
+
+            <span class="toggle-text"
+              [ngClass]="departmentForm.get('IsActive')?.value ? 'text-active' : 'text-inactive'">
+
+              {{ departmentForm.get('IsActive')?.value ? 'Active' : 'Inactive' }}
+            </span>
+          </div>
+        </div>
+
       </div>
-    </div>
 
-
-    <!-- <div>
-      <label>Description</label>
-      <input type="text" formControlName="DepartmentDescription">
-      <div class="validation"
-        *ngIf="departmentForm.get('DepartmentDescription')?.touched && departmentForm.get('DepartmentDescription')?.invalid">
-        Department Name is required
+      <div class="form-buttons">
+        <button type="submit" class="btn-primary">
+          {{ !departmentForm.value.DepartmentId ? 'Save' : 'Update' }}
+        </button>
+        <button type="button" class="btn-secondary" (click)="resetForm()">
+          Reset
+        </button>
       </div>
-    </div> -->
 
-    <!-- ACTIVE TOGGLE -->
-    <div class="toggle-row">
-      <label class="toggle-label">Active</label>
-
-      <label class="toggle-switch">
-        <input type="checkbox" formControlName="IsActive">
-        <span class="toggle-slider"></span>
-      </label>
-
-      <span class="toggle-text">
-        {{ departmentForm.get('IsActive')?.value ? 'Active' : 'Inactive' }}
-      </span>
-    </div>
-
+    </form>
   </div>
 
-  <div class="btn-row">
-    <button type="submit" class="btn-save">
-      {{ departmentForm.value.DepartmentId === 0 ? 'Save' : 'Update' }}
-    </button>
 
-    <button type="button" class="btn-reset" (click)="resetForm()">
-      Reset
-    </button>
+  <!-- ================= SEARCH SECTION ================= -->
+  <div class="card search-card">
+    <h2 class="card-title">Department List</h2>
+
+    <form [formGroup]="searchForm">
+      <div class="search-row">
+
+        <input type="text" placeholder="Search department..." formControlName="searchText">
+
+        <button type="button" class="btn-clear" (click)="clearSearch()">
+          Clear
+        </button>
+
+        <div class="record-select">
+          <label>Records</label>
+          <select (change)="onRecordsChange($event)">
+            <option value="5">5</option>
+            <option value="10">10</option>
+            <option value="20">20</option>
+          </select>
+        </div>
+
+        <div class="active-filter">
+          <label class="toggle-switch">
+            <input type="checkbox" [checked]="onlyActive()" (change)="onActiveFilterChange($event)">
+            <span class="toggle-slider"></span>
+          </label>
+          <span class="toggle-text">
+            {{ onlyActive() ? 'Active Only' : 'All Records' }}
+          </span>
+        </div>
+
+      </div>
+    </form>
   </div>
 
-  <div class="section-header">
-    <span>Department List</span>
-    <span class="hint">Search • Filter • Page size</span>
-  </div>
 
-  <!-- FILTER BAR -->
-<div [formGroup]="searchForm" class="filter-bar">
+  <!-- ================= TABLE ================= -->
+  <div class="card table-card">
 
-    <input class="search"
-      placeholder="Search Department"
-      formControlName="searchText">
-
-    <small class="field-hint">
-      Number of records per page
-    </small>
-
-    <input type="number"
-      min="1"
-      class="records"
-      [value]="requestedRecords()"
-      (change)="onRecordsChange($event)">
-
-    <div class="search-toggle-row">
-      <label class="toggle-label">Active Only</label>
-
-      <label class="toggle-switch">
-        <input type="checkbox"
-          [checked]="onlyActive()"
-          (change)="onActiveFilterChange($event)">
-        <span class="toggle-slider"></span>
-      </label>
-
-      <span class="toggle-text">
-        {{ onlyActive() ? 'Active' : 'All' }}
-      </span>
-    </div>
-
-</div>
-
-  <div class="table-wrapper">
-    <table class="role-table">
+    <table>
       <thead>
         <tr>
-         <th (click)="previousPageByDepartmentName()">Department Name</th>
-<!-- <th (click)="nextPageByShortCodeDept()">Description</th> -->
+          <th>Department Name</th>
           <th>Status</th>
           <th>Actions</th>
         </tr>
@@ -102,37 +104,51 @@
       <tbody>
         <tr *ngFor="let d of departments()">
           <td>{{ d.DepartmentName }}</td>
-          <!-- <td>{{ d.DepartmentDescription }}</td> -->
 
           <td>
-            <span
-              class="badge"
-              [ngClass]="{
-                'badge-active': d.IsActive,
-                'badge-inactive': !d.IsActive
-              }"
-              (click)="toggleActive(d)">
-              {{ d.IsActive ? 'Active' : 'Inactive' }}
-            </span>
+            <label class="toggle-switch">
+              <input type="checkbox" [checked]="d.IsActive" (change)="toggleActive(d)">
+              <span class="toggle-slider"></span>
+            </label>
           </td>
 
-          <td class="action-cell">
-            <button type="button"
-              class="btn-edit"
-              (click)="edit(d)">Edit</button>
-
-            <button type="button"
-              class="btn-delete"
-              (click)="deleteUI(d)">Delete</button>
+          <td class="action-buttons">
+            <button class="btn-edit" (click)="edit(d)">Edit</button>
+            <button class="btn-delete" (click)="deleteUI(d)">Delete</button>
           </td>
         </tr>
       </tbody>
     </table>
+
   </div>
 
-  <!-- PAGINATION -->
 
-<div class="record-count">
-  Showing {{ departments().length }} of {{ totalRecords() }} records
+  <!-- ================= PAGINATION ================= -->
+  <div class="pagination-section">
+
+    <!-- Record Info -->
+    <div class="record-info">
+      Showing {{ startRecord }} to {{ endRecord }}
+      of {{ totalRecords() }} entries
+    </div>
+
+    <!-- Pagination Controls -->
+    <div class="pagination-controls">
+
+      <button (click)="previousPage()" [disabled]="currentPage() === 1">
+        Previous
+      </button>
+
+      <span>
+        Page {{ currentPage() }} of {{ totalPages() }}
+      </span>
+
+      <button (click)="nextPage()" [disabled]="currentPage() === totalPages()">
+        Next
+      </button>
+
+    </div>
+
+  </div>
+
 </div>
-</form>

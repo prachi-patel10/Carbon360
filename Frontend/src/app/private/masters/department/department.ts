@@ -1,205 +1,278 @@
-import { Component, effect, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, effect } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { DepartmentService, MasterDepartment } from './department-service';
+import { DepartmentService } from './department-service';
 import { ToastrService } from 'ngx-toastr';
-import { debounceTime } from 'rxjs';
 import { CommonModule } from '@angular/common';
+import Swal from 'sweetalert2';
+
+interface Department {
+  DepartmentId: string;
+  DepartmentName: string;
+  IsActive: boolean;
+}
 
 @Component({
   selector: 'app-department',
-  imports: [CommonModule,ReactiveFormsModule],
   templateUrl: './department.html',
-  styleUrl: './department.css',
+  styleUrls: ['./department.css'],
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule]
 })
-export class Department  implements OnInit{
-   departmentForm!: FormGroup;
+export class DepartmentComponent implements OnInit {
+
+  departmentForm!: FormGroup;
   searchForm!: FormGroup;
 
-  departments = signal<MasterDepartment[]>([]);
-  requestedRecords = signal(5);
+  // Signals
+  departments = signal<Department[]>([]);
+  totalRecords = signal(0);
+  totalPages = signal(1);
   currentPage = signal(1);
-  searchText = signal('');
+  requestedRecords = signal(5);
   onlyActive = signal(false);
-  totalRecords=signal(0);
+  searchText = signal('');
+  refreshTrigger = signal(0);
 
   constructor(
     private fb: FormBuilder,
     private service: DepartmentService,
     private toastr: ToastrService
   ) {
-    // effect(() => {
-    //   this.service.getAll().subscribe({
-    //     next: (res: any) => {
-    //       this.departments.set(res?.data ?? []);
-    //     },
-    //     error: () => this.toastr.error('Failed to load departments')
-    //   });
-    // });
+
+
+    effect(() => {
+
+      // register dependencies
+      const page = this.currentPage();
+      const size = this.requestedRecords();
+      const search = this.searchText();
+      const active = this.onlyActive();
+      this.refreshTrigger(); // important dependency
+
+      this.loadDepartments(page, size, search, active);
+    });
   }
 
   ngOnInit(): void {
-    this.initForm();
-    this.initSearchForm();
-    this.loadDepartments();
+    this.initForms();
   }
 
-  /* ================= LOAD ================= */
- loadDepartments() {
-  this.service.getAll().subscribe({
-    next: (res: any) => {
+  // ================== FORMS ==================
+  initForms() {
 
-      const mapped = res.data.map((d: any) => ({
-        DepartmentId: d.departmentId ?? d.id,
-        DepartmentName: d.departmentName,
-        IsActive: d.isActive,
-         IsDeleted: d.isDeleted ?? false
-      }));
-
-      this.departments.set(mapped);
-      this.totalRecords.set(mapped.length);
-    },
-    error: () => this.toastr.error('Failed to load departments')
-  });
-}
-  /* ================= FORM ================= */
-  initForm() {
     this.departmentForm = this.fb.group({
-      DepartmentId: [0],
+      DepartmentId: [''],
       DepartmentName: ['', Validators.required],
-      //  DepartmentDescription: ['', Validators.required],
-      IsActive: [true]
+      IsActive: [true],
+    });
+
+    this.searchForm = this.fb.group({
+      searchText: [''],
+    });
+
+    this.searchForm.get('searchText')?.valueChanges.subscribe(val => {
+      this.searchText.set(val || '');
+      this.currentPage.set(1);
     });
   }
 
-  /* ================= SEARCH ================= */
-  initSearchForm() {
-    this.searchForm = this.fb.group({
-      searchText: ['']
-    });
+  // ================== LOAD DATA ==================
+  loadDepartments(
+    page: number,
+    size: number,
+    search: string,
+    active: boolean
+  ) {
+    this.service
+      .getPaged(page, size, search, active)
+      .subscribe({
+        next: (res: any) => {
 
-    this.searchForm.get('searchText')!
-      .valueChanges
-      .pipe(debounceTime(400))
-      .subscribe(val => {
-        this.searchText.set(val ?? '');
-        this.currentPage.set(1);
+          const result = res.data;
+
+          const mappedData = result.data.map((d: any) => ({
+            DepartmentId: d.id,
+            DepartmentName: d.departmentName,
+            IsActive: d.isActive
+          }));
+
+          this.departments.set(mappedData);
+          this.totalRecords.set(result.totalRecords);
+          this.totalPages.set(result.totalPages);
+        },
+        error: () => this.toastr.error('Failed to load departments'),
       });
   }
 
-  /* ================= FILTER ================= */
-  onActiveFilterChange(event: Event) {
-    const checked = (event.target as HTMLInputElement).checked;
-    this.onlyActive.set(checked);
-  }
+  // ================== PAGINATION ==================
 
-  onRecordsChange(e: any) {
-    this.requestedRecords.set(Number(e.target.value));
-  }
-
-  previousPageByDepartmentName() {
+  previousPage() {
     if (this.currentPage() > 1) {
       this.currentPage.set(this.currentPage() - 1);
     }
   }
 
-  nextPageByShortCodeDept() {
-    this.currentPage.set(this.currentPage() + 1);
-  }
-
-
-  /* ================= SUBMIT ================= */
- submitdept() {
-  if (this.departmentForm.invalid) {
-    this.departmentForm.markAllAsTouched();
-    return;
-  }
-
-  const payload: MasterDepartment = {
-    DepartmentId: this.departmentForm.value.DepartmentId,
-    DepartmentName: this.departmentForm.value.DepartmentName,
-    IsActive: this.departmentForm.value.IsActive,
-    IsDeleted: false
-  };
-
-  const obs = payload.DepartmentId === 0
-    ? this.service.create(payload)
-    : this.service.update(payload);
-
-  obs.subscribe({
-    next: () => {
-      this.toastr.success(
-        payload.DepartmentId === 0
-          ? 'Department created successfully'
-          : 'Department updated successfully'
-      );
-      this.loadDepartments();
-      this.resetForm();
-    },
-    error: (err) => {
-      console.log(err.error); // see backend validation
-      this.toastr.error('Operation failed');
+  nextPage() {
+    if (this.currentPage() < this.totalPages()) {
+      this.currentPage.set(this.currentPage() + 1);
     }
-  });
-}
-  /* ================= EDIT ================= */
-  edit(dep: MasterDepartment) {
-  this.departmentForm.patchValue({
-    DepartmentId: dep.DepartmentId,
-    DepartmentName: dep.DepartmentName,
-    IsActive: dep.IsActive
-  });
-}
+  }
 
-  /* ================= DELETE ================= */
-  deleteUI(dep: MasterDepartment) {
-    if (!confirm('Delete this department?')) return;
+  onRecordsChange(event: any) {
+    const val = +event.target.value;
+    if (val > 0) {
+      this.requestedRecords.set(val);
+      this.currentPage.set(1);
+    }
+  }
 
-    this.service.delete(dep.DepartmentId).subscribe({
-      next: () => {
-        this.toastr.success('Department deleted successfully');
-         this.loadDepartments();
-        // this.departments.update(list =>
-        //   list.filter(d => d.DepartmentId !== dep.DepartmentId)
-        // );
+  onActiveFilterChange(event: any) {
+    this.onlyActive.set(event.target.checked);
+    this.currentPage.set(1);
+  }
+
+  clearSearch() {
+    this.searchForm.patchValue({ searchText: '' });
+    this.searchText.set('');
+    this.currentPage.set(1);
+  }
+
+
+
+  submitdept() {
+
+    if (this.departmentForm.invalid) return;
+
+    const dept = this.departmentForm.value;
+
+    const isCreate = !dept.DepartmentId;
+
+    const obs = isCreate
+      ? this.service.create(dept)
+      : this.service.update(dept);
+
+    obs.subscribe({
+      next: (res: any) => {
+
+        this.toastr.success('Department saved successfully');
+
+        if (isCreate) {
+          // Reload only for create (optional)
+          this.refreshTrigger.update(v => v + 1);
+        } else {
+          
+          this.departments.update(list =>
+            list.map(d =>
+              d.DepartmentId === dept.DepartmentId
+                ? {
+                  ...d,
+                  DepartmentName: dept.DepartmentName,
+                  IsActive: dept.IsActive   
+                }
+                : d
+            )
+          );
+        }
+
+        this.resetForm();
       },
-      error: () => this.toastr.error('Delete failed')
+      error: () => this.toastr.error('Save failed'),
     });
   }
 
-  /* ================= TOGGLE ACTIVE ================= */
-  toggleActive(dep: MasterDepartment) {
-
-    const action = dep.IsActive ? 'Deactivated' : 'Activated';
-
-    if (!confirm(`Do you want to ${action} this department?`)) return;
-
-    this.service.toggleActive(dep.DepartmentId).subscribe({
-      next: () => {
-        this.toastr.success(`Department ${action} successfully`);
-        this.loadDepartments();
-
-        // this.departments.update(list =>
-        //   list.map(d =>
-        //     d.DepartmentId === dep.DepartmentId
-        //       ? { ...d, IsActive: !d.IsActive }
-        //       : d
-        //   )
-        // );
-      },
-      error: () => this.toastr.error('Action failed')
-    });
+  //EDIT
+  edit(dept: Department) {
+    this.departmentForm.patchValue(dept);
   }
 
-  /* ================= RESET ================= */
   resetForm() {
-    this.departmentForm.reset({ DepartmentId: 0,DepartmentName: '', IsActive: true });
+    this.departmentForm.reset({
+      DepartmentId: '',
+      DepartmentName: '',
+      IsActive: true,
+    });
   }
 
-  logoutdept() {
-    localStorage.clear();
-    window.location.href = '/login';
+  deleteUI(dep: Department) {
+
+    Swal.fire({
+      title: 'Are you sure?',
+      text: "This will soft delete the department!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#6c757d',
+      confirmButtonText: 'Yes, delete it!'
+    }).then((result) => {
+
+      if (result.isConfirmed) {
+
+        this.service.delete(dep.DepartmentId).subscribe({
+          next: () => {
+            Swal.fire('Deleted!', 'Department deleted successfully.', 'success');
+            this.refreshTrigger.update(v => v + 1);
+          },
+          error: () => {
+            Swal.fire('Error!', 'Delete failed.', 'error');
+          }
+        });
+
+      }
+
+    });
   }
 
+  toggleActive(dep: Department) {
+
+    const newStatus = !dep.IsActive;
+
+    Swal.fire({
+      title: 'Are you sure?',
+      text: `Change status to ${newStatus ? 'Active' : 'Inactive'}?`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#1b5e20',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, change it!'
+    }).then((result) => {
+
+      if (result.isConfirmed) {
+
+        this.service.toggleActive(dep.DepartmentId).subscribe({
+          next: () => {
+
+            // ✅ UPDATE SIGNAL LOCALLY (IMPORTANT)
+            this.departments.update(list =>
+              list.map(d =>
+                d.DepartmentId === dep.DepartmentId
+                  ? { ...d, IsActive: newStatus }
+                  : d
+              )
+            );
+
+            Swal.fire('Updated!', 'Status updated successfully.', 'success');
+
+          },
+          error: () => {
+            Swal.fire('Error!', 'Status update failed.', 'error');
+          }
+        });
+      }
+    });
+  }
+
+  get isEditMode(): boolean {
+    return !!this.departmentForm.get('DepartmentId')?.value;
+  }
+
+  get startRecord(): number {
+  if (this.totalRecords() === 0) return 0;
+  return (this.currentPage() - 1) * this.requestedRecords() + 1;
 }
 
+get endRecord(): number {
+  const end = this.currentPage() * this.requestedRecords();
+  return end > this.totalRecords() ? this.totalRecords() : end;
+}
 
+}
