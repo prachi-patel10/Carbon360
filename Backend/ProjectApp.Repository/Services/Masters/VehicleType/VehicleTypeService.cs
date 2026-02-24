@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using ProjectApp.Core.DTOs.Masters.Fuel;
 using ProjectApp.Core.DTOs.Masters.VehicleType;
 using ProjectApp.Core.Models;
 using ProjectApp.Repository.Interfaces.Common;
@@ -182,23 +183,61 @@ namespace ProjectApp.Repository.Services.Masters.VehicleType
         //}
 
 
+        //public async Task<bool> UpdateVehicleTypeAsync(VehicleTypeUpdateDTO dto)
+        //{
+        //    int id = _idEncoder.Decode(dto.vehicle_type_id);
+
+        //    await _context.Database.ExecuteSqlRawAsync(
+        //        "EXEC USP_CB_VehicleTypeUpdate @VehicleTypeId, @VehicleTypeName, @VehicleCategory, @FuelId, @AverageMileage, @Description, @UpdatedBy",
+        //        new SqlParameter("@VehicleTypeId", id),
+        //        new SqlParameter("@VehicleTypeName", dto.vehicle_type_name),
+        //        new SqlParameter("@VehicleCategory", dto.vehicle_category),
+        //        new SqlParameter("@FuelId", dto.fuel_id ?? (object)DBNull.Value),
+        //        new SqlParameter("@AverageMileage", dto.average_mileage_kmpl ?? (object)DBNull.Value),
+        //        new SqlParameter("@Description", dto.description ?? (object)DBNull.Value),
+        //        new SqlParameter("@UpdatedBy", GetCurrentUserId())
+        //    );
+
+        //    return true;
+
+        //}
         public async Task<bool> UpdateVehicleTypeAsync(VehicleTypeUpdateDTO dto)
         {
-            int id = _idEncoder.Decode(dto.vehicle_type_id);
+            if (string.IsNullOrEmpty(dto.vehicle_type_id))
+                throw new Exception("VehicleTypeId is required");
+
+            if (string.IsNullOrEmpty(dto.fuel_id))
+                throw new Exception("FuelId is required");
+
+            int vehicleTypeId = _idEncoder.Decode(dto.vehicle_type_id);
+            int fuelId = _idEncoder.Decode(dto.fuel_id);
 
             await _context.Database.ExecuteSqlRawAsync(
                 "EXEC USP_CB_VehicleTypeUpdate @VehicleTypeId, @VehicleTypeName, @VehicleCategory, @FuelId, @AverageMileage, @Description, @UpdatedBy",
-                new SqlParameter("@VehicleTypeId", id),
+                new SqlParameter("@VehicleTypeId", vehicleTypeId),
                 new SqlParameter("@VehicleTypeName", dto.vehicle_type_name),
                 new SqlParameter("@VehicleCategory", dto.vehicle_category),
-                new SqlParameter("@FuelId", dto.fuel_id ?? (object)DBNull.Value),
+                new SqlParameter("@FuelId", fuelId), // NO NULL POSSIBLE
                 new SqlParameter("@AverageMileage", dto.average_mileage_kmpl ?? (object)DBNull.Value),
                 new SqlParameter("@Description", dto.description ?? (object)DBNull.Value),
                 new SqlParameter("@UpdatedBy", GetCurrentUserId())
             );
 
             return true;
-        
-    }
+        }
+
+        public async Task<bool> UpdateStatusAsync(VehicleTypeStatusUpdateDTO dto)
+        {
+            int id = _idEncoder.Decode(dto.vehicle_type_id);
+
+            await _context.Database.ExecuteSqlRawAsync(
+                "UPDATE CB_MasterVehicleType SET IsActive=@IsActive, UpdatedBy=@UpdatedBy, UpdateDate=GETDATE() WHERE vehicle_type_id=@vehicle_type_id",
+                new SqlParameter("@IsActive", dto.IsActive),
+                new SqlParameter("@vehicle_type_id", id),
+                new SqlParameter("@UpdatedBy", GetCurrentUserId())
+            );
+
+            return true;
+        }
     }
 }

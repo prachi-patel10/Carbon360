@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using ProjectApp.Core.DTOs.Masters.Fuel;
 using ProjectApp.Core.DTOs.Masters.VehicleType;
 using ProjectApp.Repository.Interfaces.Masters.VehicleType;
 
@@ -7,6 +9,7 @@ namespace ProjectApp.API.Controllers.Masters.VehicleType
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class VehicleTypeController : ControllerBase
     {
         private readonly IVehicleTypeService _vehicleTypeService;
@@ -60,6 +63,17 @@ namespace ProjectApp.API.Controllers.Masters.VehicleType
                 return NotFound("Vehicle Type not found");
 
             return Ok(result);
+        }
+
+        [HttpPatch("UpdateStatus")]
+        public async Task<IActionResult> UpdateStatus([FromBody] VehicleTypeStatusUpdateDTO dto)
+        {
+            var result = await _vehicleTypeService.UpdateStatusAsync(dto);
+
+            if (!result)
+                return BadRequest("Status update failed");
+
+            return Ok("Status updated successfully");
         }
 
         //[HttpGet("ByName/{name}")]
