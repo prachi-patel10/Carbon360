@@ -1,8 +1,10 @@
 import { Component, HostListener } from '@angular/core';
-import { Router, RouterOutlet, ActivatedRoute } from '@angular/router';
+import { Router, NavigationEnd ,RouterOutlet, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../core/guards/auth-service';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { filter } from 'rxjs/operators';
+
 
 @Component({
   selector: 'app-dashboard',
@@ -16,7 +18,10 @@ export class DashboardComponent {
   roles: string[] = [];
   selectedRole: string = '';
   showProfileCard: boolean = false;
-  sidebarOpen = false;
+ sidebarOpen: boolean = true;
+
+pageTitle: string = '';
+
 
   constructor(
     private authService: AuthService,
@@ -38,7 +43,29 @@ export class DashboardComponent {
   // SAFE ASSIGNMENT
   this.roles = user.roles ?? [];
   this.selectedRole = user.currentRole ?? '';
+  this.router.events
+    .pipe(filter(event => event instanceof NavigationEnd))
+    .subscribe(() => {
+      const url = this.router.url;
+
+      if (url.includes('user')) {
+        this.pageTitle = 'User Administration';
+      } else if (url.includes('role')) {
+        this.pageTitle = 'Access Control : Role Management';
+      } else if (url.includes('department')) {
+        this.pageTitle = 'Organizational Units : Manage Departments';
+      } else if (url.includes('vehicle')) {
+        this.pageTitle = 'Fleet Report';
+      } else if (url.includes('waste')) {
+        this.pageTitle = 'Waste Management';
+      } else {
+        this.pageTitle = 'Dashboard';
+      }
+    });
+
 }
+
+
   goTo(path: string) {
     this.router.navigate([path], { relativeTo: this.route });
   }
@@ -62,11 +89,10 @@ export class DashboardComponent {
   }
 
   /* Sidebar */
+toggleSidebar() {
+  this.sidebarOpen = !this.sidebarOpen;
+}
 
-  toggleSidebar() {
-    const sidebar = document.querySelector('.sidebar');
-    sidebar?.classList.toggle('show');
-  }
 
   logout() {
     this.authService.logout();
