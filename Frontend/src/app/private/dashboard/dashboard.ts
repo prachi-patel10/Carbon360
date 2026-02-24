@@ -54,11 +54,14 @@ pageTitle: string = '';
         this.pageTitle = 'Access Control : Role Management';
       } else if (url.includes('department')) {
         this.pageTitle = 'Organizational Units : Manage Departments';
-      } else if (url.includes('vehicle')) {
+      } else if (url.includes('vehiclereport')) {
         this.pageTitle = 'Fleet Report';
       } else if (url.includes('waste')) {
         this.pageTitle = 'Waste Management';
-      } else {
+      }else if (url.includes('vehicle')) {
+        this.pageTitle = 'Vehicle Emission Calculation';
+      } 
+      else {
         this.pageTitle = 'Dashboard';
       }
     });

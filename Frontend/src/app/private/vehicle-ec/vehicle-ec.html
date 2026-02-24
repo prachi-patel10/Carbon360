@@ -1,0 +1,125 @@
+<div class="emission-page">
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="logo-section">
+      <!-- <img src="/assets/Carbon360-removebg-preview.png" class="logo-img" />
+      <h1>Vehicle Emission Calculation</h1>
+      <span class="page-subtitle">Calculate and store vehicle trip emission</span> -->
+    </div>
+  </div>
+
+  <!-- FORM CARD -->
+  <form [formGroup]="emissionForm" (ngSubmit)="calculateEmission()" class="card">
+
+    <!-- <div class="card-title">Vehicle Details</div> -->
+
+    <div class="form-row">
+
+      <div class="form-group">
+        <label>Vehicle</label>
+       <select formControlName="VehicleId">
+  <option value="">Select Vehicle</option>
+  <option *ngFor="let v of vehicles" [value]="v.id">
+    {{ v.number }}
+  </option>
+</select>
+      </div>
+
+      <div class="form-group">
+        <label>Trip</label>
+        <select formControlName="TripId">
+          <option value="">Select Trip</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Fuel Type</label>
+        <select formControlName="FuelType">
+          <option>Petrol</option>
+          <option>Diesel</option>
+          <option>CNG</option>
+        </select>
+      </div>
+
+    </div>
+
+    <div class="form-row">
+
+      <div class="form-group">
+        <label>Distance Travelled (KM)</label>
+        <input type="number" formControlName="DistanceKm">
+      </div>
+
+      <div class="form-group">
+        <label>Fuel Consumed (Liters)</label>
+        <input type="number" formControlName="FuelConsumedLtr">
+      </div>
+
+    </div>
+
+    <div class="card-title">Emission Factors</div>
+
+    <div class="form-row">
+
+      <div class="form-group">
+        <label>CO₂ Factor (g/ltr)</label>
+        <input type="number" formControlName="CO2Factor_g_per_ltr">
+      </div>
+
+      <div class="form-group">
+        <label>NO₂ Factor (g/km)</label>
+        <input type="number" formControlName="NO2Factor_g_per_km">
+      </div>
+
+      <div class="form-group">
+        <label>CH₄ Factor (g/km)</label>
+        <input type="number" formControlName="CH4Factor_g_per_km">
+      </div>
+
+    </div>
+
+    <div class="form-buttons">
+      <button type="submit" class="btn-primary">
+        Calculate Emission
+      </button>
+
+      <button type="button" class="btn-secondary" (click)="resetForm()">
+        Reset
+      </button>
+    </div>
+
+  </form>
+
+  <!-- RESULT CARD -->
+  <div class="card result-card">
+
+    <div class="card-title">Emission Results</div>
+
+    <div class="result-grid">
+
+      <div class="result-box">
+        <h4>CO₂ (g)</h4>
+        <p>{{ totalCO2 }}</p>
+      </div>
+
+      <div class="result-box">
+        <h4>NO₂ (g)</h4>
+        <p>{{ totalNO2 }}</p>
+      </div>
+
+      <div class="result-box">
+        <h4>CH₄ (g)</h4>
+        <p>{{ totalCH4 }}</p>
+      </div>
+
+      <div class="result-box highlight">
+        <h4>Total Emission (g)</h4>
+        <p>{{ totalEmission }}</p>
+      </div>
+
+    </div>
+
+  </div>
+
+</div>

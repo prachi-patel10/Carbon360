@@ -1,11 +1,10 @@
-
 <div class="layout-container">
-<button class="menu-btn" (click)="toggleSidebar()">
-      <i class="fas fa-bars"></i>
-    </button>
+  <button class="menu-btn" (click)="toggleSidebar()">
+    <i class="fas fa-bars"></i>
+  </button>
   <!-- Sidebar -->
-<aside class="sidebar" [class.closed]="!sidebarOpen">
-      <div class="brand">
+  <aside class="sidebar" [class.closed]="!sidebarOpen">
+    <div class="brand">
       <h1>CARBON<span>360</span></h1>
       <p>Track • Analyze • Improve</p>
     </div>
@@ -17,31 +16,31 @@
         <div class="menu-title" (click)="toggleMenu('admin')">
           <i class="fas fa-user-shield"></i>
           <span>Administration</span>
-          <i class="fas fa-chevron-down arrow"
-             [class.rotate]="openedMenu === 'admin'"></i>
+          <i class="fas fa-chevron-down arrow" [class.rotate]="openedMenu === 'admin'"></i>
         </div>
 
         <ul class="submenu" *ngIf="openedMenu === 'admin'">
 
-          <li *ngIf="isAdmin() || isCorporate()"
-              (click)="goTo('user')"
-              [class.active-link]="isActive('/user')">
+          <li *ngIf="isAdmin() || isCorporate()" (click)="goTo('user')" [class.active-link]="isActive('/user')">
             <i class="fas fa-users-cog"></i>
             User Administration
           </li>
 
-          <li *ngIf="isAdmin() || isCorporate()"
-              (click)="goTo('role')"
-              [class.active-link]="isActive('/role')">
+          <li *ngIf="isAdmin() || isCorporate()" (click)="goTo('role')" [class.active-link]="isActive('/role')">
             <i class="fas fa-key"></i>
             Access Control
           </li>
 
-          <li *ngIf="isAdmin() || isCorporate()"
-              (click)="goTo('department')"
-              [class.active-link]="isActive('/department')">
+          <li *ngIf="isAdmin() || isCorporate()" (click)="goTo('department')"
+            [class.active-link]="isActive('/department')">
             <i class="fas fa-building"></i>
             Organizational Units
+          </li>
+
+          <li *ngIf="isAdmin() || isCorporate()" (click)="goTo('vehicle')"
+            [class.active-link]="isActive('/vehicle')">
+            <i class="fas fa-building"></i>
+            Vehicle Emission Calculation
           </li>
 
         </ul>
@@ -52,21 +51,16 @@
         <div class="menu-title" (click)="toggleMenu('fleet')">
           <i class="fas fa-truck-moving"></i>
           <span>Fleet & Transport</span>
-          <i class="fas fa-chevron-down arrow"
-             [class.rotate]="openedMenu === 'fleet'"></i>
+          <i class="fas fa-chevron-down arrow" [class.rotate]="openedMenu === 'fleet'"></i>
         </div>
 
         <ul class="submenu" *ngIf="openedMenu === 'fleet'">
-          <li *ngIf="isAdmin() || isReporter()"
-              routerLink="/vehicle"
-              routerLinkActive="active-link">
+          <li *ngIf="isAdmin() || isReporter()" routerLink="/vehicle" routerLinkActive="active-link">
             <i class="fas fa-clipboard-list"></i>
             Report
           </li>
 
-          <li *ngIf="isAdmin() || isReporter()"
-              routerLink="/waste"
-              routerLinkActive="active-link">
+          <li *ngIf="isAdmin() || isReporter()" routerLink="/waste" routerLinkActive="active-link">
             <i class="fas fa-search"></i>
             Search
           </li>
@@ -78,21 +72,16 @@
         <div class="menu-title" (click)="toggleMenu('waste')">
           <i class="fas fa-recycle"></i>
           <span>Waste & Disposal</span>
-          <i class="fas fa-chevron-down arrow"
-             [class.rotate]="openedMenu === 'waste'"></i>
+          <i class="fas fa-chevron-down arrow" [class.rotate]="openedMenu === 'waste'"></i>
         </div>
 
         <ul class="submenu" *ngIf="openedMenu === 'waste'">
-          <li *ngIf="isAdmin() || isReporter()"
-              routerLink="/vehicle"
-              routerLinkActive="active-link">
+          <li *ngIf="isAdmin() || isReporter()" routerLink="/vehicle" routerLinkActive="active-link">
             <i class="fas fa-dumpster"></i>
             Report
           </li>
 
-          <li *ngIf="isAdmin() || isReporter()"
-              routerLink="/waste"
-              routerLinkActive="active-link">
+          <li *ngIf="isAdmin() || isReporter()" routerLink="/waste" routerLinkActive="active-link">
             <i class="fas fa-filter"></i>
             Search
           </li>
@@ -104,21 +93,16 @@
         <div class="menu-title" (click)="toggleMenu('power')">
           <i class="fas fa-bolt"></i>
           <span>Power Generation</span>
-          <i class="fas fa-chevron-down arrow"
-             [class.rotate]="openedMenu === 'power'"></i>
+          <i class="fas fa-chevron-down arrow" [class.rotate]="openedMenu === 'power'"></i>
         </div>
 
         <ul class="submenu" *ngIf="openedMenu === 'power'">
-          <li *ngIf="isAdmin() || isReporter()"
-              routerLink="/vehicle"
-              routerLinkActive="active-link">
+          <li *ngIf="isAdmin() || isReporter()" routerLink="/vehicle" routerLinkActive="active-link">
             <i class="fas fa-file-signature"></i>
             Report
           </li>
 
-          <li *ngIf="isAdmin() || isReporter()"
-              routerLink="/waste"
-              routerLinkActive="active-link">
+          <li *ngIf="isAdmin() || isReporter()" routerLink="/waste" routerLinkActive="active-link">
             <i class="fas fa-chart-line"></i>
             Search
           </li>
@@ -133,24 +117,20 @@
 
     <header class="topbar">
       <div class="page-title">
-    {{ pageTitle }}
-  </div>
+        {{ pageTitle }}
+      </div>
       <div class="right">
         <div class="admin-wrapper">
           <div class="admin-avatar" (click)="toggleProfile($event)">
             {{ loggedInUser.charAt(0) }}
           </div>
 
-          <div class="admin-dropdown"
-               *ngIf="showProfileCard"
-               (click)="$event.stopPropagation()">
+          <div class="admin-dropdown" *ngIf="showProfileCard" (click)="$event.stopPropagation()">
 
             <h4 *ngIf="roles && roles.length > 1">Switch Role</h4>
 
-            <select *ngIf="roles && roles.length > 1"
-                    [(ngModel)]="selectedRole"
-                    (change)="onRoleChange()"
-                    class="role-select">
+            <select *ngIf="roles && roles.length > 1" [(ngModel)]="selectedRole" (change)="onRoleChange()"
+              class="role-select">
 
               <option *ngFor="let role of roles" [value]="role">
                 {{ role }}

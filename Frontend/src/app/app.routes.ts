@@ -9,6 +9,7 @@ import { Home } from './private/masters/home/home';
 import { DashboardComponent } from './private/dashboard/dashboard';
 import { MasterRoleComponent } from './private/masters/role/role';
 import { DepartmentComponent } from './private/masters/department/department';
+import { VehicleEC } from './private/vehicle-ec/vehicle-ec';
 
 export const routes: Routes = [
 
@@ -29,11 +30,11 @@ export const routes: Routes = [
   path: 'dashboard',
   component: DashboardComponent,
   children: [
-    { path: '', redirectTo: 'login', pathMatch: 'full' },
+    // { path: '', redirectTo: 'login', pathMatch: 'full' },
       { path: 'user', component: MasterUserComponent },
       { path: 'role', component: MasterRoleComponent },
     { path: 'department', component: DepartmentComponent }, // create/import DepartmentComponent
-    // { path: 'vehicle', component: VehicleComponent },       // create/import VehicleComponent
+    { path: 'vehicle', component: VehicleEC },       // create/import VehicleComponent
     // { path: 'waste', component: WasteComponent },           // create/import WasteComponent
     // { path: 'generator', component: GeneratorComponent },   // create/import GeneratorComponent
   ]

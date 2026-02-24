@@ -7,7 +7,7 @@ using ProjectApp.Repository.Services.Masters.Vehicle;
 
 namespace ProjectApp.API.Controllers.Masters.Vehicle
 {
-    //[Authorize]
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class VehicleMasterController : ControllerBase
