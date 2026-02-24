@@ -1,0 +1,69 @@
+.department-page {
+  padding: 30px;
+  background: #f4f6f9;
+}
+
+.card {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 25px;
+  margin-bottom: 25px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+}
+
+.card-title {
+  margin-bottom: 20px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1b5e20;
+}
+
+.form-row {
+  display: flex;
+  gap: 40px;
+  flex-wrap: wrap;
+}
+
+.form-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+
+.form-group input {
+  height: 42px;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+.form-group input:focus {
+  border-color: #1b5e20;
+  outline: none;
+}
+
+.form-buttons {
+  margin-top: 20px;
+  display: flex;
+  gap: 15px;
+}
+
+.btn-primary {
+  background: #1b5e20;
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: none;
+}
+
+.btn-secondary {
+  background: #e5e7eb;
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: none;
+}

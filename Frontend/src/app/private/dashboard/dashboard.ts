@@ -60,6 +60,8 @@ pageTitle: string = '';
         this.pageTitle = 'Waste Management';
       }else if (url.includes('vehicle')) {
         this.pageTitle = 'Vehicle Emission Calculation';
+      } else if (url.includes('vehicletrip')) {
+        this.pageTitle = 'Vehicle Trip';
       } 
       else {
         this.pageTitle = 'Dashboard';

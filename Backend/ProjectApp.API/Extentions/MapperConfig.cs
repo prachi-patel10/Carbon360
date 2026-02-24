@@ -6,7 +6,8 @@ using ProjectApp.Core.DTOs.Masters.Fuel;
 using ProjectApp.Core.DTOs.Masters.Section;
 using ProjectApp.Core.DTOs.Masters.Vehicle;
 using ProjectApp.Core.DTOs.Masters.VehicleType;
-using ProjectApp.Core.DTOs.Worker;
+using ProjectApp.Core.DTOs.Masters.City;
+using ProjectApp.Core.DTOs.Account.VehicleModule.VehicleTrip;
 using ProjectApp.Core.Entities;
 using ProjectApp.Core.Models;
 using System;
@@ -46,6 +47,14 @@ namespace ProjectApp.API.Extentions
             CreateMap<CB_MasterVehicle, VehicleSearchRequest>().ReverseMap();
             CreateMap<CB_MasterVehicle, VehicleStatusDto>().ReverseMap();
             CreateMap<CB_MasterVehicle, VehicleUpdateDto>().ReverseMap();
+
+            CreateMap<CB_MasterCity, CityResponseDTO>().ReverseMap();
+
+            // ================= VEHICLE MASTER =================
+            CreateMap<CB_VehicleTrip,VehicleTripDTO >().ReverseMap();
+            CreateMap<CB_VehicleTrip, VehicleTripResponseDTO>().ReverseMap();
+            CreateMap<CB_VehicleTrip, VehicleTripUpdateDTO>().ReverseMap();
+
 
         }
     }

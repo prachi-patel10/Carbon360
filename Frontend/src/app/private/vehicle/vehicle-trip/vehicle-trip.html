@@ -1,0 +1,72 @@
+<div class="department-page">
+
+  <!-- ================= VEHICLE TRIP FORM ================= -->
+  <div class="card form-card">
+    <h2 class="card-title">Add / Update Vehicle Trip</h2>
+
+    <form [formGroup]="tripForm" (ngSubmit)="submitTrip()">
+
+      <div class="form-row">
+
+        <!-- Vehicle Number -->
+        <div class="form-group">
+          <label>Vehicle Number</label>
+          <input type="text" formControlName="VehicleNo" placeholder="Enter vehicle number">
+          <div class="validation"
+            *ngIf="tripForm.get('VehicleNo')?.touched && tripForm.get('VehicleNo')?.invalid">
+            Vehicle Number is required
+          </div>
+        </div>
+
+        <!-- From City -->
+        <div class="form-group">
+          <label>From City</label>
+          <input type="text" formControlName="FromCity" placeholder="Enter starting city">
+        </div>
+
+        <!-- To City -->
+        <div class="form-group">
+          <label>To City</label>
+          <input type="text" formControlName="ToCity" placeholder="Enter destination city">
+        </div>
+
+        <!-- Trip Start Date -->
+        <div class="form-group">
+          <label>Trip Start Date & Time</label>
+          <input type="datetime-local" formControlName="TripStartDateTime">
+        </div>
+
+        <!-- Trip End Date -->
+        <div class="form-group">
+          <label>Trip End Date & Time</label>
+          <input type="datetime-local" formControlName="TripEndDateTime">
+        </div>
+
+        <!-- Distance -->
+        <div class="form-group">
+          <label>Distance (Km)</label>
+          <input type="number" formControlName="DistanceKm" placeholder="Enter distance">
+        </div>
+
+        <!-- Fuel Consumed -->
+        <div class="form-group">
+          <label>Fuel Consumed (Ltr)</label>
+          <input type="number" formControlName="FuelConsumedLtr" placeholder="Enter fuel consumed">
+        </div>
+
+      </div>
+
+      <!-- ================= FORM BUTTONS ================= -->
+      <div class="form-buttons">
+        <button type="submit" class="btn-primary">
+          {{ !tripForm.value.TripId ? 'Save' : 'Update' }}
+        </button>
+        <button type="button" class="btn-secondary" (click)="resetForm()">
+          Reset
+        </button>
+      </div>
+
+    </form>
+  </div>
+
+</div>
