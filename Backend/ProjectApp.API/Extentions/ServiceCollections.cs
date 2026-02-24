@@ -5,12 +5,14 @@ using ProjectApp.Repository.Interfaces.Common;
 using ProjectApp.Repository.Interfaces.Masters.Department;
 using ProjectApp.Repository.Interfaces.Masters.Fuel;
 using ProjectApp.Repository.Interfaces.Masters.Role;
+using ProjectApp.Repository.Interfaces.Masters.Vehicle;
 using ProjectApp.Repository.Interfaces.Masters.VehicleType;
 using ProjectApp.Repository.Interfaces.User;
 using ProjectApp.Repository.Services.Common;
 using ProjectApp.Repository.Services.Masters.Department;
 using ProjectApp.Repository.Services.Masters.Fuel;
 using ProjectApp.Repository.Services.Masters.Role;
+using ProjectApp.Repository.Services.Masters.Vehicle;
 using ProjectApp.Repository.Services.Masters.VehicleType;
 using ProjectApp.Repository.Services.User;
 using ProjectApp.Repository.Utilities.Auth;
@@ -40,6 +42,8 @@ namespace ProjectApp.API.Extentions
             services.AddHttpContextAccessor();
             services.AddScoped<IFuelService, FuelService>();
             services.AddScoped<IVehicleTypeService, VehicleTypeService>();
+            services.AddScoped<IVehicleService, VehicleService>();
+
 
             return services;
         }

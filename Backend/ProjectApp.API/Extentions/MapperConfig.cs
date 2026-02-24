@@ -4,6 +4,7 @@ using ProjectApp.Core.DTOs.Account.User;
 using ProjectApp.Core.DTOs.Masters.Department;
 using ProjectApp.Core.DTOs.Masters.Fuel;
 using ProjectApp.Core.DTOs.Masters.Section;
+using ProjectApp.Core.DTOs.Masters.Vehicle;
 using ProjectApp.Core.DTOs.Masters.VehicleType;
 using ProjectApp.Core.DTOs.Worker;
 using ProjectApp.Core.Entities;
@@ -39,6 +40,12 @@ namespace ProjectApp.API.Extentions
             CreateMap<CB_MasterVehicleType, VehicleTypeDTO>().ReverseMap();
             CreateMap<CB_MasterVehicleType, VehicleTypeResponseDTO>().ReverseMap();
             CreateMap<CB_MasterVehicleType, VehicleTypeUpdateDTO>().ReverseMap();
+
+            // ================= VEHICLE MASTER =================
+            CreateMap<CB_MasterVehicle, VehicleDto>().ReverseMap();
+            CreateMap<CB_MasterVehicle, VehicleSearchRequest>().ReverseMap();
+            CreateMap<CB_MasterVehicle, VehicleStatusDto>().ReverseMap();
+            CreateMap<CB_MasterVehicle, VehicleUpdateDto>().ReverseMap();
 
         }
     }

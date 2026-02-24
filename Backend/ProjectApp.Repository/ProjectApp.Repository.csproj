@@ -30,6 +30,7 @@
 
   <ItemGroup>
     <Folder Include="Interfaces\Masters\VehicleType\" />
+    <Folder Include="Services\Masters\NewFolder\" />
     <Folder Include="Services\Masters\VehicleType\" />
   </ItemGroup>
 
