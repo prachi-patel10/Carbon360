@@ -1,228 +1,191 @@
-<!-- USER FORM -->
-<form [formGroup]="userForm" (ngSubmit)="submit()" class="form-card">
+<div class="department-page">
 
-  <div class="grid">
+  <!-- ================= INPUT FORM ================= -->
+  <div class="card">
+    <h2 class="card-title">Add / Update User</h2>
 
-    <!-- FIRST NAME -->
-    <div>
-      <label>First Name</label>
-      <input type="text" formControlName="Fname" />
-      <div class="validation" *ngIf="userForm.get('Fname')?.touched && userForm.get('Fname')?.invalid">
-        First Name is required
+    <form [formGroup]="userForm" (ngSubmit)="submitUser()">
+
+      <!-- User Info -->
+      <div class="form-row">
+        <div class="form-group">
+          <label>First Name</label>
+          <input type="text" formControlName="Fname" placeholder="Enter first name">
+        </div>
+
+        <div class="form-group">
+          <label>Last Name</label>
+          <input type="text" formControlName="Lname" placeholder="Enter last name">
+        </div>
+
+        <div class="form-group">
+          <label>Username</label>
+          <input type="text" formControlName="UserName" placeholder="Enter username">
+        </div>
       </div>
-    </div>
 
-    <!-- LAST NAME -->
-    <div>
-      <label>Last Name</label>
-      <input type="text" formControlName="Lname" />
-      <div class="validation" *ngIf="userForm.get('Lname')?.touched && userForm.get('Lname')?.invalid">
-        Last Name is required
+      <div class="form-row">
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" formControlName="Email" placeholder="Enter email">
+        </div>
+
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" formControlName="Password" placeholder="Enter password">
+        </div>
+
+        <div class="form-group">
+          <label>Confirm Password</label>
+          <input type="password" formControlName="ConfirmPassword" placeholder="Confirm password">
+        </div>
       </div>
-    </div>
 
-    <!-- USERNAME -->
-    <div>
-      <label>Username</label>
-      <input type="text" formControlName="UserName" />
-      <div class="validation" *ngIf="userForm.get('UserName')?.touched && userForm.get('UserName')?.invalid">
-        Username is required
+      <div class="form-row single-line-row">
+        <!-- Department Dropdown -->
+        <div class="form-group small-width">
+          <label>Department</label>
+          <select formControlName="DepartmentId">
+            <option value="">Select Department</option>
+            <option *ngFor="let d of departments()" [value]="d.DepartmentId">
+              {{ d.DepartmentName }}
+            </option>
+          </select>
+          <div class="validation"
+            *ngIf="userForm.get('DepartmentId')?.touched && userForm.get('DepartmentId')?.invalid">
+            Department is required
+          </div>
+        </div>
+
+        <!-- Roles Dropdown -->
+        <div class="form-group role-container">
+          <label>Roles</label>
+          <div class="multi-select">
+            <div class="select-box" (click)="toggleRoleDropdown()">
+              {{ selectedRoleNames() || 'Select Roles' }}
+              <span class="arrow">▼</span>
+            </div>
+
+            <div *ngFor="let r of rolesList()">
+              <input type="checkbox" [value]="r.roleId" (change)="onRoleChange($event)"
+                [checked]="userForm.value.RoleIds?.includes(r.roleId)" />
+              {{ r.roleName }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Status Toggle -->
+        <div class="form-group status-group">
+          <label>Status</label>
+          <div class="toggle-wrapper">
+            <label class="toggle-switch">
+              <input type="checkbox" formControlName="IsActive">
+              <span class="toggle-slider"></span>
+            </label>
+            <span class="toggle-text">
+              {{ userForm.get('IsActive')?.value ? 'Active' : 'Inactive' }}
+            </span>
+          </div>
+        </div>
       </div>
-    </div>
 
-    <!-- EMAIL -->
-    <div>
-      <label>Email</label>
-      <input type="email" formControlName="Email" />
-      <div class="validation" *ngIf="userForm.get('Email')?.touched && userForm.get('Email')?.invalid">
-        Valid Email is required
+      <!-- ================= FORM BUTTONS ================= -->
+      <div class="form-buttons">
+        <button type="submit" class="btn-primary">
+          {{ !userForm.value.UserId ? 'Save' : 'Update' }}
+        </button>
+        <button type="button" class="btn-secondary" (click)="resetForm()">
+          Reset
+        </button>
       </div>
-    </div>
 
-    <!-- PASSWORD -->
-    <div>
-      <label>Password</label>
-      <input type="password" formControlName="Password" />
-      <div class="validation" *ngIf="userForm.get('Password')?.touched && userForm.get('Password')?.invalid">
-        Password is required
-      </div>
-    </div>
-
-    <!-- CONFIRM PASSWORD -->
-    <div>
-      <label>Confirm Password</label>
-      <input type="password" formControlName="ConfirmPassword" />
-      <div class="validation"
-        *ngIf="userForm.get('ConfirmPassword')?.touched && userForm.get('ConfirmPassword')?.invalid">
-        Confirm Password is required
-      </div>
-    </div>
-
-    <!-- DEPARTMENT -->
-    <div>
-      <label>Department</label>
-     <select formControlName="DepartmentId">
-  <option value="">Select Department</option>
-
-  <option *ngFor="let d of departments()" [value]="d.id">
-    {{ d.departmentName }}
-  </option>
-
-</select>
-      <div class="validation" *ngIf="userForm.get('DepartmentId')?.touched && userForm.get('DepartmentId')?.invalid">
-        Department is required
-      </div>
-    </div>
-
-    <!-- ROLES -->
-<div>
-  <label>Roles</label>
-
-  <div class="multi-select" #dropdownWrapper>
-
-    <!-- Selected display -->
-    <div class="select-box" (click)="toggleDropdown()">
-      <span class="selected-text">
-        {{ getSelectedRoleNames() || 'Select Roles' }}
-      </span>
-      <span class="arrow">&#9662;</span>
-    </div>
-
-    <!-- Dropdown -->
-    <div class="dropdown-panel" *ngIf="isDropdownOpen"> 
-     <div *ngFor="let r of rolesList()">
-  <input
-    type="checkbox"
-    [value]="r.id"
-    (change)="onRoleChange($event)"
-    [checked]="userForm.value.RoleIds?.includes(r.id)"
-  />
-  {{ r.roleName }}
-</div>
-    </div>
-
+    </form>
   </div>
 
-  <div class="validation"
-       *ngIf="userForm.get('RoleIds')?.touched && userForm.get('RoleIds')?.invalid">
-    At least one role is required
-  </div>
-</div>
+  <!-- ================= SEARCH SECTION ================= -->
+  <div class="card">
+    <h2 class="card-title">User List</h2>
 
-    <!-- ACTIVE TOGGLE -->
-    <div class="toggle-row">
-      <label class="toggle-label">Active</label>
+    <div class="search-row">
+      <input type="text" placeholder="Search user..." [value]="searchText()" (input)="onSearch($event)">
+      <button type="button" class="btn-clear" (click)="clearSearch()">Clear</button>
 
-      <label class="toggle-switch">
-        <input type="checkbox" formControlName="IsActive" />
-        <span class="toggle-slider"></span>
-      </label>
+      <div class="record-select">
+        <label>Records</label>
+        <select (change)="onRecordsChange($event)">
+          <option value="5">5</option>
+          <option value="10">10</option>
+          <option value="20">20</option>
+        </select>
+      </div>
 
-      <span class="toggle-text">
-        {{ userForm.get('IsActive')?.value ? 'Active' : 'Inactive' }}
-      </span>
+      <div class="active-filter">
+        <label class="toggle-switch">
+          <input type="checkbox" [checked]="onlyActive()" (change)="onActiveFilterChange($event)">
+          <span class="toggle-slider"></span>
+        </label>
+        <span class="toggle-text">
+          {{ onlyActive() ? 'Active Only' : 'All Records' }}
+        </span>
+      </div>
     </div>
-
   </div>
 
-  <!-- BUTTONS -->
-  <div class="btn-row">
-    <button type="submit" class="btn-save">
-      {{ !userForm.get('UserId')?.value ? 'Save' : 'Update' }}
-    </button>
+  <!-- ================= USERS TABLE ================= -->
+  <div class="card">
+    <table>
+      <thead>
+        <tr>
+          <th>First Name</th>
+          <th>Last Name</th>
+          <th>Email</th>
+          <th>Department</th>
+          <th>Roles</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let u of users()">
+          <td>{{ u.Fname }}</td>
+          <td>{{ u.Lname }}</td>
+          <td>{{ u.Email }}</td>
+          <td>{{ u.DepartmentName || 'N/A' }}</td>
+          <td>{{ u.RoleNames }}</td>
+          <td>
+            <label class="toggle-switch">
+              <input type="checkbox" [checked]="u.IsActive" (change)="toggleActive(u)">
+              <span class="toggle-slider"></span>
+            </label>
+          </td>
+          <td class="action-buttons">
+            <button type="button" class="btn-edit" (click)="edit(u)">Edit</button>
+            <button type="button" class="btn-delete" (click)="deleteUI(u)">Delete</button>
+          </td>
+        </tr>
 
-    <button type="button" class="btn-reset" (click)="resetForm()">
-      Reset
-    </button>
+        <tr *ngIf="users().length === 0">
+          <td colspan="7">No records found</td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 
-</form>
-
-<!-- USER LIST SECTION -->
-<div class="section-header">
-  <span>User List</span>
-</div>
-
-<div class="table-wrapper">
-  <table class="role-table">
-    <thead>
-      <tr>
-        <th>First Name</th>
-        <th>Last Name</th>
-        <th>Email</th>
-        <th>Department</th>
-        <th>Roles</th>
-        <th>Status</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-
-    <tbody>
-      <tr *ngFor="let u of users()">
-        <td>{{ u.Fname }}</td>
-        <td>{{ u.Lname }}</td>
-        <td>{{ u.Email }}</td>
-        <td>{{ u.DepartmentName || 'N/A' }}</td>
-        <td>{{ u.RoleNames }}</td>
-
-        <td>
-          <span class="badge" [ngClass]="{
-              'badge-active': u.IsActive,
-              'badge-inactive': !u.IsActive
-            }" (click)="toggleActive(u)">
-            {{ u.IsActive ? 'Active' : 'Inactive' }}
-          </span>
-        </td>
-
-        <td class="action-cell">
-          <button type="button" class="btn-edit" (click)="edit(u)">
-            Edit
-          </button>
-
-          <button type="button" class="btn-delete" (click)="deleteUI(u)">
-            Delete
-          </button>
-        </td>
-      </tr>
-    </tbody>
-  </table>
-
-  <!-- PAGINATION -->
-  <div class="pagination-bar">
-
+  <!-- ================= PAGINATION ================= -->
+  <div class="pagination-section">
     <div class="record-info">
       Showing
-      {{ (currentPage() - 1) * requestedRecords() + 1 }}
+      {{ users().length > 0 ? ((currentPage() - 1) * requestedRecords()) + 1 : 0 }}
       -
-      {{ Math.min(currentPage() * requestedRecords(), totalRecords()) }}
-      of {{ totalRecords() }} records
+      {{ (currentPage() - 1) * requestedRecords() + users().length }}
+      of {{ totalRecords() }} entries
     </div>
 
-    <!-- PAGE SIZE -->
-    <div>
-      <label>Records per page:</label>
-      <select (change)="onRecordsChange($event)">
-        <option value="5">5</option>
-        <option value="10" selected>10</option>
-        <option value="20">20</option>
-        <option value="50">50</option>
-      </select>
-    </div>
-
-    <!-- PAGE BUTTONS -->
-    <div class="page-controls">
-
-      <button (click)="currentPage.set(currentPage() - 1)" [disabled]="currentPage() === 1">
-        Prev
-      </button>
-
-      <span>
-        Page {{ currentPage() }} of {{ totalPages() }}
-      </span>
-
-      <button (click)="currentPage.set(currentPage() + 1)" [disabled]="currentPage() === totalPages()">
-        Next
-      </button>
+    <div class="pagination-controls">
+      <button (click)="prevPage()" [disabled]="currentPage() === 1">Previous</button>
+      <span>Page {{ currentPage() }} of {{ totalPages() }}</span>
+      <button (click)="nextPage()" [disabled]="currentPage() === totalPages()">Next</button>
     </div>
   </div>
+
 </div>

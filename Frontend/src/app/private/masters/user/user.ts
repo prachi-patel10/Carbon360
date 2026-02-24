@@ -1,10 +1,9 @@
 import { Component, OnInit, signal } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { AbstractControl, FormBuilder, FormGroup, Validators, ValidatorFn, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { debounceTime } from 'rxjs/operators';
-import { ToastrService } from 'ngx-toastr';
+import Swal from 'sweetalert2';
 import { UserService } from './user-service';
-import type { MasterUser } from './user-service';
+import { ToastService } from '../../../core/toast/toastservice';
 
 @Component({
   selector: 'app-master-user',
@@ -15,59 +14,126 @@ import type { MasterUser } from './user-service';
 })
 export class MasterUserComponent implements OnInit {
 
-  Math = Math;
-  username: string | null = '';
-  userId = 0;
-
-  userForm!: FormGroup;
-  searchForm!: FormGroup;
-
-  /* ================= SIGNALS ================= */
-  users = signal<MasterUser[]>([]);
-  departments = signal<any[]>([]);
-  rolesList = signal<any[]>([]);
-
-  requestedRecords = signal(5);
-  currentPage = signal(1);
-  totalPages = signal(0);
-  searchText = signal('');
-  onlyActive = signal(false);
-  totalRecords = signal(0);
-
-  sortColumn = 'Fname';
-  sortDirection: 'ASC' | 'DESC' = 'ASC';
-
-  isDropdownOpen = false;
-
   constructor(
     private fb: FormBuilder,
     private service: UserService,
-    private toastr: ToastrService
+    private toastr: ToastService
   ) { }
+
+  userForm!: FormGroup;
+
+  // ================= SIGNALS =================
+  users = signal<any[]>([]);
+  //roles = signal<any[]>([]);
+  rolesList = signal<any[]>([]);
+  departments = signal<any[]>([]);
+
+  searchText = signal<string>('');
+  onlyActive = signal<boolean>(false);
+
+  currentPage = signal<number>(1);
+  totalPages = signal<number>(1);
+  totalRecords = signal<number>(0);
+  requestedRecords = signal<number>(5);
+
+  editingUserId: string | null = null;
+
+  showRoleDropdown = false;
+  sortColumn = 'Fname';
+  sortDirection: 'ASC' | 'DESC' = 'ASC';
 
   ngOnInit(): void {
     this.initForm();
-    this.initSearchForm();
 
-    // Load Departments first
-    this.service.getDepartments().subscribe({
-      next: (res: any) => {
-          console.log("DEPARTMENTS RAW RESPONSE:", res);   // 👈 ADD THIS
-      console.log("DEPARTMENTS DATA:", res?.data);  
-        this.departments.set(res?.data ?? res ?? []);
-        this.loadUsers(); // load users after departments
-      },
-      error: () => this.toastr.error('Failed to load departments')
-    });
-
+    // Load roles first
     this.loadRoles();
+
+    // Load departments
+    this.loadDepartments(
+      this.currentPage(),
+      this.requestedRecords(),
+      this.searchText(),
+      this.onlyActive()
+    );
+
+    // Load users after roles and departments
+    this.loadUsers();
   }
 
-  /* ================= LOAD DATA ================= */
-  loadUsers() {
-    this.service.getAll().subscribe({
+  initForm() {
+    this.userForm = this.fb.group({
+      UserId: [''],
+      Fname: ['', Validators.required],
+      Lname: ['', Validators.required],
+      UserName: ['', Validators.required],
+      Email: ['', [Validators.required, Validators.email]],
+      Password: ['', Validators.required],
+      ConfirmPassword: ['', Validators.required],
+      DepartmentId: ['', Validators.required],
+      RoleIds: [[], Validators.required],
+      IsActive: [true]
+    }, { validators: this.passwordMatchValidator() });
+  }
+
+  passwordMatchValidator(): ValidatorFn {
+    return (control: AbstractControl) => {
+      const password = control.get('Password')?.value;
+      const confirm = control.get('ConfirmPassword')?.value;
+      return password && confirm && password !== confirm ? { mismatch: true } : null;
+    };
+  }
+
+  // ================= LOAD ROLES =================
+  loadRoles() {
+    this.service.getRoles().subscribe({
       next: (res: any) => {
-        const usersArray = res?.data ?? [];
+        console.log("ROLES RAW RESPONSE:", res);   // :point_left: ADD THIS
+        console.log("ROLES DATA:", res?.data);
+        this.rolesList.set(res?.data ?? [])
+      },
+      error: () => this.toastr.error('Failed to load roles')
+    });
+  }
+
+  // ================= LOAD USERS =================
+  // loadUsers() {
+  //   this.service.getUsers().subscribe({
+  //     next: (res: any) => {
+  //       const usersArray = res?.data ?? [];
+  //       const mapped = usersArray.map((u: any) => ({
+  //         UserId: u.userId,
+  //         Fname: u.fName,
+  //         Lname: u.lName,
+  //         UserName: u.userName,
+  //         Email: u.email,
+  //         DepartmentId: u.departmentId,
+  //         DepartmentName:
+  //           this.departments().find(d => d.id === u.departmentId)?.departmentName ?? 'N/A',
+  //         RoleIds: u.roles?.map((x: any) => Number(x)) ?? [],
+  //         RoleNames: u.roles?.join(', ') ?? '',
+  //         IsActive: u.isActive
+  //       }));
+  //       this.users.set(mapped);
+  //       this.totalRecords.set(mapped.length);
+  //       this.totalPages.set(1);
+  //     },
+  //     error: (err: any) => {
+  //       console.error(err);
+  //       this.toastr.error('Failed to load users');
+  //     }
+  //   });
+  // }
+
+  loadUsers() {
+    this.service.getPaged(
+      this.currentPage(),
+      this.requestedRecords(),
+      this.searchText(),
+      this.onlyActive()
+    ).subscribe({
+      next: (res: any) => {
+        const usersArray = res?.data?.data ?? [];
+
         const mapped = usersArray.map((u: any) => ({
           UserId: u.userId,
           Fname: u.fName,
@@ -75,66 +141,215 @@ export class MasterUserComponent implements OnInit {
           UserName: u.userName,
           Email: u.email,
           DepartmentId: u.departmentId,
-          DepartmentName:
-            this.departments().find(d => d.id === u.departmentId)?.departmentName ?? 'N/A',
+          DepartmentName: u.departmentName ?? 'N/A',
           RoleIds: u.roles?.map((x: any) => Number(x)) ?? [],
-          RoleNames: u.roles?.join(', ') ?? '',
+          RoleNames: this.rolesList()
+            .filter((r: any) => u.roles?.includes(r.roleId))
+            .map((r: any) => r.roleName)
+            .join(', '),
           IsActive: u.isActive
         }));
+
         this.users.set(mapped);
-        this.totalRecords.set(mapped.length);
-        this.totalPages.set(1);
+        this.totalRecords.set(res.data.totalRecords ?? mapped.length);
+        this.totalPages.set(res.data.totalPages ?? 1);
+        this.currentPage.set(res.data.currentPage ?? 1);
       },
-      error: (err) => {
+      error: (err: any) => {
         console.error(err);
         this.toastr.error('Failed to load users');
       }
     });
   }
 
-  loadDepartments() {
-    this.service.getDepartments().subscribe({
-      next: (res: any) => this.departments.set(res?.data ?? res ?? []),
-      error: () => this.toastr.error('Failed to load departments')
+  // ================= LOAD DEPARTMENTS =================
+  loadDepartments(page: number, size: number, search: string, active: boolean) {
+    this.service.getDepartments().subscribe(res => {
+      const list = res.data?.data || res.data || [];
+      const mapped = list.map((d: any) => ({
+        DepartmentId: d.departmentId || d.id,
+        DepartmentName: d.departmentName,
+        IsActive: d.isActive
+      }));
+      this.departments.set(mapped);
     });
   }
 
-  loadRoles() {
-    this.service.getRoles().subscribe({
-      next: (res: any) => { 
-         console.log("ROLES RAW RESPONSE:", res);   // 👈 ADD THIS
-      console.log("ROLES DATA:", res?.data);  
-        this.rolesList.set(res?.data ?? [])},
-      error: () => this.toastr.error('Failed to load roles')
-    });
-  }
+  // ================= SAVE / UPDATE =================
+  submitUser() {
+    if (this.userForm.invalid) {
+      this.userForm.markAllAsTouched();
+      return;
+    }
 
-  /* ================= FORM ================= */
-  initForm() {
-    this.userForm = this.fb.group({
-  UserId: [0],
-  Fname: ['', Validators.required],
-  Lname: ['', Validators.required],
-  UserName: ['', Validators.required],
-  Email: ['', [Validators.required, Validators.email]],
-  Password: ['', Validators.required],
-  ConfirmPassword: ['', Validators.required],
-  DepartmentId: [null, Validators.required],
-    RoleIds: [[], Validators.required],  // 🔥 MUST BE EMPTY ARRAY
-  IsActive: [true]
-    });
-  }
+    const payload = { ...this.userForm.value };
 
-  initSearchForm() {
-    this.searchForm = this.fb.group({ searchText: [''] });
-    this.searchForm.get('searchText')!
-      .valueChanges.pipe(debounceTime(400))
-      .subscribe(val => {
-        this.searchText.set(val ?? '');
-        this.currentPage.set(1);
+    if (!payload.UserId) {
+      this.service.create(payload).subscribe({
+        next: () => {
+          this.toastr.success('User created successfully');
+          this.loadUsers();
+          this.resetForm();
+        },
+        error: err => this.toastr.error(err?.error?.errors?.ConfirmPassword?.join(', ') || 'Create failed')
       });
+    } else {
+      this.service.update(payload).subscribe({
+        next: () => {
+          this.toastr.success('User updated successfully');
+          this.loadUsers();
+          this.resetForm();
+        },
+        error: () => this.toastr.error('Update failed')
+      });
+    }
   }
 
+  // ================= EDIT =================
+  edit(user: any) {
+    this.editingUserId = user.UserId;
+    this.userForm.patchValue({
+      UserId: user.UserId,
+      Fname: user.Fname,
+      Lname: user.Lname,
+      UserName: user.UserName,
+      Email: user.Email,
+      DepartmentId: user.DepartmentId,
+      Roles: user.Roles,
+      IsActive: user.IsActive
+    });
+  }
+
+  // ================= DELETE =================
+  deleteUI(user: any) {
+    Swal.fire({
+      title: 'Are you sure?',
+      text: 'This will delete the user!',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, delete',
+      cancelButtonText: 'Cancel'
+    }).then(result => {
+      if (result.isConfirmed) {
+        this.service.delete(user.UserId).subscribe(() => {
+          Swal.fire('Deleted!', 'User deleted successfully.', 'success');
+          this.loadUsers();
+        });
+      }
+    });
+  }
+
+  // ================= TOGGLE ACTIVE =================
+  toggleActive(user: any) {
+    const newStatus = !user.IsActive;
+    Swal.fire({
+      title: 'Are you sure?',
+      text: `Change status to ${newStatus ? 'Active' : 'Inactive'}?`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Yes',
+      cancelButtonText: 'Cancel'
+    }).then(result => {
+      if (result.isConfirmed) {
+        this.service.updateStatus(user.UserId, newStatus).subscribe(() => {
+          Swal.fire('Success', 'Status updated successfully', 'success');
+          this.users.update(list =>
+            list.map(u => u.UserId === user.UserId ? { ...u, IsActive: newStatus } : u)
+          );
+        });
+      } else {
+        this.loadUsers();
+      }
+    });
+  }
+
+  // ================= SEARCH =================
+  onSearch(event: any) {
+    this.searchText.set(event.target.value);
+    this.currentPage.set(1);
+    this.loadUsers();
+  }
+
+  clearSearch() {
+    this.searchText.set('');
+    this.currentPage.set(1);
+    this.loadUsers();
+  }
+
+  onRecordsChange(event: any) {
+    this.requestedRecords.set(+event.target.value);
+    this.currentPage.set(1);
+    this.loadUsers();
+  }
+
+  onActiveFilterChange(event: any) {
+    this.onlyActive.set(event.target.checked);
+    this.currentPage.set(1);
+    this.loadUsers();
+  }
+
+  nextPage() {
+    if (this.currentPage() < this.totalPages()) {
+      this.currentPage.update(p => p + 1);
+      this.loadUsers();
+    }
+  }
+
+  prevPage() {
+    if (this.currentPage() > 1) {
+      this.currentPage.update(p => p - 1);
+      this.loadUsers();
+    }
+  }
+
+  resetForm() {
+    this.editingUserId = null;
+    this.userForm.reset({
+      IsActive: true,
+      Roles: []
+    });
+  }
+
+
+  // ================= ROLE MULTISELECT =================
+  toggleRoleDropdown() {
+    this.showRoleDropdown = !this.showRoleDropdown;
+  }
+
+  isRoleSelected(roleId: string): boolean {
+    return (this.userForm.value.Roles || []).includes(roleId);
+  }
+
+  // onRoleChange(roleId: string, event: any) {
+  //   let selected: string[] = this.userForm.value.Roles || [];
+  //   if (event.target.checked) {
+  //     selected = [...selected, roleId];
+  //   } else {
+  //     selected = selected.filter((r: string) => r !== roleId);
+  //   }
+  //   this.userForm.patchValue({ Roles: selected });
+  // }
+
+
+  onRoleChange(event: any) {
+    const roleId = Number(event.target.value);
+    let selectedRoles: number[] = this.userForm.get('RoleIds')?.value || [];
+
+    if (event.target.checked) {
+      selectedRoles = [...selectedRoles, roleId];
+    } else {
+      selectedRoles = selectedRoles.filter(r => r !== roleId);
+    }
+
+    this.userForm.get('RoleIds')?.setValue(selectedRoles);
+  }
+  selectedRoleNames(): string {
+    const selectedIds: string[] = this.userForm.value.Roles || [];
+    return this.rolesList()
+      .filter((r: any) => selectedIds.includes(r.roleId))
+      .map((r: any) => r.roleName)
+      .join(', ');
+  }
   /* ================= SORT ================= */
   sort(column: string) {
     if (this.sortColumn === column) {
@@ -146,167 +361,4 @@ export class MasterUserComponent implements OnInit {
     this.currentPage.set(1);
   }
 
-  /* ================= FILTER ================= */
-  onActiveFilterChange(event: Event) {
-    const checked = (event.target as HTMLInputElement).checked;
-    this.onlyActive.set(checked);
-    this.currentPage.set(1);
-  }
-
-  /* ================= RECORDS ================= */
-  onRecordsChange(e: any) {
-    this.requestedRecords.set(Number(e.target.value));
-    this.currentPage.set(1);
-  }
-submit() {
-  if (this.userForm.invalid) {
-    this.userForm.markAllAsTouched();
-    return;
-  }
-
-  const form = this.userForm.value;
-
-  const cleanRoles = (form.RoleIds || []).filter((r: any) => r);
-
-  const isEdit = form.UserId && form.UserId !== 0;
-
-  if (isEdit) {
-    // ================= UPDATE =================
-    const updatePayload = {
-      UserId: form.UserId,
-      FName: form.Fname,
-      LName: form.Lname,
-      UserName: form.UserName,
-      Email: form.Email,
-      Password: form.Password || null,
-      DepartmentId: form.DepartmentId,
-      RoleIds: cleanRoles,
-      IsActive: form.IsActive
-    };
-
-    this.service.update(updatePayload).subscribe({
-      next: () => {
-        this.toastr.success('User updated successfully');
-        this.resetForm();
-        this.loadUsers();
-      },
-      error: (err) => {
-        console.error(err);
-        this.toastr.error('Update failed');
-      }
-    });
-
-  } else {
-    // ================= CREATE =================
-    const createPayload = {
-      FName: form.Fname,
-      LName: form.Lname,
-      UserName: form.UserName,
-      Email: form.Email,
-      Password: form.Password,
-      ConfirmPassword: form.ConfirmPassword,
-      DepartmentId: form.DepartmentId,
-      RoleId: cleanRoles,
-      IsActive: form.IsActive
-    };
-
-    this.service.create(createPayload).subscribe({
-      next: () => {
-        this.toastr.success('User created successfully');
-        this.resetForm();
-        this.loadUsers();
-      },
-      error: (err) => {
-        console.error(err);
-        this.toastr.error('Create failed');
-      }
-    });
-  }
-}
-
-  /* ================= EDIT ================= */
-  edit(user: MasterUser) {
-    this.userForm.patchValue({
-      UserId: user.UserId,
-      Fname: user.Fname,
-      Lname: user.Lname,
-      UserName: user.UserName,
-      Email: user.Email,
-      DepartmentId: user.DepartmentId,
-      RoleIds: user.RoleIds ?? [],
-      IsActive: user.IsActive
-    });
-
-    this.userForm.get('Password')?.clearValidators();
-    this.userForm.get('Password')?.updateValueAndValidity();
-    this.userForm.get('ConfirmPassword')?.clearValidators();
-    this.userForm.get('ConfirmPassword')?.updateValueAndValidity();
-  }
-
-  /* ================= DELETE ================= */
-  deleteUI(user: MasterUser) {
-    if (!confirm('Delete this user?')) return;
-    this.service.delete(user.UserId).subscribe({
-      next: () => {
-        this.toastr.success('User deleted successfully');
-        this.users.update(list => list.filter(u => u.UserId !== user.UserId));
-      },
-      error: () => this.toastr.error('Delete failed')
-    });
-  }
-
-  /* ================= TOGGLE ACTIVE ================= */
-  toggleActive(user: MasterUser): void {
-    const action = user.IsActive ? 'Deactivate' : 'Activate';
-    if (!confirm(`Do you want to ${action} this user?`)) return;
-    this.service.updateStatus(user.UserId, !user.IsActive).subscribe({
-      next: () => {
-        this.users.update(list =>
-          list.map(u => u.UserId === user.UserId ? { ...u, IsActive: !u.IsActive } : u)
-        );
-        this.toastr.success(`User ${action}d successfully`);
-      },
-      error: () => this.toastr.error('Status update failed')
-    });
-  }
-  
-  /* ================= RESET ================= */
-  resetForm() {
-    this.userForm.reset({ UserId: 0, IsActive: true });
-    this.userForm.get('Password')?.setValidators(Validators.required);
-    this.userForm.get('Password')?.updateValueAndValidity();
-  }
-
-  logout() {
-    localStorage.clear();
-    window.location.href = '/login';
-  }
-
-  /* ================= MULTI ROLE HANDLING ================= */
-  toggleDropdown() {
-    this.isDropdownOpen = !this.isDropdownOpen;
-  }
-
-onRoleChange(event: any) {
-  const selectedRoles = this.userForm.get('RoleIds')?.value || [];
-
-  if (event.target.checked) {
-    selectedRoles.push(event.target.value);
-  } else {
-    const index = selectedRoles.indexOf(event.target.value);
-    if (index >= 0) {
-      selectedRoles.splice(index, 1);
-    }
-  }
-
-  this.userForm.get('RoleIds')?.setValue(selectedRoles);
-}
-
-  getSelectedRoleNames(): string {
-    const selectedIds: number[] = this.userForm.value.RoleIds || [];
-    return this.rolesList()
-      .filter(r => selectedIds.includes(r.roleId))
-      .map(r => r.roleName)
-      .join(', ');
-  }
 }

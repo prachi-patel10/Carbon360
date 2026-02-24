@@ -209,76 +209,82 @@ namespace ProjectApp.Repository.Services.User
 
 
         //SEARCH WITH PAGINATION
-        public async Task<(List<UserResDTO> Users, int TotalRecords)> SearchUsersPaginatedAsync(SearchRequest request)
+        public async Task<(List<UserResDTO> Users, int TotalRecords)>
+SearchUsersPaginatedAsync(SearchRequest request)
         {
-            var usersFromDb = await _context.CB_Users // EF model is CB_User
-                .FromSqlRaw(
-                    "EXEC USP_CB_UserSearch @Search, @IsActive, @PageNumber, @PageSize, @SortColumn, @SortDirection",
-                    new SqlParameter("@Search", (object?)request.Search ?? DBNull.Value),
-                    new SqlParameter("@IsActive", (object?)request.IsActive ?? DBNull.Value),
-                    new SqlParameter("@PageNumber", request.PageNumber),
-                    new SqlParameter("@PageSize", request.PageSize),
-                    new SqlParameter("@SortColumn", (object?)request.SortColumn ?? "FName"),
-                    new SqlParameter("@SortDirection", (object?)request.SortDirection ?? "ASC")
-                )
+            var query = _context.CB_Users
+                .Where(u => u.IsDeleted == false)
+                .Include(u => u.CB_UserRoleMappings)
+                    .ThenInclude(ur => ur.Role)
+                .Include(u => u.Department)
+                .AsQueryable();
+
+            // SEARCH
+            if (!string.IsNullOrEmpty(request.Search))
+            {
+                query = query.Where(u =>
+                    u.Fname.Contains(request.Search) ||
+                    u.Lname.Contains(request.Search) ||
+                    u.UserName.Contains(request.Search));
+            }
+
+            // ACTIVE FILTER
+            if (request.IsActive.HasValue)
+            {
+                query = query.Where(u => u.IsActive == request.IsActive.Value);
+            }
+
+            // TOTAL COUNT BEFORE PAGINATION
+            int totalRecords = await query.CountAsync();
+
+            // SORTING
+            if (!string.IsNullOrEmpty(request.SortColumn))
+            {
+                if (request.SortColumn == "Fname")
+                    query = request.SortDirection == "DESC"
+                        ? query.OrderByDescending(u => u.Fname)
+                        : query.OrderBy(u => u.Fname);
+
+                else if (request.SortColumn == "UserName")
+                    query = request.SortDirection == "DESC"
+                        ? query.OrderByDescending(u => u.UserName)
+                        : query.OrderBy(u => u.UserName);
+
+                else
+                    query = query.OrderBy(u => u.UserId);
+            }
+
+            // PAGINATION
+            var users = await query
+                .Skip((request.PageNumber - 1) * request.PageSize)
+                .Take(request.PageSize)
                 .ToListAsync();
 
-            // Load navigation properties
-            foreach (var user in usersFromDb)
-            {
-                _context.Entry(user)
-                    .Collection(u => u.CB_UserRoleMappings)
-                    .Query()
-                    .Where(ur => ur.IsActive == true)
-                    .Include(ur => ur.Role)
-                    .Load();
-
-                _context.Entry(user)
-                    .Reference(u => u.Department)
-                    .Load();
-            }
-
-            var result = usersFromDb.Select(u => MapToResponse(u)).ToList();
-
-            // Total count
-            int totalRecords = 0;
-            using (var command = _context.Database.GetDbConnection().CreateCommand())
-            {
-                command.CommandText = "SELECT COUNT(*) FROM CB_USER WHERE IsDeleted = 0" +
-                    (string.IsNullOrEmpty(request.Search) ? "" : $" AND (FName LIKE '%{request.Search}%' OR LName LIKE '%{request.Search}%' OR UserName LIKE '%{request.Search}%')") +
-                    (request.IsActive.HasValue ? $" AND IsActive = {(request.IsActive.Value ? 1 : 0)}" : "");
-                command.CommandType = System.Data.CommandType.Text;
-
-                await _context.Database.OpenConnectionAsync();
-                totalRecords = Convert.ToInt32(await command.ExecuteScalarAsync());
-                await _context.Database.CloseConnectionAsync();
-            }
+            var result = users.Select(u => MapToResponse(u)).ToList();
 
             return (result, totalRecords);
         }
 
 
-
         // ================= PRIVATE MAPPER =================
         private UserResDTO MapToResponse(CB_User user)
         {
-            return new UserResDTO
-            {
-                UserId = _idEncoder.Encode(user.UserId),
-                FName = user.Fname,
-                LName = user.Lname,
-                UserName = user.UserName,
-                Email = user.Email,
-                DepartmentId = user.DepartmentId.HasValue
-    ? _idEncoder.Encode(user.DepartmentId.Value)
-    : null,
-                IsActive = user.IsActive,
-                EntryDate = user.EntryDate,
-                Roles = user.CB_UserRoleMappings?
-                    .Where(x => x.IsActive == true)
-                    .Select(x => x.Role.RoleName)
-                    .ToList()
-            };
+             return new UserResDTO
+    {
+        UserId = _idEncoder.Encode(user.UserId),
+        FName = user.Fname,
+        LName = user.Lname,
+        UserName = user.UserName,
+        Email = user.Email,
+        DepartmentId = user.DepartmentId.HasValue ? _idEncoder.Encode(user.DepartmentId.Value) : null,
+        DepartmentName = user.Department != null ? user.Department.DepartmentName : "N/A", // <-- ADD THIS
+        IsActive = user.IsActive,
+        EntryDate = user.EntryDate,
+        Roles = user.CB_UserRoleMappings?
+            .Where(x => x.IsActive == true)
+            .Select(x => x.Role.RoleName)
+            .ToList()
+    };
         }
     }
 }
