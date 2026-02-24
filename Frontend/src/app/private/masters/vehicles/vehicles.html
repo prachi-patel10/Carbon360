@@ -1,0 +1,108 @@
+<div class="container">
+
+  <!-- 🔹 Create Vehicle -->
+  <div class="card">
+    <h2>Create Vehicle</h2>
+
+    <div class="form-grid">
+      <input type="text" placeholder="Vehicle Number"
+      placeholder="Enter Vehicle Number (e.g. GJ01AB8923)"
+        [(ngModel)]="newVehicle.vehicle_number" />
+
+      <input type="number" placeholder="Vehicle Type ID"
+       placeholder="Enter Vehicle Type"
+        [(ngModel)]="newVehicle.vehicle_type_id" />
+
+      <input type="number" placeholder="Fuel ID"
+      placeholder="Enter Fuel Type"
+        [(ngModel)]="newVehicle.fuel_id" />
+
+      <input type="number" placeholder="Department ID"
+      placeholder="Enter Fuel Type"
+        [(ngModel)]="newVehicle.department_id" />
+
+      <input type="number" placeholder="Engine Capacity"
+      placeholder="Enter Engine Capacity (CC)"
+        [(ngModel)]="newVehicle.engine_capacity" />
+
+      <input type="text" placeholder="Emission Standard"
+      placeholder="Enter Emission Standard (e.g. BS4 / BS6)"
+        [(ngModel)]="newVehicle.emission_standard" />
+    </div>
+
+    <div class="button-row">
+      <button (click)="createVehicle()">Save Vehicle</button>
+    </div>
+  </div>
+
+  <!-- 🔹 Search -->
+  <div class="card">
+    <h2>Search Vehicles</h2>
+
+    <div class="search-grid">
+      <input type="text" placeholder="Search by Vehicle Number"
+        [(ngModel)]="searchText" />
+
+      <select [(ngModel)]="isActive">
+        <option [ngValue]="null">All Status</option>
+        <option [ngValue]="true">Active</option>
+        <option [ngValue]="false">Inactive</option>
+      </select>
+
+      <button (click)="search()">Search</button>
+    </div>
+  </div>
+
+  <!-- 🔹 List -->
+  <div class="card">
+    <h2>Vehicle List</h2>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Vehicle No</th>
+            <th>Type</th>
+            <th>Fuel</th>
+            <th>Department</th>
+            <th>Engine</th>
+            <th>Emission</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let vehicle of vehicles">
+            <td>{{ vehicle.vehicle_number }}</td>
+            <td>{{ vehicle.vehicle_type_id }}</td>
+            <td>{{ vehicle.fuel_id }}</td>
+            <td>{{ vehicle.department_id }}</td>
+            <td>{{ vehicle.engine_capacity }}</td>
+            <td>{{ vehicle.emission_standard }}</td>
+            <td>
+              <span class="status"
+                [class.active]="vehicle.isActive"
+                [class.inactive]="!vehicle.isActive">
+                {{ vehicle.isActive ? 'Active' : 'Inactive' }}
+              </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 🔹 Pagination -->
+    <div class="pagination">
+      <button (click)="previousPage()" [disabled]="pageNumber === 1">
+        Previous
+      </button>
+
+      <span>Page {{ pageNumber }} of {{ totalPages }}</span>
+
+      <button (click)="nextPage()"
+        [disabled]="pageNumber === totalPages">
+        Next
+      </button>
+    </div>
+  </div>
+
+</div>

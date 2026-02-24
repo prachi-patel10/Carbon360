@@ -62,6 +62,8 @@ pageTitle: string = '';
         this.pageTitle = 'Vehicle Emission Calculation';
       } else if (url.includes('vehicletrip')) {
         this.pageTitle = 'Vehicle Trip';
+      } else if (url.includes('vehiclemaster')) {
+        this.pageTitle = 'Vehicle master';
       } 
       else {
         this.pageTitle = 'Dashboard';

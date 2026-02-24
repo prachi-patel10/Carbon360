@@ -49,6 +49,12 @@
             Vehicle Trip
           </li>
 
+           <li *ngIf="isAdmin() || isCorporate()" (click)="goTo('vehiclemaster')"
+            [class.active-link]="isActive('/vehiclemaster')">
+            <i class="fas fa-building"></i>
+            Vehicle master
+          </li>
+
         </ul>
       </li>
 
