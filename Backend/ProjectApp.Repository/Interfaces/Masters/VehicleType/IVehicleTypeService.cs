@@ -20,6 +20,6 @@ namespace ProjectApp.Repository.Interfaces.Masters.VehicleType
 
         Task<VehicleTypeResponseDTO> GetVehicleTypeByIdAsync(string encryptedId);
 
-        Task<VehicleTypeResponseDTO> GetVehicleTypeByNameAsync(string name);
+        //Task<VehicleTypeResponseDTO> GetVehicleTypeByNameAsync(string name);
     }
 }

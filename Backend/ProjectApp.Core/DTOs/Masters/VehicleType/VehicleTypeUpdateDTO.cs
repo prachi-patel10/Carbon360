@@ -8,7 +8,7 @@ namespace ProjectApp.Core.DTOs.Masters.VehicleType
 {
     public class VehicleTypeUpdateDTO
     {
-        public int vehicle_type_id { get; set; }
+        public string vehicle_type_id { get; set; }
         public string vehicle_type_name { get; set; }
         public string vehicle_category { get; set; }
         public int? fuel_id { get; set; }

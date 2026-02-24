@@ -1,0 +1,78 @@
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using ProjectApp.Core.DTOs.Masters.VehicleType;
+using ProjectApp.Repository.Interfaces.Masters.VehicleType;
+
+namespace ProjectApp.API.Controllers.Masters.VehicleType
+{
+    [Route("api/[controller]")]
+    [ApiController]
+    public class VehicleTypeController : ControllerBase
+    {
+        private readonly IVehicleTypeService _vehicleTypeService;
+
+        public VehicleTypeController(IVehicleTypeService vehicleTypeService)
+        {
+            _vehicleTypeService = vehicleTypeService;
+        }
+        [HttpPost("Create")]
+        public async Task<IActionResult> Create([FromBody] VehicleTypeCreateDTO dto)
+        {
+            var result = await _vehicleTypeService.CreateVehicleTypeAsync(dto);
+            return Ok(result);
+        }
+
+        [HttpPut("Update")]
+        public async Task<IActionResult> Update([FromBody] VehicleTypeUpdateDTO dto)
+        {
+            var result = await _vehicleTypeService.UpdateVehicleTypeAsync(dto);
+
+            if (!result)
+                return BadRequest("Update failed");
+
+            return Ok("Updated Successfully");
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(string id)
+        {
+            var result = await _vehicleTypeService.DeleteVehicleTypeAsync(id);
+
+            if (!result)
+                return BadRequest("Delete failed");
+
+            return Ok("Deleted Successfully");
+        }
+
+        [HttpGet("All")]
+        public async Task<IActionResult> GetAll()
+        {
+            var result = await _vehicleTypeService.GetAllVehicleTypesAsync();
+            return Ok(result);
+        }
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(string id)
+        {
+            var result = await _vehicleTypeService.GetVehicleTypeByIdAsync(id);
+
+            if (result == null)
+                return NotFound("Vehicle Type not found");
+
+            return Ok(result);
+        }
+
+        //[HttpGet("ByName/{name}")]
+        //public async Task<IActionResult> GetByName(string name)
+        //{
+        //    var result = await _vehicleTypeService.GetVehicleTypeByNameAsync(name);
+
+        //    if (result == null)
+        //        return NotFound("Vehicle Type not found");
+
+        //    return Ok(result);
+        //}
+    }
+
+}
+

@@ -30,8 +30,4 @@
     <ProjectReference Include="..\ProjectApp.Repository\ProjectApp.Repository.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Controllers\Masters\VehicleType\" />
-  </ItemGroup>
-
 </Project>
