@@ -9,7 +9,7 @@ namespace ProjectApp.Core.DTOs.Masters.Fuel
 {
     public class FuelCreateUpdateDTO
     {
-        public int? fuel_id { get; set; }
+        public string? fuel_id { get; set; }
 
         [Required]
         public string fuel_name { get; set; }

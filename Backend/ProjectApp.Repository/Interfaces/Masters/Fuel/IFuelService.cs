@@ -10,10 +10,10 @@ namespace ProjectApp.Repository.Interfaces.Masters.Fuel
     public interface IFuelService
     {
         Task<IEnumerable<FuelResponseDTO>> GetAllAsync();
-        Task<FuelResponseDTO> GetByIdAsync(int id);
+        Task<FuelResponseDTO> GetByIdAsync(string encryptedId);
         Task<FuelResponseDTO> CreateAsync(FuelResponseDTO dto);
         Task<bool> UpdateAsync(FuelResponseDTO dto);
-        Task<bool> DeleteAsync(int id);
+        Task<bool> DeleteAsync(string encryptedId);
 
         Task<bool> UpdateStatusAsync(FuelStatusUpdateDTO dto);
     }

@@ -37,7 +37,7 @@ namespace ProjectApp.API.Controllers.Masters.Fuel
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(int id)
+        public async Task<IActionResult> Delete(string id)
         {
             var result = await _fuelService.DeleteAsync(id);
 
@@ -54,9 +54,9 @@ namespace ProjectApp.API.Controllers.Masters.Fuel
             return Ok(result);
         }
 
- 
+
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(int id)
+        public async Task<IActionResult> GetById(string id)
         {
             var result = await _fuelService.GetByIdAsync(id);
 
