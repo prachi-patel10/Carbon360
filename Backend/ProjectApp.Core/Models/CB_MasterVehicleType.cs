@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace ProjectApp.Core.Models;
 
-public partial class CB_Master_Vehicle_Type
+public partial class CB_MasterVehicleType
 {
     public int vehicle_type_id { get; set; }
 
@@ -31,7 +31,7 @@ public partial class CB_Master_Vehicle_Type
 
     public bool IsDeleted { get; set; }
 
-    public virtual ICollection<CB_Master_Vehicle> CB_Master_Vehicles { get; set; } = new List<CB_Master_Vehicle>();
+    public virtual ICollection<CB_MasterVehicle> CB_MasterVehicles { get; set; } = new List<CB_MasterVehicle>();
 
-    public virtual CB_Master_Fuel fuel { get; set; }
+    public virtual CB_MasterFuelType fuel { get; set; }
 }

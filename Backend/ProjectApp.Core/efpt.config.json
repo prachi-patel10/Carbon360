@@ -23,19 +23,19 @@
          "ObjectType": 0
       },
       {
-         "Name": "[dbo].[CB_Master_City]",
+         "Name": "[dbo].[CB_MasterCity]",
          "ObjectType": 0
       },
       {
-         "Name": "[dbo].[CB_Master_Fuel]",
+         "Name": "[dbo].[CB_MasterFuelType]",
          "ObjectType": 0
       },
       {
-         "Name": "[dbo].[CB_Master_Vehicle]",
+         "Name": "[dbo].[CB_MasterVehicle]",
          "ObjectType": 0
       },
       {
-         "Name": "[dbo].[CB_Master_Vehicle_Type]",
+         "Name": "[dbo].[CB_MasterVehicleType]",
          "ObjectType": 0
       },
       {
@@ -48,6 +48,10 @@
       },
       {
          "Name": "[dbo].[CB_UserRoleMapping]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[CB_VehicleTrip]",
          "ObjectType": 0
       }
    ],

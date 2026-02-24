@@ -15,19 +15,21 @@ public partial class CBContext : DbContext
 
     public virtual DbSet<CB_Department> CB_Departments { get; set; }
 
-    public virtual DbSet<CB_Master_City> CB_Master_Cities { get; set; }
+    public virtual DbSet<CB_MasterCity> CB_MasterCities { get; set; }
 
-    public virtual DbSet<CB_Master_Fuel> CB_Master_Fuels { get; set; }
+    public virtual DbSet<CB_MasterFuelType> CB_MasterFuelTypes { get; set; }
 
-    public virtual DbSet<CB_Master_Vehicle> CB_Master_Vehicles { get; set; }
+    public virtual DbSet<CB_MasterVehicle> CB_MasterVehicles { get; set; }
 
-    public virtual DbSet<CB_Master_Vehicle_Type> CB_Master_Vehicle_Types { get; set; }
+    public virtual DbSet<CB_MasterVehicleType> CB_MasterVehicleTypes { get; set; }
 
     public virtual DbSet<CB_Role> CB_Roles { get; set; }
 
     public virtual DbSet<CB_User> CB_Users { get; set; }
 
     public virtual DbSet<CB_UserRoleMapping> CB_UserRoleMappings { get; set; }
+
+    public virtual DbSet<CB_VehicleTrip> CB_VehicleTrips { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -44,11 +46,11 @@ public partial class CBContext : DbContext
             entity.Property(e => e.UpdateDate).HasColumnType("datetime");
         });
 
-        modelBuilder.Entity<CB_Master_City>(entity =>
+        modelBuilder.Entity<CB_MasterCity>(entity =>
         {
             entity.HasKey(e => e.CityId).HasName("PK__CB_Maste__F2D21B76AD4B5974");
 
-            entity.ToTable("CB_Master_City");
+            entity.ToTable("CB_MasterCity");
 
             entity.Property(e => e.CityName)
                 .IsRequired()
@@ -66,11 +68,11 @@ public partial class CBContext : DbContext
             entity.Property(e => e.UpdateDate).HasColumnType("datetime");
         });
 
-        modelBuilder.Entity<CB_Master_Fuel>(entity =>
+        modelBuilder.Entity<CB_MasterFuelType>(entity =>
         {
             entity.HasKey(e => e.fuel_id).HasName("PK__CB_Maste__A40C1884DD9ACC8E");
 
-            entity.ToTable("CB_Master_Fuel");
+            entity.ToTable("CB_MasterFuelType");
 
             entity.Property(e => e.EntryDate)
                 .HasDefaultValueSql("(getdate())")
@@ -85,11 +87,11 @@ public partial class CBContext : DbContext
             entity.Property(e => e.nox_factor).HasColumnType("decimal(16, 8)");
         });
 
-        modelBuilder.Entity<CB_Master_Vehicle>(entity =>
+        modelBuilder.Entity<CB_MasterVehicle>(entity =>
         {
             entity.HasKey(e => e.vehicle_id).HasName("PK__CB_Maste__F2947BC1DBB88EBF");
 
-            entity.ToTable("CB_Master_Vehicle");
+            entity.ToTable("CB_MasterVehicle");
 
             entity.HasIndex(e => e.vehicle_number, "UQ_vehicle_number").IsUnique();
 
@@ -105,27 +107,27 @@ public partial class CBContext : DbContext
                 .HasMaxLength(20)
                 .IsUnicode(false);
 
-            entity.HasOne(d => d.department).WithMany(p => p.CB_Master_Vehicles)
+            entity.HasOne(d => d.department).WithMany(p => p.CB_MasterVehicles)
                 .HasForeignKey(d => d.department_id)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Vehicle_Department");
 
-            entity.HasOne(d => d.fuel).WithMany(p => p.CB_Master_Vehicles)
+            entity.HasOne(d => d.fuel).WithMany(p => p.CB_MasterVehicles)
                 .HasForeignKey(d => d.fuel_id)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Vehicle_Fuel");
 
-            entity.HasOne(d => d.vehicle_type).WithMany(p => p.CB_Master_Vehicles)
+            entity.HasOne(d => d.vehicle_type).WithMany(p => p.CB_MasterVehicles)
                 .HasForeignKey(d => d.vehicle_type_id)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Vehicle_VehicleType");
         });
 
-        modelBuilder.Entity<CB_Master_Vehicle_Type>(entity =>
+        modelBuilder.Entity<CB_MasterVehicleType>(entity =>
         {
             entity.HasKey(e => e.vehicle_type_id).HasName("PK__CB_Maste__2A00721841B4422D");
 
-            entity.ToTable("CB_Master_Vehicle_Type");
+            entity.ToTable("CB_MasterVehicleType");
 
             entity.Property(e => e.EntryDate)
                 .HasDefaultValueSql("(getdate())")
@@ -145,7 +147,7 @@ public partial class CBContext : DbContext
                 .HasMaxLength(30)
                 .IsUnicode(false);
 
-            entity.HasOne(d => d.fuel).WithMany(p => p.CB_Master_Vehicle_Types)
+            entity.HasOne(d => d.fuel).WithMany(p => p.CB_MasterVehicleTypes)
                 .HasForeignKey(d => d.fuel_id)
                 .HasConstraintName("FK_vehicleType_fuel");
         });
@@ -214,6 +216,50 @@ public partial class CBContext : DbContext
             entity.HasOne(d => d.User).WithMany(p => p.CB_UserRoleMappings)
                 .HasForeignKey(d => d.UserId)
                 .HasConstraintName("FK_UserRoleMapping_Users");
+        });
+
+        modelBuilder.Entity<CB_VehicleTrip>(entity =>
+        {
+            entity.HasKey(e => e.TripId).HasName("PK__CB_Vehic__51DC713E9E660330");
+
+            entity.ToTable("CB_VehicleTrip");
+
+            entity.Property(e => e.DistanceKm).HasColumnType("decimal(16, 8)");
+            entity.Property(e => e.EntryDate)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.FuelConsumedLtr).HasColumnType("decimal(16, 8)");
+            entity.Property(e => e.TripEndDateTime).HasColumnType("datetime");
+            entity.Property(e => e.TripStartDateTime).HasColumnType("datetime");
+            entity.Property(e => e.TripStatus)
+                .IsRequired()
+                .HasMaxLength(20)
+                .IsUnicode(false);
+            entity.Property(e => e.UpdateDate).HasColumnType("datetime");
+
+            entity.HasOne(d => d.EntryByNavigation).WithMany(p => p.CB_VehicleTripEntryByNavigations)
+                .HasForeignKey(d => d.EntryBy)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_vehicle_trip_entryby");
+
+            entity.HasOne(d => d.FromCity).WithMany(p => p.CB_VehicleTripFromCities)
+                .HasForeignKey(d => d.FromCityId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_vehicle_trip_fromcity");
+
+            entity.HasOne(d => d.ToCity).WithMany(p => p.CB_VehicleTripToCities)
+                .HasForeignKey(d => d.ToCityId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_vehicle_trip_tocity");
+
+            entity.HasOne(d => d.UpdatedByNavigation).WithMany(p => p.CB_VehicleTripUpdatedByNavigations)
+                .HasForeignKey(d => d.UpdatedBy)
+                .HasConstraintName("FK_vehicle_trip_updatedby");
+
+            entity.HasOne(d => d.Vehicle).WithMany(p => p.CB_VehicleTrips)
+                .HasForeignKey(d => d.VehicleId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_vehicle_trip_vehicle");
         });
 
         OnModelCreatingPartial(modelBuilder);

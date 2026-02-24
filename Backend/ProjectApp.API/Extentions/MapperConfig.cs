@@ -32,13 +32,13 @@ namespace ProjectApp.API.Extentions
                 .ForMember(dest => dest.DepartmentId, opt => opt.Ignore())
                 .ForMember(dest => dest.IsDeleted, opt => opt.Ignore());
 
-            CreateMap<CB_Master_Fuel, FuelResponseDTO>().ReverseMap();
-            CreateMap<CB_Master_Fuel, FuelCreateUpdateDTO>().ReverseMap();
+            CreateMap<CB_MasterFuelType, FuelResponseDTO>().ReverseMap();
+            CreateMap<CB_MasterFuelType, FuelCreateUpdateDTO>().ReverseMap();
 
-            CreateMap<CB_Master_Vehicle_Type, VehicleTypeCreateDTO>().ReverseMap();
-            CreateMap<CB_Master_Vehicle_Type, VehicleTypeDTO>().ReverseMap();
-            CreateMap<CB_Master_Vehicle_Type, VehicleTypeResponseDTO>().ReverseMap();
-            CreateMap<CB_Master_Vehicle_Type, VehicleTypeUpdateDTO>().ReverseMap();
+            CreateMap<CB_MasterVehicleType, VehicleTypeCreateDTO>().ReverseMap();
+            CreateMap<CB_MasterVehicleType, VehicleTypeDTO>().ReverseMap();
+            CreateMap<CB_MasterVehicleType, VehicleTypeResponseDTO>().ReverseMap();
+            CreateMap<CB_MasterVehicleType, VehicleTypeUpdateDTO>().ReverseMap();
 
         }
     }

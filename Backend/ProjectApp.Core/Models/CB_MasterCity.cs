@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace ProjectApp.Core.Models;
 
-public partial class CB_Master_City
+public partial class CB_MasterCity
 {
     public int CityId { get; set; }
 
@@ -26,4 +26,8 @@ public partial class CB_Master_City
     public int? UpdatedBy { get; set; }
 
     public DateTime? UpdateDate { get; set; }
+
+    public virtual ICollection<CB_VehicleTrip> CB_VehicleTripFromCities { get; set; } = new List<CB_VehicleTrip>();
+
+    public virtual ICollection<CB_VehicleTrip> CB_VehicleTripToCities { get; set; } = new List<CB_VehicleTrip>();
 }

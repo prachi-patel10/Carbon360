@@ -35,5 +35,9 @@ public partial class CB_User
 
     public virtual ICollection<CB_UserRoleMapping> CB_UserRoleMappings { get; set; } = new List<CB_UserRoleMapping>();
 
+    public virtual ICollection<CB_VehicleTrip> CB_VehicleTripEntryByNavigations { get; set; } = new List<CB_VehicleTrip>();
+
+    public virtual ICollection<CB_VehicleTrip> CB_VehicleTripUpdatedByNavigations { get; set; } = new List<CB_VehicleTrip>();
+
     public virtual CB_Department Department { get; set; }
 }
