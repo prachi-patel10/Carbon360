@@ -14,5 +14,7 @@ namespace ProjectApp.Repository.Interfaces.Masters.Fuel
         Task<FuelResponseDTO> CreateAsync(FuelResponseDTO dto);
         Task<bool> UpdateAsync(FuelResponseDTO dto);
         Task<bool> DeleteAsync(int id);
+
+        Task<bool> UpdateStatusAsync(FuelStatusUpdateDTO dto);
     }
 }

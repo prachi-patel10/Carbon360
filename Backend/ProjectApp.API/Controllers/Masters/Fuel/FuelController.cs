@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using ProjectApp.Core.DTOs.Masters.Fuel;
 using ProjectApp.Repository.Interfaces.Masters.Fuel;
@@ -7,6 +8,7 @@ namespace ProjectApp.API.Controllers.Masters.Fuel
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class FuelController : ControllerBase
     {
         private readonly IFuelService _fuelService;
@@ -62,6 +64,17 @@ namespace ProjectApp.API.Controllers.Masters.Fuel
                 return NotFound("Fuel not found");
 
             return Ok(result);
+        }
+
+        [HttpPatch("UpdateStatus")]
+        public async Task<IActionResult> UpdateStatus([FromBody] FuelStatusUpdateDTO dto)
+        {
+            var result = await _fuelService.UpdateStatusAsync(dto);
+
+            if (!result)
+                return BadRequest("Status update failed");
+
+            return Ok("Status updated successfully");
         }
     }
 }

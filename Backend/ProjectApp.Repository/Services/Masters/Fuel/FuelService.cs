@@ -5,6 +5,7 @@ using ProjectApp.Repository.Interfaces.Common;
 using ProjectApp.Repository.Interfaces.Masters.Fuel;
 using ProjectApp.Repository.Interfaces.User;
 using ProjectApp.Repository.Services.Common;
+using ProjectApp.Repository.Utilities.Auth;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,12 +16,15 @@ namespace ProjectApp.Repository.Services.Masters.Fuel
 {
     public class FuelService : BaseService<CB_Master_Fuel>, IFuelService
     {
+        private readonly IdEncoder _idEncoder;
         public FuelService(
            ICommonService<CB_Master_Fuel> commonService,
            IMapper mapper,
-           IUserContext userContext
+           IUserContext userContext,
+           IdEncoder idEncoder
        ) : base(commonService, mapper, userContext)
         {
+            _idEncoder = idEncoder;
         }
         public async Task<FuelResponseDTO> CreateAsync(FuelResponseDTO dto)
         {
@@ -54,6 +58,7 @@ namespace ProjectApp.Repository.Services.Masters.Fuel
             var data = await _commonService.GetAllData(x => x.IsDeleted == false, true);
 
             return _mapper.Map<List<FuelResponseDTO>>(data);
+
         }
 
         public async Task<FuelResponseDTO> GetByIdAsync(int id)
@@ -78,6 +83,25 @@ namespace ProjectApp.Repository.Services.Masters.Fuel
             existing.nox_factor = dto.nox_factor;
             existing.ch4_factor = dto.ch4_factor;
             existing.IsActive = dto.IsActive;
+            existing.UpdatedBy = GetCurrentUserId();
+            existing.UpdateDate = DateTime.Now;
+
+            await _commonService.UpdateAsync(existing);
+
+            return true;
+        }
+
+        public async Task<bool> UpdateStatusAsync(FuelStatusUpdateDTO dto)
+        {
+            var existing = await _commonService
+                .GetAllByFilterAsync(x => x.fuel_id == dto.fuel_id && x.IsDeleted == false);
+
+            if (existing == null)
+                throw new Exception("Fuel not found");
+
+            // Only update IsActive
+            existing.IsActive = dto.IsActive;
+
             existing.UpdatedBy = GetCurrentUserId();
             existing.UpdateDate = DateTime.Now;
 
