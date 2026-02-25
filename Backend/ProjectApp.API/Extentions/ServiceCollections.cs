@@ -10,6 +10,7 @@ using ProjectApp.Repository.Interfaces.Masters.Role;
 using ProjectApp.Repository.Interfaces.Masters.Vehicle;
 using ProjectApp.Repository.Interfaces.Masters.VehicleType;
 using ProjectApp.Repository.Interfaces.User;
+using ProjectApp.Repository.Interfaces.VehicleTripEmission;
 using ProjectApp.Repository.Services.Common;
 using ProjectApp.Repository.Services.Masters.City;
 using ProjectApp.Repository.Services.Masters.Department;
@@ -19,6 +20,7 @@ using ProjectApp.Repository.Services.Masters.Role;
 using ProjectApp.Repository.Services.Masters.Vehicle;
 using ProjectApp.Repository.Services.Masters.VehicleType;
 using ProjectApp.Repository.Services.User;
+using ProjectApp.Repository.Services.VehicleTripEmission;
 using ProjectApp.Repository.Utilities.Auth;
 using System;
 using System.Collections.Generic;
@@ -49,6 +51,7 @@ namespace ProjectApp.API.Extentions
             services.AddScoped<ICityService, CityService>();
             services.AddScoped<IVehicleService, VehicleService>();
             services.AddScoped<IGeneratorService, GeneratorService>();
+            services.AddScoped<IVehicleTripEmissionService, VehicleTripEmissionService>();
 
             return services;
         }

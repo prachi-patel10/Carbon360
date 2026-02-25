@@ -1,0 +1,50 @@
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using ProjectApp.Core.DTOs.Account.VehicleTripEmission;
+using ProjectApp.Repository.Interfaces.VehicleTripEmission;
+using ProjectApp.Repository.Services.VehicleTripEmission;
+
+namespace ProjectApp.API.Controllers.Account.VehicleTripEmission
+{
+    [Route("api/[controller]")]
+    [ApiController]
+    public class VehicleTripEmissionController : ControllerBase
+    {
+        private readonly IVehicleTripEmissionService _service;
+
+        public VehicleTripEmissionController(IVehicleTripEmissionService service)
+        {
+            _service = service;
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Create(VehicleTripEmissionDTO dto)
+        {
+            var result = await _service.CreateAsync(dto);
+            return Ok(result);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetAll()
+        {
+            var result = await _service.GetAllAsync();
+            return Ok(result);
+        }
+
+        [HttpGet("{hashId}")]
+        public async Task<IActionResult> Get(string hashId)
+        {
+            var result = await _service.GetByHashIdAsync(hashId);
+            if (result == null) return NotFound();
+            return Ok(result);
+        }
+
+        [HttpDelete("{hashId}")]
+        public async Task<IActionResult> Delete(string hashId)
+        {
+            var result = await _service.DeleteAsync(hashId);
+            if (!result) return NotFound();
+            return Ok("Deleted Successfully");
+        }
+    }
+}

@@ -10,6 +10,7 @@ using ProjectApp.Core.DTOs.Masters.City;
 using ProjectApp.Core.Models;
 using System;
 using ProjectApp.Core.DTOs.Masters.Generator;
+using ProjectApp.Core.DTOs.Account.VehicleTripEmission;
 
 namespace ProjectApp.API.Extentions
 {
@@ -55,6 +56,8 @@ namespace ProjectApp.API.Extentions
             CreateMap<CB_MasterGenerator, GeneratorSearchRequest>().ReverseMap();
             CreateMap<CB_MasterGenerator, GeneratorToggleStatusDTO>().ReverseMap();
 
+            //----------------VEHICLE TRIP EMISSION--------------
+            CreateMap<CB_VehicleTripEmission, VehicleTripEmissionDTO>().ReverseMap();
         }
     }
 }
