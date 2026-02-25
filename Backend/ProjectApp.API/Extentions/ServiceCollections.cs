@@ -9,6 +9,7 @@ using ProjectApp.Repository.Interfaces.Masters.Generator;
 using ProjectApp.Repository.Interfaces.Masters.Role;
 using ProjectApp.Repository.Interfaces.Masters.Vehicle;
 using ProjectApp.Repository.Interfaces.Masters.VehicleType;
+using ProjectApp.Repository.Interfaces.SiteLocation;
 using ProjectApp.Repository.Interfaces.User;
 using ProjectApp.Repository.Interfaces.VehicleTripEmission;
 using ProjectApp.Repository.Services.Common;
@@ -19,6 +20,7 @@ using ProjectApp.Repository.Services.Masters.Generator;
 using ProjectApp.Repository.Services.Masters.Role;
 using ProjectApp.Repository.Services.Masters.Vehicle;
 using ProjectApp.Repository.Services.Masters.VehicleType;
+using ProjectApp.Repository.Services.SiteLocation;
 using ProjectApp.Repository.Services.User;
 using ProjectApp.Repository.Services.VehicleTripEmission;
 using ProjectApp.Repository.Utilities.Auth;
@@ -48,10 +50,11 @@ namespace ProjectApp.API.Extentions
             services.AddHttpContextAccessor();
             services.AddScoped<IFuelService, FuelService>();
             services.AddScoped<IVehicleTypeService, VehicleTypeService>();
-            services.AddScoped<ICityService, CityService>();
+            services.AddScoped<ICityService, CityService>();    
             services.AddScoped<IVehicleService, VehicleService>();
             services.AddScoped<IGeneratorService, GeneratorService>();
             services.AddScoped<IVehicleTripEmissionService, VehicleTripEmissionService>();
+            services.AddScoped<ISiteLocationService, SiteLocationService>();
 
             return services;
         }
