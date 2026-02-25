@@ -28,46 +28,11 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
             IMapper mapper,
             IUserContext userContext,
             CBContext context,
-             IdEncoder idEncoder)
+            IdEncoder idEncoder)
             : base(commonService, mapper, userContext)
         {
             _context = context;
             _idEncoder = idEncoder;
-        }
-
-        public async Task<VehicleTripEmissionDTO> CreateAsync(VehicleTripEmissionDTO dto)
-        {
-            var userId = GetCurrentUserId();
-
-            var outputId = new SqlParameter("@newTripId", SqlDbType.Int)
-            {
-                Direction = ParameterDirection.Output
-            };
-
-            var parameters = new[]
-            {
-        new SqlParameter("@vehicleid", dto.VehicleId),
-        new SqlParameter("@fromcityid", dto.FromCityId),
-        new SqlParameter("@tocityid", dto.ToCityId),
-        new SqlParameter("@tripstartdatetime", dto.TripStartDateTime),
-        new SqlParameter("@tripenddatetime", dto.TripEndDateTime ?? (object)DBNull.Value),
-        new SqlParameter("@distancekm", dto.DistanceKm),
-        new SqlParameter("@fueltype", dto.FuelType),
-        new SqlParameter("@fuelconsumedltr", dto.FuelConsumedLtr),
-        new SqlParameter("@entryby", userId),
-        outputId
-    };
-
-            await _context.Database.ExecuteSqlRawAsync(
-                "EXEC USP_CB_InsertVehicleTripEmission @vehicleid,@fromcityid,@tocityid,@tripstartdatetime,@tripenddatetime,@distancekm,@fueltype,@fuelconsumedltr,@entryby,@newTripId OUTPUT",
-                parameters);
-
-            int newId = (int)outputId.Value;
-
-            // ✅ Encode and assign
-            dto.TripId = _idEncoder.Encode(newId);
-
-            return dto;
         }
 
         public async Task<bool> DeleteAsync(string hashId)
@@ -85,16 +50,72 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
             return true;
         }
 
-        public async Task<List<VehicleTripEmissionDTO>> GetAllAsync()
+
+       
+        async Task<ResponseVehicleTripEmissionDTO> IVehicleTripEmissionService.CreateAsync(CreateVehicleTripEmissionDTO dto)
+        {
+            var userId = GetCurrentUserId();
+
+            var outputId = new SqlParameter("@newTripId", SqlDbType.Int)
+            {
+                Direction = ParameterDirection.Output
+            };
+
+            var parameters = new[]
+            {
+                new SqlParameter("@vehicleid", dto.VehicleId),
+                new SqlParameter("@fromcityid", dto.FromCityId),
+                new SqlParameter("@tocityid", dto.ToCityId),
+                new SqlParameter("@tripstartdatetime", dto.TripStartDateTime),
+                new SqlParameter("@tripenddatetime", dto.TripEndDateTime ?? (object)DBNull.Value),
+                new SqlParameter("@distancekm", dto.DistanceKm),
+                new SqlParameter("@fueltype", dto.FuelType),
+                new SqlParameter("@fuelconsumedltr", dto.FuelConsumedLtr),
+                new SqlParameter("@entryby", userId),
+                outputId
+            };
+
+            await _context.Database.ExecuteSqlRawAsync(
+                "EXEC USP_CB_InsertVehicleTripEmission " +
+                "@vehicleid,@fromcityid,@tocityid,@tripstartdatetime," +
+                "@tripenddatetime,@distancekm,@fueltype,@fuelconsumedltr," +
+                "@entryby,@newTripId OUTPUT",
+                parameters);
+
+            int newId = (int)outputId.Value;
+
+            // Fetch inserted record (to get calculated values)
+            var entity = await _context.CB_VehicleTripEmissions
+                .FirstOrDefaultAsync(x => x.tripid == newId);
+
+            return new ResponseVehicleTripEmissionDTO
+            {
+                TripId = _idEncoder.Encode(entity.tripid),
+                VehicleId = _idEncoder.Encode(entity.vehicleid),
+                FromCityId = _idEncoder.Encode(entity.fromcityid),
+                ToCityId = _idEncoder.Encode(entity.tocityid),
+                TripStartDateTime = entity.tripstartdatetime,
+                TripEndDateTime = entity.tripenddatetime,
+                DistanceKm = entity.distancekm,
+                FuelType = entity.fueltype,
+                FuelConsumedLtr = entity.fuelconsumedltr,
+                CO2 = entity.co2,
+                NO2 = entity.no2,
+                CH4 = entity.ch4,
+                TotalEmission = entity.totalemission
+            };
+        }
+
+        async Task<List<ResponseVehicleTripEmissionDTO>> IVehicleTripEmissionService.GetAllAsync()
         {
             var data = await _commonService.GetAllData(x => x.isactive);
 
-            return data.Select(x => new VehicleTripEmissionDTO
+            return data.Select(x => new ResponseVehicleTripEmissionDTO
             {
                 TripId = _idEncoder.Encode(x.tripid),
-                VehicleId = x.vehicleid,
-                FromCityId = x.fromcityid,
-                ToCityId = x.tocityid,
+                VehicleId = _idEncoder.Encode(x.vehicleid),
+                FromCityId = _idEncoder.Encode(x.fromcityid),
+                ToCityId = _idEncoder.Encode(x.tocityid),
                 TripStartDateTime = x.tripstartdatetime,
                 TripEndDateTime = x.tripenddatetime,
                 DistanceKm = x.distancekm,
@@ -107,29 +128,29 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
             }).ToList();
         }
 
-        public async Task<VehicleTripEmissionDTO> GetByHashIdAsync(string hashId)
+        async Task<ResponseVehicleTripEmissionDTO> IVehicleTripEmissionService.GetByHashIdAsync(string hashId)
         {
             var id = _idEncoder.Decode(hashId);
 
-            var data = await _commonService.GetById(x => x.tripid == id && x.isactive);
+            var entity = await _commonService.GetById(x => x.tripid == id && x.isactive);
 
-            if (data == null) return null;
+            if (entity == null) return null;
 
-            return new VehicleTripEmissionDTO
+            return new ResponseVehicleTripEmissionDTO
             {
                 TripId = hashId,
-                VehicleId = data.vehicleid,
-                FromCityId = data.fromcityid,
-                ToCityId = data.tocityid,
-                TripStartDateTime = data.tripstartdatetime,
-                TripEndDateTime = data.tripenddatetime,
-                DistanceKm = data.distancekm,
-                FuelType = data.fueltype,
-                FuelConsumedLtr = data.fuelconsumedltr,
-                CO2 = data.co2,
-                NO2 = data.no2,
-                CH4 = data.ch4,
-                TotalEmission = data.totalemission
+                VehicleId = _idEncoder.Encode(entity.vehicleid),
+                FromCityId = _idEncoder.Encode(entity.fromcityid),
+                ToCityId = _idEncoder.Encode(entity.tocityid),
+                TripStartDateTime = entity.tripstartdatetime,
+                TripEndDateTime = entity.tripenddatetime,
+                DistanceKm = entity.distancekm,
+                FuelType = entity.fueltype,
+                FuelConsumedLtr = entity.fuelconsumedltr,
+                CO2 = entity.co2,
+                NO2 = entity.no2,
+                CH4 = entity.ch4,
+                TotalEmission = entity.totalemission
             };
         }
     }
