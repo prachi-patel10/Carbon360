@@ -1,18 +1,17 @@
 ﻿using AutoMapper;
 using ProjectApp.Core.DTOs.Account.Role;
 using ProjectApp.Core.DTOs.Account.User;
+using ProjectApp.Core.DTOs.Account.VehicleTripEmission;
+using ProjectApp.Core.DTOs.Masters.City;
 using ProjectApp.Core.DTOs.Masters.Department;
+using ProjectApp.Core.DTOs.Masters.EmissionFactor;
 using ProjectApp.Core.DTOs.Masters.Fuel;
+using ProjectApp.Core.DTOs.Masters.Generator;
+using ProjectApp.Core.DTOs.Masters.SiteLocation;
 using ProjectApp.Core.DTOs.Masters.Vehicle;
 using ProjectApp.Core.DTOs.Masters.VehicleType;
-using ProjectApp.Core.DTOs.Masters.City;
-
 using ProjectApp.Core.Models;
 using System;
-using ProjectApp.Core.DTOs.Masters.Generator;
-using ProjectApp.Core.DTOs.Account.VehicleTripEmission;
-using ProjectApp.Core.DTOs.Masters.SiteLocation;
-using ProjectApp.Core.DTOs.Account.GeneratorOperation;
 
 namespace ProjectApp.API.Extentions
 {
@@ -64,11 +63,13 @@ namespace ProjectApp.API.Extentions
             CreateMap<CB_MasterSiteLocation, SiteLocationSearchRequest>().ReverseMap();
 
             //----------------VEHICLE TRIP EMISSION--------------
-            CreateMap<CB_VehicleTripEmission, ResponseVehicleTripEmissionDTO>().ReverseMap();
             CreateMap<CB_VehicleTripEmission, CreateVehicleTripEmissionDTO>().ReverseMap();
 
-            //----------------Generator EMISSION--------------
-            CreateMap<CB_GeneratorOperation, GeneratorOperationResponseDTO>().ReverseMap();
+            //---------------------Emission Factor----------------
+            CreateMap<CB_EmissionFactor, EmissionFactorRequestDTO>().ReverseMap();
+            CreateMap<CB_EmissionFactor, EmissionFactorResponseDTO>()
+                .ForMember(dest => dest.Id,
+                    opt => opt.MapFrom(src => src.EmissionFactorId));
         }
     }
 }
