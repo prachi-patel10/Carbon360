@@ -5,20 +5,20 @@ using ProjectApp.Repository.Interfaces.Common;
 using ProjectApp.Repository.Interfaces.Masters.City;
 using ProjectApp.Repository.Interfaces.Masters.Department;
 using ProjectApp.Repository.Interfaces.Masters.Fuel;
+using ProjectApp.Repository.Interfaces.Masters.Generator;
 using ProjectApp.Repository.Interfaces.Masters.Role;
 using ProjectApp.Repository.Interfaces.Masters.Vehicle;
 using ProjectApp.Repository.Interfaces.Masters.VehicleType;
 using ProjectApp.Repository.Interfaces.User;
-using ProjectApp.Repository.Interfaces.Vehicle.VehicleTrip;
 using ProjectApp.Repository.Services.Common;
 using ProjectApp.Repository.Services.Masters.City;
 using ProjectApp.Repository.Services.Masters.Department;
 using ProjectApp.Repository.Services.Masters.Fuel;
+using ProjectApp.Repository.Services.Masters.Generator;
 using ProjectApp.Repository.Services.Masters.Role;
 using ProjectApp.Repository.Services.Masters.Vehicle;
 using ProjectApp.Repository.Services.Masters.VehicleType;
 using ProjectApp.Repository.Services.User;
-using ProjectApp.Repository.Services.Vehicle.VehicleTrip;
 using ProjectApp.Repository.Utilities.Auth;
 using System;
 using System.Collections.Generic;
@@ -48,8 +48,7 @@ namespace ProjectApp.API.Extentions
             services.AddScoped<IVehicleTypeService, VehicleTypeService>();
             services.AddScoped<ICityService, CityService>();
             services.AddScoped<IVehicleService, VehicleService>();
-           services.AddScoped<IVehicleTripService, VehicleTripService>();
-
+            services.AddScoped<IGeneratorService, GeneratorService>();
 
             return services;
         }

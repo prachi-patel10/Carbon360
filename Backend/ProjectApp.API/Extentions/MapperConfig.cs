@@ -3,14 +3,13 @@ using ProjectApp.Core.DTOs.Account.Role;
 using ProjectApp.Core.DTOs.Account.User;
 using ProjectApp.Core.DTOs.Masters.Department;
 using ProjectApp.Core.DTOs.Masters.Fuel;
-using ProjectApp.Core.DTOs.Masters.Section;
 using ProjectApp.Core.DTOs.Masters.Vehicle;
 using ProjectApp.Core.DTOs.Masters.VehicleType;
 using ProjectApp.Core.DTOs.Masters.City;
-using ProjectApp.Core.DTOs.Account.VehicleModule.VehicleTrip;
-using ProjectApp.Core.Entities;
+
 using ProjectApp.Core.Models;
 using System;
+using ProjectApp.Core.DTOs.Masters.Generator;
 
 namespace ProjectApp.API.Extentions
 {
@@ -50,11 +49,11 @@ namespace ProjectApp.API.Extentions
 
             CreateMap<CB_MasterCity, CityResponseDTO>().ReverseMap();
 
-            // ================= VEHICLE MASTER =================
-            CreateMap<CB_VehicleTrip,VehicleTripDTO >().ReverseMap();
-            CreateMap<CB_VehicleTrip, VehicleTripResponseDTO>().ReverseMap();
-            CreateMap<CB_VehicleTrip, VehicleTripUpdateDTO>().ReverseMap();
-
+            //----------------GENERATOR MASTER--------------
+            CreateMap<CB_MasterGenerator, GeneratorCreateUpdateDTO>().ReverseMap();
+            CreateMap<CB_MasterGenerator, GeneratorResponseDTO>().ReverseMap();
+            CreateMap<CB_MasterGenerator, GeneratorSearchRequest>().ReverseMap();
+            CreateMap<CB_MasterGenerator, GeneratorToggleStatusDTO>().ReverseMap();
 
         }
     }
