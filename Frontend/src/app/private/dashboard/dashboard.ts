@@ -58,12 +58,10 @@ pageTitle: string = '';
         this.pageTitle = 'Fleet Report';
       } else if (url.includes('waste')) {
         this.pageTitle = 'Waste Management';
-      }else if (url.includes('vehicle')) {
-        this.pageTitle = 'Vehicle Emission Calculation';
-      } else if (url.includes('vehicletrip')) {
-        this.pageTitle = 'Vehicle Trip';
       } else if (url.includes('vehiclemaster')) {
         this.pageTitle = 'Vehicle master';
+      }else if (url.includes('vehicle')) {
+        this.pageTitle = 'Vehicle Trip Emission Calculation Form';
       } 
       else {
         this.pageTitle = 'Dashboard';

@@ -9,9 +9,8 @@ import { Home } from './private/masters/home/home';
 import { DashboardComponent } from './private/dashboard/dashboard';
 import { MasterRoleComponent } from './private/masters/role/role';
 import { DepartmentComponent } from './private/masters/department/department';
-import { VehicleEC } from './private/vehicle-ec/vehicle-ec';
-import { VehicleTripComponent } from './private/vehicle/vehicle-trip/vehicle-trip';
-import { Vehicles } from './private/masters/vehicles/vehicles';
+import { VehicleEC } from './private/fleet-transport/vehicle-ec/vehicle-ec';
+import { Vehicles } from './private/fleet-transport/vehicles/vehicles';
 
 export const routes: Routes = [
 
@@ -37,7 +36,6 @@ export const routes: Routes = [
       { path: 'role', component: MasterRoleComponent },
     { path: 'department', component: DepartmentComponent }, // create/import DepartmentComponent
     { path: 'vehicle', component: VehicleEC }, 
-    { path: 'vehicletrip', component: VehicleTripComponent }, 
      { path: 'vehiclemaster', component: Vehicles },     // create/import VehicleComponent
     // { path: 'waste', component: WasteComponent },           // create/import WasteComponent
     // { path: 'generator', component: GeneratorComponent },   // create/import GeneratorComponent

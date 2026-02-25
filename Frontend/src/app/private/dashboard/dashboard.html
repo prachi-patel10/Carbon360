@@ -37,18 +37,6 @@
             Organizational Units
           </li>
 
-          <li *ngIf="isAdmin() || isCorporate()" (click)="goTo('vehicle')"
-            [class.active-link]="isActive('/vehicle')">
-            <i class="fas fa-building"></i>
-            Vehicle Emission Calculation
-          </li>
-
-            <li *ngIf="isAdmin() || isCorporate()" (click)="goTo('vehicletrip')"
-            [class.active-link]="isActive('/vehicletrip')">
-            <i class="fas fa-building"></i>
-            Vehicle Trip
-          </li>
-
            <li *ngIf="isAdmin() || isCorporate()" (click)="goTo('vehiclemaster')"
             [class.active-link]="isActive('/vehiclemaster')">
             <i class="fas fa-building"></i>
@@ -67,7 +55,7 @@
         </div>
 
         <ul class="submenu" *ngIf="openedMenu === 'fleet'">
-          <li *ngIf="isAdmin() || isReporter()" routerLink="/vehicle" routerLinkActive="active-link">
+          <li *ngIf="isAdmin() || isReporter()" (click)="goTo('vehicle')" [class.active-link]="isActive('/vehicle')">
             <i class="fas fa-clipboard-list"></i>
             Report
           </li>
