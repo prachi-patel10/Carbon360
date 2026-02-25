@@ -15,6 +15,8 @@ public partial class CBContext : DbContext
 
     public virtual DbSet<CB_Department> CB_Departments { get; set; }
 
+    public virtual DbSet<CB_EmissionFactor> CB_EmissionFactors { get; set; }
+
     public virtual DbSet<CB_GeneratorOperation> CB_GeneratorOperations { get; set; }
 
     public virtual DbSet<CB_MasterCity> CB_MasterCities { get; set; }
@@ -49,6 +51,26 @@ public partial class CBContext : DbContext
                 .HasMaxLength(50)
                 .IsUnicode(false);
             entity.Property(e => e.EntryDate).HasColumnType("datetime");
+            entity.Property(e => e.UpdateDate).HasColumnType("datetime");
+        });
+
+        modelBuilder.Entity<CB_EmissionFactor>(entity =>
+        {
+            entity.HasKey(e => e.EmissionFactorId).HasName("PK__CB_Emiss__C9186AB3BB588D20");
+
+            entity.ToTable("CB_EmissionFactor");
+
+            entity.Property(e => e.CH4_Factor_KgPerKm).HasColumnType("decimal(10, 6)");
+            entity.Property(e => e.CO2_Factor_KgPerL).HasColumnType("decimal(10, 4)");
+            entity.Property(e => e.EntryDate)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.FuelType)
+                .IsRequired()
+                .HasMaxLength(20)
+                .IsUnicode(false);
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+            entity.Property(e => e.NO2_Factor_KgPerKm).HasColumnType("decimal(10, 6)");
             entity.Property(e => e.UpdateDate).HasColumnType("datetime");
         });
 

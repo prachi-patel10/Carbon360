@@ -23,6 +23,10 @@
          "ObjectType": 0
       },
       {
+         "Name": "[dbo].[CB_EmissionFactor]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[dbo].[CB_GeneratorOperation]",
          "ObjectType": 0
       },
