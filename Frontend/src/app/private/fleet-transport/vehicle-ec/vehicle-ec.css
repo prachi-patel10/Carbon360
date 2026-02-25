@@ -104,6 +104,27 @@
   cursor: pointer;
 }
 
+.modern-input {
+  padding: 10px 12px;
+  border: 1px solid #dcdcdc;
+  border-radius: 8px;
+  background: #f9fafb;
+  transition: 0.3s;
+  font-size: 14px;
+}
+
+.modern-input:focus {
+  border-color: #16a34a;
+  box-shadow: 0 0 5px rgba(22, 163, 74, 0.3);
+  outline: none;
+}
+
+.error {
+  color: #dc2626;
+  font-size: 12px;
+  margin-top: 5px;
+}
+
 /* RESULT */
 .result-card {
   margin-top: 20px;
