@@ -12,6 +12,7 @@ using System;
 using ProjectApp.Core.DTOs.Masters.Generator;
 using ProjectApp.Core.DTOs.Account.VehicleTripEmission;
 using ProjectApp.Core.DTOs.Masters.SiteLocation;
+using ProjectApp.Core.DTOs.Account.GeneratorOperation;
 
 namespace ProjectApp.API.Extentions
 {
@@ -63,7 +64,11 @@ namespace ProjectApp.API.Extentions
             CreateMap<CB_MasterSiteLocation, SiteLocationSearchRequest>().ReverseMap();
 
             //----------------VEHICLE TRIP EMISSION--------------
-            CreateMap<CB_VehicleTripEmission, VehicleTripEmissionDTO>().ReverseMap();
+            CreateMap<CB_VehicleTripEmission, ResponseVehicleTripEmissionDTO>().ReverseMap();
+            CreateMap<CB_VehicleTripEmission, CreateVehicleTripEmissionDTO>().ReverseMap();
+
+            //----------------Generator EMISSION--------------
+            CreateMap<CB_GeneratorOperation, GeneratorOperationResponseDTO>().ReverseMap();
         }
     }
 }

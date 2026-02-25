@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using pr.Repository.Services.Auth;
 using ProjectApp.Repository.Interfaces.Common;
+using ProjectApp.Repository.Interfaces.GenerationOperation;
 using ProjectApp.Repository.Interfaces.Masters.City;
 using ProjectApp.Repository.Interfaces.Masters.Department;
 using ProjectApp.Repository.Interfaces.Masters.Fuel;
@@ -13,6 +14,7 @@ using ProjectApp.Repository.Interfaces.SiteLocation;
 using ProjectApp.Repository.Interfaces.User;
 using ProjectApp.Repository.Interfaces.VehicleTripEmission;
 using ProjectApp.Repository.Services.Common;
+using ProjectApp.Repository.Services.GeneratorOperation;
 using ProjectApp.Repository.Services.Masters.City;
 using ProjectApp.Repository.Services.Masters.Department;
 using ProjectApp.Repository.Services.Masters.Fuel;
@@ -55,6 +57,8 @@ namespace ProjectApp.API.Extentions
             services.AddScoped<IGeneratorService, GeneratorService>();
             services.AddScoped<IVehicleTripEmissionService, VehicleTripEmissionService>();
             services.AddScoped<ISiteLocationService, SiteLocationService>();
+            services.AddScoped<IGeneratorOperationService, GeneratorOperationService>();
+
 
             return services;
         }
