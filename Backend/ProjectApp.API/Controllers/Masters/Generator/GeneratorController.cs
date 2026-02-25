@@ -36,14 +36,20 @@ namespace ProjectApp.API.Controllers.Masters.Generator
         [HttpPost]
         public async Task<IActionResult> Create(GeneratorCreateUpdateDTO dto)
         {
-            var id = await _service.Create(dto, 1);
+            int userId = Convert.ToInt32(User.FindFirst("UserId")?.Value);
+
+            var id = await _service.Create(dto, userId);
+
             return Ok(new { EncryptedId = id });
         }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(string id, GeneratorCreateUpdateDTO dto)
         {
-            await _service.Update(id, dto, 1);
+            int userId = Convert.ToInt32(User.FindFirst("UserId")?.Value);
+
+            await _service.Update(id, dto, userId);
+
             return Ok();
         }
 
