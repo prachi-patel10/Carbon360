@@ -119,17 +119,17 @@
 
       <div class="form-group">
         <label>CO₂ Factor</label>
-        <input type="number" formControlName="co2Factor" readonly>
+        <input type="number" formControlName="co2Factor" readonly/>
       </div>
 
       <div class="form-group">
         <label>NO₂ Factor</label>
-        <input type="number" formControlName="no2Factor" readonly>
+        <input type="number" formControlName="no2Factor" readonly/>
       </div>
 
       <div class="form-group">
         <label>CH₄ Factor</label>
-        <input type="number" formControlName="ch4Factor" readonly>
+        <input type="number" formControlName="ch4Factor" readonly/>
       </div>
 
     </div>
@@ -146,7 +146,7 @@
   </form>
 
   <!-- RESULTS SECTION -->
-  <div class="card result-card" *ngIf="result">
+  <div class="card result-card" *ngIf="result !== null">
 
     <div class="card-title">Emission Results (KG)</div>
 

@@ -25,7 +25,7 @@ export class TripComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private tripService: TripService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
 
@@ -50,7 +50,20 @@ export class TripComponent implements OnInit {
 
     this.tripForm.valueChanges.subscribe(() => {
       this.calculateDuration();
+
+      this.tripForm.get('fuelType')?.valueChanges.subscribe(fuel => {
+        if (fuel) {
+          this.loadEmissionFactor(fuel);
+        }
+      });
+
+      this.tripForm.valueChanges.subscribe(() => {
+        this.calculateDuration();
+      });
+
+
     });
+
 
     setInterval(() => {
       this.updateCurrentDateTime();
@@ -69,6 +82,35 @@ export class TripComponent implements OnInit {
     });
   }
 
+  loadEmissionFactor(fuelType: string) {
+
+    this.tripService.getEmissionFactorByFuelType(fuelType)
+      .subscribe({
+        next: (res: any) => {
+
+          if (!res.status || !res.data) return;
+
+          // 🔥 Find matching fuel type from array
+          const factor = res.data.find(
+            (x: any) => x.fuelType.toLowerCase() === fuelType.toLowerCase()
+          );
+
+          if (!factor) return;
+
+          // ✅ Patch correct property names
+          // this.tripForm.patchValue({
+          //   co2Factor: factor.cO2_Factor_KgPerL,
+          //   no2Factor: factor.nO2_Factor_KgPerKm,
+          //   ch4Factor: factor.cH4_Factor_KgPerKm
+          // });
+
+        },
+        error: (err) => {
+          console.error("Emission factor fetch failed", err);
+        }
+      });
+  }
+
   submitTrip() {
 
     if (this.tripForm.invalid) {
@@ -76,16 +118,19 @@ export class TripComponent implements OnInit {
       return;
     }
 
-    this.tripService.addTrip(this.tripForm.value).subscribe(res => {
+    this.tripService.addTrip(this.tripForm.value).subscribe({
+      next: (res: any) => {
 
-      this.result = res.data;
+        console.log("Response:", res);
 
-      this.tripForm.patchValue({
-        co2Factor: res.data.co2Factor,
-        no2Factor: res.data.no2Factor,
-        ch4Factor: res.data.ch4Factor
-      });
+        if (res && res.data) {
+          this.result = res.data;
+        }
 
+      },
+      error: (err) => {
+        console.error("Trip Submit Failed:", err);
+      }
     });
   }
 
