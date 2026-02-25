@@ -15,9 +15,15 @@ public partial class CBContext : DbContext
 
     public virtual DbSet<CB_Department> CB_Departments { get; set; }
 
+    public virtual DbSet<CB_GeneratorOperation> CB_GeneratorOperations { get; set; }
+
     public virtual DbSet<CB_MasterCity> CB_MasterCities { get; set; }
 
     public virtual DbSet<CB_MasterFuelType> CB_MasterFuelTypes { get; set; }
+
+    public virtual DbSet<CB_MasterGenerator> CB_MasterGenerators { get; set; }
+
+    public virtual DbSet<CB_MasterSiteLocation> CB_MasterSiteLocations { get; set; }
 
     public virtual DbSet<CB_MasterVehicle> CB_MasterVehicles { get; set; }
 
@@ -29,7 +35,7 @@ public partial class CBContext : DbContext
 
     public virtual DbSet<CB_UserRoleMapping> CB_UserRoleMappings { get; set; }
 
-    public virtual DbSet<CB_VehicleTrip> CB_VehicleTrips { get; set; }
+    public virtual DbSet<CB_VehicleTripEmission> CB_VehicleTripEmissions { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -44,6 +50,32 @@ public partial class CBContext : DbContext
                 .IsUnicode(false);
             entity.Property(e => e.EntryDate).HasColumnType("datetime");
             entity.Property(e => e.UpdateDate).HasColumnType("datetime");
+        });
+
+        modelBuilder.Entity<CB_GeneratorOperation>(entity =>
+        {
+            entity.HasKey(e => e.OperationId).HasName("PK__CB_Gener__A4F5FC44E0AD9E3B");
+
+            entity.ToTable("CB_GeneratorOperation");
+
+            entity.Property(e => e.EntryDate)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.FuelConsumedLiters).HasColumnType("decimal(16, 8)");
+            entity.Property(e => e.LoadFactor).HasColumnType("decimal(16, 8)");
+            entity.Property(e => e.PowerOutputKWH).HasColumnType("decimal(16, 8)");
+            entity.Property(e => e.RunHours).HasColumnType("decimal(16, 8)");
+            entity.Property(e => e.UpdateDate).HasColumnType("datetime");
+
+            entity.HasOne(d => d.Fuel).WithMany(p => p.CB_GeneratorOperations)
+                .HasForeignKey(d => d.FuelId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_operation_fuel");
+
+            entity.HasOne(d => d.Generator).WithMany(p => p.CB_GeneratorOperations)
+                .HasForeignKey(d => d.GeneratorId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_operation_generator");
         });
 
         modelBuilder.Entity<CB_MasterCity>(entity =>
@@ -85,6 +117,69 @@ public partial class CBContext : DbContext
                 .HasMaxLength(30)
                 .IsUnicode(false);
             entity.Property(e => e.nox_factor).HasColumnType("decimal(16, 8)");
+        });
+
+        modelBuilder.Entity<CB_MasterGenerator>(entity =>
+        {
+            entity.HasKey(e => e.GeneratorId).HasName("PK__CB_Maste__41B536093A981D06");
+
+            entity.ToTable("CB_MasterGenerator");
+
+            entity.Property(e => e.EntryDate)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.GeneratorName)
+                .IsRequired()
+                .IsUnicode(false);
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+            entity.Property(e => e.RatedCapacityKW).HasColumnType("decimal(10, 2)");
+            entity.Property(e => e.UpdateDate).HasColumnType("datetime");
+
+            entity.HasOne(d => d.Department).WithMany(p => p.CB_MasterGenerators)
+                .HasForeignKey(d => d.DepartmentId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_DepartentId");
+
+            entity.HasOne(d => d.Fuel).WithMany(p => p.CB_MasterGenerators)
+                .HasForeignKey(d => d.FuelId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_FuelId");
+
+            entity.HasOne(d => d.Site).WithMany(p => p.CB_MasterGenerators)
+                .HasForeignKey(d => d.SiteId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_SiteId");
+        });
+
+        modelBuilder.Entity<CB_MasterSiteLocation>(entity =>
+        {
+            entity.HasKey(e => e.SiteId).HasName("PK__CB_Maste__B9DCB96316817821");
+
+            entity.ToTable("CB_MasterSiteLocation");
+
+            entity.Property(e => e.BuildingName)
+                .HasMaxLength(100)
+                .IsUnicode(false);
+            entity.Property(e => e.City)
+                .HasMaxLength(100)
+                .IsUnicode(false);
+            entity.Property(e => e.EntryDate)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+            entity.Property(e => e.SiteName)
+                .IsRequired()
+                .HasMaxLength(100)
+                .IsUnicode(false);
+            entity.Property(e => e.State)
+                .HasMaxLength(100)
+                .IsUnicode(false);
+            entity.Property(e => e.UpdateDate).HasColumnType("datetime");
+
+            entity.HasOne(d => d.Department).WithMany(p => p.CB_MasterSiteLocations)
+                .HasForeignKey(d => d.DepartmentId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_site_department");
         });
 
         modelBuilder.Entity<CB_MasterVehicle>(entity =>
@@ -218,46 +313,54 @@ public partial class CBContext : DbContext
                 .HasConstraintName("FK_UserRoleMapping_Users");
         });
 
-        modelBuilder.Entity<CB_VehicleTrip>(entity =>
+        modelBuilder.Entity<CB_VehicleTripEmission>(entity =>
         {
-            entity.HasKey(e => e.TripId).HasName("PK__CB_Vehic__51DC713E9E660330");
+            entity.HasKey(e => e.tripid).HasName("PK_vehicle_trip");
 
-            entity.ToTable("CB_VehicleTrip");
+            entity.ToTable("CB_VehicleTripEmission");
 
-            entity.Property(e => e.DistanceKm).HasColumnType("decimal(16, 8)");
-            entity.Property(e => e.EntryDate)
+            entity.Property(e => e.ch4).HasColumnType("decimal(16, 8)");
+            entity.Property(e => e.co2).HasColumnType("decimal(16, 8)");
+            entity.Property(e => e.distancekm).HasColumnType("decimal(16, 8)");
+            entity.Property(e => e.entrydate)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
-            entity.Property(e => e.FuelConsumedLtr).HasColumnType("decimal(16, 8)");
-            entity.Property(e => e.TripEndDateTime).HasColumnType("datetime");
-            entity.Property(e => e.TripStartDateTime).HasColumnType("datetime");
-            entity.Property(e => e.TripStatus)
+            entity.Property(e => e.fuelconsumedltr).HasColumnType("decimal(16, 8)");
+            entity.Property(e => e.fueltype)
                 .IsRequired()
                 .HasMaxLength(20)
                 .IsUnicode(false);
-            entity.Property(e => e.UpdateDate).HasColumnType("datetime");
+            entity.Property(e => e.isactive).HasDefaultValue(true);
+            entity.Property(e => e.no2).HasColumnType("decimal(16, 8)");
+            entity.Property(e => e.totalch4).HasColumnType("decimal(16, 8)");
+            entity.Property(e => e.totalco2).HasColumnType("decimal(16, 8)");
+            entity.Property(e => e.totalemission).HasColumnType("decimal(16, 8)");
+            entity.Property(e => e.totalno2).HasColumnType("decimal(16, 8)");
+            entity.Property(e => e.tripenddatetime).HasColumnType("datetime");
+            entity.Property(e => e.tripstartdatetime).HasColumnType("datetime");
+            entity.Property(e => e.updatedate).HasColumnType("datetime");
 
-            entity.HasOne(d => d.EntryByNavigation).WithMany(p => p.CB_VehicleTripEntryByNavigations)
-                .HasForeignKey(d => d.EntryBy)
+            entity.HasOne(d => d.entrybyNavigation).WithMany(p => p.CB_VehicleTripEmissionentrybyNavigations)
+                .HasForeignKey(d => d.entryby)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_vehicle_trip_entryby");
+                .HasConstraintName("FK_vehicle_trip_entry_by");
 
-            entity.HasOne(d => d.FromCity).WithMany(p => p.CB_VehicleTripFromCities)
-                .HasForeignKey(d => d.FromCityId)
+            entity.HasOne(d => d.fromcity).WithMany(p => p.CB_VehicleTripEmissionfromcities)
+                .HasForeignKey(d => d.fromcityid)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_vehicle_trip_fromcity");
+                .HasConstraintName("FK_vehicle_trip_from_city");
 
-            entity.HasOne(d => d.ToCity).WithMany(p => p.CB_VehicleTripToCities)
-                .HasForeignKey(d => d.ToCityId)
+            entity.HasOne(d => d.tocity).WithMany(p => p.CB_VehicleTripEmissiontocities)
+                .HasForeignKey(d => d.tocityid)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_vehicle_trip_tocity");
+                .HasConstraintName("FK_vehicle_trip_to_city");
 
-            entity.HasOne(d => d.UpdatedByNavigation).WithMany(p => p.CB_VehicleTripUpdatedByNavigations)
-                .HasForeignKey(d => d.UpdatedBy)
-                .HasConstraintName("FK_vehicle_trip_updatedby");
+            entity.HasOne(d => d.updatebyNavigation).WithMany(p => p.CB_VehicleTripEmissionupdatebyNavigations)
+                .HasForeignKey(d => d.updateby)
+                .HasConstraintName("FK_vehicle_trip_update_by");
 
-            entity.HasOne(d => d.Vehicle).WithMany(p => p.CB_VehicleTrips)
-                .HasForeignKey(d => d.VehicleId)
+            entity.HasOne(d => d.vehicle).WithMany(p => p.CB_VehicleTripEmissions)
+                .HasForeignKey(d => d.vehicleid)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_vehicle_trip_vehicle");
         });

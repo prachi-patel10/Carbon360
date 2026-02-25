@@ -27,7 +27,7 @@ public partial class CB_MasterCity
 
     public DateTime? UpdateDate { get; set; }
 
-    public virtual ICollection<CB_VehicleTrip> CB_VehicleTripFromCities { get; set; } = new List<CB_VehicleTrip>();
+    public virtual ICollection<CB_VehicleTripEmission> CB_VehicleTripEmissionfromcities { get; set; } = new List<CB_VehicleTripEmission>();
 
-    public virtual ICollection<CB_VehicleTrip> CB_VehicleTripToCities { get; set; } = new List<CB_VehicleTrip>();
+    public virtual ICollection<CB_VehicleTripEmission> CB_VehicleTripEmissiontocities { get; set; } = new List<CB_VehicleTripEmission>();
 }

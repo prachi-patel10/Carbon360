@@ -23,11 +23,23 @@
          "ObjectType": 0
       },
       {
+         "Name": "[dbo].[CB_GeneratorOperation]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[dbo].[CB_MasterCity]",
          "ObjectType": 0
       },
       {
          "Name": "[dbo].[CB_MasterFuelType]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[CB_MasterGenerator]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[CB_MasterSiteLocation]",
          "ObjectType": 0
       },
       {
@@ -51,7 +63,7 @@
          "ObjectType": 0
       },
       {
-         "Name": "[dbo].[CB_VehicleTrip]",
+         "Name": "[dbo].[CB_VehicleTripEmission]",
          "ObjectType": 0
       }
    ],

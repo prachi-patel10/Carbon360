@@ -33,7 +33,7 @@ public partial class CB_MasterVehicle
 
     public bool IsDeleted { get; set; }
 
-    public virtual ICollection<CB_VehicleTrip> CB_VehicleTrips { get; set; } = new List<CB_VehicleTrip>();
+    public virtual ICollection<CB_VehicleTripEmission> CB_VehicleTripEmissions { get; set; } = new List<CB_VehicleTripEmission>();
 
     public virtual CB_Department department { get; set; }
 

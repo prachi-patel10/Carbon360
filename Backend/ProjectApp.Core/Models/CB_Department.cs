@@ -23,6 +23,10 @@ public partial class CB_Department
 
     public bool? IsDeleted { get; set; }
 
+    public virtual ICollection<CB_MasterGenerator> CB_MasterGenerators { get; set; } = new List<CB_MasterGenerator>();
+
+    public virtual ICollection<CB_MasterSiteLocation> CB_MasterSiteLocations { get; set; } = new List<CB_MasterSiteLocation>();
+
     public virtual ICollection<CB_MasterVehicle> CB_MasterVehicles { get; set; } = new List<CB_MasterVehicle>();
 
     public virtual ICollection<CB_User> CB_Users { get; set; } = new List<CB_User>();
