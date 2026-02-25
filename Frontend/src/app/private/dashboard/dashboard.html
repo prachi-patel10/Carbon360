@@ -1,13 +1,9 @@
 <div class="layout-container">
+ <aside class="sidebar" [class.closed]="!sidebarOpen">
+
   <button class="menu-btn" (click)="toggleSidebar()">
     <i class="fas fa-bars"></i>
   </button>
-  <!-- Sidebar -->
-  <aside class="sidebar" [class.closed]="!sidebarOpen">
-    <div class="brand">
-      <h1>CARBON<span>360</span></h1>
-      <p>Track • Analyze • Improve</p>
-    </div>
 
     <ul class="menu">
 
@@ -116,21 +112,32 @@
   <div class="main-section">
 
     <header class="topbar">
+
+      <div class="brand">
+        <h1>CARBON<span>360</span></h1>
+        <p>Track • Analyze • Improve</p>
+      </div>
+
       <div class="page-title">
         {{ pageTitle }}
       </div>
+
       <div class="right">
         <div class="admin-wrapper">
           <div class="admin-avatar" (click)="toggleProfile($event)">
             {{ loggedInUser.charAt(0) }}
           </div>
 
-          <div class="admin-dropdown" *ngIf="showProfileCard" (click)="$event.stopPropagation()">
+          <div class="admin-dropdown"
+               *ngIf="showProfileCard"
+               (click)="$event.stopPropagation()">
 
             <h4 *ngIf="roles && roles.length > 1">Switch Role</h4>
 
-            <select *ngIf="roles && roles.length > 1" [(ngModel)]="selectedRole" (change)="onRoleChange()"
-              class="role-select">
+            <select *ngIf="roles && roles.length > 1"
+                    [(ngModel)]="selectedRole"
+                    (change)="onRoleChange()"
+                    class="role-select">
 
               <option *ngFor="let role of roles" [value]="role">
                 {{ role }}
@@ -144,11 +151,13 @@
           </div>
         </div>
       </div>
+
     </header>
 
-    <div class="page-content">
+ <div class="page-content">
       <router-outlet></router-outlet>
     </div>
 
   </div>
+
 </div>

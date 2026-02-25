@@ -1,61 +1,148 @@
-import { Component } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Component, OnInit } from '@angular/core';
+import { TripService } from '../vehicle-ec/vehicle-service-ec';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { CommonModule } from '@angular/common';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 @Component({
-  selector: 'app-vehicle-ec',
-  imports: [ReactiveFormsModule],
+  selector: 'app-trip',
+  standalone: true,
+  imports: [CommonModule, FormsModule, ReactiveFormsModule],
   templateUrl: './vehicle-ec.html',
-  styleUrl: './vehicle-ec.css',
+  styleUrls: ['./vehicle-ec.css']
 })
-export class VehicleEC {
-emissionForm!: FormGroup;
+export class TripComponent implements OnInit {
 
-  totalCO2: number = 0;
-  totalNO2: number = 0;
-  totalCH4: number = 0;
-  totalEmission: number = 0;
+  tripForm!: FormGroup;
+  vehicles: any[] = [];
+  cities: any[] = [];
+  fuelTypes: string[] = ['Petrol', 'Diesel', 'CNG'];
 
-  constructor(private fb: FormBuilder) {
-    this.initForm();
+  result: any;
+  todayDateTime: string = '';
+  tripDuration: string = '';
+
+  constructor(
+    private fb: FormBuilder,
+    private tripService: TripService
+  ) {}
+
+  ngOnInit(): void {
+
+    this.updateCurrentDateTime();
+
+    this.tripForm = this.fb.group({
+      vehicle_id: ['', Validators.required],
+      fromCityId: ['', Validators.required],
+      toCityId: ['', Validators.required],
+      fuelType: ['', Validators.required],
+      distanceKm: ['', [Validators.required, Validators.min(1)]],
+      fuelConsumedLtr: ['', [Validators.required, Validators.min(0.1)]],
+      tripStartDateTime: ['', Validators.required],
+      tripEndDateTime: ['', Validators.required],
+      co2Factor: [''],
+      no2Factor: [''],
+      ch4Factor: ['']
+    }, { validators: this.dateValidator });
+
+    this.loadVehicles();
+    this.loadCities();
+
+    this.tripForm.valueChanges.subscribe(() => {
+      this.calculateDuration();
+    });
+
+    setInterval(() => {
+      this.updateCurrentDateTime();
+    }, 60000);
   }
-vehicles = [
-  { id: 1, number: 'GJ05AB1234' },
-  { id: 2, number: 'GJ05XY5678' }
-];
 
-trips = [
-  { id: 1, name: 'Surat to Ahmedabad' },
-  { id: 2, name: 'Surat to Mumbai' }
-];
-  initForm() {
-    this.emissionForm = this.fb.group({
-      VehicleId: [''],
-      TripId: [''],
-      FuelType: [''],
-      DistanceKm: [0, Validators.required],
-      FuelConsumedLtr: [0, Validators.required],
-      CO2Factor_g_per_ltr: [0],
-      NO2Factor_g_per_km: [0],
-      CH4Factor_g_per_km: [0]
+  loadVehicles() {
+    this.tripService.getVehicles().subscribe(res => {
+      this.vehicles = res;
     });
   }
 
-  calculateEmission() {
-    const form = this.emissionForm.value;
+  loadCities() {
+    this.tripService.getCities().subscribe(res => {
+      this.cities = res.data;
+    });
+  }
 
-    this.totalCO2 = form.FuelConsumedLtr * form.CO2Factor_g_per_ltr;
-    this.totalNO2 = form.DistanceKm * form.NO2Factor_g_per_km;
-    this.totalCH4 = form.DistanceKm * form.CH4Factor_g_per_km;
+  submitTrip() {
 
-    this.totalEmission =
-      this.totalCO2 + this.totalNO2 + this.totalCH4;
+    if (this.tripForm.invalid) {
+      this.tripForm.markAllAsTouched();
+      return;
+    }
+
+    this.tripService.addTrip(this.tripForm.value).subscribe(res => {
+
+      this.result = res.data;
+
+      this.tripForm.patchValue({
+        co2Factor: res.data.co2Factor,
+        no2Factor: res.data.no2Factor,
+        ch4Factor: res.data.ch4Factor
+      });
+
+    });
+  }
+
+  dateValidator(group: FormGroup) {
+
+    const start = group.get('tripStartDateTime')?.value;
+    const end = group.get('tripEndDateTime')?.value;
+    const now = new Date();
+
+    if (start && new Date(start) > now) {
+      return { futureStart: true };
+    }
+
+    if (end && new Date(end) > now) {
+      return { futureEnd: true };
+    }
+
+    if (start && end && new Date(end) < new Date(start)) {
+      return { endBeforeStart: true };
+    }
+
+    return null;
+  }
+
+  updateCurrentDateTime() {
+    const now = new Date();
+    this.todayDateTime = now.toISOString().slice(0, 16);
+  }
+
+  calculateDuration() {
+
+    const start = this.tripForm.get('tripStartDateTime')?.value;
+    const end = this.tripForm.get('tripEndDateTime')?.value;
+
+    if (start && end) {
+
+      const startDate = new Date(start);
+      const endDate = new Date(end);
+
+      const diffMs = endDate.getTime() - startDate.getTime();
+
+      if (diffMs > 0) {
+
+        const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+        const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+
+        this.tripDuration = `${diffHours} hrs ${diffMinutes} mins`;
+
+      } else {
+        this.tripDuration = '';
+      }
+    }
   }
 
   resetForm() {
-    this.emissionForm.reset();
-    this.totalCO2 = 0;
-    this.totalNO2 = 0;
-    this.totalCH4 = 0;
-    this.totalEmission = 0;
+    this.tripForm.reset();
+    this.result = null;
+    this.tripDuration = '';
   }
 }
