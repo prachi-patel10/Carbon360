@@ -1,0 +1,73 @@
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using ProjectApp.Core.DTOs.Masters.Generator;
+using ProjectApp.Repository.Interfaces.Masters.Generator;
+using ProjectApp.Repository.Services.Masters.Generator;
+
+namespace ProjectApp.API.Controllers.Masters.Generator
+{
+    [Route("api/generator")]
+    [ApiController]
+    public class GeneratorController : ControllerBase
+    {
+        private readonly IGeneratorService _service;
+
+        public GeneratorController(IGeneratorService service)
+        {
+            _service = service;
+        }
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(string id)
+        {
+            var result = await _service.GetById(id);
+            return Ok(result);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetAll()
+        {
+            var result = await _service.GetAll();
+            return Ok(result);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Create(GeneratorCreateUpdateDTO dto)
+        {
+            var id = await _service.Create(dto, 1);
+            return Ok(new { EncryptedId = id });
+        }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(string id, GeneratorCreateUpdateDTO dto)
+        {
+            await _service.Update(id, dto, 1);
+            return Ok();
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(string id)
+        {
+            await _service.Delete(id);
+            return Ok();
+        }
+
+        [HttpPatch("toggle-status")]
+        [Consumes("application/x-www-form-urlencoded")] // form-body style
+        public async Task<IActionResult> ToggleStatus([FromForm] GeneratorToggleStatusDTO dto)
+        {
+            if (dto == null || string.IsNullOrEmpty(dto.GeneratorId))
+                return BadRequest("Invalid request");
+
+            await _service.ToggleStatus(dto.GeneratorId, dto.IsActive);
+            return Ok(new { Message = $"Generator status updated to {(dto.IsActive ? "Active" : "Inactive")}" });
+        }
+
+        [HttpPost("search")]
+        public async Task<IActionResult> Search([FromBody] GeneratorSearchRequest request)
+        {
+            var result = await _service.SearchAsync(request);
+            return Ok(result);
+        }
+    }
+}
