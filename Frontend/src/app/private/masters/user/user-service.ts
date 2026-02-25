@@ -1,12 +1,12 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { enviornment } from '../../../enviorments/enviornment';
+import { environment } from '../../../enviorments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class UserService {
 
-  private apiUrl = `${enviornment.apiBaseUrl}/User`;
+  private apiUrl = `${environment.apiBaseUrl}/User`;
 
   constructor(private http: HttpClient) { }
 
@@ -94,7 +94,7 @@ export class UserService {
   /* ================= LOAD DEPARTMENTS ================= */
   getDepartments(): Observable<any> {
     return this.http.get(
-      `${enviornment.apiBaseUrl}/Department/All`,
+      `${environment.apiBaseUrl}/Department/All`,
       { headers: this.getAuthHeaders() }
     );
   }
@@ -102,7 +102,7 @@ export class UserService {
   /* ================= LOAD ROLES ================= */
   getRoles(): Observable<any> {
     return this.http.get(
-      `${enviornment.apiBaseUrl}/Role/All`,
+      `${environment.apiBaseUrl}/Role/All`,
       { headers: this.getAuthHeaders() }
     );
   }

@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { enviornment } from '../../../enviorments/enviornment';
+import { environment } from '../../../enviorments/environment';
 import { HttpClient, HttpParams } from '@angular/common/http';
 
 
@@ -18,7 +18,7 @@ export interface MasterDepartment {
 @Injectable({ providedIn: 'root' })
 export class DepartmentService {
 
-  private apiUrl = `${enviornment.apiBaseUrl}/Department`;
+  private apiUrl = `${environment.apiBaseUrl}/Department`;
 
   constructor(private http: HttpClient) {}
 

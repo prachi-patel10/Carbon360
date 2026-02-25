@@ -1,13 +1,13 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { enviornment } from '../../../enviorments/enviornment';
+import { environment } from '../../../enviorments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
 export class LoginService {
   
-  private baseUrl = enviornment.apiBaseUrl;
+  private baseUrl = environment.apiBaseUrl;
   constructor(private http : HttpClient,){
 
   }
