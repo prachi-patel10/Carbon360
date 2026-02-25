@@ -9,11 +9,11 @@ namespace ProjectApp.Repository.Interfaces.VehicleTripEmission
 {
     public interface IVehicleTripEmissionService
     {
-        Task<VehicleTripEmissionDTO> CreateAsync(VehicleTripEmissionDTO dto);
-        Task<List<VehicleTripEmissionDTO>> GetAllAsync();
-        Task<VehicleTripEmissionDTO> GetByHashIdAsync(string hashId);
+        Task<ResponseVehicleTripEmissionDTO> CreateAsync(CreateVehicleTripEmissionDTO dto);
+        Task<List<ResponseVehicleTripEmissionDTO>> GetAllAsync();
+        Task<ResponseVehicleTripEmissionDTO> GetByHashIdAsync(string hashId);
         Task<bool> DeleteAsync(string hashId);
         //Task<VehicleTripEmissionDTO> UpdateAsync(VehicleTripEmissionDTO dto);
-       
+
     }
 }

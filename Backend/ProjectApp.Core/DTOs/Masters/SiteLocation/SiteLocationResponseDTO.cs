@@ -1,0 +1,20 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace ProjectApp.Core.DTOs.Masters.SiteLocation
+{
+    public class SiteLocationResponseDTO
+    {
+        public string SiteId { get; set; } // Encrypted
+        public string SiteName { get; set; }
+        public string BuildingName { get; set; }
+        public string City { get; set; }
+        public string State { get; set; }
+        public string DepartmentId { get; set; }
+        public string DepartmentName { get; set; }
+        public bool IsActive { get; set; }
+    }
+}

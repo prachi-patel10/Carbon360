@@ -18,10 +18,19 @@ namespace ProjectApp.API.Controllers.Account.VehicleTripEmission
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create(VehicleTripEmissionDTO dto)
+        public async Task<IActionResult> Create(CreateVehicleTripEmissionDTO dto)
         {
-            var result = await _service.CreateAsync(dto);
-            return Ok(result);
+            //var result = await _service.CreateAsync(dto);
+            //return Ok(result);
+            try
+            {
+                var result = await _service.CreateAsync(dto);
+                return CreatedAtAction(nameof(Get), new { hashId = result.TripId }, result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
         [HttpGet]
@@ -43,8 +52,11 @@ namespace ProjectApp.API.Controllers.Account.VehicleTripEmission
         public async Task<IActionResult> Delete(string hashId)
         {
             var result = await _service.DeleteAsync(hashId);
-            if (!result) return NotFound();
-            return Ok("Deleted Successfully");
+
+            if (!result)
+                return NotFound(new { message = "Record not found" });
+
+            return Ok(new { message = "Deleted Successfully" });
         }
     }
 }
