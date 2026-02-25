@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using ProjectApp.Core.DTOs.Masters.Generator;
 using ProjectApp.Repository.Interfaces.Masters.Generator;
@@ -6,6 +7,7 @@ using ProjectApp.Repository.Services.Masters.Generator;
 
 namespace ProjectApp.API.Controllers.Masters.Generator
 {
+    [Authorize]
     [Route("api/generator")]
     [ApiController]
     public class GeneratorController : ControllerBase
@@ -63,10 +65,28 @@ namespace ProjectApp.API.Controllers.Masters.Generator
             return Ok(new { Message = $"Generator status updated to {(dto.IsActive ? "Active" : "Inactive")}" });
         }
 
-        [HttpPost("search")]
-        public async Task<IActionResult> Search([FromBody] GeneratorSearchRequest request)
+        [HttpGet("search")]
+        public async Task<IActionResult> Search(
+    string? search,
+    bool? isActive,
+    string sortColumn = "generatorName",
+    string sortDirection = "ASC",
+    int pageNumber = 1,
+    int pageSize = 10)
         {
+            // Map query parameters to your search request DTO
+            var request = new GeneratorSearchRequest
+            {
+                Search = search,
+                IsActive = isActive,
+                SortColumn = sortColumn,
+                SortDirection = sortDirection,
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
+
             var result = await _service.SearchAsync(request);
+
             return Ok(result);
         }
     }

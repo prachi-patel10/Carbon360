@@ -44,7 +44,7 @@ namespace ProjectApp.Repository.Services.Masters.Generator
             };
 
             var result = await _spService.ExecuteSpAsync(
-                "USP_CB_GeneratorInsert",
+                "USP_CB_CreateGenerator",
                 parameters
             );
 
@@ -77,7 +77,7 @@ namespace ProjectApp.Repository.Services.Masters.Generator
             };
 
             await _spService.ExecuteSpAsync(
-                "USP_CB_GeneratorUpdate",
+                "USP_CB_UpdateGenerator",
                 parameters
             );
         }
@@ -88,7 +88,7 @@ namespace ProjectApp.Repository.Services.Masters.Generator
             int id = _idEncoder.Decode(encryptedId);
 
             await _spService.ExecuteSpAsync(
-                "USP_CB_GeneratorDelete",
+                "USP_CB_DeleteGenerator",
                 new SqlParameter("@GeneratorId", id)
             );
         }
@@ -99,7 +99,7 @@ namespace ProjectApp.Repository.Services.Masters.Generator
             int id = _idEncoder.Decode(encryptedId);
 
             var result = await _spService.ExecuteSpAsync(
-                "USP_CB_GeneratorGetById",
+                "USP_CB_GetGeneratorById",
                 new SqlParameter("@GeneratorId", id)
             );
 
@@ -188,7 +188,7 @@ namespace ProjectApp.Repository.Services.Masters.Generator
             string? GetString(string key)
                 => row.ContainsKey(key) && row[key] != DBNull.Value
                     ? row[key].ToString()
-                    : null;
+                    : "N/A";
 
             bool GetBool(string key)
                 => row.ContainsKey(key) && row[key] != DBNull.Value
