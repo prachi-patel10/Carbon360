@@ -7,7 +7,6 @@
 }
 
 /* ================= SIDEBAR ================= */
-
 .sidebar {
   width: 260px;
   min-width: 260px;
@@ -51,7 +50,7 @@
 }
 
 .menu-btn:hover {
-  background: rgba(255,255,255,0.15);
+  background: rgba(255, 255, 255, 0.15);
   border-radius: 6px;
 }
 
@@ -73,7 +72,7 @@
 }
 
 .menu-title:hover {
-  background: rgba(255,255,255,0.15);
+  background: rgba(255, 255, 255, 0.15);
 }
 
 .arrow {
@@ -85,10 +84,14 @@
   transform: rotate(180deg);
 }
 
+/* Submenus */
 .submenu {
   list-style: none;
   padding-left: 20px;
   margin-top: 5px;
+  max-height: 1000px;
+  overflow: hidden;
+  transition: all 0.3s ease;
 }
 
 .submenu li {
@@ -100,7 +103,7 @@
 }
 
 .submenu li:hover {
-  background: rgba(255,255,255,0.1);
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .active-link {
@@ -109,8 +112,17 @@
   font-weight: 600;
 }
 
-/* ================= MAIN SECTION ================= */
+/* Nested Submenus Styling */
+.menu-parent .submenu .menu-parent {
+  padding-left: 10px;
+}
 
+.menu-parent .submenu .submenu li {
+  padding-left: 25px;
+  font-size: 13px;
+}
+
+/* ================= MAIN SECTION ================= */
 .main-section {
   flex: 1;
   display: flex;
@@ -120,7 +132,6 @@
 }
 
 /* ================= TOPBAR ================= */
-
 .topbar {
   height: 70px;
   background: white;
@@ -128,7 +139,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: 0 3px 8px rgba(0,0,0,0.05);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.05);
   flex-shrink: 0;
 }
 
@@ -187,7 +198,7 @@
   background: white;
   border-radius: 10px;
   padding: 15px;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
   z-index: 1000;
 }
 
@@ -202,8 +213,6 @@
   outline: none;
   transition: 0.2s ease;
   appearance: auto;
-  -webkit-appearance: auto;
-  -moz-appearance: auto;
 }
 
 .role-select:focus {
