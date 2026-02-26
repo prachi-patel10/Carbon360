@@ -54,12 +54,13 @@
 
       <div class="form-group">
         <label>Fuel Type</label>
-        <select formControlName="fuelType">
-          <option value="">Select Fuel</option>
-          <option *ngFor="let f of fuelTypes" [value]="f">
-            {{ f }}
-          </option>
-        </select>
+       <select formControlName="fuelType" class="form-control" readonly>
+  <option value="">Select Fuel</option>
+  <option [value]="tripForm.get('fuelType')?.value">
+    {{ tripForm.get('fuelType')?.value }}
+  </option>
+</select>
+<!-- <input type="text" formControlName="fuelType" class="form-control" readonly> -->
       </div>
 
       <div class="form-group">
@@ -146,34 +147,34 @@
   </form>
 
   <!-- RESULTS SECTION -->
-  <div class="card result-card" *ngIf="result !== null">
+  <div class="card result-card" *ngIf="result">
 
-    <div class="card-title">Emission Results (KG)</div>
+  <div class="card-title">Emission Results (KG)</div>
 
-    <div class="result-grid">
+  <div class="result-grid">
 
-      <div class="result-box">
-        <h4>Total CO₂</h4>
-        <p>{{ result.totalCo2 }}</p>
-      </div>
+    <div class="result-box">
+      <h4>Total CO₂</h4>
+      <p>{{ result?.totalCo2 }}</p>
+    </div>
 
-      <div class="result-box">
-        <h4>Total NO₂</h4>
-        <p>{{ result.totalNo2 }}</p>
-      </div>
+    <div class="result-box">
+      <h4>Total NO₂</h4>
+      <p>{{ result?.totalNo2 }}</p>
+    </div>
 
-      <div class="result-box">
-        <h4>Total CH₄</h4>
-        <p>{{ result.totalCh4 }}</p>
-      </div>
+    <div class="result-box">
+      <h4>Total CH₄</h4>
+      <p>{{ result?.totalCh4 }}</p>
+    </div>
 
-      <div class="result-box highlight">
-        <h4>Total Emission</h4>
-        <p>{{ result.totalEmission }}</p>
-      </div>
-
+    <div class="result-box highlight">
+      <h4>Total Emission</h4>
+      <p>{{ result?.totalEmission }}</p>
     </div>
 
   </div>
+
+</div>
 
 </div>

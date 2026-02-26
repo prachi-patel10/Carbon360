@@ -19,5 +19,7 @@ namespace ProjectApp.Core.DTOs.Masters.Fuel
         public decimal ch4_factor { get; set; }
 
         public bool IsActive { get; set; }
+
+        public bool isapplicable { get; set; }
     }
 }

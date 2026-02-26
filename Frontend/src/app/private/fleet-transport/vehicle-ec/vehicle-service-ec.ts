@@ -20,14 +20,12 @@ export class TripService {
     return this.http.get(`${this.apiUrl}/City/All`);
   }
 
-  getEmissionFactorByFuelType(fuelType: string) {
-  return this.http.get<any>(
-    `http://localhost:5236/api/EmissionFactor?fuelType=${fuelType}`
-  );
+  getEmissionFactors(): Observable<any> {
+  return this.http.get(`${this.apiUrl}/EmissionFactor`);
 }
 
   addTrip(data: any): Observable<any> {
-    return this.http.post(`${this.apiUrl}/VehicleTrip/AddTrip`, data);
+    return this.http.post(`${this.apiUrl}/VehicleTripEmission`, data);
   }
 
 }

@@ -29,6 +29,8 @@ public partial class CB_MasterFuelType
 
     public bool IsDeleted { get; set; }
 
+    public bool isapplicable { get; set; }
+
     public virtual ICollection<CB_GeneratorOperation> CB_GeneratorOperations { get; set; } = new List<CB_GeneratorOperation>();
 
     public virtual ICollection<CB_MasterGenerator> CB_MasterGenerators { get; set; } = new List<CB_MasterGenerator>();

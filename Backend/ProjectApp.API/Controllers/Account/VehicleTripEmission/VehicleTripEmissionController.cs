@@ -18,19 +18,18 @@ namespace ProjectApp.API.Controllers.Account.VehicleTripEmission
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create(CreateVehicleTripEmissionDTO dto)
+        public async Task<IActionResult> Create([FromBody] CreateVehicleTripEmissionDTO dto)
         {
             //var result = await _service.CreateAsync(dto);
             //return Ok(result);
-            try
-            {
-                var result = await _service.CreateAsync(dto);
-                return CreatedAtAction(nameof(Get), new { hashId = result.TripId }, result);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var result = await _service.CreateAsync(dto);
+
+            return CreatedAtAction(nameof(Get), new { hashId = result.TripId }, result);
+
+
         }
 
         [HttpGet]

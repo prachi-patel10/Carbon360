@@ -16,5 +16,7 @@ namespace ProjectApp.Repository.Interfaces.Masters.Fuel
         Task<bool> DeleteAsync(string encryptedId);
 
         Task<bool> UpdateStatusAsync(FuelStatusUpdateDTO dto);
+
+        Task<bool> UpdateGeneratorAsync(FuelGeneratorUpdateDTO dto);
     }
 }

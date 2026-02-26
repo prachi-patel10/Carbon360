@@ -76,6 +76,17 @@ namespace ProjectApp.API.Controllers.Masters.Fuel
 
             return Ok("Status updated successfully");
         }
+
+        [HttpPatch("UpdateGenerator")]
+        public async Task<IActionResult> UpdateGenerator([FromBody] FuelGeneratorUpdateDTO dto)
+        {
+            var result = await _fuelService.UpdateGeneratorAsync(dto);
+
+            if (!result)
+                return BadRequest("Generator flag update failed");
+
+            return Ok("Generator flag updated successfully");
+        }
     }
 }
 

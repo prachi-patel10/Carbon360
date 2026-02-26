@@ -18,92 +18,91 @@ namespace ProjectApp.Repository.Services.Masters.Fuel
 {
     public class FuelService : IFuelService
     {
-        private readonly IdEncoder _idEncoder;
         private readonly CBContext _context;
+        private readonly ICommonService<CB_MasterFuelType> _commonService;
+        private readonly IdEncoder _idEncoder;
         private readonly IUserContext _userContext;
+
+
         public FuelService(
             CBContext context,
-            IUserContext userContext,
-            IdEncoder idEncoder)
+            ICommonService<CB_MasterFuelType> commonService, IUserContext userContext)
         {
             _context = context;
+            _commonService = commonService;
+            _idEncoder = new IdEncoder();
             _userContext = userContext;
-            _idEncoder = idEncoder;
+        
         }
 
         private int GetCurrentUserId()
         {
+            if (_userContext == null)
+                throw new Exception("User context is not initialized");
+
             return _userContext.UserId;
         }
         public async Task<FuelResponseDTO> CreateAsync(FuelResponseDTO dto)
         {
-            var insertedId = _context.Database
-            .SqlQueryRaw<int>(
-                "EXEC USP_CB_FuelInsert @FuelName, @CO2Factor, @NOxFactor, @CH4Factor, @EntryBy",
+            var parameters = new[]
+            {
                 new SqlParameter("@FuelName", dto.fuel_name),
                 new SqlParameter("@CO2Factor", dto.co2_factor),
                 new SqlParameter("@NOxFactor", dto.nox_factor),
                 new SqlParameter("@CH4Factor", dto.ch4_factor),
-                new SqlParameter("@EntryBy", GetCurrentUserId())
-            )
-            .AsEnumerable()
-            .First();
-
-            return new FuelResponseDTO
-            {
-                fuel_id = _idEncoder.Encode(insertedId),
-                fuel_name = dto.fuel_name,
-                co2_factor = dto.co2_factor,
-                nox_factor = dto.nox_factor,
-                ch4_factor = dto.ch4_factor,
-                IsActive = true
+                new SqlParameter("@IsApplicable", dto.isapplicable),
+               new SqlParameter("@EntryBy", GetCurrentUserId())
             };
+
+            var insertedId =  _context.Database
+                .SqlQueryRaw<int>(
+                    "EXEC USP_CB_FuelInsert @FuelName,@CO2Factor,@NOxFactor,@CH4Factor,@IsApplicable,@EntryBy",
+                    parameters)
+              .AsEnumerable().FirstOrDefault();
+
+            dto.fuel_id = _idEncoder.Encode(insertedId);
+
+            return dto;
         }
 
 
         public async Task<IEnumerable<FuelResponseDTO>> GetAllAsync()
         {
-            var result = new List<FuelResponseDTO>();
+            var data = await _context.CB_MasterFuelTypes
+               .FromSqlRaw("EXEC USP_CB_FuelGetAll")
+               .AsNoTracking()
+               .ToListAsync();
 
-            using var connection = _context.Database.GetDbConnection();
-            await connection.OpenAsync();
-
-            using var command = connection.CreateCommand();
-            command.CommandText = "USP_CB_FuelGetAll";
-            command.CommandType = System.Data.CommandType.StoredProcedure;
-
-            using var reader = await command.ExecuteReaderAsync();
-
-            while (await reader.ReadAsync())
+            return data.Select(x => new FuelResponseDTO
             {
-                result.Add(new FuelResponseDTO
-                {
-                    fuel_id = _idEncoder.Encode(Convert.ToInt32(reader["fuel_id"])),
-                    fuel_name = reader["fuel_name"].ToString(),
-                    co2_factor = Convert.ToDecimal(reader["co2_factor"]),
-                    nox_factor = Convert.ToDecimal(reader["nox_factor"]),
-                    ch4_factor = Convert.ToDecimal(reader["ch4_factor"]),
-                    IsActive = Convert.ToBoolean(reader["IsActive"])
-                });
-            }
-
-            return result;
-
+                fuel_id = _idEncoder.Encode(x.fuel_id),
+                fuel_name = x.fuel_name,
+                co2_factor = x.co2_factor,
+                nox_factor = x.nox_factor,
+                ch4_factor = x.ch4_factor,
+                IsActive = x.IsActive,
+                isapplicable = x.isapplicable
+            });
         }
 
         public async Task<bool> UpdateAsync(FuelResponseDTO dto)
         {
             int id = _idEncoder.Decode(dto.fuel_id);
 
-            await _context.Database.ExecuteSqlRawAsync(
-                "EXEC USP_CB_FuelUpdate @FuelId, @FuelName, @CO2Factor, @NOxFactor, @CH4Factor, @UpdatedBy",
+            var parameters = new[]
+            {
                 new SqlParameter("@FuelId", id),
                 new SqlParameter("@FuelName", dto.fuel_name),
                 new SqlParameter("@CO2Factor", dto.co2_factor),
                 new SqlParameter("@NOxFactor", dto.nox_factor),
                 new SqlParameter("@CH4Factor", dto.ch4_factor),
-                new SqlParameter("@UpdatedBy", GetCurrentUserId())
-            );
+                new SqlParameter("@IsApplicable", dto.isapplicable),
+               new SqlParameter("@UpdatedBy", GetCurrentUserId())
+            };
+
+            await _context.Database.ExecuteSqlRawAsync(
+                "EXEC USP_CB_FuelUpdate @FuelId,@FuelName,@CO2Factor,@NOxFactor,@CH4Factor,@IsApplicable,@UpdatedBy",
+                parameters);
 
             return true;
         }
@@ -112,12 +111,16 @@ namespace ProjectApp.Repository.Services.Masters.Fuel
         {
             int id = _idEncoder.Decode(dto.fuel_id);
 
-            await _context.Database.ExecuteSqlRawAsync(
-                "UPDATE CB_Master_Fuel SET IsActive=@IsActive, UpdatedBy=@UpdatedBy, UpdateDate=GETDATE() WHERE fuel_id=@FuelId",
-                new SqlParameter("@IsActive", dto.IsActive),
-                new SqlParameter("@FuelId", id),
-                new SqlParameter("@UpdatedBy", GetCurrentUserId())
-            );
+            var fuel = await _commonService.GetAllByFilterAsync(x => x.fuel_id == id);
+
+            if (fuel == null)
+                return false;
+
+            fuel.IsActive = dto.IsActive;
+            fuel.UpdatedBy = 1;
+            fuel.UpdateDate = DateTime.Now;
+
+            await _commonService.UpdateAsync(fuel);
 
             return true;
         }
@@ -156,13 +159,35 @@ namespace ProjectApp.Repository.Services.Masters.Fuel
         {
             int id = _idEncoder.Decode(encryptedId);
 
-            await _context.Database.ExecuteSqlRawAsync(
-                "EXEC USP_CB_FuelDelete @FuelId, @UpdatedBy",
+            var parameters = new[]
+            {
                 new SqlParameter("@FuelId", id),
                 new SqlParameter("@UpdatedBy", GetCurrentUserId())
-            );
+            };
+
+            await _context.Database.ExecuteSqlRawAsync(
+                "EXEC USP_CB_FuelDelete @FuelId,@UpdatedBy",
+                parameters);
 
             return true;
+        }
+
+        public async Task<bool> UpdateGeneratorAsync(FuelGeneratorUpdateDTO dto)
+        {
+            int id = _idEncoder.Decode(dto.fuel_id);
+
+            var fuel = await _commonService.GetAllByFilterAsync(x => x.fuel_id == id);
+
+            if (fuel == null)
+                return false;
+
+            fuel.isapplicable = dto.isapplicable;   //update generator flag
+            fuel.UpdatedBy = GetCurrentUserId();                  // TODO: logged user id
+            fuel.UpdateDate = DateTime.Now;
+
+            await _commonService.UpdateAsync(fuel);
+
+            return true; throw new NotImplementedException();
         }
     }
 }

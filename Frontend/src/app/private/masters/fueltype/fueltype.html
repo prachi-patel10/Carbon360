@@ -1,1 +1,131 @@
-<p>fueltype works!</p>
+<div class="container">
+
+  <!-- 🔹 Create Fuel -->
+  <div class="card">
+    <h2>Create Fuel</h2>
+
+    <div class="form-grid">
+      <input type="text"
+        placeholder="Fuel Name (e.g. Diesel, Petrol)"
+        [(ngModel)]="newFuel.fuel_name" />
+
+      <input type="number"
+        placeholder="CO2 Factor"
+        [(ngModel)]="newFuel.co2_factor" />
+
+      <input type="number"
+        placeholder="NOx Factor"
+        [(ngModel)]="newFuel.nox_factor" />
+
+      <input type="number"
+        placeholder="CH4 Factor"
+        [(ngModel)]="newFuel.ch4_factor" />
+
+      <select [(ngModel)]="newFuel.isapplicable">
+        <option [ngValue]="true">Applicable</option>
+        <option [ngValue]="false">Not Applicable</option>
+      </select>
+    </div>
+
+    <div class="button-row">
+      <button (click)="createFuel()">Save Fuel</button>
+    </div>
+  </div>
+
+
+  <!-- 🔹 Search -->
+  <div class="card">
+    <h2>Search Fuel</h2>
+
+    <div class="search-grid">
+      <input type="text"
+        placeholder="Search by Fuel Name"
+        [(ngModel)]="searchText" />
+
+      <select [(ngModel)]="isActive">
+        <option [ngValue]="null">All Status</option>
+        <option [ngValue]="true">Active</option>
+        <option [ngValue]="false">Inactive</option>
+      </select>
+
+      <button (click)="loadFuels()">Search</button>
+    </div>
+  </div>
+
+
+  <!-- 🔹 List -->
+  <div class="card">
+    <h2>Fuel List</h2>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>CO2</th>
+            <th>NOx</th>
+            <th>CH4</th>
+            <th>Applicable</th>
+            <th>Status</th>
+            <th>Generator</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr *ngFor="let fuel of fuels">
+            <td>{{ fuel.fuel_name }}</td>
+            <td>{{ fuel.co2_factor }}</td>
+            <td>{{ fuel.nox_factor }}</td>
+            <td>{{ fuel.ch4_factor }}</td>
+
+            <td>
+              <span [class.active]="fuel.isapplicable"
+                    [class.inactive]="!fuel.isapplicable">
+                {{ fuel.isapplicable ? 'Yes' : 'No' }}
+              </span>
+            </td>
+
+            <td>
+              <span class="status"
+                [class.active]="fuel.isActive"
+                [class.inactive]="!fuel.isActive">
+                {{ fuel.isActive ? 'Active' : 'Inactive' }}
+              </span>
+            </td>
+
+            <td>
+              <button (click)="toggleGenerator(fuel)">
+                Toggle Generator
+              </button>
+            </td>
+
+            <td>
+              <button (click)="toggleStatus(fuel)">
+                Toggle Status
+              </button>
+            </td>
+
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 🔹 Pagination -->
+    <div class="pagination">
+      <button (click)="previousPage()" [disabled]="pageNumber === 1">
+        Previous
+      </button>
+
+      <span>Page {{ pageNumber }} of {{ totalPages }}</span>
+
+      <button (click)="nextPage()"
+        [disabled]="pageNumber === totalPages">
+        Next
+      </button>
+    </div>
+
+  </div>
+
+</div>
+
