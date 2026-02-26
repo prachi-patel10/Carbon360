@@ -1,32 +1,35 @@
+/* ================= GLOBAL LAYOUT ================= */
+
 .layout-container {
-  display: flex;
-  height: 100vh;
-  width: 100%;
-  font-family: 'Segoe UI', sans-serif;
-  overflow: hidden;
+display: flex;
+height: 100vh;
+width: 100%;
+font-family: 'Segoe UI', sans-serif;
+overflow: hidden;
 }
 
 /* ================= SIDEBAR ================= */
+
 .sidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
   width: 260px;
-  min-width: 260px;
-  max-width: 260px;
+  height: 100vh;
   background: linear-gradient(180deg, #0f5132, #1b7d55);
   color: white;
   padding: 20px 10px;
+  overflow-y: auto;
   transition: width 0.3s ease;
-  min-height: 100vh;   /* Important */
-  overflow-y: auto; 
+  z-index: 1000;
 }
 
 /* Collapsed Sidebar */
 .sidebar.closed {
   width: 70px;
-  min-width: 70px;
-  max-width: 70px;
 }
 
-/* Hide text when closed */
+/* Hide text when collapsed */
 .sidebar.closed .menu-title span,
 .sidebar.closed .submenu,
 .sidebar.closed .arrow {
@@ -41,29 +44,32 @@
   padding-left: 0;
 }
 
-.sidebar i{
+.sidebar i {
   padding-right: 20px;
 }
 
-/* Menu Button */
+/* ================= MENU BUTTON ================= */
+
 .menu-btn {
-  background: transparent;
+  background: #1b7d55;
   border: none;
   color: white;
   font-size: 20px;
   margin-bottom: 20px;
   cursor: pointer;
   width: 100%;
-  padding: 10px;
+  padding: 12px;
+  border-radius: 8px;
   text-align: left;
+  transition: 0.3s;
 }
 
 .menu-btn:hover {
-  background: rgba(255, 255, 255, 0.15);
-  border-radius: 6px;
+  background: #0f5132;
 }
 
-/* Menu */
+/* ================= MENU ================= */
+
 .menu-parent {
   list-style: none;
   margin-bottom: 8px;
@@ -72,20 +78,12 @@
 .menu-title {
   display: flex;
   align-items: center;
-  height: 50px;
-  padding: 0 18px;   /* keep normal spacing */
-  gap: 12px;         /* space between icon and text */
+  gap: 12px;
+  padding: 14px;
   cursor: pointer;
-  color: #ffffff;
-  font-size: 14px;
-}
-
-/* FIX: Remove extra space before icon */
-.menu-title i:first-child {
-  width: 20px;
-  text-align: center;
-  margin-left: 0;   /* REMOVE extra left space */
-  padding-left: 0;  /* REMOVE extra padding */
+  border-radius: 8px;
+  font-weight: 600;
+  transition: 0.3s;
 }
 
 .menu-title:hover {
@@ -101,14 +99,12 @@
   transform: rotate(180deg);
 }
 
-/* Submenus */
+/* ================= SUBMENUS ================= */
+
 .submenu {
   list-style: none;
-  padding-left: 20px;
+  padding-left: 25px;
   margin-top: 5px;
-  max-height: 1000px;
-  overflow: hidden;
-  transition: all 0.3s ease;
 }
 
 .submenu li {
@@ -129,23 +125,30 @@
   font-weight: 600;
 }
 
-/* Nested Submenus Styling */
+/* Nested Submenu */
 .menu-parent .submenu .menu-parent {
   padding-left: 10px;
 }
 
 .menu-parent .submenu .submenu li {
-  padding-left: 25px;
+  padding-left: 20px;
   font-size: 13px;
 }
 
 /* ================= MAIN SECTION ================= */
+
 .main-section {
+  margin-left: 260px;
   flex: 1;
   display: flex;
   flex-direction: column;
-  background: #f4f7f6;
-  overflow: hidden;
+  min-height: 100vh;
+  transition: margin-left 0.3s ease;
+}
+
+/* Adjust when sidebar collapsed */
+.sidebar.closed + .main-section {
+  margin-left: 70px;
 }
 
 /* ================= TOPBAR ================= */
@@ -260,4 +263,10 @@
   transform: translateY(-2px);
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
 }
+/* ================= PAGE CONTENT ================= */
 
+.page-content {
+  flex: 1;
+  padding: 30px;
+  overflow-y: auto;
+}
