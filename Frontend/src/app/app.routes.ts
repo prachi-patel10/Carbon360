@@ -11,6 +11,8 @@ import { DepartmentComponent } from './private/masters/department/department';
 import { TripComponent } from './private/fleet-transport/vehicle-ec/vehicle-ec';
 import { Vehicles } from './private/fleet-transport/vehicles/vehicles';
 import { Fueltype } from './private/masters/fueltype/fueltype';
+import { Vehicletype } from './private/masters/vehicletype/vehicletype'; 
+import { Generatormaster } from './private/power-generator/generatormaster/generatormaster';
 
 export const routes: Routes = [
 
@@ -37,10 +39,10 @@ export const routes: Routes = [
             { path: 'department', component: DepartmentComponent }, // create/import DepartmentComponent
             { path: 'vehicle', component: TripComponent },
             { path: 'vehiclemaster', component: Vehicles },// create/import VehicleComponent
-            { path: 'fueltype', component: Fueltype },// create/import VehicleComponent
-
+            { path: 'fueltype', component: Fueltype },
+              { path: 'vehicletypeservice', component: Vehicletype },
             // { path: 'waste', component: WasteComponent },           // create/import WasteComponent
-            // { path: 'generator', component: GeneratorComponent },   // create/import GeneratorComponent
+            { path: 'generator', component:Generatormaster  },   // create/import GeneratorComponent
         ]
     },
 

@@ -57,6 +57,8 @@ export class DashboardComponent {
         else if (url.includes('waste')) this.pageTitle = 'Waste Management';
         else if (url.includes('vehiclemaster')) this.pageTitle = 'Vehicle Master';
          else if (url.includes('fueltype')) this.pageTitle = 'FuelType Master';
+        else if (url.includes('vehicletypeservice')) this.pageTitle = 'VehicleType Master';
+        else if (url.includes('generator')) this.pageTitle = 'Generator';
         else this.pageTitle = 'Dashboard';
       });
   }
