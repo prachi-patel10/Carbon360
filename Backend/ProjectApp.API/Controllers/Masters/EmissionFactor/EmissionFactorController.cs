@@ -17,7 +17,7 @@ namespace ProjectApp.API.Controllers
             _service = service;
         }
 
-        [HttpGet]
+        [HttpGet("List")]
         public async Task<IActionResult> GetAll()
         {
             var result = await _service.GetAllAsync();
@@ -31,7 +31,7 @@ namespace ProjectApp.API.Controllers
             return StatusCode(result.StatusCode, result);
         }
 
-        [HttpPost]
+        [HttpPost("Create")]
         public async Task<IActionResult> Create(EmissionFactorRequestDTO dto)
         {
             var result = await _service.CreateAsync(dto, 1);

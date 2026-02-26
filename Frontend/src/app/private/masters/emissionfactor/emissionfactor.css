@@ -1,0 +1,116 @@
+.emission-page {
+  padding: 20px;
+  background: #f4f6f9;
+}
+
+.card {
+  background: #fff;
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+}
+
+.card-title {
+  margin-bottom: 15px;
+  font-weight: 600;
+  color: #1b5e20;
+}
+
+.form-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.form-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group input {
+  height: 36px;
+  padding: 6px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+.status-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.form-buttons {
+  margin-top: 15px;
+  display: flex;
+  gap: 10px;
+}
+
+.btn-primary {
+  background: #1b5e20;
+  color: #fff;
+  padding: 8px 16px;
+  border-radius: 5px;
+  border: none;
+}
+
+.btn-secondary {
+  background: #e5e7eb;
+  padding: 8px 16px;
+  border-radius: 5px;
+  border: none;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th, td {
+  text-align: center;
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+}
+
+.action-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-edit { background: #e0f2fe; color: #0369a1; padding: 5px 12px; border-radius: 5px; border: none; }
+.btn-delete { background: #fee2e2; color: #991b1b; padding: 5px 12px; border-radius: 5px; border: none; }
+
+.toggle-switch {
+  position: relative;
+  width: 40px;
+  height: 20px;
+}
+
+.toggle-switch input { opacity: 0; width: 0; height: 0; }
+
+.toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  inset: 0;
+  background-color: #ccc;
+  border-radius: 34px;
+  transition: .3s;
+}
+
+.toggle-slider:before {
+  content: "";
+  position: absolute;
+  height: 16px;
+  width: 16px;
+  left: 2px;
+  bottom: 2px;
+  background-color: white;
+  border-radius: 50%;
+  transition: .3s;
+}
+
+.toggle-switch input:checked + .toggle-slider { background-color: #1b5e20; }
+.toggle-switch input:checked + .toggle-slider:before { transform: translateX(20px); }

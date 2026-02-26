@@ -15,7 +15,8 @@
   color: white;
   padding: 20px 10px;
   transition: width 0.3s ease;
-  overflow: hidden;
+  min-height: 100vh;   /* Important */
+  overflow-y: auto; 
 }
 
 /* Collapsed Sidebar */
@@ -34,6 +35,14 @@
 
 .sidebar.closed .menu-title {
   justify-content: center;
+}
+
+.sidebar ul {
+  padding-left: 0;
+}
+
+.sidebar i{
+  padding-right: 20px;
 }
 
 /* Menu Button */
@@ -63,12 +72,20 @@
 .menu-title {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 14px;
+  height: 50px;
+  padding: 0 18px;   /* keep normal spacing */
+  gap: 12px;         /* space between icon and text */
   cursor: pointer;
-  border-radius: 8px;
-  font-weight: 600;
-  transition: 0.3s;
+  color: #ffffff;
+  font-size: 14px;
+}
+
+/* FIX: Remove extra space before icon */
+.menu-title i:first-child {
+  width: 20px;
+  text-align: center;
+  margin-left: 0;   /* REMOVE extra left space */
+  padding-left: 0;  /* REMOVE extra padding */
 }
 
 .menu-title:hover {
@@ -243,3 +260,4 @@
   transform: translateY(-2px);
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
 }
+

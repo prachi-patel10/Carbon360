@@ -50,6 +50,9 @@ namespace ProjectApp.Repository.Services.Masters.EmissionFactor
                     NO2_Factor_KgPerKm = Convert.ToDecimal(reader["NO2_Factor_KgPerKm"]),
                     CH4_Factor_KgPerKm = Convert.ToDecimal(reader["CH4_Factor_KgPerKm"]),
                     IsActive = Convert.ToBoolean(reader["IsActive"])
+
+
+
                 });
             }
 
