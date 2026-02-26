@@ -11,12 +11,6 @@ public partial class CB_MasterVehicleType
 
     public string vehicle_type_name { get; set; }
 
-    public string vehicle_category { get; set; }
-
-    public int? fuel_id { get; set; }
-
-    public decimal? average_mileage_kmpl { get; set; }
-
     public string description { get; set; }
 
     public bool IsActive { get; set; }
@@ -32,6 +26,4 @@ public partial class CB_MasterVehicleType
     public bool IsDeleted { get; set; }
 
     public virtual ICollection<CB_MasterVehicle> CB_MasterVehicles { get; set; } = new List<CB_MasterVehicle>();
-
-    public virtual CB_MasterFuelType fuel { get; set; }
 }

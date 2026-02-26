@@ -33,7 +33,5 @@ public partial class CB_MasterFuelType
 
     public virtual ICollection<CB_MasterGenerator> CB_MasterGenerators { get; set; } = new List<CB_MasterGenerator>();
 
-    public virtual ICollection<CB_MasterVehicleType> CB_MasterVehicleTypes { get; set; } = new List<CB_MasterVehicleType>();
-
     public virtual ICollection<CB_MasterVehicle> CB_MasterVehicles { get; set; } = new List<CB_MasterVehicle>();
 }

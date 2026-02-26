@@ -111,11 +111,15 @@ public partial class CBContext : DbContext
                 .HasMaxLength(100);
             entity.Property(e => e.EntryDate)
                 .HasDefaultValueSql("(getdate())")
+                .HasAnnotation("Relational:DefaultConstraintName", "DF__CB_Master__Entry__591C1437")
                 .HasColumnType("datetime");
-            entity.Property(e => e.IsActive).HasDefaultValue(true);
-            entity.Property(e => e.Pincode)
-                .IsRequired()
-                .HasMaxLength(10);
+            entity.Property(e => e.IsActive)
+                .HasDefaultValue(true)
+                .HasAnnotation("Relational:DefaultConstraintName", "DF__CB_Master__IsAct__5733CBC5");
+            entity.Property(e => e.IsDeleted)
+                .HasDefaultValue(false)
+                .HasAnnotation("Relational:DefaultConstraintName", "DF__CB_Master__IsDel__5827EFFE");
+            entity.Property(e => e.Pincode).HasMaxLength(10);
             entity.Property(e => e.StateName)
                 .IsRequired()
                 .HasMaxLength(100);
@@ -251,22 +255,13 @@ public partial class CBContext : DbContext
                 .HasColumnType("datetime");
             entity.Property(e => e.IsActive).HasDefaultValue(true);
             entity.Property(e => e.UpdateDate).HasColumnType("datetime");
-            entity.Property(e => e.average_mileage_kmpl).HasColumnType("decimal(6, 2)");
             entity.Property(e => e.description)
                 .HasMaxLength(200)
-                .IsUnicode(false);
-            entity.Property(e => e.vehicle_category)
-                .IsRequired()
-                .HasMaxLength(30)
                 .IsUnicode(false);
             entity.Property(e => e.vehicle_type_name)
                 .IsRequired()
                 .HasMaxLength(30)
                 .IsUnicode(false);
-
-            entity.HasOne(d => d.fuel).WithMany(p => p.CB_MasterVehicleTypes)
-                .HasForeignKey(d => d.fuel_id)
-                .HasConstraintName("FK_vehicleType_fuel");
         });
 
         modelBuilder.Entity<CB_Role>(entity =>
