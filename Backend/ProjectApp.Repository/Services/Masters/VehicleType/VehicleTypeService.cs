@@ -58,12 +58,6 @@ namespace ProjectApp.Repository.Services.Masters.VehicleType
             return new VehicleTypeResponseDTO
             {
                 vehicle_type_id = _idEncoder.Encode(insertedId),
-                vehicle_type_name = dto.vehicle_type_name,
-                vehicle_category = dto.vehicle_category,
-                fuel_id = dto.fuel_id.HasValue
-                            ? _idEncoder.Encode(dto.fuel_id.Value)
-                            : null,
-                average_mileage_kmpl = dto.average_mileage_kmpl,
                 description = dto.description,
                 IsActive = true
             };
@@ -107,16 +101,8 @@ namespace ProjectApp.Repository.Services.Masters.VehicleType
          Convert.ToInt32(reader["VehicleTypeId"])
      ),
                                 vehicle_type_name = reader["VehicleTypeName"]?.ToString(),
-                                vehicle_category = reader["VehicleCategory"]?.ToString(),
-                                fuel_id = reader["FuelId"] == DBNull.Value
-                 ? null
-                 : _idEncoder.Encode(Convert.ToInt32(reader["FuelId"])),
-                                fuel_name = reader["FuelName"]?.ToString(),
-                                average_mileage_kmpl = reader["AverageMileage"] == DBNull.Value
-                 ? null
-                 : Convert.ToDecimal(reader["AverageMileage"]),
-                                description = reader["Description"]?.ToString(),
-                                IsActive = Convert.ToBoolean(reader["IsActive"])
+                                IsActive = Convert.ToBoolean(reader["IsActive"]),
+                                EntryBy = Convert.ToInt32(reader["EntryBy"])
                             };
 
                             result.Add(item);
@@ -149,14 +135,6 @@ namespace ProjectApp.Repository.Services.Masters.VehicleType
                 {
                     vehicle_type_id = encryptedId,
                     vehicle_type_name = reader["vehicle_type_name"]?.ToString(),
-                    vehicle_category = reader["vehicle_category"]?.ToString(),
-                    fuel_id = reader["fuel_id"] == DBNull.Value
-                                ? null
-                                : _idEncoder.Encode(Convert.ToInt32(reader["fuel_id"])),
-                    fuel_name = reader["FuelName"]?.ToString(),
-                    average_mileage_kmpl = reader["AverageMileage"] == DBNull.Value
-                                ? null
-                                : Convert.ToDecimal(reader["AverageMileage"]),
                     description = reader["Description"]?.ToString(),
                     IsActive = Convert.ToBoolean(reader["IsActive"])
                 };
