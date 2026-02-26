@@ -12,11 +12,7 @@ namespace ProjectApp.Core.DTOs.Masters.Fuel
 
         public string fuel_name { get; set; }
 
-        public decimal co2_factor { get; set; }
-
-        public decimal nox_factor { get; set; }
-
-        public decimal ch4_factor { get; set; }
+        public string fuel_Desc { get; set; }
 
         public bool IsActive { get; set; }
 

@@ -15,13 +15,7 @@ namespace ProjectApp.Core.DTOs.Masters.Fuel
         public string fuel_name { get; set; }
 
         [Required]
-        public decimal co2_factor { get; set; }
-
-        [Required]
-        public decimal nox_factor { get; set; }
-
-        [Required]
-        public decimal ch4_factor { get; set; }
+        public string? fuel_Desc { get; set; }
 
         public bool IsActive { get; set; }
 

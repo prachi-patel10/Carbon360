@@ -35,6 +35,7 @@ namespace ProjectApp.Repository.Services.Masters.Fuel
         
         }
 
+
         private int GetCurrentUserId()
         {
             if (_userContext == null)
@@ -47,21 +48,19 @@ namespace ProjectApp.Repository.Services.Masters.Fuel
             var parameters = new[]
             {
                 new SqlParameter("@FuelName", dto.fuel_name),
-                new SqlParameter("@CO2Factor", dto.co2_factor),
-                new SqlParameter("@NOxFactor", dto.nox_factor),
-                new SqlParameter("@CH4Factor", dto.ch4_factor),
+                new SqlParameter("@FuelDesc", (object?)dto.fuel_Desc ?? DBNull.Value),
                 new SqlParameter("@IsApplicable", dto.isapplicable),
-               new SqlParameter("@EntryBy", GetCurrentUserId())
+                new SqlParameter("@EntryBy", GetCurrentUserId())
             };
 
-            var insertedId =  _context.Database
+            var insertedId = _context.Database
                 .SqlQueryRaw<int>(
-                    "EXEC USP_CB_FuelInsert @FuelName,@CO2Factor,@NOxFactor,@CH4Factor,@IsApplicable,@EntryBy",
+                    "EXEC USP_CB_FuelInsert @FuelName,@FuelDesc,@IsApplicable,@EntryBy",
                     parameters)
-              .AsEnumerable().FirstOrDefault();
+                .AsEnumerable()
+                .FirstOrDefault();
 
             dto.fuel_id = _idEncoder.Encode(insertedId);
-
             return dto;
         }
 
@@ -69,17 +68,15 @@ namespace ProjectApp.Repository.Services.Masters.Fuel
         public async Task<IEnumerable<FuelResponseDTO>> GetAllAsync()
         {
             var data = await _context.CB_MasterFuelTypes
-               .FromSqlRaw("EXEC USP_CB_FuelGetAll")
-               .AsNoTracking()
-               .ToListAsync();
+                 .FromSqlRaw("EXEC USP_CB_FuelGetAll")
+                 .AsNoTracking()
+                 .ToListAsync();
 
             return data.Select(x => new FuelResponseDTO
             {
                 fuel_id = _idEncoder.Encode(x.fuel_id),
                 fuel_name = x.fuel_name,
-                co2_factor = x.co2_factor,
-                nox_factor = x.nox_factor,
-                ch4_factor = x.ch4_factor,
+                fuel_Desc = x.fuel_Desc,
                 IsActive = x.IsActive,
                 isapplicable = x.isapplicable
             });
@@ -93,15 +90,13 @@ namespace ProjectApp.Repository.Services.Masters.Fuel
             {
                 new SqlParameter("@FuelId", id),
                 new SqlParameter("@FuelName", dto.fuel_name),
-                new SqlParameter("@CO2Factor", dto.co2_factor),
-                new SqlParameter("@NOxFactor", dto.nox_factor),
-                new SqlParameter("@CH4Factor", dto.ch4_factor),
+                new SqlParameter("@FuelDesc", (object?)dto.fuel_Desc ?? DBNull.Value),
                 new SqlParameter("@IsApplicable", dto.isapplicable),
-               new SqlParameter("@UpdatedBy", GetCurrentUserId())
+                new SqlParameter("@UpdatedBy", GetCurrentUserId())
             };
 
             await _context.Database.ExecuteSqlRawAsync(
-                "EXEC USP_CB_FuelUpdate @FuelId,@FuelName,@CO2Factor,@NOxFactor,@CH4Factor,@IsApplicable,@UpdatedBy",
+                "EXEC USP_CB_FuelUpdate @FuelId,@FuelName,@FuelDesc,@IsApplicable,@UpdatedBy",
                 parameters);
 
             return true;
@@ -117,7 +112,7 @@ namespace ProjectApp.Repository.Services.Masters.Fuel
                 return false;
 
             fuel.IsActive = dto.IsActive;
-            fuel.UpdatedBy = 1;
+            fuel.UpdatedBy = GetCurrentUserId();
             fuel.UpdateDate = DateTime.Now;
 
             await _commonService.UpdateAsync(fuel);
@@ -129,30 +124,23 @@ namespace ProjectApp.Repository.Services.Masters.Fuel
         {
             int id = _idEncoder.Decode(encryptedId);
 
-            using var connection = _context.Database.GetDbConnection();
-            await connection.OpenAsync();
+            var data = await _context.CB_MasterFuelTypes
+                .FromSqlRaw("EXEC USP_CB_FuelGetById @FuelId",
+                    new SqlParameter("@FuelId", id))
+                .AsNoTracking()
+                .ToListAsync();
 
-            using var command = connection.CreateCommand();
-            command.CommandText = "USP_CB_FuelGetById";
-            command.CommandType = System.Data.CommandType.StoredProcedure;
-            command.Parameters.Add(new SqlParameter("@FuelId", id));
+            var fuel = data.FirstOrDefault();
+            if (fuel == null) return null;
 
-            using var reader = await command.ExecuteReaderAsync();
-
-            if (await reader.ReadAsync())
+            return new FuelResponseDTO
             {
-                return new FuelResponseDTO
-                {
-                    fuel_id = encryptedId,
-                    fuel_name = reader["fuel_name"].ToString(),
-                    co2_factor = Convert.ToDecimal(reader["co2_factor"]),
-                    nox_factor = Convert.ToDecimal(reader["nox_factor"]),
-                    ch4_factor = Convert.ToDecimal(reader["ch4_factor"]),
-                    IsActive = Convert.ToBoolean(reader["IsActive"])
-                };
-            }
-
-            return null;
+                fuel_id = encryptedId,
+                fuel_name = fuel.fuel_name,
+                fuel_Desc = fuel.fuel_Desc,
+                IsActive = fuel.IsActive,
+                isapplicable = fuel.isapplicable
+            };
         }
 
         public async Task<bool> DeleteAsync(string encryptedId)
@@ -188,6 +176,77 @@ namespace ProjectApp.Repository.Services.Masters.Fuel
             await _commonService.UpdateAsync(fuel);
 
             return true; throw new NotImplementedException();
+        }
+
+        //public async Task<FuelTypeSearchDTO> SearchAsync(FuelTypeSearchDTO dto)
+        //{
+           
+        //}
+
+        public async Task<PagedFuelResponseDTO> SearchAsync(FuelTypeSearchDTO dto)
+        {
+            int? decodedId = null;
+            if (!string.IsNullOrWhiteSpace(dto.fuel_id))
+            {
+                var temp = _idEncoder.Decode(dto.fuel_id);
+                if (temp > 0)
+                    decodedId = temp;
+            }
+
+            using var connection = _context.Database.GetDbConnection();
+            await connection.OpenAsync();
+
+            using var command = connection.CreateCommand();
+            command.CommandText = "USP_CB_FuelTypeSearch";
+            command.CommandType = System.Data.CommandType.StoredProcedure;
+
+            command.Parameters.AddRange(new[]
+            {
+                new SqlParameter("@fuel_id", (object?)decodedId ?? DBNull.Value),
+                new SqlParameter("@fuel_name", (object?)dto.fuel_name ?? DBNull.Value),
+                new SqlParameter("@fuel_desc", (object?)dto.fuel_Desc ?? DBNull.Value),
+                new SqlParameter("@IsActive", (object?)dto.IsActive ?? DBNull.Value),
+                new SqlParameter("@IsApplicable", (object?)dto.IsApplicable ?? DBNull.Value),
+                new SqlParameter("@PageNumber", dto.PageNumber),
+                new SqlParameter("@PageSize", dto.PageSize),
+                new SqlParameter("@SortColumn", dto.SortColumn),
+                new SqlParameter("@SortDirection", dto.SortDirection)
+            });
+
+            var list = new List<FuelResponseDTO>();
+            int totalRecords = 0, totalPages = 0, currentPage = 0;
+
+            using var reader = await command.ExecuteReaderAsync();
+
+            while (await reader.ReadAsync())
+            {
+                list.Add(new FuelResponseDTO
+                {
+                    fuel_id = _idEncoder.Encode(Convert.ToInt32(reader["fuel_id"])),
+                    fuel_name = reader["fuel_name"].ToString(),
+                    fuel_Desc = reader["fuel_Desc"].ToString(),
+                    IsActive = Convert.ToBoolean(reader["IsActive"]),
+                    isapplicable = Convert.ToBoolean(reader["isapplicable"])
+                });
+            }
+
+            if (await reader.NextResultAsync())
+            {
+                if (await reader.ReadAsync())
+                {
+                    totalRecords = Convert.ToInt32(reader["TotalRecords"]);
+                    totalPages = Convert.ToInt32(reader["TotalPages"]);
+                    currentPage = Convert.ToInt32(reader["CurrentPage"]);
+                }
+            }
+
+            return new PagedFuelResponseDTO
+            {
+                Data = list,
+                TotalRecords = totalRecords,
+                TotalPages = totalPages,
+                CurrentPage = currentPage
+            };
         }
     }
 }

@@ -87,6 +87,10 @@ namespace ProjectApp.API.Controllers.Masters.Fuel
 
             return Ok("Generator flag updated successfully");
         }
+
+        [HttpPost("search")]
+        public async Task<IActionResult> Search(FuelTypeSearchDTO dto)
+            => Ok(await _fuelService.SearchAsync(dto));
     }
 }
 
