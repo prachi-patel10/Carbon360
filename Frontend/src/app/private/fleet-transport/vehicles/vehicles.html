@@ -72,23 +72,17 @@
             <td>{{ getFuelName(v.fuel_id) }}</td>
             <td>{{ getDepartmentName(v.department_id) }}</td>
             <td>{{ v.engine_capacity || '-' }}</td>
-
             <td>{{ v.emission_standard || '-' }}</td>
-
             <td>
               <label class="switch">
                 <input type="checkbox" [(ngModel)]="v.isActive" (change)="toggleStatus(v)">
                 <span class="slider"></span>
               </label>
             </td>
-
             <td class="actions">
-              <button class="btn-small edit-btn">Edit</button>
-              <button class="btn-small delete-btn" (click)="deleteVehicle(v)">
-                Delete
-              </button>
+              <button class="btn-small edit-btn" (click)="editVehicle(v)">Edit</button>
+              <button class="btn-small delete-btn" (click)="deleteVehicle(v)">Delete</button>
             </td>
-
           </tr>
 
           <tr *ngIf="vehicles().length === 0">
@@ -107,17 +101,13 @@
       </div>
 
       <div class="pagination-controls">
-        <button (click)="previousPage()" [disabled]="pageNumber() === 1">
-          Previous
-        </button>
+        <button (click)="previousPage()" [disabled]="pageNumber() === 1">Previous</button>
 
         <span>
           Page {{ pageNumber() }} of {{ totalPages() }}
         </span>
 
-        <button (click)="nextPage()" [disabled]="pageNumber() === totalPages()">
-          Next
-        </button>
+        <button (click)="nextPage()" [disabled]="pageNumber() === totalPages()">Next</button>
 
         <select [ngModel]="pageSize()" (ngModelChange)="pageSize.set($event); search()">
           <option [ngValue]="5">5</option>

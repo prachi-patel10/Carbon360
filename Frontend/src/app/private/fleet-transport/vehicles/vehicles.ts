@@ -59,7 +59,7 @@ export class Vehicles implements OnInit {
 
   isEditMode = signal<boolean>(false);
 
-  constructor(private vehicleService: VehicleService) {}
+  constructor(private vehicleService: VehicleService) { }
 
   ngOnInit() {
     this.loadDropdowns();
@@ -206,15 +206,19 @@ export class Vehicles implements OnInit {
   }
 
   // ================= GET NAMES =================
-  getVehicleTypeName(id: number) {
+
+  getVehicleTypeName(id: number | null) {
+    if (id === null) return '-';
     return this.vehicleTypes().find((x) => x.vehicle_type_id === id)?.vehicle_type_name || '-';
   }
 
-  getFuelName(id: number) {
+  getFuelName(id: number | null) {
+    if (id === null) return '-';
     return this.fuelTypes().find((x) => x.fuel_id === id)?.fuel_name || '-';
   }
 
-  getDepartmentName(id: number) {
+  getDepartmentName(id: number | null) {
+    if (id === null) return '-';
     return this.departments().find((x) => x.department_id === id)?.department_name || '-';
   }
 
