@@ -70,12 +70,12 @@ namespace ProjectApp.API.Controllers.Masters.Vehicle
 
         [HttpGet("search")]
         public async Task<IActionResult> Search(
-            string? search,
-            bool? isActive,
-            string sortColumn = "vehicle_number",
-            string sortDirection = "ASC",
-            int pageNumber = 1,
-            int pageSize = 10)
+    string? search,
+    bool? isActive,
+    string sortColumn = "vehicle_number",
+    string sortDirection = "ASC",
+    int pageNumber = 1,
+    int pageSize = 10)
         {
             var request = new VehicleSearchRequest
             {
@@ -88,7 +88,6 @@ namespace ProjectApp.API.Controllers.Masters.Vehicle
             };
 
             var result = await _service.SearchAsync(request);
-
             return Ok(result);
         }
     }
