@@ -150,89 +150,114 @@ overflow: hidden;
 .sidebar.closed + .main-section {
   margin-left: 70px;
 }
-
 /* ================= TOPBAR ================= */
 .topbar {
   height: 70px;
-  background: white;
-  padding: 0 25px;
+  background: #ffffff;
+  padding: 0 30px;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.05);
-  flex-shrink: 0;
+  justify-content: space-between;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  position: sticky;
+  top: 0;
+  z-index: 900;
 }
 
-.brand h1 {
-  padding-top: 20px;
-  font-size: 22px;
-  letter-spacing: 1px;
+/* ===== BRAND (LEFT SIDE) ===== */
+.topbar .brand {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.topbar .brand h1 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
   color: #0f5132;
+  line-height: 1.2;
 }
 
-.brand span {
+.topbar .brand span {
   color: #1b7d55;
 }
 
-.brand p {
-  font-size: 12px;
-  opacity: 0.7;
+.topbar .brand p {
+  margin: 0;
+  font-size: 11px;
+  color: #666;
 }
 
+/* ===== PAGE TITLE (CENTER) ===== */
 .page-title {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 600;
   color: #0f5132;
+  text-align: center;
+  flex: 1;
 }
 
+/* ===== RIGHT SECTION ===== */
 .right {
   display: flex;
   align-items: center;
-  gap: 20px;
+  justify-content: flex-end;
 }
 
-/* Avatar */
+/* ===== AVATAR ===== */
 .admin-wrapper {
   position: relative;
 }
 
 .admin-avatar {
-  width: 40px;
-  height: 40px;
+  width: 42px;
+  height: 42px;
   background: linear-gradient(135deg, #1b7d55, #0f5132);
   color: white;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: bold;
+  font-weight: 600;
+  font-size: 16px;
   cursor: pointer;
+  transition: 0.3s;
 }
 
-/* Dropdown */
+.admin-avatar:hover {
+  transform: scale(1.05);
+}
+
+/* ===== DROPDOWN ===== */
 .admin-dropdown {
   position: absolute;
   right: 0;
   top: 55px;
-  width: 220px;
+  width: 230px;
   background: white;
-  border-radius: 10px;
+  border-radius: 12px;
   padding: 15px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-  z-index: 1000;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  z-index: 999;
 }
 
+/* Divider */
+.divider {
+  height: 1px;
+  background: #eee;
+  margin: 10px 0;
+}
+
+/* ===== ROLE SELECT ===== */
 .role-select {
   width: 100%;
   padding: 8px 10px;
-  margin-bottom: 7px;
   border-radius: 6px;
   border: 1px solid #ccc;
   font-size: 14px;
   background: #fff;
   outline: none;
-  transition: 0.2s ease;
-  appearance: auto;
 }
 
 .role-select:focus {
@@ -240,19 +265,14 @@ overflow: hidden;
   box-shadow: 0 0 0 2px rgba(27, 125, 85, 0.2);
 }
 
-.page-content {
-  flex: 1;
-  padding: 30px;
-  overflow-y: auto;
-}
-
+/* ===== LOGOUT BUTTON ===== */
 .logout-btn {
   width: 100%;
   padding: 10px;
   background: #1b7d55;
   color: white;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
   font-weight: 600;
   transition: 0.3s ease;
@@ -261,7 +281,6 @@ overflow: hidden;
 .logout-btn:hover {
   background: #0f5132;
   transform: translateY(-2px);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
 }
 /* ================= PAGE CONTENT ================= */
 
