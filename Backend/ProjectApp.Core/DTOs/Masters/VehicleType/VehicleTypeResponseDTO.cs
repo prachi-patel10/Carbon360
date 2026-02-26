@@ -8,15 +8,21 @@ namespace ProjectApp.Core.DTOs.Masters.VehicleType
 {
     public class VehicleTypeResponseDTO
     {
-        public string vehicle_type_id { get; set; }
-        public string vehicle_type_name { get; set; }
-        //public string vehicle_category { get; set; }
-        //public string? fuel_id { get; set; }
-        //public decimal? average_mileage_kmpl { get; set; }
-        public string? description { get; set; }
-        public bool IsActive { get; set; }
+         public string vehicle_type_id { get; set; }
+    public string vehicle_type_name { get; set; }
+    public string CategoryName { get; set; }
+    public string? description { get; set; }
+    public bool IsActive { get; set; }
+    public int EntryBy { get; set; }
+        //public string vehicle_type_id { get; set; }
+        //public string vehicle_type_name { get; set; }
+        ////public string vehicle_category { get; set; }
+        ////public string? fuel_id { get; set; }
+        ////public decimal? average_mileage_kmpl { get; set; }
+        //public string? description { get; set; }
+        //public bool IsActive { get; set; }
 
-        public int EntryBy { get; set; }
+        //public int EntryBy { get; set; }
         //public string? fuel_name { get; set; }
 
     }

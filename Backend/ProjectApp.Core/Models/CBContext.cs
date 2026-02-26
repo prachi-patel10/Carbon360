@@ -39,6 +39,8 @@ public partial class CBContext : DbContext
 
     public virtual DbSet<CB_VehicleTripEmission> CB_VehicleTripEmissions { get; set; }
 
+    public virtual DbSet<CB_VehicleTypeCategory> CB_VehicleTypeCategories { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<CB_Department>(entity =>
@@ -262,6 +264,10 @@ public partial class CBContext : DbContext
                 .IsRequired()
                 .HasMaxLength(30)
                 .IsUnicode(false);
+
+            entity.HasOne(d => d.Category).WithMany(p => p.CB_MasterVehicleTypes)
+                .HasForeignKey(d => d.CategoryId)
+                .HasConstraintName("FK_VehicleType_Category");
         });
 
         modelBuilder.Entity<CB_Role>(entity =>
@@ -380,6 +386,19 @@ public partial class CBContext : DbContext
                 .HasForeignKey(d => d.vehicleid)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_vehicle_trip_vehicle");
+        });
+
+        modelBuilder.Entity<CB_VehicleTypeCategory>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__CB_Vehic__3214EC07FDE7C0AD");
+
+            entity.ToTable("CB_VehicleTypeCategory");
+
+            entity.Property(e => e.Category)
+                .IsRequired()
+                .HasMaxLength(255);
+            entity.Property(e => e.EntryDate).HasColumnType("datetime");
+            entity.Property(e => e.UpdateDate).HasColumnType("datetime");
         });
 
         OnModelCreatingPartial(modelBuilder);

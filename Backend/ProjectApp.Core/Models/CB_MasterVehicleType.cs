@@ -25,5 +25,9 @@ public partial class CB_MasterVehicleType
 
     public bool IsDeleted { get; set; }
 
+    public int? CategoryId { get; set; }
+
     public virtual ICollection<CB_MasterVehicle> CB_MasterVehicles { get; set; } = new List<CB_MasterVehicle>();
+
+    public virtual CB_VehicleTypeCategory Category { get; set; }
 }

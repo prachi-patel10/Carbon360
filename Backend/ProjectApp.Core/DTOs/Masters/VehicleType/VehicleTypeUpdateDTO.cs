@@ -10,9 +10,7 @@ namespace ProjectApp.Core.DTOs.Masters.VehicleType
     {
         public string vehicle_type_id { get; set; }
         public string vehicle_type_name { get; set; }
-        public string vehicle_category { get; set; }
-        public string? fuel_id { get; set; }
-        public decimal? average_mileage_kmpl { get; set; }
+        public int CategoryId { get; set; }
         public string? description { get; set; }
     }
 }

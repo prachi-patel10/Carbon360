@@ -69,6 +69,10 @@
       {
          "Name": "[dbo].[CB_VehicleTripEmission]",
          "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[CB_VehicleTypeCategory]",
+         "ObjectType": 0
       }
    ],
    "UiHint": null,

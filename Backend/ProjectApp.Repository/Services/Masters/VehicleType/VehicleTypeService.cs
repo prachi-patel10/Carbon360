@@ -41,28 +41,49 @@ namespace ProjectApp.Repository.Services.Masters.VehicleType
             return _userContext.UserId;
         }
 
+        //public async Task<VehicleTypeResponseDTO> CreateVehicleTypeAsync(VehicleTypeCreateDTO dto)
+        //{
+        //    var insertedId =  _context.Database
+        //.SqlQueryRaw<int>(
+        //    "EXEC USP_CB_VehicleTypeInsert @VehicleTypeName, @VehicleCategory, @FuelId, @AverageMileage, @Description, @EntryBy",
+        //    new SqlParameter("@VehicleTypeName", dto.vehicle_type_name),
+        //    new SqlParameter("@VehicleCategory", dto.vehicle_category),
+        //    new SqlParameter("@FuelId", dto.fuel_id ?? (object)DBNull.Value),
+        //    new SqlParameter("@AverageMileage", dto.average_mileage_kmpl ?? (object)DBNull.Value),
+        //    new SqlParameter("@Description", dto.description ?? (object)DBNull.Value),
+        //    new SqlParameter("@EntryBy", GetCurrentUserId())
+        //)
+        //   .AsEnumerable().First();
+
+        //    return new VehicleTypeResponseDTO
+        //    {
+        //        vehicle_type_id = _idEncoder.Encode(insertedId),
+        //        description = dto.description,
+        //        IsActive = true
+        //    };
+        //}
         public async Task<VehicleTypeResponseDTO> CreateVehicleTypeAsync(VehicleTypeCreateDTO dto)
         {
-            var insertedId =  _context.Database
-        .SqlQueryRaw<int>(
-            "EXEC USP_CB_VehicleTypeInsert @VehicleTypeName, @VehicleCategory, @FuelId, @AverageMileage, @Description, @EntryBy",
-            new SqlParameter("@VehicleTypeName", dto.vehicle_type_name),
-            new SqlParameter("@VehicleCategory", dto.vehicle_category),
-            new SqlParameter("@FuelId", dto.fuel_id ?? (object)DBNull.Value),
-            new SqlParameter("@AverageMileage", dto.average_mileage_kmpl ?? (object)DBNull.Value),
-            new SqlParameter("@Description", dto.description ?? (object)DBNull.Value),
-            new SqlParameter("@EntryBy", GetCurrentUserId())
-        )
-           .AsEnumerable().First();
+            var insertedId = _context.Database
+                .SqlQueryRaw<int>(
+                    "EXEC USP_CB_VehicleTypeInsert @VehicleTypeName, @CategoryId, @Description, @EntryBy",
+                    new SqlParameter("@VehicleTypeName", dto.vehicle_type_name),
+                    new SqlParameter("@CategoryId", dto.CategoryId),
+                    new SqlParameter("@Description", dto.description ?? (object)DBNull.Value),
+                    new SqlParameter("@EntryBy", GetCurrentUserId())
+                )
+                .AsEnumerable().First();
 
             return new VehicleTypeResponseDTO
             {
                 vehicle_type_id = _idEncoder.Encode(insertedId),
+                vehicle_type_name = dto.vehicle_type_name,
                 description = dto.description,
-                IsActive = true
+                IsActive = true,
+                EntryBy = GetCurrentUserId()
             };
         }
-        
+
 
         public async Task<bool> DeleteVehicleTypeAsync(string encryptedId)
         {
@@ -98,10 +119,19 @@ namespace ProjectApp.Repository.Services.Masters.VehicleType
                             var item = new VehicleTypeResponseDTO
                             {
                                 vehicle_type_id = _idEncoder.Encode(
-         Convert.ToInt32(reader["VehicleTypeId"])
-     ),
+                            Convert.ToInt32(reader["VehicleTypeId"])
+                        ),
+
                                 vehicle_type_name = reader["VehicleTypeName"]?.ToString(),
+
+                                CategoryName = reader["CategoryName"]?.ToString(),
+
+                                description = reader["description"] == DBNull.Value
+                            ? null
+                            : reader["description"].ToString(),
+
                                 IsActive = Convert.ToBoolean(reader["IsActive"]),
+
                                 EntryBy = Convert.ToInt32(reader["EntryBy"])
                             };
 
@@ -116,6 +146,9 @@ namespace ProjectApp.Repository.Services.Masters.VehicleType
 
         public async Task<VehicleTypeResponseDTO> GetVehicleTypeByIdAsync(string encryptedId)
         {
+            if (string.IsNullOrEmpty(encryptedId))
+                throw new Exception("VehicleTypeId is required");
+
             int id = _idEncoder.Decode(encryptedId);
 
             using var connection = _context.Database.GetDbConnection();
@@ -134,14 +167,52 @@ namespace ProjectApp.Repository.Services.Masters.VehicleType
                 return new VehicleTypeResponseDTO
                 {
                     vehicle_type_id = encryptedId,
-                    vehicle_type_name = reader["vehicle_type_name"]?.ToString(),
-                    description = reader["Description"]?.ToString(),
-                    IsActive = Convert.ToBoolean(reader["IsActive"])
+
+                    vehicle_type_name = reader["VehicleTypeName"]?.ToString(),
+
+                    CategoryName = reader["CategoryName"]?.ToString(),
+
+                    description = reader["description"] == DBNull.Value
+                        ? null
+                        : reader["description"].ToString(),
+
+                    IsActive = Convert.ToBoolean(reader["IsActive"]),
+
+                    EntryBy = Convert.ToInt32(reader["EntryBy"])
                 };
             }
 
             return null;
         }
+
+        //public async Task<VehicleTypeResponseDTO> GetVehicleTypeByIdAsync(string encryptedId)
+        //{
+        //    int id = _idEncoder.Decode(encryptedId);
+
+        //    using var connection = _context.Database.GetDbConnection();
+        //    await connection.OpenAsync();
+
+        //    using var command = connection.CreateCommand();
+        //    command.CommandText = "USP_CB_VehicleTypeGetById";
+        //    command.CommandType = System.Data.CommandType.StoredProcedure;
+
+        //    command.Parameters.Add(new SqlParameter("@VehicleTypeId", id));
+
+        //    using var reader = await command.ExecuteReaderAsync();
+
+        //    if (await reader.ReadAsync())
+        //    {
+        //        return new VehicleTypeResponseDTO
+        //        {
+        //            vehicle_type_id = encryptedId,
+        //            vehicle_type_name = reader["vehicle_type_name"]?.ToString(),
+        //            description = reader["Description"]?.ToString(),
+        //            IsActive = Convert.ToBoolean(reader["IsActive"])
+        //        };
+        //    }
+
+        //    return null;
+        //}
 
         //public async Task<VehicleTypeResponseDTO> GetVehicleTypeByNameAsync(string name)
         //{
@@ -179,24 +250,42 @@ namespace ProjectApp.Repository.Services.Masters.VehicleType
         //    return true;
 
         //}
+        //public async Task<bool> UpdateVehicleTypeAsync(VehicleTypeUpdateDTO dto)
+        //{
+        //    if (string.IsNullOrEmpty(dto.vehicle_type_id))
+        //        throw new Exception("VehicleTypeId is required");
+
+        //    if (string.IsNullOrEmpty(dto.fuel_id))
+        //        throw new Exception("FuelId is required");
+
+        //    int vehicleTypeId = _idEncoder.Decode(dto.vehicle_type_id);
+        //    int fuelId = _idEncoder.Decode(dto.fuel_id);
+
+        //    await _context.Database.ExecuteSqlRawAsync(
+        //        "EXEC USP_CB_VehicleTypeUpdate @VehicleTypeId, @VehicleTypeName, @VehicleCategory, @FuelId, @AverageMileage, @Description, @UpdatedBy",
+        //        new SqlParameter("@VehicleTypeId", vehicleTypeId),
+        //        new SqlParameter("@VehicleTypeName", dto.vehicle_type_name),
+        //        new SqlParameter("@VehicleCategory", dto.vehicle_category),
+        //        new SqlParameter("@FuelId", fuelId), // NO NULL POSSIBLE
+        //        new SqlParameter("@AverageMileage", dto.average_mileage_kmpl ?? (object)DBNull.Value),
+        //        new SqlParameter("@Description", dto.description ?? (object)DBNull.Value),
+        //        new SqlParameter("@UpdatedBy", GetCurrentUserId())
+        //    );
+
+        //    return true;
+        //}
         public async Task<bool> UpdateVehicleTypeAsync(VehicleTypeUpdateDTO dto)
         {
             if (string.IsNullOrEmpty(dto.vehicle_type_id))
                 throw new Exception("VehicleTypeId is required");
 
-            if (string.IsNullOrEmpty(dto.fuel_id))
-                throw new Exception("FuelId is required");
-
             int vehicleTypeId = _idEncoder.Decode(dto.vehicle_type_id);
-            int fuelId = _idEncoder.Decode(dto.fuel_id);
 
             await _context.Database.ExecuteSqlRawAsync(
-                "EXEC USP_CB_VehicleTypeUpdate @VehicleTypeId, @VehicleTypeName, @VehicleCategory, @FuelId, @AverageMileage, @Description, @UpdatedBy",
+                "EXEC USP_CB_VehicleTypeUpdate @VehicleTypeId, @VehicleTypeName, @CategoryId, @Description, @UpdatedBy",
                 new SqlParameter("@VehicleTypeId", vehicleTypeId),
                 new SqlParameter("@VehicleTypeName", dto.vehicle_type_name),
-                new SqlParameter("@VehicleCategory", dto.vehicle_category),
-                new SqlParameter("@FuelId", fuelId), // NO NULL POSSIBLE
-                new SqlParameter("@AverageMileage", dto.average_mileage_kmpl ?? (object)DBNull.Value),
+                new SqlParameter("@CategoryId", dto.CategoryId),
                 new SqlParameter("@Description", dto.description ?? (object)DBNull.Value),
                 new SqlParameter("@UpdatedBy", GetCurrentUserId())
             );
