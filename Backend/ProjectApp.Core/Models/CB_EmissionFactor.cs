@@ -9,8 +9,6 @@ public partial class CB_EmissionFactor
 {
     public int EmissionFactorId { get; set; }
 
-    public string FuelType { get; set; }
-
     public decimal CO2_Factor_KgPerL { get; set; }
 
     public decimal NO2_Factor_KgPerKm { get; set; }
@@ -26,4 +24,8 @@ public partial class CB_EmissionFactor
     public int? UpdatedBy { get; set; }
 
     public DateTime? UpdateDate { get; set; }
+
+    public int? FuelId { get; set; }
+
+    public virtual CB_MasterFuelType Fuel { get; set; }
 }
