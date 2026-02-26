@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using ProjectApp.Core.DTOs.Account.GeneratorOperation;
 using ProjectApp.Core.DTOs.Account.Role;
 using ProjectApp.Core.DTOs.Account.User;
 using ProjectApp.Core.DTOs.Account.VehicleTripEmission;
@@ -70,6 +71,9 @@ namespace ProjectApp.API.Extentions
             CreateMap<CB_EmissionFactor, EmissionFactorResponseDTO>()
                 .ForMember(dest => dest.Id,
                     opt => opt.MapFrom(src => src.EmissionFactorId));
+
+            CreateMap<CB_GeneratorOperation, GeneratorOperationResponseDTO>().ReverseMap();
+
         }
     }
 }
