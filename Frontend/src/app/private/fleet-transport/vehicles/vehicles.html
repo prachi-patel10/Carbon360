@@ -1,61 +1,54 @@
 <div class="container">
 
-  <!-- 🔹 Create Vehicle -->
-  <div class="card">
+  <!-- ================= CREATE FORM ================= -->
+  <div class="card form-card">
     <h2>Create Vehicle</h2>
 
-    <div class="form-grid">
-      <input type="text" placeholder="Vehicle Number"
-      placeholder="Enter Vehicle Number (e.g. GJ01AB8923)"
-        [(ngModel)]="newVehicle.vehicle_number" />
+    <form>
+      <input type="text" [(ngModel)]="newVehicle().vehicle_number" placeholder="Vehicle Number" />
 
-      <input type="number" placeholder="Vehicle Type ID"
-       placeholder="Enter Vehicle Type"
-        [(ngModel)]="newVehicle.vehicle_type_id" />
-
-      <input type="number" placeholder="Fuel ID"
-      placeholder="Enter Fuel Type"
-        [(ngModel)]="newVehicle.fuel_id" />
-
-      <input type="number" placeholder="Department ID"
-      placeholder="Enter Fuel Type"
-        [(ngModel)]="newVehicle.department_id" />
-
-      <input type="number" placeholder="Engine Capacity"
-      placeholder="Enter Engine Capacity (CC)"
-        [(ngModel)]="newVehicle.engine_capacity" />
-
-      <input type="text" placeholder="Emission Standard"
-      placeholder="Enter Emission Standard (e.g. BS4 / BS6)"
-        [(ngModel)]="newVehicle.emission_standard" />
-    </div>
-
-    <div class="button-row">
-      <button (click)="createVehicle()">Save Vehicle</button>
-    </div>
-  </div>
-
-  <!-- 🔹 Search -->
-  <div class="card">
-    <h2>Search Vehicles</h2>
-
-    <div class="search-grid">
-      <input type="text" placeholder="Search by Vehicle Number"
-        [(ngModel)]="searchText" />
-
-      <select [(ngModel)]="isActive">
-        <option [ngValue]="null">All Status</option>
-        <option [ngValue]="true">Active</option>
-        <option [ngValue]="false">Inactive</option>
+      <select [(ngModel)]="newVehicle().vehicle_type_id">
+        <option [ngValue]="null">Select Type</option>
+        <option *ngFor="let vt of vehicleTypes()" [ngValue]="vt.vehicle_type_id">
+          {{ vt.vehicle_type_name }}
+        </option>
       </select>
 
-      <button (click)="search()">Search</button>
-    </div>
+      <select [(ngModel)]="newVehicle().fuel_id">
+        <option [ngValue]="null">Select Fuel</option>
+        <option *ngFor="let f of fuelTypes()" [ngValue]="f.fuel_id">
+          {{ f.fuel_name }}
+        </option>
+      </select>
+
+      <select [(ngModel)]="newVehicle().department_id">
+        <option [ngValue]="null">Select Department</option>
+        <option *ngFor="let d of departments()" [ngValue]="d.department_id">
+          {{ d.department_name }}
+        </option>
+      </select>
+
+      <!-- Save / Update Button -->
+      <button type="button" (click)="saveVehicle()">
+        {{ isEditMode() ? 'Update' : 'Save' }}
+      </button>
+    </form>
   </div>
 
-  <!-- 🔹 List -->
-  <div class="card">
-    <h2>Vehicle List</h2>
+  <!-- ================= VEHICLE LIST ================= -->
+  <div class="card table-card">
+
+    <div class="table-header">
+      <h2>Vehicle List</h2>
+
+      <div class="table-actions">
+        <input type="text" placeholder="Search vehicle number" [(ngModel)]="searchText" (input)="search()">
+
+        <button class="btn-small" (click)="openFilterModal()">
+          Filter
+        </button>
+      </div>
+    </div>
 
     <div class="table-wrapper">
       <table>
@@ -68,41 +61,71 @@
             <th>Engine</th>
             <th>Emission</th>
             <th>Status</th>
+            <th>Actions</th>
           </tr>
         </thead>
+
         <tbody>
-          <tr *ngFor="let vehicle of vehicles">
-            <td>{{ vehicle.vehicle_number }}</td>
-            <td>{{ vehicle.vehicle_type_id }}</td>
-            <td>{{ vehicle.fuel_id }}</td>
-            <td>{{ vehicle.department_id }}</td>
-            <td>{{ vehicle.engine_capacity }}</td>
-            <td>{{ vehicle.emission_standard }}</td>
+          <tr *ngFor="let v of vehicles()">
+            <td>{{ v.vehicle_number }}</td>
+            <td>{{ getVehicleTypeName(v.vehicle_type_id) }}</td>
+            <td>{{ getFuelName(v.fuel_id) }}</td>
+            <td>{{ getDepartmentName(v.department_id) }}</td>
+            <td>{{ v.engine_capacity || '-' }}</td>
+
+            <td>{{ v.emission_standard || '-' }}</td>
+
             <td>
-              <span class="status"
-                [class.active]="vehicle.isActive"
-                [class.inactive]="!vehicle.isActive">
-                {{ vehicle.isActive ? 'Active' : 'Inactive' }}
-              </span>
+              <label class="switch">
+                <input type="checkbox" [(ngModel)]="v.isActive" (change)="toggleStatus(v)">
+                <span class="slider"></span>
+              </label>
             </td>
+
+            <td class="actions">
+              <button class="btn-small edit-btn">Edit</button>
+              <button class="btn-small delete-btn" (click)="deleteVehicle(v)">
+                Delete
+              </button>
+            </td>
+
           </tr>
+
+          <tr *ngIf="vehicles().length === 0">
+            <td colspan="8" class="no-data">No records found</td>
+          </tr>
+
         </tbody>
       </table>
     </div>
 
-    <!-- 🔹 Pagination -->
-    <div class="pagination">
-      <button (click)="previousPage()" [disabled]="pageNumber === 1">
-        Previous
-      </button>
+    <!-- ================= PAGINATION ================= -->
+    <div class="pagination-container">
 
-      <span>Page {{ pageNumber }} of {{ totalPages }}</span>
+      <div>
+        Total Records: {{ totalRecords() }}
+      </div>
 
-      <button (click)="nextPage()"
-        [disabled]="pageNumber === totalPages">
-        Next
-      </button>
+      <div class="pagination-controls">
+        <button (click)="previousPage()" [disabled]="pageNumber() === 1">
+          Previous
+        </button>
+
+        <span>
+          Page {{ pageNumber() }} of {{ totalPages() }}
+        </span>
+
+        <button (click)="nextPage()" [disabled]="pageNumber() === totalPages()">
+          Next
+        </button>
+
+        <select [ngModel]="pageSize()" (ngModelChange)="pageSize.set($event); search()">
+          <option [ngValue]="5">5</option>
+          <option [ngValue]="10">10</option>
+          <option [ngValue]="20">20</option>
+        </select>
+      </div>
     </div>
-  </div>
 
+  </div>
 </div>

@@ -124,45 +124,81 @@ namespace ProjectApp.Repository.Services.Masters.Vehicle
             return dataList.Select(MapToResponseDto).ToList();
         }
 
-        public async Task<PageResult> SearchAsync(VehicleSearchRequest request)
+        //        public async Task<PageResult> SearchAsync(VehicleSearchRequest request)
+        //        {
+        //            var parameters = new List<SqlParameter>
+        //{
+        //    new SqlParameter("@Search", request.Search ?? (object)DBNull.Value),
+        //    new SqlParameter("@vehicle_type_id", request.vehicle_type_id ?? (object)DBNull.Value),
+        //    new SqlParameter("@fuel_id", request.fuel_id ?? (object)DBNull.Value),
+        //    new SqlParameter("@department_id", request.department_id ?? (object)DBNull.Value),
+        //    new SqlParameter("@IsActive", request.IsActive ?? (object)DBNull.Value),
+        //    new SqlParameter("@PageNumber", request.PageNumber),
+        //    new SqlParameter("@PageSize", request.PageSize),
+        //    new SqlParameter("@SortColumn", request.SortColumn),
+        //    new SqlParameter("@SortDirection", request.SortDirection)
+        //};
+
+        //            var result = await _spService.ExecuteSpAsync(
+        //                "USP_CB_VehicleMasterSearch",
+        //                parameters.ToArray()
+        //            );
+
+        //            var dataList = (result.ContainsKey("Data") && result["Data"] != null)
+        //    ? (result["Data"] as IEnumerable<object>)
+        //        ?.Cast<Dictionary<string, object>>()
+        //        .ToList()
+        //    : new List<Dictionary<string, object>>();
+
+        //            var vehicles = dataList.Select(MapToResponseDto).ToList();
+
+        //            var pagination = result["Pagination"] as Dictionary<string, object>
+        //                             ?? new Dictionary<string, object>();
+
+        //            return new PageResult
+        //            {
+        //                Data = vehicles,
+        //                TotalRecords = pagination.ContainsKey("TotalRecords") ? Convert.ToInt32(pagination["TotalRecords"]) : 0,
+        //                TotalPages = pagination.ContainsKey("TotalPages") ? Convert.ToInt32(pagination["TotalPages"]) : 0,
+        //                CurrentPage = pagination.ContainsKey("CurrentPage") ? Convert.ToInt32(pagination["CurrentPage"]) : 0
+        //            };
+        //        }
+        public async Task<VehicleSearchResponse> SearchAsync(VehicleSearchRequest request)
         {
             var parameters = new List<SqlParameter>
-{
-    new SqlParameter("@Search", request.Search ?? (object)DBNull.Value),
-    new SqlParameter("@vehicle_type_id", request.vehicle_type_id ?? (object)DBNull.Value),
-    new SqlParameter("@fuel_id", request.fuel_id ?? (object)DBNull.Value),
-    new SqlParameter("@department_id", request.department_id ?? (object)DBNull.Value),
-    new SqlParameter("@IsActive", request.IsActive ?? (object)DBNull.Value),
-    new SqlParameter("@PageNumber", request.PageNumber),
-    new SqlParameter("@PageSize", request.PageSize),
-    new SqlParameter("@SortColumn", request.SortColumn),
-    new SqlParameter("@SortDirection", request.SortDirection)
-};
+    {
+        new SqlParameter("@Search", request.Search ?? (object)DBNull.Value),
+        new SqlParameter("@vehicle_type_id", request.vehicle_type_id ?? (object)DBNull.Value),
+        new SqlParameter("@fuel_id", request.fuel_id ?? (object)DBNull.Value),
+        new SqlParameter("@department_id", request.department_id ?? (object)DBNull.Value),
+        new SqlParameter("@IsActive", request.IsActive ?? (object)DBNull.Value),
+        new SqlParameter("@PageNumber", request.PageNumber),
+        new SqlParameter("@PageSize", request.PageSize),
+        new SqlParameter("@SortColumn", request.SortColumn ?? (object)DBNull.Value),
+        new SqlParameter("@SortDirection", request.SortDirection ?? (object)DBNull.Value)
+    };
 
-            var result = await _spService.ExecuteSpAsync(
-                "USP_CB_VehicleMasterSearch",
-                parameters.ToArray()
-            );
+            var result = await _spService.ExecuteSpAsync("USP_CB_VehicleMasterSearch", parameters.ToArray());
 
             var dataList = (result.ContainsKey("Data") && result["Data"] != null)
-    ? (result["Data"] as IEnumerable<object>)
-        ?.Cast<Dictionary<string, object>>()
-        .ToList()
-    : new List<Dictionary<string, object>>();
+                ? (result["Data"] as IEnumerable<object>)?.Cast<Dictionary<string, object>>().ToList()
+                : new List<Dictionary<string, object>>();
 
             var vehicles = dataList.Select(MapToResponseDto).ToList();
 
-            var pagination = result["Pagination"] as Dictionary<string, object>
-                             ?? new Dictionary<string, object>();
+            var pagination = result.ContainsKey("Pagination")
+                ? result["Pagination"] as Dictionary<string, object>
+                : new Dictionary<string, object>();
 
-            return new PageResult
+            return new VehicleSearchResponse
             {
                 Data = vehicles,
                 TotalRecords = pagination.ContainsKey("TotalRecords") ? Convert.ToInt32(pagination["TotalRecords"]) : 0,
                 TotalPages = pagination.ContainsKey("TotalPages") ? Convert.ToInt32(pagination["TotalPages"]) : 0,
-                CurrentPage = pagination.ContainsKey("CurrentPage") ? Convert.ToInt32(pagination["CurrentPage"]) : 0
+                CurrentPage = pagination.ContainsKey("CurrentPage") ? Convert.ToInt32(pagination["CurrentPage"]) : request.PageNumber
             };
         }
+
 
         public async Task UpdateStatusAsync(string encryptedId, bool isActive, int userId)
         {

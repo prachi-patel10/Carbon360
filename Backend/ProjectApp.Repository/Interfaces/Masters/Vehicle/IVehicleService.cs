@@ -16,7 +16,7 @@ namespace ProjectApp.Repository.Interfaces.Masters.Vehicle
         Task<VehicleResponseDto?> GetById(string encryptedId);
         Task<List<VehicleResponseDto>> GetAllList();
         Task<VehicleResponseDto?> GetByName(string name);
-        Task<PageResult> SearchAsync(VehicleSearchRequest request);
+        Task<VehicleSearchResponse> SearchAsync(VehicleSearchRequest request);
         Task UpdateStatusAsync(string encryptedId, bool isActive, int userId);
     }
 }
