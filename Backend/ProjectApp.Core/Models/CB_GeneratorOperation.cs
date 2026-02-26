@@ -37,6 +37,20 @@ public partial class CB_GeneratorOperation
 
     public bool IsDeleted { get; set; }
 
+    public decimal? co2_kg { get; set; }
+
+    public decimal? no2_kg { get; set; }
+
+    public decimal? ch4_kg { get; set; }
+
+    public decimal? total_co2_kg { get; set; }
+
+    public decimal? total_no2_kg { get; set; }
+
+    public decimal? total_ch4_kg { get; set; }
+
+    public decimal? total_co2e_kg { get; set; }
+
     public virtual CB_MasterFuelType Fuel { get; set; }
 
     public virtual CB_MasterGenerator Generator { get; set; }

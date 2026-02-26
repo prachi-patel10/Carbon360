@@ -11,12 +11,6 @@ public partial class CB_MasterFuelType
 
     public string fuel_name { get; set; }
 
-    public decimal co2_factor { get; set; }
-
-    public decimal nox_factor { get; set; }
-
-    public decimal ch4_factor { get; set; }
-
     public bool IsActive { get; set; }
 
     public int? EntryBy { get; set; }
@@ -30,6 +24,10 @@ public partial class CB_MasterFuelType
     public bool IsDeleted { get; set; }
 
     public bool isapplicable { get; set; }
+
+    public string fuel_Desc { get; set; }
+
+    public virtual ICollection<CB_EmissionFactor> CB_EmissionFactors { get; set; } = new List<CB_EmissionFactor>();
 
     public virtual ICollection<CB_GeneratorOperation> CB_GeneratorOperations { get; set; } = new List<CB_GeneratorOperation>();
 

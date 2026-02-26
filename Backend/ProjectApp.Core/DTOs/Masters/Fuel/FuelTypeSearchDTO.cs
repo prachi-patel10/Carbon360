@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ProjectApp.Core.DTOs.Masters.Fuel
 {
-    internal class FuelTypeSearchDTO
+    public class FuelTypeSearchDTO
     {
     }
 }

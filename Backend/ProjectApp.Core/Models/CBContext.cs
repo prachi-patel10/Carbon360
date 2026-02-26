@@ -67,13 +67,13 @@ public partial class CBContext : DbContext
             entity.Property(e => e.EntryDate)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
-            entity.Property(e => e.FuelType)
-                .IsRequired()
-                .HasMaxLength(20)
-                .IsUnicode(false);
             entity.Property(e => e.IsActive).HasDefaultValue(true);
             entity.Property(e => e.NO2_Factor_KgPerKm).HasColumnType("decimal(10, 6)");
             entity.Property(e => e.UpdateDate).HasColumnType("datetime");
+
+            entity.HasOne(d => d.Fuel).WithMany(p => p.CB_EmissionFactors)
+                .HasForeignKey(d => d.FuelId)
+                .HasConstraintName("FK_EmissionFactor_Fuel");
         });
 
         modelBuilder.Entity<CB_GeneratorOperation>(entity =>
@@ -90,11 +90,18 @@ public partial class CBContext : DbContext
             entity.Property(e => e.PowerOutputKWH).HasColumnType("decimal(16, 8)");
             entity.Property(e => e.RunHours).HasColumnType("decimal(16, 8)");
             entity.Property(e => e.UpdateDate).HasColumnType("datetime");
+            entity.Property(e => e.ch4_kg).HasColumnType("decimal(16, 8)");
+            entity.Property(e => e.co2_kg).HasColumnType("decimal(16, 8)");
+            entity.Property(e => e.no2_kg).HasColumnType("decimal(16, 8)");
+            entity.Property(e => e.total_ch4_kg).HasColumnType("decimal(16, 8)");
+            entity.Property(e => e.total_co2_kg).HasColumnType("decimal(16, 8)");
+            entity.Property(e => e.total_co2e_kg).HasColumnType("decimal(16, 8)");
+            entity.Property(e => e.total_no2_kg).HasColumnType("decimal(16, 8)");
 
             entity.HasOne(d => d.Fuel).WithMany(p => p.CB_GeneratorOperations)
                 .HasForeignKey(d => d.FuelId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_operation_fuel");
+                .HasConstraintName("FK_GeneratorOperation_Fuel");
 
             entity.HasOne(d => d.Generator).WithMany(p => p.CB_GeneratorOperations)
                 .HasForeignKey(d => d.GeneratorId)
@@ -138,13 +145,13 @@ public partial class CBContext : DbContext
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
             entity.Property(e => e.UpdateDate).HasColumnType("datetime");
-            entity.Property(e => e.ch4_factor).HasColumnType("decimal(16, 8)");
-            entity.Property(e => e.co2_factor).HasColumnType("decimal(16, 8)");
+            entity.Property(e => e.fuel_Desc)
+                .HasMaxLength(30)
+                .IsUnicode(false);
             entity.Property(e => e.fuel_name)
                 .IsRequired()
                 .HasMaxLength(30)
                 .IsUnicode(false);
-            entity.Property(e => e.nox_factor).HasColumnType("decimal(16, 8)");
         });
 
         modelBuilder.Entity<CB_MasterGenerator>(entity =>
