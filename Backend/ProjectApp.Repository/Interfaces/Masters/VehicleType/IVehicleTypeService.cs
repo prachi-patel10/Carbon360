@@ -1,6 +1,7 @@
 ﻿using ProjectApp.Core.DTOs.Masters.Department;
 using ProjectApp.Core.DTOs.Masters.Fuel;
 using ProjectApp.Core.DTOs.Masters.VehicleType;
+using ProjectApp.Repository.Utilities.SP;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,6 +24,8 @@ namespace ProjectApp.Repository.Interfaces.Masters.VehicleType
 
         Task<bool> UpdateStatusAsync(VehicleTypeStatusUpdateDTO dto);
 
+        Task<PageResult> SearchVehicleTypesAsync(SearchRequest request);
+        Task<bool> ToggleStatusAsync(string encryptedId);
         //Task<VehicleTypeResponseDTO> GetVehicleTypeByNameAsync(string name);
     }
 }

@@ -9,6 +9,7 @@ using ProjectApp.Repository.Interfaces.Masters.VehicleType;
 using ProjectApp.Repository.Interfaces.User;
 using ProjectApp.Repository.Services.Common;
 using ProjectApp.Repository.Utilities.Auth;
+using ProjectApp.Repository.Utilities.SP;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -303,6 +304,81 @@ namespace ProjectApp.Repository.Services.Masters.VehicleType
                 new SqlParameter("@vehicle_type_id", id),
                 new SqlParameter("@UpdatedBy", GetCurrentUserId())
             );
+
+            return true;
+        }
+
+        public async Task<PageResult> SearchVehicleTypesAsync(SearchRequest request)
+        {
+            var parameters = SpParameterBuilder.BuildSearchParams(request);
+
+            var connection = _context.Database.GetDbConnection();
+            await connection.OpenAsync();
+
+            using var command = connection.CreateCommand();
+            command.CommandText = "USP_CB_VehicleTypeSearch";
+            command.CommandType = System.Data.CommandType.StoredProcedure;
+
+            foreach (var param in parameters)
+                command.Parameters.Add(param);
+
+            using var reader = await command.ExecuteReaderAsync();
+
+            int totalRecords = 0;
+
+            if (await reader.ReadAsync())
+                totalRecords = reader.GetInt32(0);
+
+            await reader.NextResultAsync();
+
+            var list = new List<VehicleTypeResponseDTO>();
+
+            while (await reader.ReadAsync())
+            {
+                list.Add(new VehicleTypeResponseDTO
+                {
+                    vehicle_type_id = _idEncoder.Encode(
+                        Convert.ToInt32(reader["VehicleTypeId"])),
+
+                    vehicle_type_name = reader["VehicleTypeName"]?.ToString(),
+                    CategoryName = reader["CategoryName"]?.ToString(),
+                    description = reader["description"] == DBNull.Value
+                                    ? null
+                                    : reader["description"].ToString(),
+                    IsActive = Convert.ToBoolean(reader["IsActive"]),
+                    EntryBy = Convert.ToInt32(reader["EntryBy"])
+                });
+            }
+
+            await connection.CloseAsync();
+
+            return new PageResult
+            {
+                Data = list,
+                TotalRecords = totalRecords,
+                CurrentPage = request.PageNumber,
+                TotalPages = (int)Math.Ceiling((double)totalRecords / request.PageSize)
+            };
+        }
+
+        public async Task<bool> ToggleStatusAsync(string encryptedId)
+        {
+            int id = _idEncoder.Decode(encryptedId);
+            int userId = GetCurrentUserId();
+
+            var vehicleType = await _context.CB_MasterVehicleTypes
+                .FirstOrDefaultAsync(x =>
+                    x.vehicle_type_id == id &&
+                    x.IsDeleted == false);
+
+            if (vehicleType == null)
+                return false;
+
+            vehicleType.IsActive = !vehicleType.IsActive;
+            vehicleType.UpdatedBy = userId;
+            vehicleType.UpdateDate = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
 
             return true;
         }

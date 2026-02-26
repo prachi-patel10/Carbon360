@@ -1,0 +1,92 @@
+<div class="department-page">
+
+  <!-- FORM -->
+  <div class="card">
+    <h2 class="card-title">Add / Update Vehicle Type</h2>
+
+    <form [formGroup]="vehicleForm" (ngSubmit)="submit()">
+
+      <div class="form-row">
+
+        <div class="form-group">
+          <label>Vehicle Type Name</label>
+          <input type="text" formControlName="vehicle_type_name">
+        </div>
+
+        <div class="form-group">
+          <label>Vehicle Category</label>
+          <select formControlName="categoryId">
+            <option value="">Select Category</option>
+            <option value="1">LDV</option>
+            <option value="2">MDV</option>
+            <option value="3">HDV</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Description</label>
+          <input type="text" formControlName="description">
+        </div>
+
+      </div>
+
+      <div class="form-buttons">
+        <button class="btn-primary" type="submit">
+          {{ !vehicleForm.value.vehicle_type_id ? 'Save' : 'Update' }}
+        </button>
+      </div>
+
+    </form>
+  </div>
+
+  <!-- SEARCH -->
+  <div class="card">
+
+    <div class="search-row">
+      <input type="text" placeholder="Search vehicle type..." formControlName="searchText" [formGroup]="searchForm">
+
+      <label>
+        <input type="checkbox"
+               [checked]="onlyActive()"
+               (change)="onlyActive.set($event.target.checked)">
+        Active Only
+      </label>
+    </div>
+
+  </div>
+
+  <!-- TABLE -->
+  <div class="card">
+
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Category</th>
+          <th>Description</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr *ngFor="let v of vehicleTypes()">
+          <td>{{ v.vehicle_type_name }}</td>
+          <td>{{ v.categoryName }}</td>
+          <td>{{ v.description }}</td>
+          <td>
+            <input type="checkbox"
+                   [checked]="v.isActive"
+                   (change)="toggleActive(v)">
+          </td>
+          <td>
+            <button (click)="edit(v)">Edit</button>
+            <button (click)="deleteUI(v)">Delete</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+  </div>
+
+</div>

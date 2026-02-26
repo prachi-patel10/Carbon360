@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using ProjectApp.Core.DTOs.Masters.Fuel;
 using ProjectApp.Core.DTOs.Masters.VehicleType;
 using ProjectApp.Repository.Interfaces.Masters.VehicleType;
+using ProjectApp.Repository.Utilities.SP;
 
 namespace ProjectApp.API.Controllers.Masters.VehicleType
 {
@@ -74,6 +75,41 @@ namespace ProjectApp.API.Controllers.Masters.VehicleType
                 return BadRequest("Status update failed");
 
             return Ok("Status updated successfully");
+        }
+
+        [HttpGet("Search")]
+        public async Task<IActionResult> Search(
+        [FromQuery] string? searchText,
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 10,
+        [FromQuery] string? sortColumn = null,
+        [FromQuery] string? sortDirection = "ASC",
+        [FromQuery] bool? isActive = null)
+        {
+            var request = new SearchRequest
+            {
+                Search = searchText,
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                SortColumn = sortColumn ?? "vehicle_type_name",
+                SortDirection = sortDirection ?? "ASC",
+                IsActive = isActive
+            };
+
+            var result = await _vehicleTypeService.SearchVehicleTypesAsync(request);
+
+            return Ok(result);
+        }
+
+        [HttpPatch("{id}/toggle-status")]
+        public async Task<IActionResult> ToggleStatus(string id)
+        {
+            var success = await _vehicleTypeService.ToggleStatusAsync(id);
+
+            if (!success)
+                return NotFound("Vehicle Type not found");
+
+            return Ok("Vehicle Type status toggled successfully");
         }
 
         //[HttpGet("ByName/{name}")]
