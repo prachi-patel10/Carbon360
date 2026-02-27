@@ -9,6 +9,7 @@ import Swal from 'sweetalert2';
 interface VehicleType {
   vehicle_type_id: string;
   vehicle_type_name: string;
+  categoryId: string;
   categoryName: string;
   description?: string;
   isActive: boolean;
@@ -74,6 +75,17 @@ export class Vehicletype implements OnInit{
     });
   }
 
+
+   get startRecord(): number {
+  if (this.totalRecords() === 0) return 0;
+  return (this.currentPage() - 1) * this.requestedRecords() + 1;
+}
+
+get endRecord(): number {
+  const end = this.currentPage() * this.requestedRecords();
+  return end > this.totalRecords() ? this.totalRecords() : end;
+}
+
   // loadVehicleTypes(page: number, size: number, search: string, active: boolean) {
   //   this.service.getPaged(page, size, search, active).subscribe({
   //     next: (res: any) => {
@@ -107,6 +119,7 @@ export class Vehicletype implements OnInit{
       const mapped = (list.data || list).map((v: any) => ({
         vehicle_type_id: v.vehicle_type_id,
         vehicle_type_name: v.vehicle_type_name,
+        categoryId: v.categoryId,
         categoryName: v.categoryName,
         description: v.description,
         isActive: v.isActive
@@ -126,28 +139,78 @@ export class Vehicletype implements OnInit{
 
   submit() {
 
-    if (this.vehicleForm.invalid) return;
+  if (this.vehicleForm.invalid) return;
 
-    const data = this.vehicleForm.value;
-    const isCreate = !data.vehicle_type_id;
+  const data = this.vehicleForm.value;
+  const isCreate = !data.vehicle_type_id;
 
-    const obs = isCreate
-      ? this.service.create(data)
-      : this.service.update(data);
+  const obs = isCreate
+    ? this.service.create(data)
+    : this.service.update(data);
 
-    obs.subscribe({
-      next: () => {
-        this.toastr.success('Saved successfully');
+  obs.subscribe({
+    next: () => {
+
+      // show correct message
+      this.toastr.success(
+        isCreate ? 'Vehicle Type created successfully'
+                 : 'Vehicle Type updated successfully'
+      );
+
+      // delay refresh slightly so toastr can render
+      setTimeout(() => {
         this.refreshTrigger.update(v => v + 1);
         this.resetForm();
-      },
-      error: () => this.toastr.error('Save failed')
-    });
-  }
+      }, 100);
+
+    },
+    error: () => {
+      this.toastr.error(
+        isCreate ? 'Create failed' : 'Update failed'
+      );
+    }
+  });
+}
+  // submit() {
+
+  //   if (this.vehicleForm.invalid) return;
+
+  //   const data = this.vehicleForm.value;
+  //   const isCreate = !data.vehicle_type_id;
+
+  //   const obs = isCreate
+  //     ? this.service.create(data)
+  //     : this.service.update(data);
+
+  //   obs.subscribe({
+  //     next: () => {
+  //       this.toastr.success('Saved successfully');
+  //       this.refreshTrigger.update(v => v + 1);
+  //       this.resetForm();
+  //     },
+  //     error: () => this.toastr.error('Save failed')
+  //   });
+  // }
+
+  // edit(v: VehicleType) {
+  //   this.vehicleForm.patchValue(v);
+  // }
 
   edit(v: VehicleType) {
-    this.vehicleForm.patchValue(v);
-  }
+
+    console.log(v);
+
+  this.vehicleForm.patchValue({
+    vehicle_type_id: v.vehicle_type_id,
+    vehicle_type_name: v.vehicle_type_name,
+    categoryId: v.categoryId,   // ✅ now dropdown selects
+    categoryName:v.categoryName,
+    description: v.description,
+    isActive: v.isActive
+  });
+
+}
+
 
   deleteUI(v: VehicleType) {
     Swal.fire({

@@ -2,7 +2,7 @@
 
   <!-- FORM -->
   <div class="card">
-    <h2 class="card-title">Add / Update Vehicle Type</h2>
+    <h2 class="card-title">Vehicle Type</h2>
 
     <form [formGroup]="vehicleForm" (ngSubmit)="submit()">
 
@@ -40,7 +40,24 @@
   </div>
 
   <!-- SEARCH -->
-  <div class="card">
+   <form [formGroup]="searchForm">
+  <div class="search-row">
+
+    <input
+      type="text"
+      placeholder="Search vehicle type..."
+      formControlName="searchText">
+
+    <label>
+      <input type="checkbox"
+             [checked]="onlyActive()"
+             (change)="onlyActive.set($event.target.checked)">
+      Active Only
+    </label>
+
+  </div>
+</form>
+  <!-- <div class="card">
 
     <div class="search-row">
       <input type="text" placeholder="Search vehicle type..." formControlName="searchText" [formGroup]="searchForm">
@@ -53,7 +70,7 @@
       </label>
     </div>
 
-  </div>
+  </div> -->
 
   <!-- TABLE -->
   <div class="card">
@@ -74,11 +91,19 @@
           <td>{{ v.vehicle_type_name }}</td>
           <td>{{ v.categoryName }}</td>
           <td>{{ v.description }}</td>
+
           <td>
+            <label class="toggle-switch">
+              <input type="checkbox" [checked]="v.isActive" (change)="toggleActive(v)">
+              <span class="toggle-slider"></span>
+            </label>
+          </td>
+
+          <!-- <td>
             <input type="checkbox"
                    [checked]="v.isActive"
                    (change)="toggleActive(v)">
-          </td>
+          </td> -->
           <td>
             <button (click)="edit(v)">Edit</button>
             <button (click)="deleteUI(v)">Delete</button>
@@ -86,6 +111,34 @@
         </tr>
       </tbody>
     </table>
+
+  </div>
+
+  <!-- ================= PAGINATION ================= -->
+  <div class="pagination-section">
+
+    <!-- Record Info -->
+    <div class="record-info">
+      Showing {{ startRecord }} to {{ endRecord }}
+      of {{ totalRecords() }} entries
+    </div>
+
+    <!-- Pagination Controls -->
+    <div class="pagination-controls">
+
+      <button (click)="previousPage()" [disabled]="currentPage() === 1">
+        Previous
+      </button>
+
+      <span>
+        Page {{ currentPage() }} of {{ totalPages() }}
+      </span>
+
+      <button (click)="nextPage()" [disabled]="currentPage() === totalPages()">
+        Next
+      </button>
+
+    </div>
 
   </div>
 

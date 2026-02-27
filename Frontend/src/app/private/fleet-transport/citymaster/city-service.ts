@@ -1,23 +1,13 @@
 import { Injectable } from '@angular/core';
-import { environment } from '../../../enviorments/environment';
 import { HttpClient, HttpParams } from '@angular/common/http';
-
-export interface VehicleType {
-  vehicle_type_id: string;
-  vehicle_type_name: string;
-  categoryName: string;
-  description?: string;
-  isActive: boolean;
-  entryBy?: number;
-}
-
+import { environment } from '../../../enviorments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
-export class VehicletypeService {
-
-    private apiUrl = `${environment.apiBaseUrl}/VehicleType`;
+export class CityService {
+  
+  private apiUrl = `${environment.apiBaseUrl}/City`;
 
   constructor(private http: HttpClient) {}
 
@@ -29,24 +19,23 @@ export class VehicletypeService {
   // ================= CREATE =================
   create(data: any) {
     const payload = {
-      vehicle_type_name: data.vehicle_type_name,
-      categoryId: data.categoryId,
-      description: data.description
+      cityName: data.cityName,
+      stateName: data.stateName
     };
 
-    return this.http.post(`${this.apiUrl}/Create`, payload);
+    return this.http.post(`${this.apiUrl}`, payload);
   }
 
   // ================= UPDATE =================
   update(data: any) {
     const payload = {
-      vehicle_type_id: data.vehicle_type_id,
-      vehicle_type_name: data.vehicle_type_name,
-      categoryId: data.categoryId,
-      description: data.description
+      cityId: data.cityId,
+      cityName: data.cityName,
+      stateName: data.stateName,
+      pincode: data.pincode
     };
 
-    return this.http.put(`${this.apiUrl}/Update`, payload);
+    return this.http.put(`${this.apiUrl}/UpdateCity`, payload);
   }
 
   // ================= DELETE =================
@@ -54,7 +43,7 @@ export class VehicletypeService {
     return this.http.delete(`${this.apiUrl}/${id}`);
   }
 
-  // ================= TOGGLE =================
+  // ================= TOGGLE STATUS =================
   toggleActive(id: string) {
     return this.http.patch(`${this.apiUrl}/${id}/toggle-status`, {});
   }
@@ -66,19 +55,17 @@ export class VehicletypeService {
     search: string = '',
     onlyActive?: boolean
   ) {
+
     let params = new HttpParams()
       .set('pageNumber', pageNumber.toString())
       .set('pageSize', pageSize.toString());
 
-    if (search) params = params.set('searchText', search);
-    
-    if (onlyActive === true) {
-  params = params.set('isActive', 'true');
-}
+    if (search)
+      params = params.set('searchText', search);
 
-   // if (onlyActive) params = params.set('isActive', 'true');
+    if (onlyActive === true)
+      params = params.set('isActive', 'true');
 
     return this.http.get<any>(`${this.apiUrl}/Search`, { params });
   }
-  
 }

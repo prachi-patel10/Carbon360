@@ -15,6 +15,7 @@ import { Vehicletype } from './private/fleet-transport/vehicletype/vehicletype';
 import { Generatormaster } from './private/power-generator/generatormaster/generatormaster';
 import { EmissionFactorComponent } from './private/masters/emissionfactor/emissionfactor';
 import { GeneratorOperationComponent } from './private/power-generator/generator-ec/generator-ec';
+import { Citymaster } from './private/fleet-transport/citymaster/citymaster';
 
 export const routes: Routes = [
 
@@ -46,6 +47,7 @@ export const routes: Routes = [
               { path: 'vehicletypeservice', component: Vehicletype },
             // { path: 'waste', component: WasteComponent },           // create/import WasteComponent
             { path: 'generator-ec', component:GeneratorOperationComponent  },   // create/import GeneratorComponent
+            { path: 'citymaster',component:Citymaster},
         ]
     },
 
