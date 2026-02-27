@@ -1,1 +1,115 @@
-<p>generatormaster works!</p>
+<div class="container">
+
+  <!-- ================= CREATE / UPDATE FORM ================= -->
+  <div class="card form-card">
+    <h2>{{ editingGeneratorId ? 'Update Generator' : 'Create Generator' }}</h2>
+
+    <form [formGroup]="generatorForm" (ngSubmit)="submit()">
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Generator Name</label>
+          <input type="text" formControlName="generatorName" placeholder="Enter generator name" required />
+        </div>
+
+        <div class="form-group">
+          <label>Rated Capacity (kW)</label>
+          <input type="number" formControlName="ratedCapacityKW" placeholder="Enter capacity" required />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Fuel</label>
+          <select formControlName="fuelId" required>
+            <option value="">-- Select Fuel --</option>
+            <option *ngFor="let fuel of fuels" [value]="fuel.fuelId">{{ fuel.fuelName }}</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Site</label>
+          <select formControlName="siteId" required>
+            <option value="">-- Select Site --</option>
+            <option *ngFor="let site of sites" [value]="site.siteId">{{ site.siteName }}</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Department</label>
+          <select formControlName="departmentId" required>
+            <option value="">-- Select Department --</option>
+            <option *ngFor="let dept of departments" [value]="dept.departmentId">{{ dept.departmentName }}</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit">{{ editingGeneratorId ? 'Update' : 'Create' }}</button>
+        <button type="button" (click)="generatorForm.reset(); editingGeneratorId=null;">Clear</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- ================= LIST & FILTER ================= -->
+  <div class="card table-card">
+    <div class="table-header">
+      <input type="text" placeholder="Search generator..." [(ngModel)]="searchText" (keyup.enter)="loadGenerators()" />
+      <label>
+        Active Only
+        <input type="checkbox" [(ngModel)]="isActiveFilter" (change)="loadGenerators()" />
+      </label>
+      <button (click)="clearFilter()">Clear</button>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Rated KW</th>
+          <th>Fuel</th>
+          <th>Site</th>
+          <th>Dept</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let gen of generators">
+          <td>{{ gen.generatorName }}</td>
+          <td>{{ gen.ratedCapacityKW }}</td>
+          <td>{{ gen.fuelName }}</td>
+          <td>{{ gen.siteName }}</td>
+          <td>{{ gen.departmentName }}</td>
+          <td>
+            <button [ngClass]="{'active': gen.isActive,'inactive': !gen.isActive}" (click)="toggleStatus(gen)">
+              {{ gen.isActive ? 'Active' : 'Inactive' }}
+            </button>
+          </td>
+          <td>
+            <button (click)="edit(gen)">Edit</button>
+            <button (click)="delete(gen)">Delete</button>
+          </td>
+        </tr>
+        <tr *ngIf="generators.length === 0">
+          <td colspan="7" style="text-align:center;">No records found</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="pagination">
+      <div class="left">
+        Page Size:
+        <select [(ngModel)]="pageSize" (change)="changePageSize()">
+          <option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</option>
+        </select>
+      </div>
+      <div class="right">
+        Total: {{ totalRecords }}
+        <button (click)="prevPage()" [disabled]="pageNumber === 1">Prev</button>
+        <span>{{ pageNumber }} / {{ totalPages }}</span>
+        <button (click)="nextPage()" [disabled]="pageNumber === totalPages">Next</button>
+      </div>
+    </div>
+  </div>
+</div>

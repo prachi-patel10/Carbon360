@@ -7,11 +7,15 @@
     <form [formGroup]="emissionForm" (ngSubmit)="submitEmission()">
 
       <div class="form-row">
-
-        <div class="form-group">
-          <label>Fuel Type</label>
-          <input type="text" formControlName="FuelType" placeholder="Enter fuel type">
-        </div>
+<div class="mb-3">
+  <label>Fuel</label>
+  <select formControlName="FuelId" class="form-control">
+    <option value="">-- Select Fuel --</option>
+    <option *ngFor="let f of fuels" [value]="f.fuelId">
+      {{ f.fuelName }}
+    </option>
+  </select>
+</div>
 
         <div class="form-group">
           <label>CO2 Factor (Kg/L)</label>
@@ -67,7 +71,7 @@
 
       <tbody>
         <tr *ngFor="let e of emissionFactors()">
-          <td>{{ e.FuelType }}</td>
+          <td>{{ e.FuelName }}</td>
           <td>{{ e.CO2_Factor_KgPerL }}</td>
           <td>{{ e.NO2_Factor_KgPerKm }}</td>
           <td>{{ e.CH4_Factor_KgPerKm }}</td>

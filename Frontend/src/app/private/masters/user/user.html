@@ -147,23 +147,31 @@
       </thead>
       <tbody>
         <tr *ngFor="let u of users()">
-          <td>{{ u.Fname }}</td>
-          <td>{{ u.Lname }}</td>
-          <td>{{ u.Email }}</td>
-          <td>{{ u.DepartmentName || 'N/A' }}</td>
-          <td>{{ u.RoleNames }}</td>
-          <td>
-            <label class="toggle-switch">
-              <input type="checkbox" [checked]="u.IsActive" (change)="toggleActive(u)">
-              <span class="toggle-slider"></span>
-            </label>
-          </td>
-          <td class="action-buttons">
-            <button type="button" class="btn-edit" (click)="edit(u)">Edit</button>
-            <button type="button" class="btn-delete" (click)="deleteUI(u)">Delete</button>
-          </td>
-        </tr>
+  <td>{{ u.fName }}</td>
+  <td>{{ u.lName }}</td>
+  <td>{{ u.email }}</td>
+  <td>{{ u.departmentName || 'N/A' }}</td>
+  <td>{{ u.RoleNames }}</td>
+  <td>
+    <!-- Status Toggle -->
+    <label class="toggle-switch">
+      <input
+        type="checkbox"
+        [checked]="u.isActive"
+        (change)="toggleActive(u)"
+      />
+      <span class="toggle-slider"></span>
+    </label>
+  </td>
+  <td class="action-buttons">
+    <button type="button" class="btn-edit" (click)="edit(u)">Edit</button>
+    <button type="button" class="btn-delete" (click)="deleteUI(u)">Delete</button>
+  </td>
+</tr>
 
+<tr *ngIf="users().length === 0">
+  <td colspan="7" class="text-center">No records found</td>
+</tr>
         <tr *ngIf="users().length === 0">
           <td colspan="7">No records found</td>
         </tr>

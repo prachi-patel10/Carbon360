@@ -53,41 +53,33 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
 
             return response;
         }
-
         // ================= CREATE =================
 
         public async Task<GeneratorOperationResponseDTO> CreateAsync(
-            [FromBody] GeneratorOperationCreateDTO dto)
+    GeneratorOperationCreateDTO dto)
         {
             int userId = GetCurrentUserId();
 
             var result = await _context.Database
-            .SqlQueryRaw<decimal>(
-                "EXEC USP_CB_GeneratorOperationInsert @GeneratorId={0}, @OperationDate={1}, @StartTime={2}, @EndTime={3}, @LoadFactor={4}, @FuelConsumedLiters={5}, @UserId={6}",
-                dto.GeneratorId,
-                dto.OperationDate,
-                dto.StartTime,
-                dto.EndTime,
-                dto.LoadFactor,
-                dto.FuelConsumedLiters,
-                userId)
-            .ToListAsync();
+                .SqlQueryRaw<decimal>(
+                    @"EXEC USP_CB_GeneratorOperationInsert 
+                @GeneratorId={0}, 
+                @OperationDate={1}, 
+                @StartTime={2}, 
+                @EndTime={3}, 
+                @LoadFactor={4}, 
+                @FuelConsumedLiters={5}, 
+                @UserId={6}",
+                    dto.GeneratorId,
+                    dto.OperationDate,
+                    dto.StartTime,
+                    dto.EndTime,
+                    dto.LoadFactor,
+                    dto.FuelConsumedLiters,
+                    userId)
+                .ToListAsync();
 
             int newId = Convert.ToInt32(result.FirstOrDefault());
-
-            //var result = await _context.Database
-            //    .SqlQueryRaw<decimal>(
-            //        "EXEC USP_CB_GeneratorOperationInsert @GeneratorId={0}, @OperationDate={1}, @StartTime={2}, @EndTime={3}, @LoadFactor={4}, @FuelConsumedLiters={5}, @UserId={6}",
-            //        dto.GeneratorId,
-            //        dto.OperationDate,
-            //        dto.StartTime,
-            //        dto.EndTime,
-            //        dto.LoadFactor,
-            //        dto.FuelConsumedLiters,
-            //        userId)
-            //    .ToListAsync();
-
-            //int newId = result.FirstOrDefault();
 
             var entity = await _context.CB_GeneratorOperations
                 .AsNoTracking()
@@ -101,7 +93,6 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
 
             return response;
         }
-
         // ================= GET BY ID =================
 
         public async Task<GeneratorOperationResponseDTO> GetByIdAsync(string encryptedId)
@@ -123,7 +114,6 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
 
             return response;
         }
-
         // ================= DELETE =================
 
         public async Task<bool> DeleteAsync(string encryptedId)
@@ -135,8 +125,7 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
                 "EXEC USP_CB_GeneratorOperationDelete @OperationId={0}, @UpdatedBy={1}",
                 id, userId);
 
-            //return rows > 0;
-            return true;
+            return rows > 0;
         }
     }
 }

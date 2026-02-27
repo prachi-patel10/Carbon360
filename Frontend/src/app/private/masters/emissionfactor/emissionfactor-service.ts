@@ -18,9 +18,27 @@ export class EmissionFactorService {
 
   constructor(private http: HttpClient) {}
 
-  getList() { return this.http.get<any>(`${this.apiUrl}/List`); }
-  create(data: CB_EmissionFactor) { return this.http.post(`${this.apiUrl}/Create`, data); }
-  update(data: CB_EmissionFactor) { return this.http.put(`${this.apiUrl}/${data.EmissionFactorId}`, data); }
-  delete(id: string) { return this.http.delete(`${this.apiUrl}/${id}`); }
-  toggleActive(id: string) { return this.http.patch(`${this.apiUrl}/${id}/toggle-status`, {}); }
+  getList() {
+    return this.http.get<any>(`${this.apiUrl}/List`);
+  }
+
+  create(data: any) {
+    return this.http.post(`${this.apiUrl}/Create`, data);
+  }
+
+  update(data: any) {
+    return this.http.put(`${this.apiUrl}/${data.EmissionFactorId}`, data);
+  }
+
+  delete(id: string) {
+    return this.http.delete(`${this.apiUrl}/${id}`);
+  }
+
+  toggleActive(id: string, isActive: boolean) {
+    return this.http.patch(`${this.apiUrl}/${id}/status?isActive=${isActive}`, {});
+  }
+
+  getFuels() {
+  return this.http.get<any>(`${environment.apiBaseUrl}/Fuel/All`);
+}
 }

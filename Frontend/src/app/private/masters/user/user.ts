@@ -5,6 +5,19 @@ import Swal from 'sweetalert2';
 import { UserService } from './user-service';
 import { ToastService } from '../../../core/toast/toastservice';
 
+interface User {
+  userId: string;
+  fName: string;
+  lName: string;
+  userName: string;
+  email: string;
+  departmentId: string | null;
+  departmentName: string;
+  isActive: boolean;
+  entryDate: string;
+  roles: string[];       // roles array from API
+  RoleNames?: string;    // optional, string version of roles for display
+}
 @Component({
   selector: 'app-master-user',
   standalone: true,
@@ -124,44 +137,65 @@ export class MasterUserComponent implements OnInit {
   //   });
   // }
 
-  loadUsers() {
-    this.service.getPaged(
-      this.currentPage(),
-      this.requestedRecords(),
-      this.searchText(),
-      this.onlyActive()
-    ).subscribe({
-      next: (res: any) => {
-        const usersArray = res?.data?.data ?? [];
+  // loadUsers() {
+  //   this.service.getPaged(
+  //     this.currentPage(),
+  //     this.requestedRecords(),
+  //     this.searchText(),
+  //     this.onlyActive()
+  //   ).subscribe({
+  //     next: (res: any) => {
+  //       const usersArray = res?.data?.data ?? [];
 
-        const mapped = usersArray.map((u: any) => ({
-          UserId: u.userId,
-          Fname: u.fName,
-          Lname: u.lName,
-          UserName: u.userName,
-          Email: u.email,
-          DepartmentId: u.departmentId,
-          DepartmentName: u.departmentName ?? 'N/A',
-          RoleIds: u.roles?.map((x: any) => Number(x)) ?? [],
-          RoleNames: this.rolesList()
-            .filter((r: any) => u.roles?.includes(r.roleId))
-            .map((r: any) => r.roleName)
-            .join(', '),
-          IsActive: u.isActive
-        }));
+  //       const mapped = usersArray.map((u: any) => ({
+  //         UserId: u.userId,
+  //         Fname: u.fName,
+  //         Lname: u.lName,
+  //         UserName: u.userName,
+  //         Email: u.email,
+  //         DepartmentId: u.departmentId,
+  //         DepartmentName: u.departmentName ?? 'N/A',
+  //         RoleIds: u.roles?.map((x: any) => Number(x)) ?? [],
+  //         RoleNames: this.rolesList()
+  //           .filter((r: any) => u.roles?.includes(r.roleId))
+  //           .map((r: any) => r.roleName)
+  //           .join(', '),
+  //         IsActive: u.isActive
+  //       }));
 
-        this.users.set(mapped);
-        this.totalRecords.set(res.data.totalRecords ?? mapped.length);
-        this.totalPages.set(res.data.totalPages ?? 1);
-        this.currentPage.set(res.data.currentPage ?? 1);
-      },
-      error: (err: any) => {
-        console.error(err);
-        this.toastr.error('Failed to load users');
-      }
-    });
-  }
+  //       this.users.set(mapped);
+  //       this.totalRecords.set(res.data.totalRecords ?? mapped.length);
+  //       this.totalPages.set(res.data.totalPages ?? 1);
+  //       this.currentPage.set(res.data.currentPage ?? 1);
+  //     },
+  //     error: (err: any) => {
+  //       console.error(err);
+  //       this.toastr.error('Failed to load users');
+  //     }
+  //   });
+  // }
 
+loadUsers() {
+  this.service.getPaged(
+    this.currentPage(),
+    this.requestedRecords(),
+    this.searchText(),
+    this.onlyActive()
+  ).subscribe(res => {
+    const data: User[] = res.data.data; // API response
+
+    this.totalRecords.set(res.data.totalRecords);
+    this.totalPages.set(res.data.totalPages);
+
+    // Map roles array to string and update the signal
+    this.users.set(
+      data.map((u: User) => ({
+        ...u,
+        RoleNames: u.roles.join(', ')
+      }))
+    );
+  });
+}
   // ================= LOAD DEPARTMENTS =================
   loadDepartments(page: number, size: number, search: string, active: boolean) {
     this.service.getDepartments().subscribe(res => {

@@ -9,7 +9,6 @@ namespace ProjectApp.Core.DTOs.Account.GeneratorOperation
 {
     public class GeneratorOperationCreateDTO
     {
-    
         public int GeneratorId { get; set; }
 
         public DateOnly OperationDate { get; set; }
@@ -21,5 +20,7 @@ namespace ProjectApp.Core.DTOs.Account.GeneratorOperation
         public decimal LoadFactor { get; set; }
 
         public decimal FuelConsumedLiters { get; set; }
+
+        public int FuelId { get; set; }   // ✅ ADD THIS
     }
 }
