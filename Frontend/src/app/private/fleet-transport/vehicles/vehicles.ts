@@ -55,9 +55,9 @@ export class Vehicles implements OnInit {
   newVehicle: WritableSignal<VehicleDto> = signal<VehicleDto>({
     vehicle_id: null,
     vehicle_number: '',
-    vehicle_type_id: null,
-    fuel_id: null,
-    department_id: null,
+    vehicle_type_id: null as string | null,
+    fuel_id: null as string | null,
+    department_id: null as string | null,
     engine_capacity: null,
     emission_standard: null,
     isActive: true
@@ -102,64 +102,64 @@ export class Vehicles implements OnInit {
     // });
 
     // Departments
- this.vehicleService.getDepartmentList().subscribe((res: any) => {
-    // Check if API returns array or single object
-    let deptArray: any[] = [];
-    if (Array.isArray(res.data)) {
-      deptArray = res.data;
-    } else if (res.data) {
-      // If API returns single department, wrap in array
-      deptArray = [res.data];
-    }
+    this.vehicleService.getDepartmentList().subscribe((res: any) => {
+      // Check if API returns array or single object
+      let deptArray: any[] = [];
+      if (Array.isArray(res.data)) {
+        deptArray = res.data;
+      } else if (res.data) {
+        // If API returns single department, wrap in array
+        deptArray = [res.data];
+      }
 
-    const mapped = deptArray.map((d: any) => ({
-      department_id: String(d.id),          // use `id` from your department API
-      department_name: d.departmentName
-    }));
+      const mapped = deptArray.map((d: any) => ({
+        department_id: String(d.id),          // use `id` from your department API
+        department_name: d.departmentName
+      }));
 
-    this.departments.set(mapped);
-  });
+      this.departments.set(mapped);
+    });
   }
 
-//   loadDropdowns() {
-//   // ---------------- Vehicle Types ----------------
-//   this.vehicleService.getVehicleTypeList().subscribe((res: any) => {
-//     const mapped = (res.data || []).map((vt: any) => ({
-//       vehicle_type_id: String(vt.vehicle_type_id),
-//       vehicle_type_name: vt.vehicle_type_name
-//     }));
-//     this.vehicleTypes.set(mapped);
-//   });
+  //   loadDropdowns() {
+  //   // ---------------- Vehicle Types ----------------
+  //   this.vehicleService.getVehicleTypeList().subscribe((res: any) => {
+  //     const mapped = (res.data || []).map((vt: any) => ({
+  //       vehicle_type_id: String(vt.vehicle_type_id),
+  //       vehicle_type_name: vt.vehicle_type_name
+  //     }));
+  //     this.vehicleTypes.set(mapped);
+  //   });
 
-//   // ---------------- Fuel Types ----------------
-//   this.vehicleService.getFuelList().subscribe((res: any) => {
-//     const mapped = (res.data || []).map((f: any) => ({
-//       fuel_id: String(f.fuel_id),
-//       fuel_name: f.fuel_name
-//     }));
-//     this.fuelTypes.set(mapped);
-//   });
+  //   // ---------------- Fuel Types ----------------
+  //   this.vehicleService.getFuelList().subscribe((res: any) => {
+  //     const mapped = (res.data || []).map((f: any) => ({
+  //       fuel_id: String(f.fuel_id),
+  //       fuel_name: f.fuel_name
+  //     }));
+  //     this.fuelTypes.set(mapped);
+  //   });
 
-//   // ---------------- Departments ----------------
-//   // Fetch all departments to map id -> name
-//   this.vehicleService.getDepartmentList().subscribe((res: any) => {
-//     // Check if API returns array or single object
-//     let deptArray: any[] = [];
-//     if (Array.isArray(res.data)) {
-//       deptArray = res.data;
-//     } else if (res.data) {
-//       // If API returns single department, wrap in array
-//       deptArray = [res.data];
-//     }
+  //   // ---------------- Departments ----------------
+  //   // Fetch all departments to map id -> name
+  //   this.vehicleService.getDepartmentList().subscribe((res: any) => {
+  //     // Check if API returns array or single object
+  //     let deptArray: any[] = [];
+  //     if (Array.isArray(res.data)) {
+  //       deptArray = res.data;
+  //     } else if (res.data) {
+  //       // If API returns single department, wrap in array
+  //       deptArray = [res.data];
+  //     }
 
-//     const mapped = deptArray.map((d: any) => ({
-//       department_id: String(d.id),          // use `id` from your department API
-//       department_name: d.departmentName
-//     }));
+  //     const mapped = deptArray.map((d: any) => ({
+  //       department_id: String(d.id),          // use `id` from your department API
+  //       department_name: d.departmentName
+  //     }));
 
-//     this.departments.set(mapped);
-//   });
-// }
+  //     this.departments.set(mapped);
+  //   });
+  // }
 
   getVehicleTypeName(id: string | null) {
     if (!id) return '-';
@@ -175,7 +175,7 @@ export class Vehicles implements OnInit {
 
   getDepartmentName(id: string | null) {
     if (!id) return '-';
-    const d = this.departments().find(  dep => dep.department_id === id);
+    const d = this.departments().find(dep => dep.department_id === id);
     return d ? d.department_name : '-';
   }
 
@@ -278,49 +278,60 @@ export class Vehicles implements OnInit {
   //   }
   // }
 
-saveVehicle() {
-  const raw = this.newVehicle();
+  saveVehicle() {
+    const raw = this.newVehicle();
 
-  // Validation
-  if (!raw.vehicle_number?.trim()) { this.showToast('Error', 'Vehicle number is required!', 'error'); return; }
-  if (!raw.emission_standard?.trim()) { this.showToast('Error', 'Emission standard is required!', 'error'); return; }
-  if (!raw.vehicle_type_id) { this.showToast('Error', 'Select vehicle type!', 'error'); return; }
-  if (!raw.fuel_id) { this.showToast('Error', 'Select fuel type!', 'error'); return; }
-  if (!raw.department_id) { this.showToast('Error', 'Select department!', 'error'); return; }
-  if (!raw.engine_capacity) { this.showToast('Error', 'Engine capacity is required!', 'error'); return; }
+    // ------------------ VALIDATION ------------------
+    if (!raw.vehicle_number?.trim()) { this.showToast('Error', 'Vehicle number is required!', 'error'); return; }
+    if (!raw.emission_standard?.trim()) { this.showToast('Error', 'Emission standard is required!', 'error'); return; }
+    if (!raw.vehicle_type_id) { this.showToast('Error', 'Select vehicle type!', 'error'); return; }
+    if (!raw.fuel_id) { this.showToast('Error', 'Select fuel type!', 'error'); return; }
+    if (!raw.department_id) { this.showToast('Error', 'Select department!', 'error'); return; }
+    if (!raw.engine_capacity && raw.engine_capacity !== 0) { this.showToast('Error', 'Engine capacity is required!', 'error'); return; }
 
-  const vehicle: VehicleDto = {
-    vehicle_id: raw.vehicle_id || undefined,          // optional
-    vehicle_number: raw.vehicle_number.trim(),        // required
-    vehicle_type_id: raw.vehicle_type_id,
-    fuel_id: raw.fuel_id,
-    department_id: raw.department_id,
-    engine_capacity: Number(raw.engine_capacity),
-    emission_standard: raw.emission_standard.trim(),
-    isActive: raw.isActive != null ? raw.isActive : true
-  };
+    // ------------------ PREPARE PAYLOAD ------------------
+    // For update, include vehicle_id; for create, omit it
+    const payload = this.isEditMode()
+      ? {
+        vehicle_id: raw.vehicle_id!,            // must exist for update
+        vehicle_number: raw.vehicle_number.trim(),
+        vehicle_type_id: raw.vehicle_type_id!,
+        fuel_id: raw.fuel_id!,
+        department_id: raw.department_id!,
+        engine_capacity: raw.engine_capacity != null ? Number(raw.engine_capacity) : null,
+        emission_standard: raw.emission_standard!.trim(),
+        IsActive: raw.isActive ?? true
+      }
+      : {
+        vehicle_number: raw.vehicle_number.trim(),
+        vehicle_type_id: raw.vehicle_type_id!,
+        fuel_id: raw.fuel_id!,
+        department_id: raw.department_id!,
+        engine_capacity: raw.engine_capacity != null ? Number(raw.engine_capacity) : null,
+        emission_standard: raw.emission_standard!.trim(),
+        IsActive: raw.isActive ?? true
+      };
 
-  // Send the object directly (not wrapped in dto)
-  const requestPayload = vehicle;
+    // ------------------ CALL SERVICE ------------------
+    const request$ = this.isEditMode()
+      ? this.vehicleService.updateVehicle(payload)
+      : this.vehicleService.createVehicle(payload);
 
-  const request$ = this.isEditMode()
-    ? this.vehicleService.updateVehicle(requestPayload)
-    : this.vehicleService.createVehicle(requestPayload);
+    request$.subscribe({
+      next: () => {
+        this.showToast(this.isEditMode() ? 'Updated' : 'Created',
+          `Vehicle ${this.isEditMode() ? 'updated' : 'created'} successfully!`,
+          'success');
+        this.resetForm();
+        this.loadVehicles();
+      },
+      error: err => {
+        console.error('Vehicle save error', err);
+        this.showToast('Error', 'Failed to save vehicle', 'error');
+      }
+    });
+  }
 
-  request$.subscribe({
-    next: () => {
-      this.showToast(this.isEditMode() ? 'Updated' : 'Created',
-                     `Vehicle ${this.isEditMode() ? 'updated' : 'created'} successfully!`,
-                     'success');
-      this.resetForm();
-      this.loadVehicles();
-    },
-    error: err => {
-      console.error('Vehicle save error', err);
-      this.showToast('Error', 'Failed to save vehicle', 'error');
-    }
-  });
-}
   //edit
   editVehicle(vehicle: VehicleDto) {
     this.isEditMode.set(true);

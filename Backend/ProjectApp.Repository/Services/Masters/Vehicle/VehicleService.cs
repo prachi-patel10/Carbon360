@@ -22,12 +22,17 @@ namespace ProjectApp.Repository.Services.Masters.Vehicle
         {
             try
             {
+                // Decode the encrypted IDs to integer
+                int vehicleTypeId = _idEncoder.Decode(dto.vehicle_type_id);
+                int fuelId = _idEncoder.Decode(dto.fuel_id);
+                int departmentId = _idEncoder.Decode(dto.department_id);
+
                 var parameters = new[]
                 {
             new SqlParameter("@vehicle_number", dto.vehicle_number),
-            new SqlParameter("@vehicle_type_id", dto.vehicle_type_id),
-            new SqlParameter("@fuel_id", dto.fuel_id),
-            new SqlParameter("@department_id", dto.department_id),
+            new SqlParameter("@vehicle_type_id", vehicleTypeId),
+            new SqlParameter("@fuel_id", fuelId),
+            new SqlParameter("@department_id", departmentId),
             new SqlParameter("@engine_capacity", dto.engine_capacity ?? (object)DBNull.Value),
             new SqlParameter("@emission_standard", dto.emission_standard ?? (object)DBNull.Value),
             new SqlParameter("@IsActive", dto.IsActive),
@@ -54,26 +59,6 @@ namespace ProjectApp.Repository.Services.Masters.Vehicle
             {
                 throw new Exception("Vehicle number already exists.");
             }
-        }
-
-        public async Task UpdateAsync(VehicleUpdateDto dto)
-        {
-            int decodedId = _idEncoder.Decode(dto.vehicle_id.ToString());
-
-            var parameters = new[]
-            {
-                new SqlParameter("@vehicle_id", decodedId),
-                new SqlParameter("@vehicle_number", dto.vehicle_number),
-                new SqlParameter("@vehicle_type_id", dto.vehicle_type_id),
-                new SqlParameter("@fuel_id", dto.fuel_id),
-                new SqlParameter("@department_id", dto.department_id),
-                new SqlParameter("@engine_capacity", dto.engine_capacity ?? (object)DBNull.Value),
-                new SqlParameter("@emission_standard", dto.emission_standard ?? (object)DBNull.Value),
-                new SqlParameter("@IsActive", dto.IsActive),
-                new SqlParameter("@UpdatedBy", 1)
-            };
-
-            await _spService.ExecuteSpAsync("USP_CB_VehicleMasterUpdate", parameters);
         }
 
         public async Task DeleteAsync(string encryptedId, int userId)
@@ -124,45 +109,62 @@ namespace ProjectApp.Repository.Services.Masters.Vehicle
             return dataList.Select(MapToResponseDto).ToList();
         }
 
-        //        public async Task<PageResult> SearchAsync(VehicleSearchRequest request)
-        //        {
-        //            var parameters = new List<SqlParameter>
-        //{
-        //    new SqlParameter("@Search", request.Search ?? (object)DBNull.Value),
-        //    new SqlParameter("@vehicle_type_id", request.vehicle_type_id ?? (object)DBNull.Value),
-        //    new SqlParameter("@fuel_id", request.fuel_id ?? (object)DBNull.Value),
-        //    new SqlParameter("@department_id", request.department_id ?? (object)DBNull.Value),
-        //    new SqlParameter("@IsActive", request.IsActive ?? (object)DBNull.Value),
-        //    new SqlParameter("@PageNumber", request.PageNumber),
-        //    new SqlParameter("@PageSize", request.PageSize),
-        //    new SqlParameter("@SortColumn", request.SortColumn),
-        //    new SqlParameter("@SortDirection", request.SortDirection)
-        //};
+        public async Task UpdateAsync(VehicleUpdateDto dto)
+        {
+            // Decode encrypted IDs to integer for SP
+            int decodedVehicleId = _idEncoder.Decode(dto.vehicle_id);
+            int vehicleTypeId = _idEncoder.Decode(dto.vehicle_type_id);
+            int fuelId = _idEncoder.Decode(dto.fuel_id);
+            int departmentId = _idEncoder.Decode(dto.department_id);
 
-        //            var result = await _spService.ExecuteSpAsync(
-        //                "USP_CB_VehicleMasterSearch",
-        //                parameters.ToArray()
-        //            );
+            var parameters = new[]
+            {
+        new SqlParameter("@vehicle_id", decodedVehicleId),
+        new SqlParameter("@vehicle_number", dto.vehicle_number),
+        new SqlParameter("@vehicle_type_id", vehicleTypeId),
+        new SqlParameter("@fuel_id", fuelId),
+        new SqlParameter("@department_id", departmentId),
+        new SqlParameter("@engine_capacity", dto.engine_capacity ?? (object)DBNull.Value),
+        new SqlParameter("@emission_standard", dto.emission_standard ?? (object)DBNull.Value),
+        new SqlParameter("@IsActive", dto.IsActive),
+        new SqlParameter("@UpdatedBy", 1) // Replace with actual user ID
+    };
 
-        //            var dataList = (result.ContainsKey("Data") && result["Data"] != null)
-        //    ? (result["Data"] as IEnumerable<object>)
-        //        ?.Cast<Dictionary<string, object>>()
-        //        .ToList()
-        //    : new List<Dictionary<string, object>>();
+            await _spService.ExecuteSpAsync("USP_CB_VehicleMasterUpdate", parameters);
+        }
 
-        //            var vehicles = dataList.Select(MapToResponseDto).ToList();
+        public async Task UpdateStatusAsync(string encryptedId, bool isActive, int userId)
+        {
+            int decodedId = _idEncoder.Decode(encryptedId);
 
-        //            var pagination = result["Pagination"] as Dictionary<string, object>
-        //                             ?? new Dictionary<string, object>();
+            await _spService.ExecuteSpAsync(
+                "USP_CB_VehicleMasterUpdateStatus",
+                new SqlParameter("@vehicle_id", decodedId),
+                new SqlParameter("@IsActive", isActive),
+                new SqlParameter("@UpdatedBy", userId)
+            );
+        }
 
-        //            return new PageResult
-        //            {
-        //                Data = vehicles,
-        //                TotalRecords = pagination.ContainsKey("TotalRecords") ? Convert.ToInt32(pagination["TotalRecords"]) : 0,
-        //                TotalPages = pagination.ContainsKey("TotalPages") ? Convert.ToInt32(pagination["TotalPages"]) : 0,
-        //                CurrentPage = pagination.ContainsKey("CurrentPage") ? Convert.ToInt32(pagination["CurrentPage"]) : 0
-        //            };
-        //        }
+        public async Task<VehicleResponseDto?> GetByName(string name)
+        {
+            var result = await _spService.ExecuteSpAsync(
+                "USP_CB_VehicleMasterGetByName",
+                new SqlParameter("@vehicle_number", name)
+            );
+
+            if (!result.ContainsKey("Data") || result["Data"] == null)
+                return null;
+
+            var dataList = (result["Data"] as IEnumerable<object>)
+                            ?.Cast<Dictionary<string, object>>()
+                            .ToList();
+
+            if (dataList == null || !dataList.Any())
+                return null;
+
+            return MapToResponseDto(dataList.First());
+        }
+
         public async Task<VehicleSearchResponse> SearchAsync(VehicleSearchRequest request)
         {
             var parameters = new List<SqlParameter>
@@ -197,39 +199,6 @@ namespace ProjectApp.Repository.Services.Masters.Vehicle
                 TotalPages = pagination.ContainsKey("TotalPages") ? Convert.ToInt32(pagination["TotalPages"]) : 0,
                 CurrentPage = pagination.ContainsKey("CurrentPage") ? Convert.ToInt32(pagination["CurrentPage"]) : request.PageNumber
             };
-        }
-
-
-        public async Task UpdateStatusAsync(string encryptedId, bool isActive, int userId)
-        {
-            int decodedId = _idEncoder.Decode(encryptedId);
-
-            await _spService.ExecuteSpAsync(
-                "USP_CB_VehicleMasterUpdateStatus",
-                new SqlParameter("@vehicle_id", decodedId),
-                new SqlParameter("@IsActive", isActive),
-                new SqlParameter("@UpdatedBy", userId)
-            );
-        }
-
-        public async Task<VehicleResponseDto?> GetByName(string name)
-        {
-            var result = await _spService.ExecuteSpAsync(
-                "USP_CB_VehicleMasterGetByName",
-                new SqlParameter("@vehicle_number", name)
-            );
-
-            if (!result.ContainsKey("Data") || result["Data"] == null)
-                return null;
-
-            var dataList = (result["Data"] as IEnumerable<object>)
-                            ?.Cast<Dictionary<string, object>>()
-                            .ToList();
-
-            if (dataList == null || !dataList.Any())
-                return null;
-
-            return MapToResponseDto(dataList.First());
         }
 
         private VehicleResponseDto MapToResponseDto(Dictionary<string, object> row)

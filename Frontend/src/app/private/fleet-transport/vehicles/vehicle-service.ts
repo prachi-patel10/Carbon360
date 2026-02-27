@@ -13,16 +13,12 @@ export class VehicleService {
   constructor(private http: HttpClient) { }
 
   createVehicle(vehicle: any) {
-    return this.http.post<any>(`${this.baseUrl}/create`, {
-      dto: vehicle
-    });
+    return this.http.post<any>(`${this.baseUrl}/create`, vehicle);  // remove { dto: ... }
   }
 
   updateVehicle(vehicle: any) {
-  return this.http.put<any>(`${this.baseUrl}/update`, {
-    dto: vehicle
-  });
-}
+    return this.http.put<any>(`${this.baseUrl}/update`, vehicle);  // remove { dto: ... }
+  }
 
   updateVehicleStatus(vehicleId: string, status: boolean) {
     return this.http.patch(`${this.baseUrl}/update-status/${vehicleId}`, { isActive: status });
