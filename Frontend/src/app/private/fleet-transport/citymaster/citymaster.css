@@ -1,21 +1,18 @@
-/* =========================
-   Page Container
-========================= */
-.department-page {
+/* ================= CONTAINER ================= */
+.container {
   max-width: 1200px;
-  margin: auto;
-  padding: 20px;
+  margin: 0 auto;
+  padding: 15px;
+  font-family: Arial, sans-serif;
 }
 
-/* =========================
-   Card Style
-========================= */
+/* ================= CARD ================= */
 .card {
-  background: #ffffff;
+  background-color: #fff;
+  border-radius: 12px;
   padding: 20px;
-  margin-bottom: 20px;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  margin-bottom: 15px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.05);
 }
 
 .card-title {
@@ -24,183 +21,194 @@
   font-weight: 600;
 }
 
-/* =========================
-   Form Layout
-========================= */
-.form-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 15px;
+/* ================= FORM GRID ================= */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
 }
 
 .form-group {
-  flex: 1 1 250px;
   display: flex;
   flex-direction: column;
 }
 
 .form-group label {
   margin-bottom: 5px;
-  font-size: 14px;
   font-weight: 500;
+  font-size: 14px;
 }
 
-/* =========================
-   Inputs & Select
-========================= */
-input,
-select {
-  padding: 8px;
-  border-radius: 4px;
+.form-group input {
+  padding: 6px 10px;
+  border-radius: 5px;
   border: 1px solid #ccc;
   font-size: 14px;
 }
 
-/* =========================
-   Form Buttons
-========================= */
-.form-buttons {
-  margin-top: 15px;
+/* ================= FORM ACTION ================= */
+.form-actions {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-top: 10px;
 }
 
-.btn-primary {
+.save-btn {
   padding: 8px 16px;
+  border-radius: 5px;
   border: none;
-  border-radius: 4px;
-  background-color: #1976d2;
-  color: white;
+  background-color: #1b5e20;
+  color: #fff;
   cursor: pointer;
-  font-weight: 500;
 }
 
-.btn-primary:hover {
-  background-color: #125ea8;
+.save-btn:hover {
+  background-color: #145214;
 }
 
-/* =========================
-   Search Row
-========================= */
-.search-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 15px;
-  align-items: center;
-}
-
-.search-row input[type="text"] {
-  flex: 1 1 300px;
-}
-
-/* =========================
-   Table Styling
-========================= */
-table {
-  width: 100%;
-  border-collapse: collapse;
-  min-width: 700px;
-}
-
-th,
-td {
-  padding: 10px;
-  border-bottom: 1px solid #eee;
-  text-align: left;
-  font-size: 14px;
-}
-
-th {
-  background-color: #f5f5f5;
-  font-weight: 600;
-}
-
-/* =========================
-   Action Buttons
-========================= */
-table button {
-  padding: 6px 12px;
-  margin-right: 5px;
-  border: none;
-  border-radius: 4px;
-  background-color: #1976d2;
-  color: white;
-  cursor: pointer;
-  font-size: 13px;
-}
-
-table button:hover {
-  background-color: #125ea8;
-}
-
-/* =========================
-   Responsive Design
-========================= */
-
-/* Tablet */
-@media (max-width: 768px) {
-  .form-row,
-  .search-row {
-    flex-direction: column;
-  }
-}
-
-/* Mobile */
-@media (max-width: 480px) {
-  .card-title {
-    font-size: 18px;
-  }
-
-  input,
-  select {
-    width: 100%;
-  }
-}
-
-
-/* ================= TOGGLE SWITCH ================= */
-
-.toggle-wrapper {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.toggle-switch {
+/* ================= SWITCH ================= */
+.switch {
   position: relative;
-  width: 46px;
-  height: 24px;
+  display: inline-block;
+  width: 40px;
+  height: 20px;
 }
 
-.toggle-switch input {
+.switch input {
   opacity: 0;
   width: 0;
   height: 0;
 }
 
-.toggle-slider {
+.slider {
   position: absolute;
-  cursor: pointer;
   inset: 0;
   background-color: #ccc;
   transition: .3s;
-  border-radius: 34px;
+  border-radius: 20px;
+  cursor: pointer;
 }
 
-.toggle-slider:before {
+.slider:before {
   content: "";
   position: absolute;
-  height: 18px;
-  width: 18px;
+  height: 14px;
+  width: 14px;
   left: 3px;
   bottom: 3px;
-  background-color: white;
+  background: white;
   transition: .3s;
   border-radius: 50%;
 }
 
-.toggle-switch input:checked + .toggle-slider {
+input:checked + .slider {
   background-color: #1b5e20;
 }
 
-.toggle-switch input:checked + .toggle-slider:before {
-  transform: translateX(22px);
+input:checked + .slider:before {
+  transform: translateX(20px);
+}
+
+/* ================= SEARCH ================= */
+.search-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.search-input {
+  flex: 0 0 220px;
+  padding: 6px 10px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+.search-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ================= TABLE ================= */
+.table-wrapper {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+th, td {
+  padding: 10px 8px;
+  border-bottom: 1px solid #ddd;
+}
+
+td.actions {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+/* FILTER BUTTON */
+.filter-btn {
+  background-color: #959090c9;
+  color: #fff;
+  padding: 6px 12px;
+  border-radius: 5px;
+  border: none;
+  cursor: pointer;
+}
+
+.filter-btn:hover {
+  background-color: #454748eb;   /* darker color */
+}
+
+.edit-btn {
+  background-color: #d0ebff;
+  color: #0369a1;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.delete-btn {
+  background-color: #ffe3e3;
+  color: #c92a2a;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+/* ================= PAGINATION ================= */
+.pagination-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 15px;
+}
+
+.pagination-controls button {
+  padding: 5px 10px;
+  margin: 0 5px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  background: #f5f5f5;
+  cursor: pointer;
+}
+
+.pagination-controls button:hover {
+  background: #e0e0e0;
+}
+
+/* ================= RESPONSIVE ================= */
+@media (max-width:768px){
+  .form-grid { grid-template-columns:1fr; }
+  .search-row { flex-direction:column; align-items:stretch; }
 }

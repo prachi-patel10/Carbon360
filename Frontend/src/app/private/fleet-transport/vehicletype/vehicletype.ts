@@ -114,6 +114,7 @@ get endRecord(): number {
       console.log('API RESPONSE:', res);
 
       // If API returns: { data: [], totalRecords, totalPages }
+      
       const list = res.data || res;
 
       const mapped = (list.data || list).map((v: any) => ({
@@ -124,6 +125,7 @@ get endRecord(): number {
         description: v.description,
         isActive: v.isActive
       }));
+      
 
       this.vehicleTypes.set(mapped);
 
@@ -136,6 +138,96 @@ get endRecord(): number {
     }
   });
 }
+
+// loadVehicleTypes(page: number, size: number, search: string, active: boolean) {
+//   this.service.getPaged(page, size, search, active).subscribe({
+//     next: (res: any) => {
+
+//       console.log('API RESPONSE:', res);
+
+//       const list = res.data || res;
+
+//       const mapped = (list.data || list).map((v: any) => ({
+//         vehicle_type_id: v.vehicle_type_id,
+//         vehicle_type_name: v.vehicle_type_name,
+//         categoryId: v.categoryId,
+//         categoryName: v.categoryName,
+//         description: v.description,
+//         isActive: v.isActive
+//       }));
+
+//       // ✅ ADD FILTERING HERE
+//       let filtered = mapped;
+
+//       const f = this.filter();
+
+//       // if (f.categoryIds.length > 0) {
+//       //   filtered = filtered.filter(v:VehicleType =>
+//       //     f.categoryIds.includes(v.categoryId)
+//       //   );
+//       // }
+
+//       if (f.categoryIds.length > 0) {
+//   filtered = filtered.filter((v: VehicleType) =>
+//     f.categoryIds.includes(v.categoryId ?? '')
+//   );
+// }
+
+//       // ✅ SET FILTERED DATA
+//       this.vehicleTypes.set(filtered);
+
+//       // ⚠️ optional: update totalRecords based on filter
+//       this.totalRecords.set(filtered.length);
+//       this.totalPages.set(Math.ceil(filtered.length / this.requestedRecords()) || 1);
+//     },
+//     error: (err) => {
+//       console.error(err);
+//       this.toastr.error('Failed to load vehicle types');
+//     }
+//   });
+// }
+
+  filterModalOpen = signal(false);
+
+filter = signal({
+  categoryIds: [] as string[]
+});
+
+// showFilterModal() {
+//   this.filterModalOpen.set(true);
+// }
+
+// closeFilterModal() {
+//   this.filterModalOpen.set(false);
+// }
+
+toggleCategory(id: string) {
+  const selected = [...this.filter().categoryIds];
+  const index = selected.indexOf(id);
+
+  if (index > -1) {
+    selected.splice(index, 1);
+  } else {
+    selected.push(id);
+  }
+
+  this.filter.update(f => ({ ...f, categoryIds: selected }));
+}
+
+isCategorySelected(id: string): boolean {
+  return this.filter().categoryIds.includes(id);
+}
+
+// applyFilter() {
+//   this.currentPage.set(1);
+//   this.refreshTrigger.update(x => x + 1);
+//   this.closeFilterModal();
+// }
+
+// resetFilter() {
+//   this.filter.set({ categoryIds: [] });
+//   this.refreshTrigger.update(x => x + 1);
+// }
 
   submit() {
 

@@ -1,37 +1,31 @@
-<div class="department-page">
+<div class="container">
 
-  <!-- FORM -->
+  <!-- ================= CREATE / EDIT FORM ================= -->
   <div class="card">
-    <h2 class="card-title">Vehicle Type</h2>
+    <form [formGroup]="vehicleForm" class="form-grid" (ngSubmit)="submit()">
 
-    <form [formGroup]="vehicleForm" (ngSubmit)="submit()">
-
-      <div class="form-row">
-
-        <div class="form-group">
-          <label>Vehicle Type Name</label>
-          <input type="text" formControlName="vehicle_type_name">
-        </div>
-
-        <div class="form-group">
-          <label>Vehicle Category</label>
-          <select formControlName="categoryId">
-            <option value="">Select Category</option>
-            <option value="1">LDV</option>
-            <option value="2">MDV</option>
-            <option value="3">HDV</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label>Description</label>
-          <input type="text" formControlName="description">
-        </div>
-
+      <div class="form-group">
+        <label>Vehicle Type Name</label>
+        <input type="text" formControlName="vehicle_type_name" />
       </div>
 
-      <div class="form-buttons">
-        <button class="btn-primary" type="submit">
+      <div class="form-group">
+        <label>Vehicle Category</label>
+        <select formControlName="categoryId">
+          <option value="">Select Category</option>
+          <option value="1">LDV</option>
+          <option value="2">MDV</option>
+          <option value="3">HDV</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Description</label>
+        <input type="text" formControlName="description" />
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="save-btn">
           {{ !vehicleForm.value.vehicle_type_id ? 'Save' : 'Update' }}
         </button>
       </div>
@@ -39,105 +33,91 @@
     </form>
   </div>
 
-  <!-- SEARCH -->
-   <form [formGroup]="searchForm">
-  <div class="search-row">
-
-    <input
-      type="text"
-      placeholder="Search vehicle type..."
-      formControlName="searchText">
-
-    <label>
-      <input type="checkbox"
-             [checked]="onlyActive()"
-             (change)="onlyActive.set($event.target.checked)">
-      Active Only
-    </label>
-
-  </div>
-</form>
-  <!-- <div class="card">
-
-    <div class="search-row">
-      <input type="text" placeholder="Search vehicle type..." formControlName="searchText" [formGroup]="searchForm">
-
-      <label>
-        <input type="checkbox"
-               [checked]="onlyActive()"
-               (change)="onlyActive.set($event.target.checked)">
-        Active Only
-      </label>
-    </div>
-
-  </div> -->
-
-  <!-- TABLE -->
+  <!-- ================= SEARCH + FILTER ================= -->
   <div class="card">
 
-    <table>
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Category</th>
-          <th>Description</th>
-          <th>Status</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
+    <div class="search-row">
 
-      <tbody>
-        <tr *ngFor="let v of vehicleTypes()">
-          <td>{{ v.vehicle_type_name }}</td>
-          <td>{{ v.categoryName }}</td>
-          <td>{{ v.description }}</td>
+      <div class="search-left">
+        <input
+          type="text"
+          placeholder="Search vehicle type..."
+          formControlName="searchText"
+          [formGroup]="searchForm"
+          class="search-input">
+      </div>
 
-          <td>
-            <label class="toggle-switch">
-              <input type="checkbox" [checked]="v.isActive" (change)="toggleActive(v)">
-              <span class="toggle-slider"></span>
-            </label>
-          </td>
+      <div class="search-right">
 
-          <!-- <td>
-            <input type="checkbox"
-                   [checked]="v.isActive"
-                   (change)="toggleActive(v)">
-          </td> -->
-          <td>
-            <button (click)="edit(v)">Edit</button>
-            <button (click)="deleteUI(v)">Delete</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+        <div class="active-toggle">
+          <span>Active Only</span>
+          <label class="switch">
+            <input
+              type="checkbox"
+              [checked]="onlyActive()"
+              (change)="onlyActive.set($event.target.checked)">
+            <span class="slider"></span>
+          </label>
+        </div>
 
-  </div>
+        <button class="filter-btn">
+          Filter
+        </button>
 
-  <!-- ================= PAGINATION ================= -->
-  <div class="pagination-section">
-
-    <!-- Record Info -->
-    <div class="record-info">
-      Showing {{ startRecord }} to {{ endRecord }}
-      of {{ totalRecords() }} entries
+      </div>
     </div>
 
-    <!-- Pagination Controls -->
-    <div class="pagination-controls">
+    <!-- ================= TABLE ================= -->
+    <div class="table-wrapper">
+      <table>
 
-      <button (click)="previousPage()" [disabled]="currentPage() === 1">
-        Previous
-      </button>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Category</th>
+            <th>Description</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
 
-      <span>
-        Page {{ currentPage() }} of {{ totalPages() }}
-      </span>
+        <tbody>
+          <tr *ngFor="let v of vehicleTypes()">
 
-      <button (click)="nextPage()" [disabled]="currentPage() === totalPages()">
-        Next
-      </button>
+            <td>{{ v.vehicle_type_name }}</td>
+            <td>{{ v.categoryName }}</td>
+            <td>{{ v.description }}</td>
 
+            <td>
+              <label class="switch">
+                <input
+                  type="checkbox"
+                  [checked]="v.isActive"
+                  (change)="toggleActive(v)">
+                <span class="slider"></span>
+              </label>
+            </td>
+
+            <td class="actions">
+              <button class="edit-btn" (click)="edit(v)">Edit</button>
+              <button class="delete-btn" (click)="deleteUI(v)">Delete</button>
+            </td>
+
+          </tr>
+        </tbody>
+
+      </table>
+    </div>
+
+    <!-- ================= PAGINATION ================= -->
+    <div class="pagination-info">
+      <span>Total Records: {{ totalRecords() }}</span>
+
+      <div class="pagination-controls">
+        <button (click)="previousPage()">Previous</button>
+        <span>Page {{ currentPage() }} of {{ totalPages() }}</span>
+        <button (click)="nextPage()">Next</button>
+      </div>
     </div>
 
   </div>
