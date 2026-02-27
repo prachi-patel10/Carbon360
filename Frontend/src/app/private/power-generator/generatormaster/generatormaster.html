@@ -1,115 +1,137 @@
 <div class="container">
 
-  <!-- ================= CREATE / UPDATE FORM ================= -->
-  <div class="card form-card">
-    <h2>{{ editingGeneratorId ? 'Update Generator' : 'Create Generator' }}</h2>
+  <!-- ================= CREATE / UPDATE GENERATOR FORM ================= -->
+  <div class="card">
 
-    <form [formGroup]="generatorForm" (ngSubmit)="submit()">
+    <form [formGroup]="generatorForm" (ngSubmit)="submit()" class="form-grid">
 
-      <div class="form-row">
-        <div class="form-group">
-          <label>Generator Name</label>
-          <input type="text" formControlName="generatorName" placeholder="Enter generator name" required />
-        </div>
-
-        <div class="form-group">
-          <label>Rated Capacity (kW)</label>
-          <input type="number" formControlName="ratedCapacityKW" placeholder="Enter capacity" required />
-        </div>
+      <!-- Generator Name -->
+      <div class="form-group">
+        <label>Generator Name</label>
+        <input type="text" formControlName="generatorName" placeholder="Enter generator name" required />
       </div>
 
-      <div class="form-row">
-        <div class="form-group">
-          <label>Fuel</label>
-          <select formControlName="fuelId" required>
-            <option value="">-- Select Fuel --</option>
-            <option *ngFor="let fuel of fuels" [value]="fuel.fuelId">{{ fuel.fuelName }}</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label>Site</label>
-          <select formControlName="siteId" required>
-            <option value="">-- Select Site --</option>
-            <option *ngFor="let site of sites" [value]="site.siteId">{{ site.siteName }}</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label>Department</label>
-          <select formControlName="departmentId" required>
-            <option value="">-- Select Department --</option>
-            <option *ngFor="let dept of departments" [value]="dept.departmentId">{{ dept.departmentName }}</option>
-          </select>
-        </div>
+      <!-- Rated Capacity -->
+      <div class="form-group">
+        <label>Rated Capacity (kW)</label>
+        <input type="number" formControlName="ratedCapacityKW" placeholder="Enter capacity" required />
       </div>
 
+      <!-- Fuel -->
+      <div class="form-group">
+        <label>Fuel</label>
+        <select formControlName="fuelId" required>
+          <option value="">Select Fuel</option>
+          <option *ngFor="let fuel of fuels" [value]="fuel.fuelId">{{ fuel.fuelName }}</option>
+        </select>
+      </div>
+
+      <!-- Site -->
+      <div class="form-group">
+        <label>Site</label>
+        <select formControlName="siteId" required>
+          <option value="">Select Site</option>
+          <option *ngFor="let site of sites" [value]="site.siteId">{{ site.siteName }}</option>
+        </select>
+      </div>
+
+      <!-- Department -->
+      <div class="form-group">
+        <label>Department</label>
+        <select formControlName="departmentId" required>
+          <option value="">Select Department</option>
+          <option *ngFor="let dept of departments" [value]="dept.departmentId">{{ dept.departmentName }}</option>
+        </select>
+      </div>
+
+      <!-- Status -->
+      <div class="form-group status-toggle">
+        <span>Active</span>
+        <label class="switch">
+          <input type="checkbox" formControlName="isActive" />
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <!-- Form Actions -->
       <div class="form-actions">
         <button type="submit">{{ editingGeneratorId ? 'Update' : 'Create' }}</button>
         <button type="button" (click)="generatorForm.reset(); editingGeneratorId=null;">Clear</button>
       </div>
+
     </form>
   </div>
 
-  <!-- ================= LIST & FILTER ================= -->
-  <div class="card table-card">
-    <div class="table-header">
-      <input type="text" placeholder="Search generator..." [(ngModel)]="searchText" (keyup.enter)="loadGenerators()" />
-      <label>
-        Active Only
-        <input type="checkbox" [(ngModel)]="isActiveFilter" (change)="loadGenerators()" />
-      </label>
-      <button (click)="clearFilter()">Clear</button>
+  <!-- ================= SEARCH + GENERATOR LIST ================= -->
+  <div class="card">
+
+    <div class="search-row">
+      <div class="search-left">
+        <input type="text" class="search-input" placeholder="Search generator..." [(ngModel)]="searchText" (input)="loadGenerators()" />
+      </div>
+      <div class="search-right">
+        <div class="status-toggle">
+          <span>Active Only</span>
+          <label class="switch">
+            <input type="checkbox" [(ngModel)]="isActiveFilter" (change)="loadGenerators()" />
+            <span class="slider"></span>
+          </label>
+        </div>
+        <button class="filter-btn" (click)="clearFilter()">Clear</button>
+      </div>
     </div>
 
-    <table>
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Rated KW</th>
-          <th>Fuel</th>
-          <th>Site</th>
-          <th>Dept</th>
-          <th>Status</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let gen of generators">
-          <td>{{ gen.generatorName }}</td>
-          <td>{{ gen.ratedCapacityKW }}</td>
-          <td>{{ gen.fuelName }}</td>
-          <td>{{ gen.siteName }}</td>
-          <td>{{ gen.departmentName }}</td>
-          <td>
-            <button [ngClass]="{'active': gen.isActive,'inactive': !gen.isActive}" (click)="toggleStatus(gen)">
-              {{ gen.isActive ? 'Active' : 'Inactive' }}
-            </button>
-          </td>
-          <td>
-            <button (click)="edit(gen)">Edit</button>
-            <button (click)="delete(gen)">Delete</button>
-          </td>
-        </tr>
-        <tr *ngIf="generators.length === 0">
-          <td colspan="7" style="text-align:center;">No records found</td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Rated KW</th>
+            <th>Fuel</th>
+            <th>Site</th>
+            <th>Dept</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let gen of generators">
+            <td>{{ gen.generatorName }}</td>
+            <td>{{ gen.ratedCapacityKW }}</td>
+            <td>{{ gen.fuelName }}</td>
+            <td>{{ gen.siteName }}</td>
+            <td>{{ gen.departmentName }}</td>
+            <td>
+              <label class="switch">
+                <input type="checkbox" [checked]="gen.isActive" (change)="toggleStatus(gen)" />
+                <span class="slider"></span>
+              </label>
+            </td>
+            <td class="actions">
+              <button class="edit-btn" (click)="edit(gen)">Edit</button>
+              <button class="delete-btn" (click)="delete(gen)">Delete</button>
+            </td>
+          </tr>
+          <tr *ngIf="generators.length === 0">
+            <td colspan="7" class="no-data">No records found</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
-    <div class="pagination">
-      <div class="left">
-        Page Size:
-        <select [(ngModel)]="pageSize" (change)="changePageSize()">
+    <!-- Pagination -->
+    <div class="pagination-info">
+      <span>Total Records: {{ totalRecords }}</span>
+      <div class="pagination-controls">
+        <button (click)="prevPage()" [disabled]="pageNumber === 1">Previous</button>
+        <span>Page {{ pageNumber }} of {{ totalPages }}</span>
+        <button (click)="nextPage()" [disabled]="pageNumber === totalPages">Next</button>
+        <label for="pageSize">Page Size:</label>
+        <select id="pageSize" [(ngModel)]="pageSize" (change)="changePageSize()">
           <option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</option>
         </select>
       </div>
-      <div class="right">
-        Total: {{ totalRecords }}
-        <button (click)="prevPage()" [disabled]="pageNumber === 1">Prev</button>
-        <span>{{ pageNumber }} / {{ totalPages }}</span>
-        <button (click)="nextPage()" [disabled]="pageNumber === totalPages">Next</button>
-      </div>
     </div>
+
   </div>
 </div>

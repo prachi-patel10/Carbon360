@@ -1,160 +1,257 @@
-/* ================= PAGE BACKGROUND ================= */
-:host {
-  display: block;
-  padding: 25px;
-  background: #f4f6f9;
-  font-family: 'Segoe UI', sans-serif;
+/* ================= CONTAINER ================= */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 15px;
+  font-family: Arial, sans-serif;
 }
 
 /* ================= CARD ================= */
 .card {
-  background: #ffffff;
-  padding: 25px;
-  margin-bottom: 25px;
+  background-color: #fff;
   border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+  padding: 20px;
+  margin-bottom: 15px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
 }
 
-/* ================= HEADINGS ================= */
-h2 {
-  margin-bottom: 20px;
-  font-size: 20px;
-  font-weight: 600;
-  color: #333;
-}
-
-/* ================= FORM ================= */
-form {
+/* ================= FORM GRID ================= */
+.form-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 15px;
-  align-items: end;
+  gap: 12px;
 }
 
-input,
-select {
-  padding: 10px 12px;
-  border-radius: 8px;
-  border: 1px solid #dcdcdc;
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  margin-bottom: 5px;
+  font-weight: 500;
   font-size: 14px;
-  width: 100%;
-  transition: 0.3s;
 }
 
-input:focus,
-select:focus {
-  outline: none;
-  border-color: #4a90e2;
-  box-shadow: 0 0 0 2px rgba(74,144,226,0.2);
+.form-group input,
+.form-group select {
+  padding: 6px 10px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  font-size: 14px;
 }
 
-/* ================= BUTTONS ================= */
-button {
-  padding: 8px 14px;
-  border-radius: 8px;
+/* ================= FORM ACTIONS ================= */
+.form-actions {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-top: 10px;
+}
+
+button[type="submit"],
+.form-actions button {
+  padding: 8px 16px;
+  border-radius: 5px;
   border: none;
   cursor: pointer;
-  font-size: 13px;
-  transition: 0.3s;
+  font-size: 14px;
+  transition: 0.2s;
 }
 
 button[type="submit"] {
-  background: #4a90e2;
+  background-color: #1b5e20;
   color: white;
 }
 
 button[type="submit"]:hover {
-  background: #357abd;
+  background-color: #145214;
 }
 
-/* Filter buttons */
-.card button {
-  margin-right: 5px;
+.form-actions button[type="button"] {
+  background-color: #e0e0e0;
 }
 
-button:hover {
-  opacity: 0.9;
+.form-actions button[type="button"]:hover {
+  background-color: #cfcfcf;
 }
 
-/* ================= TABLE ================= */
-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 15px;
+/* ================= SWITCH TOGGLE ================= */
+.status-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-thead {
-  background: #f1f3f6;
+.status-toggle span {
+  font-weight: 500;
+  font-size: 14px;
 }
 
-th {
-  text-align: left;
-  padding: 12px;
-  font-size: 13px;
-  font-weight: 600;
-  color: #555;
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 40px;
+  height: 20px;
 }
 
-td {
-  padding: 12px;
-  font-size: 13px;
-  border-bottom: 1px solid #eee;
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
 }
 
-tbody tr:hover {
-  background: #f9fafc;
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: 0.3s;
+  border-radius: 20px;
 }
 
-/* ================= STATUS BUTTON ================= */
-button.active {
-  background: #28a745;
-  color: white;
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 14px;
+  width: 14px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: 0.3s;
+  border-radius: 50%;
 }
 
-button.inactive {
-  background: #dc3545;
-  color: white;
+input:checked + .slider {
+  background-color: #1b5e20;
 }
 
-/* ================= DELETE BUTTON ================= */
-td button {
-  background: #ff4d4f;
-  color: white;
+input:checked + .slider:before {
+  transform: translateX(20px);
 }
 
-td button:hover {
-  background: #d9363e;
-}
-
-/* ================= PAGINATION ================= */
-.pagination {
+/* ================= SEARCH ROW ================= */
+.search-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 20px;
-  font-size: 13px;
+  gap: 10px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
 }
 
-.pagination button {
-  background: #4a90e2;
-  color: white;
+.search-left input {
+  flex: 0 0 220px;
+  padding: 6px 10px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+}
+
+.search-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filter-btn {
+  background-color: #959090c9;
+  color: #fff;
+  padding: 6px 12px;
+  border-radius: 5px;
+  border: none;
+  cursor: pointer;
+}
+
+.filter-btn:hover {
+  background-color: #454748eb;
+}
+
+/* ================= TABLE ================= */
+.table-wrapper {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+th, td {
+  padding: 10px 8px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+th {
+  cursor: pointer;
+  user-select: none;
+}
+
+td.actions {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+td.actions button {
+  padding: 6px 12px;
+  font-size: 14px;
+  font-weight: 500;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.edit-btn { background-color: #d0ebff; color: #0369a1; }
+.edit-btn:hover { background-color: #a5d8ff; }
+.delete-btn { background-color: #ffe3e3; color: #c92a2a; }
+.delete-btn:hover { background-color: #ffc9c9; }
+
+/* ================= PAGINATION ================= */
+.pagination-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 15px;
+}
+
+.pagination-controls button {
+  padding: 5px 10px;
   margin: 0 5px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  background-color: #f5f5f5;
+  cursor: pointer;
 }
 
-.pagination select {
-  width: auto;
-  margin-left: 10px;
+.pagination-controls button:hover {
+  background-color: #e0e0e0;
+}
+
+.pagination-controls select {
+  margin-left: 5px;
+  padding: 3px 6px;
+  font-size: 14px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+/* ================= NO DATA ================= */
+.no-data {
+  text-align: center;
+  font-style: italic;
+  color: #888;
 }
 
 /* ================= RESPONSIVE ================= */
 @media (max-width: 768px) {
-  form {
-    grid-template-columns: 1fr;
-  }
-
-  .pagination {
-    flex-direction: column;
-    gap: 10px;
-    align-items: flex-start;
-  }
+  .form-grid { grid-template-columns: 1fr; }
+  .search-row { flex-direction: column; align-items: stretch; }
+  .search-row button { width: 100%; }
 }
