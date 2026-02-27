@@ -33,4 +33,11 @@ export class FueltypeService {
   updateGenerator(data: any): Observable<any> {
     return this.http.patch(`${this.baseUrl}/UpdateGenerator`, data);
   }
+
+  search(payload: any): Observable<any> {
+    return this.http.post<any>(
+      `${this.baseUrl}/search`,
+      payload
+    );
+  }
 }

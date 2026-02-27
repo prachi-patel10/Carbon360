@@ -2,33 +2,31 @@ import { Component, OnInit } from '@angular/core';
 import { FueltypeService } from './fueltype-service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ToastrService } from 'ngx-toastr';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-fueltype',
   imports: [CommonModule,FormsModule],
+   standalone: true,
   templateUrl: './fueltype.html',
   styleUrls: ['./fueltype.css'],
 })
 export class Fueltype implements OnInit {
 
   fuels: any[] = [];
-
-  searchText: string = '';
-  isActive: boolean | null = null;
-
-  pageNumber: number = 1;
-  pageSize: number = 5;
-  totalPages: number = 0;
+  editingFuelId: number | null = null;
 
   newFuel = {
     fuel_name: '',
-    co2_factor: 0,
-    nox_factor: 0,
-    ch4_factor: 0,
+    fuel_Desc: '',
     isapplicable: true
   };
 
-  constructor(private fuelService: FueltypeService) {}
+  constructor(
+    private fuelService: FueltypeService,
+    private toastr: ToastrService
+  ) {}
 
   ngOnInit() {
     this.loadFuels();
@@ -37,50 +35,92 @@ export class Fueltype implements OnInit {
   loadFuels() {
     this.fuelService.getAll().subscribe((res: any) => {
       this.fuels = res.data ?? res;
-      this.totalPages = res.totalPages ?? 1;
     });
   }
 
   createFuel() {
-    this.fuelService.createFuel(this.newFuel).subscribe(() => {
-      alert('Fuel Created Successfully');
-      this.loadFuels();
+
+  if (this.editingFuelId) {
+
+    const payload = {
+      fuel_id: this.editingFuelId,
+      fuel_name: this.newFuel.fuel_name,
+      fuel_Desc: this.newFuel.fuel_Desc,
+      isapplicable: this.newFuel.isapplicable
+    };
+
+    this.fuelService.updateFuel(payload)
+      .subscribe(() => {
+        this.toastr.success('Fuel Updated');
+        this.resetForm();
+        this.loadFuels();
+      });
+
+  } else {
+
+    this.fuelService.createFuel(this.newFuel)
+      .subscribe(() => {
+        this.toastr.success('Fuel Created');
+        this.resetForm();
+        this.loadFuels();
+      });
+
+  }
+}
+  editFuel(fuel: any) {
+    this.editingFuelId = fuel.fuel_id;
+
+    this.newFuel = {
+      fuel_name: fuel.fuel_name,
+      fuel_Desc: fuel.fuel_Desc,
+      isapplicable: fuel.isapplicable
+    };
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  deleteFuel(fuel: any) {
+    Swal.fire({
+      title: 'Delete this fuel?',
+      icon: 'warning',
+      showCancelButton: true
+    }).then(result => {
+      if (result.isConfirmed) {
+        this.fuelService.deleteFuel(fuel.fuel_id)
+          .subscribe(() => {
+            this.toastr.success('Fuel Deleted');
+            this.loadFuels();
+          });
+      }
     });
   }
 
-  toggleStatus(fuel: any) {
-    const payload = {
-      fuelId: fuel.fuel_id,
+  confirmToggleGenerator(fuel: any) {
+    this.fuelService.updateGenerator({
+      fuel_id: fuel.fuel_id,
+      isApplicable: !fuel.isapplicable
+    }).subscribe(() => {
+      fuel.isapplicable = !fuel.isapplicable;
+      this.toastr.success('Generator Updated');
+    });
+  }
+
+  confirmToggleStatus(fuel: any) {
+    this.fuelService.updateStatus({
+      fuel_id: fuel.fuel_id,
       isActive: !fuel.isActive
-    };
-
-    this.fuelService.updateStatus(payload).subscribe(() => {
-      this.loadFuels();
+    }).subscribe(() => {
+      fuel.isActive = !fuel.isActive;
+      this.toastr.success('Status Updated');
     });
   }
 
-  toggleGenerator(fuel: any) {
-    const payload = {
-      fuelId: fuel.fuel_id,
-      isGenerator: !fuel.isGenerator
+  resetForm() {
+    this.editingFuelId = null;
+    this.newFuel = {
+      fuel_name: '',
+      fuel_Desc: '',
+      isapplicable: true
     };
-
-    this.fuelService.updateGenerator(payload).subscribe(() => {
-      this.loadFuels();
-    });
-  }
-
-  nextPage() {
-    if (this.pageNumber < this.totalPages) {
-      this.pageNumber++;
-      this.loadFuels();
-    }
-  }
-
-  previousPage() {
-    if (this.pageNumber > 1) {
-      this.pageNumber--;
-      this.loadFuels();
-    }
   }
 }

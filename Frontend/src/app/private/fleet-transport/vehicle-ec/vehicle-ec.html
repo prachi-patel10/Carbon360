@@ -1,66 +1,50 @@
 <div class="emission-page">
-
   <form [formGroup]="tripForm" (ngSubmit)="submitTrip()" class="card">
 
     <div class="card-title">Vehicle Trip Emission</div>
 
-    <!-- Row 1 -->
     <div class="form-row">
-
       <div class="form-group">
         <label>Vehicle</label>
         <select formControlName="vehicle_id">
           <option value="">Select Vehicle</option>
-          <option *ngFor="let v of vehicles" [value]="v.vehicle_id">
-            {{ v.vehicle_number }}
+          <option *ngFor="let v of vehicles" [value]="v.vehicle_id">{{ v.vehicle_number }}</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>From City</label>
+        <!-- <select formControlName="fromCityId">
+          <option value="">Select City</option>
+          <option *ngFor="let c of cities" [value]="c.id">{{ c.cityName }}</option>
+        </select> -->
+        <select formControlName="fromCityId">
+          <option value="">Select From City</option>
+          <option *ngFor="let city of cities" [value]="city.cityId">
+            {{ city.cityName }}
           </option>
         </select>
       </div>
-      <!-- city -->
 
       <div class="form-group">
-  <label>From City</label>
-  <select formControlName="fromCityId">
-    <option value="">Select City</option>
-    <option *ngFor="let c of cities" [value]="c.id">
-      {{ c.cityName }}
-    </option>
-  </select>
+        <label>To City</label>
+        <!-- <select formControlName="toCityId">
+          <option value="">Select City</option>
+          <option *ngFor="let c of cities" [value]="c.id">{{ c.cityName }}</option>
+        </select> -->
+        <select formControlName="toCityId">
+          <option value="">Select To City</option>
+          <option *ngFor="let city of cities" [value]="city.cityId">
+            {{ city.cityName }}
+          </option>
+        </select>
+      </div>
+    </div>
 
-  <div class="error"
-    *ngIf="tripForm.get('fromCityId')?.touched && tripForm.get('fromCityId')?.invalid">
-    From City is required.
-  </div>
-</div>
-
-<div class="form-group">
-  <label>To City</label>
-  <select formControlName="toCityId">
-    <option value="">Select City</option>
-    <option *ngFor="let c of cities" [value]="c.id">
-      {{ c.cityName }}
-    </option>
-  </select>
-
-  <div class="error"
-    *ngIf="tripForm.get('toCityId')?.touched && tripForm.get('toCityId')?.invalid">
-    To City is required.
-  </div>
-</div>
-</div>
-
-    <!-- Row 2 -->
     <div class="form-row">
-
       <div class="form-group">
         <label>Fuel Type</label>
-       <select formControlName="fuelType" class="form-control" readonly>
-  <option value="">Select Fuel</option>
-  <option [value]="tripForm.get('fuelType')?.value">
-    {{ tripForm.get('fuelType')?.value }}
-  </option>
-</select>
-<!-- <input type="text" formControlName="fuelType" class="form-control" readonly> -->
+        <input type="text" formControlName="fuelType" readonly class="modern-input">
       </div>
 
       <div class="form-group">
@@ -72,109 +56,79 @@
         <label>Fuel Consumed (Ltr)</label>
         <input type="number" formControlName="fuelConsumedLtr">
       </div>
-
     </div>
 
-    <!-- Trip Date -->
-    <!-- Trip Date Section -->
     <div class="form-row">
-
       <div class="form-group">
         <label>Trip Start Date</label>
         <input type="datetime-local" formControlName="tripStartDateTime" [max]="todayDateTime" class="modern-input">
-
-        <div class="error"
-          *ngIf="tripForm.get('tripStartDateTime')?.touched && tripForm.get('tripStartDateTime')?.invalid">
-          Trip Start Date is required and cannot be future.
-        </div>
       </div>
 
       <div class="form-group">
         <label>Trip End Date</label>
         <input type="datetime-local" formControlName="tripEndDateTime" [max]="todayDateTime" class="modern-input">
-
-        <div class="error" *ngIf="tripForm.hasError('futureStart')">
-          Start time cannot be in future.
-        </div>
-
-        <div class="error" *ngIf="tripForm.hasError('futureEnd')">
-          End time cannot be in future.
-        </div>
-
-        <div class="error" *ngIf="tripForm.hasError('endBeforeStart')">
-          End Date cannot be before Start Date.
-        </div>
       </div>
 
       <div class="form-group">
         <label>Trip Duration</label>
         <input type="text" [value]="tripDuration" readonly class="modern-input">
       </div>
-
     </div>
 
-    <!-- Emission Factors (Readonly - From Backend) -->
     <div class="card-title">Emission Factors (KG)</div>
 
     <div class="form-row">
-
       <div class="form-group">
         <label>CO₂ Factor</label>
-        <input type="number" formControlName="co2Factor" readonly/>
+        <input type="number" formControlName="co2Factor" readonly>
       </div>
 
       <div class="form-group">
         <label>NO₂ Factor</label>
-        <input type="number" formControlName="no2Factor" readonly/>
+        <input type="number" formControlName="no2Factor" readonly>
       </div>
 
       <div class="form-group">
         <label>CH₄ Factor</label>
-        <input type="number" formControlName="ch4Factor" readonly/>
+        <input type="number" formControlName="ch4Factor" readonly>
       </div>
-
     </div>
 
     <div class="form-buttons">
-      <button type="submit" class="btn-primary">
-        Submit Trip
-      </button>
-      <button type="button" class="btn-secondary" (click)="resetForm()">
-        Reset
-      </button>
+      <button type="submit" class="btn-primary">Submit Trip</button>
+      <button type="button" class="btn-secondary" (click)="resetForm()">Reset</button>
     </div>
-
   </form>
 
   <!-- RESULTS SECTION -->
   <div class="card result-card" *ngIf="result">
 
-  <div class="card-title">Emission Results (KG)</div>
+    <div class="card-title">Emission Results (KG)</div>
 
-  <div class="result-grid">
+    <div class="result-grid">
 
-    <div class="result-box">
-      <h4>Total CO₂</h4>
-      <p>{{ result?.totalCo2 }}</p>
-    </div>
+      <div class="result-box">
+        <h4>Total CO₂</h4>
+        <p>{{ result?.totalCo2 }}</p>
+      </div>
 
-    <div class="result-box">
-      <h4>Total NO₂</h4>
-      <p>{{ result?.totalNo2 }}</p>
-    </div>
+      <div class="result-box">
+        <h4>Total NO₂</h4>
+        <p>{{ result?.totalNo2 }}</p>
+      </div>
 
-    <div class="result-box">
-      <h4>Total CH₄</h4>
-      <p>{{ result?.totalCh4 }}</p>
-    </div>
+      <div class="result-box">
+        <h4>Total CH₄</h4>
+        <p>{{ result?.totalCh4 }}</p>
+      </div>
 
-    <div class="result-box highlight">
-      <h4>Total Emission</h4>
-      <p>{{ result?.totalEmission }}</p>
+      <div class="result-box highlight">
+        <h4>Total Emission</h4>
+        <p>{{ result?.totalEmission }}</p>
+      </div>
+
     </div>
 
   </div>
-
-</div>
 
 </div>

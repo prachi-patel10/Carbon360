@@ -1,17 +1,14 @@
 /* Container */
 .container {
-  max-width: 1200px;
-  margin: auto;
-  padding: 15px;
+  padding: 20px;
 }
 
-/* Card Style */
 .card {
-  background: #ffffff;
+  background: #fff;
   padding: 20px;
-  margin-bottom: 20px;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border-radius: 10px;
+  margin-bottom: 25px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.08);
 }
 
 /* Titles */
@@ -21,7 +18,18 @@ h2 {
 }
 
 /* Grid Layout */
-.form-grid,
+.form-grid {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+.toggle-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .search-grid {
   display: flex;
   flex-wrap: wrap;
@@ -39,9 +47,23 @@ select {
 
 /* Button Row */
 .button-row {
-  margin-top: 10px;
+  margin-top: 20px;
+}
+.btn-save {
+  background: #1b5e20;
+  color: white;
+  padding: 8px 18px;
+  border: none;
+  border-radius: 6px;
 }
 
+.btn-reset {
+  background: #ccc;
+  padding: 8px 18px;
+  border: none;
+  border-radius: 6px;
+  margin-left: 10px;
+}
 /* Buttons */
 button {
   padding: 8px 14px;
@@ -69,10 +91,13 @@ button:hover:not(:disabled) {
 table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 700px;
+  /* min-width: 700px; */
 }
 
-th,
+th {
+  background: #e5e7eb;
+  padding: 12px;
+}
 td {
   padding: 10px;
   border-bottom: 1px solid #eee;
@@ -137,3 +162,90 @@ th {
 }
 
 
+.container {
+  padding: 20px;
+}
+
+.card {
+  background: #fff;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  margin-bottom: 20px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th, td {
+  padding: 12px;
+  text-align: center;
+  border-bottom: 1px solid #eee;
+}
+
+/* Toggle */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 26px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  inset: 0;
+  background-color: #ccc;
+  transition: .4s;
+  border-radius: 30px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: .4s;
+  border-radius: 50%;
+}
+
+input:checked + .slider.green {
+  background-color: #2e7d32;
+}
+
+input:checked + .slider.blue {
+  background-color: #1565c0;
+}
+
+input:checked + .slider:before {
+  transform: translateX(24px);
+}
+
+/* Action Buttons */
+.action-buttons button {
+  margin: 0 5px;
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: none;
+}
+
+.btn-edit {
+  background: #cfe2ff;
+  color: #084298;
+}
+
+.btn-delete {
+  background: #f8d7da;
+  color: #842029;
+}

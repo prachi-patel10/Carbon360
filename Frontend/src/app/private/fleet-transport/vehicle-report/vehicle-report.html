@@ -1,0 +1,129 @@
+<div class="emission-page">
+
+  <div class="card summary-card" *ngIf="data">
+
+    <div class="card-title">Trip Emission Detailed Report</div>
+
+    <!-- ================= TRIP DETAILS ================= -->
+    <div class="section-title">1️⃣ Trip Information</div>
+
+    <div class="summary-grid">
+      <div class="info-box">
+        <label>Vehicle</label>
+        <p>{{ data.vehicleNumber }}</p>
+      </div>
+
+      <div class="info-box">
+        <label>From → To</label>
+        <p>{{ data.fromCityName }} → {{ data.toCityName }}</p>
+      </div>
+
+      <div class="info-box">
+        <label>Fuel Type</label>
+        <p>{{ data.fuelType }}</p>
+      </div>
+
+      <div class="info-box">
+        <label>Distance (Km)</label>
+        <p>{{ data.distanceKm }}</p>
+      </div>
+
+      <div class="info-box">
+        <label>Fuel Consumed (Ltr)</label>
+        <p>{{ data.fuelConsumedLtr }}</p>
+      </div>
+
+      <div class="info-box">
+        <label>Trip Duration</label>
+        <p>{{ data.tripDuration }}</p>
+      </div>
+    </div>
+
+    <!-- ================= FACTORS ================= -->
+    <div class="section-title">2️⃣ Emission Factors Used</div>
+
+    <div class="summary-grid">
+      <div class="info-box">
+        <label>CO₂ Factor (Kg/L)</label>
+        <p>{{ data.co2Factor }}</p>
+      </div>
+
+      <div class="info-box">
+        <label>NO₂ Factor (Kg/Km)</label>
+        <p>{{ data.no2Factor }}</p>
+      </div>
+
+      <div class="info-box">
+        <label>CH₄ Factor (Kg/Km)</label>
+        <p>{{ data.ch4Factor }}</p>
+      </div>
+    </div>
+
+    <!-- ================= CALCULATIONS ================= -->
+    <div class="section-title">3️⃣ Emission Calculations (With Formula)</div>
+
+    <div class="calculation-box">
+
+      <div class="formula-block">
+        <h4>CO₂ Emission</h4>
+        <p class="formula">
+          CO₂ = Fuel Consumed × CO₂ Factor
+        </p>
+        <p class="calculation">
+          = {{ data.fuelConsumedLtr }} × {{ data.co2Factor }}
+        </p>
+        <p class="result">
+          = <strong>{{ data.totalCo2 }} Kg</strong>
+        </p>
+      </div>
+
+      <div class="formula-block">
+        <h4>NO₂ Emission</h4>
+        <p class="formula">
+          NO₂ = Distance × NO₂ Factor
+        </p>
+        <p class="calculation">
+          = {{ data.distanceKm }} × {{ data.no2Factor }}
+        </p>
+        <p class="result">
+          = <strong>{{ data.totalNo2 }} Kg</strong>
+        </p>
+      </div>
+
+      <div class="formula-block">
+        <h4>CH₄ Emission</h4>
+        <p class="formula">
+          CH₄ = Distance × CH₄ Factor
+        </p>
+        <p class="calculation">
+          = {{ data.distanceKm }} × {{ data.ch4Factor }}
+        </p>
+        <p class="result">
+          = <strong>{{ data.totalCh4 }} Kg</strong>
+        </p>
+      </div>
+
+    </div>
+
+    <!-- ================= FINAL TOTAL ================= -->
+    <div class="section-title">4️⃣ Final Total Emission</div>
+
+    <div class="final-emission">
+      <p>
+        Total Emission = CO₂ + NO₂ + CH₄
+      </p>
+      <p>
+        = {{ data.totalCo2 }} + {{ data.totalNo2 }} + {{ data.totalCh4 }}
+      </p>
+      <h2>
+        = {{ data.totalEmission }} Kg CO₂e
+      </h2>
+    </div>
+
+    <div class="form-buttons">
+      <button class="btn-primary" (click)="goBack()">Back</button>
+      <button class="btn-secondary" (click)="downloadReport()">Download Report</button>
+    </div>
+
+  </div>
+</div>

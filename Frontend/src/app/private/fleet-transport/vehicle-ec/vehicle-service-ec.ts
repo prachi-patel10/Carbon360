@@ -16,15 +16,19 @@ export class TripService {
     return this.http.get(`${this.apiUrl}/VehicleMaster/getalllist`);
   }
 
+  getFuels(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/Fuel/All`);
+  }
+
   getCities(): Observable<any> {
     return this.http.get(`${this.apiUrl}/City/All`);
   }
 
   getEmissionFactors(): Observable<any> {
-  return this.http.get(`${this.apiUrl}/EmissionFactor`);
+  return this.http.get(`${this.apiUrl}/EmissionFactor/List`);
 }
 
-  addTrip(data: any): Observable<any> {
+   addTrip(data: any): Observable<any> {
     return this.http.post(`${this.apiUrl}/VehicleTripEmission`, data);
   }
 

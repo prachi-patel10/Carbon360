@@ -56,6 +56,11 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
         {
             var userId = GetCurrentUserId();
 
+            // ✅ Decode hash ids
+            int vehicleId = _idEncoder.Decode(dto.VehicleId);
+            int fromCityId = _idEncoder.Decode(dto.FromCityId);
+            int toCityId = _idEncoder.Decode(dto.ToCityId);
+
             var outputId = new SqlParameter("@newTripId", SqlDbType.Int)
             {
                 Direction = ParameterDirection.Output
@@ -63,17 +68,17 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
 
             var parameters = new[]
             {
-                new SqlParameter("@vehicleid", dto.VehicleId),
-                new SqlParameter("@fromcityid", dto.FromCityId),
-                new SqlParameter("@tocityid", dto.ToCityId),
-                new SqlParameter("@tripstartdatetime", dto.TripStartDateTime),
-                new SqlParameter("@tripenddatetime", dto.TripEndDateTime ?? (object)DBNull.Value),
-                new SqlParameter("@distancekm", dto.DistanceKm),
-                new SqlParameter("@fueltype", dto.FuelType),
-                new SqlParameter("@fuelconsumedltr", dto.FuelConsumedLtr),
-                new SqlParameter("@entryby", userId),
-                outputId
-            };
+        new SqlParameter("@vehicleid", vehicleId),
+        new SqlParameter("@fromcityid", fromCityId),
+        new SqlParameter("@tocityid", toCityId),
+        new SqlParameter("@tripstartdatetime", dto.TripStartDateTime),
+        new SqlParameter("@tripenddatetime", dto.TripEndDateTime ?? (object)DBNull.Value),
+        new SqlParameter("@distancekm", dto.DistanceKm),
+        new SqlParameter("@fueltype", dto.FuelType ?? (object)DBNull.Value),
+        new SqlParameter("@fuelconsumedltr", dto.FuelConsumedLtr),
+        new SqlParameter("@entryby", userId),
+        outputId
+    };
 
             await _context.Database.ExecuteSqlRawAsync(
                 "EXEC USP_CB_InsertVehicleTripEmission " +
@@ -84,9 +89,11 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
 
             int newId = (int)outputId.Value;
 
-            // Fetch inserted record (to get calculated values)
             var entity = await _context.CB_VehicleTripEmissions
                 .FirstOrDefaultAsync(x => x.tripid == newId);
+
+            if (entity == null)
+                throw new Exception("Trip insertion failed.");
 
             return new ResponseVehicleTripEmissionDTO
             {
@@ -94,11 +101,13 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
                 VehicleId = _idEncoder.Encode(entity.vehicleid),
                 FromCityId = _idEncoder.Encode(entity.fromcityid),
                 ToCityId = _idEncoder.Encode(entity.tocityid),
+
                 TripStartDateTime = entity.tripstartdatetime,
                 TripEndDateTime = entity.tripenddatetime,
                 DistanceKm = entity.distancekm,
                 FuelType = entity.fueltype,
                 FuelConsumedLtr = entity.fuelconsumedltr,
+
                 CO2 = entity.co2,
                 NO2 = entity.no2,
                 CH4 = entity.ch4,
