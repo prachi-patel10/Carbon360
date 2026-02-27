@@ -101,8 +101,8 @@
 
           <ul class="submenu" *ngIf="isSubMenuOpen('generator')">
 
-            <li (click)="goTo('generator')" 
-                [class.active-link]="isActive('/generator')">
+            <li (click)="goTo('generator-ec')" 
+                [class.active-link]="isActive('/generator-ec')">
               <i class="fas fa-bolt"></i>
               <span>Generator Master</span>
             </li>
@@ -159,8 +159,8 @@
       <ul class="submenu" *ngIf="isMainMenuOpen('power')">
 
         <li *ngIf="isAdmin() || isReporter()" 
-            routerLink="/vehicle" 
-            routerLinkActive="active-link">
+            (click)="goTo('generator-ec')" 
+                [class.active-link]="isActive('/generator-ec')">
           <i class="fas fa-chart-bar"></i>
           <span>Report</span>
         </li>

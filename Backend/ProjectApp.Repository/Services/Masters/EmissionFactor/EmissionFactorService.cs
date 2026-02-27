@@ -45,14 +45,12 @@ namespace ProjectApp.Repository.Services.Masters.EmissionFactor
                 list.Add(new EmissionFactorResponseDTO
                 {
                     Id = _encoder.Encode(id),
-                    FuelType = reader["FuelType"]?.ToString(),
+                    FuelId = Convert.ToInt32(reader["FuelId"]),
+                    FuelName = reader["fuel_name"]?.ToString(),
                     CO2_Factor_KgPerL = Convert.ToDecimal(reader["CO2_Factor_KgPerL"]),
                     NO2_Factor_KgPerKm = Convert.ToDecimal(reader["NO2_Factor_KgPerKm"]),
                     CH4_Factor_KgPerKm = Convert.ToDecimal(reader["CH4_Factor_KgPerKm"]),
                     IsActive = Convert.ToBoolean(reader["IsActive"])
-
-
-
                 });
             }
 
@@ -79,17 +77,18 @@ namespace ProjectApp.Repository.Services.Masters.EmissionFactor
 
                 if (await reader.ReadAsync())
                 {
-                    var dto = new EmissionFactorResponseDTO
-                    {
-                        Id = encryptedId,
-                        FuelType = reader["FuelType"].ToString(),
-                        CO2_Factor_KgPerL = Convert.ToDecimal(reader["CO2_Factor_KgPerL"]),
-                        NO2_Factor_KgPerKm = Convert.ToDecimal(reader["NO2_Factor_KgPerKm"]),
-                        CH4_Factor_KgPerKm = Convert.ToDecimal(reader["CH4_Factor_KgPerKm"]),
-                        IsActive = Convert.ToBoolean(reader["IsActive"])
-                    };
+                var dto = new EmissionFactorResponseDTO
+                {
+                    Id = encryptedId,
+                    FuelId = Convert.ToInt32(reader["FuelId"]),
+                    FuelName = reader["fuel_name"]?.ToString(),
+                    CO2_Factor_KgPerL = Convert.ToDecimal(reader["CO2_Factor_KgPerL"]),
+                    NO2_Factor_KgPerKm = Convert.ToDecimal(reader["NO2_Factor_KgPerKm"]),
+                    CH4_Factor_KgPerKm = Convert.ToDecimal(reader["CH4_Factor_KgPerKm"]),
+                    IsActive = Convert.ToBoolean(reader["IsActive"])
+                };
 
-                    return new ApiResponse<EmissionFactorResponseDTO>
+                return new ApiResponse<EmissionFactorResponseDTO>
                     {
                         Status = true,
                         StatusCode = 200,
@@ -113,13 +112,13 @@ namespace ProjectApp.Repository.Services.Masters.EmissionFactor
                 using var cmd = new SqlCommand("USP_CB_EmissionFactor_Insert", con);
                 cmd.CommandType = CommandType.StoredProcedure;
 
-                cmd.Parameters.AddWithValue("@FuelType", dto.FuelType);
-                cmd.Parameters.AddWithValue("@CO2_Factor_KgPerL", dto.CO2_Factor_KgPerL);
-                cmd.Parameters.AddWithValue("@NO2_Factor_KgPerKm", dto.NO2_Factor_KgPerKm);
-                cmd.Parameters.AddWithValue("@CH4_Factor_KgPerKm", dto.CH4_Factor_KgPerKm);
-                cmd.Parameters.AddWithValue("@EntryBy", userId);
+            cmd.Parameters.AddWithValue("@FuelId", dto.FuelId);
+            cmd.Parameters.AddWithValue("@CO2_Factor_KgPerL", dto.CO2_Factor_KgPerL);
+            cmd.Parameters.AddWithValue("@NO2_Factor_KgPerKm", dto.NO2_Factor_KgPerKm);
+            cmd.Parameters.AddWithValue("@CH4_Factor_KgPerKm", dto.CH4_Factor_KgPerKm);
+            cmd.Parameters.AddWithValue("@EntryBy", userId);
 
-                await con.OpenAsync();
+            await con.OpenAsync();
                 int newId = Convert.ToInt32(await cmd.ExecuteScalarAsync());
 
                 return new ApiResponse<string>
@@ -139,14 +138,14 @@ namespace ProjectApp.Repository.Services.Masters.EmissionFactor
                 using var cmd = new SqlCommand("USP_CB_EmissionFactor_Update", con);
                 cmd.CommandType = CommandType.StoredProcedure;
 
-                cmd.Parameters.AddWithValue("@EmissionFactorId", id);
-                cmd.Parameters.AddWithValue("@FuelType", dto.FuelType);
-                cmd.Parameters.AddWithValue("@CO2_Factor_KgPerL", dto.CO2_Factor_KgPerL);
-                cmd.Parameters.AddWithValue("@NO2_Factor_KgPerKm", dto.NO2_Factor_KgPerKm);
-                cmd.Parameters.AddWithValue("@CH4_Factor_KgPerKm", dto.CH4_Factor_KgPerKm);
-                cmd.Parameters.AddWithValue("@UpdatedBy", userId);
+            cmd.Parameters.AddWithValue("@EmissionFactorId", id);
+            cmd.Parameters.AddWithValue("@FuelId", dto.FuelId);
+            cmd.Parameters.AddWithValue("@CO2_Factor_KgPerL", dto.CO2_Factor_KgPerL);
+            cmd.Parameters.AddWithValue("@NO2_Factor_KgPerKm", dto.NO2_Factor_KgPerKm);
+            cmd.Parameters.AddWithValue("@CH4_Factor_KgPerKm", dto.CH4_Factor_KgPerKm);
+            cmd.Parameters.AddWithValue("@UpdatedBy", userId);
 
-                await con.OpenAsync();
+            await con.OpenAsync();
                 await cmd.ExecuteNonQueryAsync();
 
                 return new ApiResponse<string>

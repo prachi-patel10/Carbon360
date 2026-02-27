@@ -55,13 +55,16 @@ namespace ProjectApp.API.Controllers.Account.GeneratorOperation
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create(
-            GeneratorOperationCreateDTO dto)
+        public async Task<IActionResult> Create(GeneratorOperationCreateDTO dto)
         {
             var result = await _service.CreateAsync(dto);
 
             if (result == null)
-                return BadRequest();
+            {
+                _apiResponse.status = false;
+                _apiResponse.StatusCode = HttpStatusCode.BadRequest;
+                return BadRequest(_apiResponse);
+            }
 
             _apiResponse.data = result;
             _apiResponse.status = true;

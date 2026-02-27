@@ -15,7 +15,7 @@ namespace ProjectApp.Core.DTOs.Account.GeneratorOperation
         public decimal LoadFactor { get; set; }
         public decimal PowerOutputKWH { get; set; }
         public decimal FuelConsumedLiters { get; set; }
-        public string FuelId { get; set; }
+        public int FuelId { get; set; }
         public int EntryBy { get; set; }
         public DateTime EntryDate { get; set; }
     }
