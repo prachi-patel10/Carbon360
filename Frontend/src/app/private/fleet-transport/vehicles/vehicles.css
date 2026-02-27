@@ -457,3 +457,14 @@ td.actions button {
   .search-row { flex-direction: column; align-items: stretch; }
   .search-row button { width: 100%; }
 }
+
+.input-error {
+  border: 1px solid #e74c3c !important;
+}
+
+.error-text {
+  color: #e74c3c;
+  font-size: 12px;
+  margin-top: 4px;
+  display: block;
+}

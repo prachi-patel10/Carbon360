@@ -5,30 +5,34 @@ import { environment } from '../../../enviorments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class VehicleService {
-  private vehicleUrl = `${environment.apiBaseUrl}/VehicleMaster`;
+  private baseUrl = `${environment.apiBaseUrl}/VehicleMaster`;
   private fuelUrl = `${environment.apiBaseUrl}/Fuel`;
   private departmentUrl = `${environment.apiBaseUrl}/Department`;
   private vehicleTypeUrl = `${environment.apiBaseUrl}/VehicleType`;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
-  createVehicle(data: any): Observable<any> {
-    return this.http.post(`${this.vehicleUrl}/create`, data);
+  createVehicle(vehicle: any) {
+    return this.http.post<any>(`${this.baseUrl}/create`, {
+      dto: vehicle
+    });
   }
 
-  updateVehicle(data: any): Observable<any> {
-    return this.http.patch(`${this.vehicleUrl}/update/${data.vehicle_id}`, data);
-  }
+  updateVehicle(vehicle: any) {
+  return this.http.put<any>(`${this.baseUrl}/update`, {
+    dto: vehicle
+  });
+}
 
   updateVehicleStatus(vehicleId: string, status: boolean) {
-    return this.http.patch(`${this.vehicleUrl}/update-status/${vehicleId}`, { isActive: status });
+    return this.http.patch(`${this.baseUrl}/update-status/${vehicleId}`, { isActive: status });
   }
 
   searchVehicles(search: string, isActive: boolean | null, pageNumber: number, pageSize: number) {
     let params: any = { pageNumber, pageSize };
     if (search) params.search = search;
     if (isActive !== null) params.isActive = isActive;
-    return this.http.get<any>(`${this.vehicleUrl}/search`, { params });
+    return this.http.get<any>(`${this.baseUrl}/search`, { params });
   }
 
   getFuelList(): Observable<any> {
@@ -44,6 +48,6 @@ export class VehicleService {
   }
 
   deleteVehicle(vehicleId: string) {
-    return this.http.delete(`${this.vehicleUrl}/delete/${vehicleId}`);
+    return this.http.delete(`${this.baseUrl}/delete/${vehicleId}`);
   }
 }

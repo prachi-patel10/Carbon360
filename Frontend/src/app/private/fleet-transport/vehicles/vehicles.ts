@@ -4,16 +4,15 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import Swal from 'sweetalert2';
 
-interface Vehicle {
-  vehicle_id: string;
+export interface VehicleDto {
+  vehicle_id?: string | null;
   vehicle_number: string;
-  vehicle_type_id: number | null;
-  fuel_id: number | null;
-  department_id: number | null;
-  engine_capacity: number | null;
-  emission_standard: string;
+  vehicle_type_id: string | null;
+  fuel_id: string | null;
+  department_id: string | null;
+  engine_capacity?: number | null;
+  emission_standard?: string | null;
   isActive: boolean;
-  isDeleted: boolean;
 }
 
 @Component({
@@ -23,47 +22,45 @@ interface Vehicle {
   templateUrl: './vehicles.html',
   styleUrls: ['./vehicles.css'],
 })
-
 export class Vehicles implements OnInit {
-  vehicles: WritableSignal<Vehicle[]> = signal<Vehicle[]>([]);
-  vehicleTypes = signal<any[]>([]);
-  fuelTypes = signal<any[]>([]);
-  departments = signal<any[]>([]);
+
+  // ---------------- SIGNALS ----------------
+  vehicles: WritableSignal<VehicleDto[]> = signal<VehicleDto[]>([]);
+  vehicleTypes = signal<{ vehicle_type_id: string; vehicle_type_name: string }[]>([]);
+  fuelTypes = signal<{ fuel_id: string; fuel_name: string }[]>([]);
+  departments = signal<{ department_id: string; department_name: string }[]>([]);
 
   totalRecords = signal<number>(0);
-  totalPages = signal<number>(0);
+  totalPages = signal<number>(1);
   pageNumber = signal<number>(1);
   pageSize = signal<number>(5);
 
   searchText = signal<string>('');
   filterModalOpen = signal<boolean>(false);
-
   activeFilter = signal<boolean>(true);
 
-  sortColumn = signal<string>(''); // current column to sort
-  sortDirection = signal<'asc' | 'desc'>('asc'); // sort direction
+  sortColumn = signal<string>('');
+  sortDirection = signal<'asc' | 'desc'>('asc');
 
   pageSizeOptions = [5, 10, 20, 50];
 
+  vehicleNumberError = signal<string>('');
+
   filter = signal<any>({
-    vehicle_number: '',
-    vehicle_type_id: [] as number[],  // array for multi-select
-    fuel_id: [] as number[],
-    department_id: [] as number[],
-    engine_capacity: null,
-    emission_standard: [] as string[],
-    isActive: null,
+    vehicle_type_id: [] as string[],
+    fuel_id: [] as string[],
+    department_id: [] as string[],
   });
 
-  newVehicle = signal<any>({
+  newVehicle: WritableSignal<VehicleDto> = signal<VehicleDto>({
     vehicle_id: null,
     vehicle_number: '',
     vehicle_type_id: null,
     fuel_id: null,
     department_id: null,
     engine_capacity: null,
-    emission_standard: '',
-    isActive: true,
+    emission_standard: null,
+    isActive: true
   });
 
   isEditMode = signal<boolean>(false);
@@ -77,95 +74,154 @@ export class Vehicles implements OnInit {
 
   // ----------------- DROPDOWNS -----------------
   loadDropdowns() {
-    this.vehicleService.getFuelList().subscribe(res => this.fuelTypes.set(res.data || res));
-    this.vehicleService.getDepartmentList().subscribe(res => this.departments.set(res.data || res));
-    this.vehicleService.getVehicleTypeList().subscribe(res => this.vehicleTypes.set(res.data || res));
+    // Vehicle Types
+    this.vehicleService.getVehicleTypeList().subscribe((res: any[]) => {
+      const mapped = (res || []).map(vt => ({
+        vehicle_type_id: vt.vehicle_type_id,
+        vehicle_type_name: vt.vehicle_type_name
+      }));
+      this.vehicleTypes.set(mapped);
+    });
+
+    // Fuel Types
+    this.vehicleService.getFuelList().subscribe((res: any[]) => {
+      const mapped = (res || []).map(f => ({
+        fuel_id: f.fuel_id,
+        fuel_name: f.fuel_name
+      }));
+      this.fuelTypes.set(mapped);
+    });
+
+    // Departments
+    // this.vehicleService.getDepartmentList().subscribe(res => {
+    //   const mapped = (res.data || []).map((d: any) => ({
+    //     department_id: d.department_id,       // convert to string
+    //     department_name: d.departmentName,
+    //   }));
+    //   this.departments.set(mapped);
+    // });
+
+    // Departments
+ this.vehicleService.getDepartmentList().subscribe((res: any) => {
+    // Check if API returns array or single object
+    let deptArray: any[] = [];
+    if (Array.isArray(res.data)) {
+      deptArray = res.data;
+    } else if (res.data) {
+      // If API returns single department, wrap in array
+      deptArray = [res.data];
+    }
+
+    const mapped = deptArray.map((d: any) => ({
+      department_id: String(d.id),          // use `id` from your department API
+      department_name: d.departmentName
+    }));
+
+    this.departments.set(mapped);
+  });
+  }
+
+//   loadDropdowns() {
+//   // ---------------- Vehicle Types ----------------
+//   this.vehicleService.getVehicleTypeList().subscribe((res: any) => {
+//     const mapped = (res.data || []).map((vt: any) => ({
+//       vehicle_type_id: String(vt.vehicle_type_id),
+//       vehicle_type_name: vt.vehicle_type_name
+//     }));
+//     this.vehicleTypes.set(mapped);
+//   });
+
+//   // ---------------- Fuel Types ----------------
+//   this.vehicleService.getFuelList().subscribe((res: any) => {
+//     const mapped = (res.data || []).map((f: any) => ({
+//       fuel_id: String(f.fuel_id),
+//       fuel_name: f.fuel_name
+//     }));
+//     this.fuelTypes.set(mapped);
+//   });
+
+//   // ---------------- Departments ----------------
+//   // Fetch all departments to map id -> name
+//   this.vehicleService.getDepartmentList().subscribe((res: any) => {
+//     // Check if API returns array or single object
+//     let deptArray: any[] = [];
+//     if (Array.isArray(res.data)) {
+//       deptArray = res.data;
+//     } else if (res.data) {
+//       // If API returns single department, wrap in array
+//       deptArray = [res.data];
+//     }
+
+//     const mapped = deptArray.map((d: any) => ({
+//       department_id: String(d.id),          // use `id` from your department API
+//       department_name: d.departmentName
+//     }));
+
+//     this.departments.set(mapped);
+//   });
+// }
+
+  getVehicleTypeName(id: string | null) {
+    if (!id) return '-';
+    const vt = this.vehicleTypes().find(v => v.vehicle_type_id === id);
+    return vt ? vt.vehicle_type_name : '-';
+  }
+
+  getFuelName(id: string | null) {
+    if (!id) return '-';
+    const f = this.fuelTypes().find(fuel => fuel.fuel_id === id);
+    return f ? f.fuel_name : '-';
+  }
+
+  getDepartmentName(id: string | null) {
+    if (!id) return '-';
+    const d = this.departments().find(  dep => dep.department_id === id);
+    return d ? d.department_name : '-';
   }
 
   // ----------------- VEHICLE TABLE -----------------
   loadVehicles() {
-    const f = this.filter();
-    const searchValue = this.searchText()?.trim().toLowerCase();
-
     this.vehicleService
       .searchVehicles(this.searchText(), this.activeFilter(), this.pageNumber(), this.pageSize())
       .subscribe(res => {
-        let data: Vehicle[] = res.data || [];
-
-        // Soft-delete filter
-        data = data.filter(v => !v.isDeleted);
-
-        // ------------------ CLIENT-SIDE FILTERING ------------------
-        data = data.filter(v =>
-          // Vehicle Number filter
-          (!f.vehicle_number || v.vehicle_number?.toLowerCase().includes(f.vehicle_number.toLowerCase())) &&
-
-          // Vehicle Type multi-select filter
-          (Array.isArray(f.vehicle_type_id) && f.vehicle_type_id.length === 0 || f.vehicle_type_id.includes(v.vehicle_type_id!)) &&
-
-          // Fuel multi-select filter
-          (Array.isArray(f.fuel_id) && f.fuel_id.length === 0 || f.fuel_id.includes(v.fuel_id!)) &&
-
-          // Department multi-select filter
-          (Array.isArray(f.department_id) && f.department_id.length === 0 || f.department_id.includes(v.department_id!)) &&
-
-          // Engine Capacity filter
-          (!f.engine_capacity || v.engine_capacity === f.engine_capacity) &&
-
-          // Emission Standard multi-select
-          (Array.isArray(f.emission_standard) && f.emission_standard.length === 0 || f.emission_standard.includes(v.emission_standard)) &&
-
-          // Active status filter
-          (f.isActive === null || v.isActive === f.isActive)
-        );
-
-        // ------------------ SEARCH ACROSS ALL COLUMNS ------------------
-        if (searchValue) {
-          data = data.filter(v =>
-            v.vehicle_number?.toLowerCase().includes(searchValue) ||
-            this.getVehicleTypeName(v.vehicle_type_id).toLowerCase().includes(searchValue) ||
-            this.getFuelName(v.fuel_id).toLowerCase().includes(searchValue) ||
-            this.getDepartmentName(v.department_id).toLowerCase().includes(searchValue) ||
-            (v.engine_capacity?.toString().includes(searchValue) ?? false) ||
-            (v.emission_standard?.toLowerCase().includes(searchValue) ?? false) ||
-            (v.isActive ? 'active'.includes(searchValue) : 'inactive'.includes(searchValue))
-          );
-        }
-
-        // ------------------ SORTING ------------------
-        if (this.sortColumn()) {
-          const col = this.sortColumn();
-          const dir = this.sortDirection();
-          data.sort((a, b) => {
-            let aVal: any, bVal: any;
-            switch (col) {
-              case 'vehicle_number': aVal = a.vehicle_number; bVal = b.vehicle_number; break;
-              case 'vehicle_type': aVal = this.getVehicleTypeName(a.vehicle_type_id); bVal = this.getVehicleTypeName(b.vehicle_type_id); break;
-              case 'fuel': aVal = this.getFuelName(a.fuel_id); bVal = this.getFuelName(b.fuel_id); break;
-              case 'department': aVal = this.getDepartmentName(a.department_id); bVal = this.getDepartmentName(b.department_id); break;
-              case 'engine': aVal = a.engine_capacity; bVal = b.engine_capacity; break;
-              case 'emission': aVal = a.emission_standard; bVal = b.emission_standard; break;
-              case 'status': aVal = a.isActive; bVal = b.isActive; break;
-            }
-            if (aVal == null) aVal = '';
-            if (bVal == null) bVal = '';
-            if (aVal < bVal) return dir === 'asc' ? -1 : 1;
-            if (aVal > bVal) return dir === 'asc' ? 1 : -1;
-            return 0;
-          });
-        }
-
-        // ------------------ UPDATE SIGNALS ------------------
+        let data: VehicleDto[] = res.data || [];
+        data = data.filter(v => !(v as any).isDeleted);
         this.vehicles.set(data);
         this.totalRecords.set(data.length);
         this.totalPages.set(res.totalPages || 1);
       });
   }
 
-  // Toggle sorting
+  search() {
+    this.pageNumber.set(1);
+    this.loadVehicles();
+  }
+
+  // ----------------- PAGINATION -----------------
+  previousPage() {
+    if (this.pageNumber() > 1) {
+      this.pageNumber.update(n => n - 1);
+      this.loadVehicles();
+    }
+  }
+
+  nextPage() {
+    if (this.pageNumber() < this.totalPages()) {
+      this.pageNumber.update(n => n + 1);
+      this.loadVehicles();
+    }
+  }
+
+  onPageSizeChange(event: any) {
+    this.pageSize.set(Number(event.target.value));
+    this.pageNumber.set(1);
+    this.loadVehicles();
+  }
+
+  // ----------------- SORT -----------------
   sort(column: string) {
     if (this.sortColumn() === column) {
-      this.sortDirection.update(d => d === 'asc' ? 'desc' : 'asc');
+      this.sortDirection.set(this.sortDirection() === 'asc' ? 'desc' : 'asc');
     } else {
       this.sortColumn.set(column);
       this.sortDirection.set('asc');
@@ -173,50 +229,100 @@ export class Vehicles implements OnInit {
     this.loadVehicles();
   }
 
-  search() {
-    const searchValue = this.searchText()?.trim().toLowerCase();
-    this.pageNumber.set(1);
-
-    this.loadVehicles();
-  }
-
-  nextPage() {
-    if (this.pageNumber() < this.totalPages()) {
-      this.pageNumber.update(v => v + 1);
-      this.loadVehicles();
-    }
-  }
-
-  previousPage() {
-    if (this.pageNumber() > 1) {
-      this.pageNumber.update(v => v - 1);
-      this.loadVehicles();
-    }
-  }
-
   // ----------------- CREATE / UPDATE -----------------
-  saveVehicle() {
-    if (!this.newVehicle().vehicle_number) {
-      this.showToast('Error', 'Vehicle number is required!', 'error');
-      return;
-    }
+  // saveVehicle() {
+  //   if (!this.validateVehicleNumber()) {
+  //     this.showToast('Error', this.vehicleNumberError(), 'error');
+  //     return;
+  //   }
 
-    if (this.isEditMode()) {
-      this.vehicleService.updateVehicle(this.newVehicle()).subscribe(() => {
-        this.showToast('Updated', 'Vehicle updated successfully!', 'success');
-        this.resetForm();
-        this.loadVehicles();
-      });
-    } else {
-      this.vehicleService.createVehicle(this.newVehicle()).subscribe(() => {
-        this.showToast('Created', 'Vehicle created successfully!', 'success');
-        this.resetForm();
-        this.loadVehicles();
-      });
-    }
-  }
+  //   const raw = this.newVehicle();
+  //   const vehicle: VehicleDto = {
+  //     ...raw,
+  //     // Keep hashed IDs as string (or null)
+  //     vehicle_type_id: raw.vehicle_type_id || null,
+  //     fuel_id: raw.fuel_id || null,
+  //     department_id: raw.department_id || null,
+  //     // Only convert numeric field
+  //     engine_capacity: raw.engine_capacity ? Number(raw.engine_capacity) : null
+  //   };
 
-  editVehicle(vehicle: Vehicle) {
+  //   // Required fields check
+  //   if (
+  //     vehicle.vehicle_type_id == null ||
+  //     vehicle.fuel_id == null ||
+  //     vehicle.department_id == null ||
+  //     vehicle.engine_capacity == null ||
+  //     !vehicle.emission_standard?.trim()
+  //   ) {
+  //     this.showToast('Error', 'Please fill all required fields!', 'error');
+  //     return;
+  //   }
+
+  //   // Create payload
+  //   const payload = { dto: vehicle };
+
+  //   // Save or update
+  //   if (this.isEditMode()) {
+  //     this.vehicleService.updateVehicle(payload).subscribe(() => {
+  //       this.showToast('Updated', 'Vehicle updated successfully!', 'success');
+  //       this.resetForm();
+  //       this.loadVehicles();
+  //     });
+  //   } else {
+  //     this.vehicleService.createVehicle(payload).subscribe(() => {
+  //       this.showToast('Created', 'Vehicle created successfully!', 'success');
+  //       this.resetForm();
+  //       this.loadVehicles();
+  //     });
+  //   }
+  // }
+
+saveVehicle() {
+  const raw = this.newVehicle();
+
+  // Validation
+  if (!raw.vehicle_number?.trim()) { this.showToast('Error', 'Vehicle number is required!', 'error'); return; }
+  if (!raw.emission_standard?.trim()) { this.showToast('Error', 'Emission standard is required!', 'error'); return; }
+  if (!raw.vehicle_type_id) { this.showToast('Error', 'Select vehicle type!', 'error'); return; }
+  if (!raw.fuel_id) { this.showToast('Error', 'Select fuel type!', 'error'); return; }
+  if (!raw.department_id) { this.showToast('Error', 'Select department!', 'error'); return; }
+  if (!raw.engine_capacity) { this.showToast('Error', 'Engine capacity is required!', 'error'); return; }
+
+  const vehicle: VehicleDto = {
+    vehicle_id: raw.vehicle_id || undefined,          // optional
+    vehicle_number: raw.vehicle_number.trim(),        // required
+    vehicle_type_id: raw.vehicle_type_id,
+    fuel_id: raw.fuel_id,
+    department_id: raw.department_id,
+    engine_capacity: Number(raw.engine_capacity),
+    emission_standard: raw.emission_standard.trim(),
+    isActive: raw.isActive != null ? raw.isActive : true
+  };
+
+  // Send the object directly (not wrapped in dto)
+  const requestPayload = vehicle;
+
+  const request$ = this.isEditMode()
+    ? this.vehicleService.updateVehicle(requestPayload)
+    : this.vehicleService.createVehicle(requestPayload);
+
+  request$.subscribe({
+    next: () => {
+      this.showToast(this.isEditMode() ? 'Updated' : 'Created',
+                     `Vehicle ${this.isEditMode() ? 'updated' : 'created'} successfully!`,
+                     'success');
+      this.resetForm();
+      this.loadVehicles();
+    },
+    error: err => {
+      console.error('Vehicle save error', err);
+      this.showToast('Error', 'Failed to save vehicle', 'error');
+    }
+  });
+}
+  //edit
+  editVehicle(vehicle: VehicleDto) {
     this.isEditMode.set(true);
     this.newVehicle.set({ ...vehicle });
   }
@@ -230,13 +336,32 @@ export class Vehicles implements OnInit {
       fuel_id: null,
       department_id: null,
       engine_capacity: null,
-      emission_standard: '',
+      emission_standard: null,
       isActive: true,
     });
   }
 
-  // ----------------- TOGGLE STATUS -----------------
-  toggleStatus(vehicle: Vehicle) {
+  deleteVehicle(vehicle: VehicleDto) {
+    if (!vehicle.vehicle_id) return;
+
+    Swal.fire({
+      title: 'Are you sure?',
+      text: 'This will delete the record!',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Delete',
+    }).then(result => {
+      if (result.isConfirmed) {
+        this.vehicleService.deleteVehicle(vehicle.vehicle_id!.toString()).subscribe(() => {
+          this.showToast('Deleted', 'Vehicle deleted successfully!', 'success');
+          this.vehicles.update(arr => arr.filter(v => v.vehicle_id !== vehicle.vehicle_id));
+        });
+      }
+    });
+  }
+
+  toggleStatus(vehicle: VehicleDto) {
+    if (!vehicle.vehicle_id) return;
     const newStatus = !vehicle.isActive;
     Swal.fire({
       title: 'Are you sure?',
@@ -246,37 +371,72 @@ export class Vehicles implements OnInit {
       confirmButtonText: 'Yes',
     }).then(result => {
       if (result.isConfirmed) {
-        this.vehicleService.updateVehicleStatus(vehicle.vehicle_id, newStatus)
-          .subscribe(() => {
-            vehicle.isActive = newStatus;
-            this.showToast('Updated', 'Status updated successfully!', 'success');
-          });
-      }
-    });
-  }
-
-  // ----------------- SOFT DELETE -----------------
-  deleteVehicle(vehicle: Vehicle) {
-    Swal.fire({
-      title: 'Are you sure?',
-      text: 'This will delete the record!',
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonText: 'Delete',
-    }).then(result => {
-      if (result.isConfirmed) {
-        this.vehicleService.deleteVehicle(vehicle.vehicle_id).subscribe(() => {
-          this.showToast('Deleted', 'Vehicle deleted successfully!', 'success');
-          // Remove from signal array
-          this.vehicles.update(arr => arr.filter(v => v.vehicle_id !== vehicle.vehicle_id));
+        this.vehicleService.updateVehicleStatus(vehicle.vehicle_id!.toString(), newStatus).subscribe(() => {
+          vehicle.isActive = newStatus;
+          this.showToast('Updated', 'Status updated successfully!', 'success');
         });
       }
     });
   }
 
+  validateVehicleNumber(): boolean {
+    const vehicleNo = this.newVehicle().vehicle_number?.trim();
+    if (!vehicleNo) {
+      this.vehicleNumberError.set('Vehicle Number is required');
+      return false;
+    }
+    const regex = /^[A-Z]{2}-?\d{2}-?[A-Z]{2}-?\d{4}$/;
+    if (!regex.test(vehicleNo)) {
+      this.vehicleNumberError.set('Invalid format. Example: DL12AB1234');
+      return false;
+    }
+    this.vehicleNumberError.set('');
+    return true;
+  }
+
+  onVehicleNumberChange(value: string) {
+    const upper = (value || '').toUpperCase();
+    this.newVehicle.update(v => ({ ...v, vehicle_number: upper }));
+    this.validateVehicleNumber();
+  }
+
   // ----------------- FILTER -----------------
-  openFilterModal() { this.filterModalOpen.set(true); }
+  showFilterModal() { this.filterModalOpen.set(true); }
   closeFilterModal() { this.filterModalOpen.set(false); }
+
+  isVehicleTypeSelected(id: string) { return this.filter().vehicle_type_id.includes(id); }
+  isFuelTypeSelected(id: string) { return this.filter().fuel_id.includes(id); }
+  isDepartmentSelected(id: string) { return this.filter().department_id.includes(id); }
+
+  toggleVehicleType(id: string) {
+    const current = this.filter().vehicle_type_id;
+    this.filter.update(f => ({
+      ...f,
+      vehicle_type_id: current.includes(id)
+        ? current.filter((x: string) => x !== id)
+        : [...current, id]
+    }));
+  }
+
+  toggleFuelType(id: string) {
+    const current = this.filter().fuel_id;
+    this.filter.update(f => ({
+      ...f,
+      fuel_id: current.includes(id)
+        ? current.filter((x: string) => x !== id)
+        : [...current, id]
+    }));
+  }
+
+  toggleDepartment(id: string) {
+    const current = this.filter().department_id;
+    this.filter.update(f => ({
+      ...f,
+      department_id: current.includes(id)
+        ? current.filter((x: string) => x !== id)
+        : [...current, id]
+    }));
+  }
 
   applyFilter() {
     this.pageNumber.set(1);
@@ -285,141 +445,12 @@ export class Vehicles implements OnInit {
   }
 
   resetFilter() {
-    this.filter.set({
-      vehicle_number: '',
-      vehicle_type_id: null,
-      fuel_id: null,
-      department_id: null,
-      engine_capacity: null,
-      emission_standard: '',
-      isActive: null,
-    });
-
-    this.searchText.set('');
-    this.activeFilter.set(true);
-    this.loadVehicles();
+    this.filter.set({ vehicle_type_id: [], fuel_id: [], department_id: [] });
+    this.applyFilter();
   }
 
-  // ----------------- GET NAMES -----------------
-  getVehicleTypeName(id: number | null) {
-    if (id === null) return '-';
-    return this.vehicleTypes().find(vt => vt.vehicle_type_id === id)?.vehicle_type_name || '-';
-  }
-
-  getFuelName(id: number | null) {
-    if (id === null) return '-';
-    return this.fuelTypes().find(f => f.fuel_id === id)?.fuel_name || '-';
-  }
-
-  getDepartmentName(id: number | null) {
-    if (id === null) return '-';
-    return this.departments().find(d => d.department_id === id)?.department_name || '-';
-  }
-
-  // ----------------- TOAST -----------------
   showToast(title: string, text: string, icon: 'success' | 'error' = 'success') {
-    Swal.fire({
-      icon,
-      title,
-      text,
-      toast: true,
-      position: 'top-end',
-      timer: 2000,
-      showConfirmButton: false,
-    });
+    Swal.fire({ icon, title, text, toast: true, position: 'top-end', timer: 2000, showConfirmButton: false });
   }
 
-  clearFilters() {
-    this.searchText.set('');
-    this.activeFilter.set(true);
-    this.loadVehicles();
-  }
-
-  onPageSizeChange(event: Event) {
-    const target = event.target as HTMLSelectElement;
-    const newSize = Number(target.value);
-    this.pageSize.set(newSize);
-    this.pageNumber.set(1);
-    this.loadVehicles();
-  }
-
-  // ----------------- VEHICLE TYPE MULTI-SELECT -----------------
-  isVehicleTypeSelected(id: number): boolean {
-    const selected = this.filter().vehicle_type_id;
-    return Array.isArray(selected) && selected.includes(id);
-  }
-
-  toggleVehicleType(id: number) {
-    const selected = [...(this.filter().vehicle_type_id || [])];
-    const index = selected.indexOf(id);
-
-    if (index > -1) {
-      selected.splice(index, 1); // remove if already selected
-    } else {
-      selected.push(id); // add if not selected
-    }
-
-    this.filter.update(f => ({ ...f, vehicle_type_id: selected }));
-  }
-
-  // Get count of selected vehicle types
-  getSelectedVehicleTypesCount(): number {
-    const selected = this.filter().vehicle_type_id;
-    return Array.isArray(selected) ? selected.length : 0;
-  }
-
-  // ----------------- FUEL TYPE MULTI-SELECT -----------------
-  isFuelTypeSelected(id: number): boolean {
-    const selected = this.filter().fuel_id;
-    return Array.isArray(selected) && selected.includes(id);
-  }
-
-  toggleFuelType(id: number) {
-    const selected = [...(this.filter().fuel_id || [])];
-    const index = selected.indexOf(id);
-
-    if (index > -1) {
-      selected.splice(index, 1); // remove if already selected
-    } else {
-      selected.push(id); // add if not selected
-    }
-
-    this.filter.update(f => ({ ...f, fuel_id: selected }));
-  }
-
-  // Get count of selected fuel types
-  getSelectedFuelTypesCount(): number {
-    const selected = this.filter().fuel_id;
-    return Array.isArray(selected) ? selected.length : 0;
-  }
-
-  // ----------------- DEPARTMENT MULTI-SELECT -----------------
-  isDepartmentSelected(id: number): boolean {
-    const selected = this.filter().department_id;
-    return Array.isArray(selected) && selected.includes(id);
-  }
-
-  toggleDepartment(id: number) {
-    const selected = [...(this.filter().department_id || [])];
-    const index = selected.indexOf(id);
-
-    if (index > -1) {
-      selected.splice(index, 1); // remove if already selected
-    } else {
-      selected.push(id); // add if not selected
-    }
-
-    this.filter.update(f => ({ ...f, department_id: selected }));
-  }
-
-  // ----------------- OPTIONAL: GET COUNT -----------------
-  getSelectedDepartmentsCount(): number {
-    const selected = this.filter().department_id;
-    return Array.isArray(selected) ? selected.length : 0;
-  }
-
-  // ----------------- FILTER MODAL -----------------
-  showFilterModal() {
-    this.filterModalOpen.set(true);
-  }
 }

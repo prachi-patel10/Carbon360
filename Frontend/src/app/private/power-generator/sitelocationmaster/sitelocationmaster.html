@@ -2,98 +2,120 @@
 
   <!-- ================= CREATE / EDIT FORM ================= -->
   <div class="card">
-    <h2>{{ editingSiteId ? 'Update Site Location' : 'Create Site Location' }}</h2>
 
     <form [formGroup]="form" (ngSubmit)="submit()" class="form-grid">
-      <input type="text" placeholder="Site Name" formControlName="siteName" required>
-      <input type="text" placeholder="Building Name" formControlName="buildingName" required>
-      <input type="text" placeholder="City" formControlName="city" required>
-      <input type="text" placeholder="State" formControlName="state" required>
-      
-      <select formControlName="departmentId" required>
-        <option value="">-- Select Department --</option>
-        <option *ngFor="let dept of departments" [value]="dept.departmentId">{{ dept.departmentName }}</option>
-      </select>
+      <div class="form-group">
+        <label>Site Name</label>
+        <input type="text" placeholder="Enter Site Name" formControlName="siteName" />
+      </div>
 
-      <!-- Toggle button for status -->
-      <div class="toggle-btn">
-        <label>
-          <input type="checkbox" formControlName="isActive">
-          <span class="slider"></span>
-        </label>
-        <span>{{ form.value.isActive ? 'Active' : 'Inactive' }}</span>
+      <div class="form-group">
+        <label>Building Name</label>
+        <input type="text" placeholder="Enter Building Name" formControlName="buildingName" />
+      </div>
+
+      <div class="form-group">
+        <label>City</label>
+        <input type="text" placeholder="Enter City" formControlName="city" />
+      </div>
+
+      <div class="form-group">
+        <label>State</label>
+        <input type="text" placeholder="Enter State" formControlName="state" />
+      </div>
+
+      <div class="form-group">
+        <label>Department</label>
+        <select formControlName="departmentId">
+          <option [ngValue]="null" disabled selected hidden>Select Department</option>
+          <option *ngFor="let dept of departments" [ngValue]="dept.departmentId">{{ dept.departmentName }}</option>
+        </select>
       </div>
 
       <div class="form-actions">
-        <button type="submit" class="btn-primary">{{ editingSiteId ? 'Update' : 'Save' }}</button>
-        <button type="button" class="btn-secondary" (click)="form.reset(); editingSiteId=null;">Clear</button>
+        <div class="status-toggle">
+          <span>Status</span>
+          <label class="switch">
+            <input type="checkbox" formControlName="isActive" />
+            <span class="slider"></span>
+          </label>
+        </div>
+        <button type="submit" class="save-btn">
+          {{ editingSiteId ? 'Update' : 'Save' }}
+        </button>
+        <button type="button" class="cancel-btn" (click)="form.reset({ isActive: true }); editingSiteId=null;">Clear</button>
       </div>
     </form>
   </div>
 
-  <!-- ================= LIST WITH SEARCH ================= -->
+  <!-- ================= SEARCH + TABLE ================= -->
   <div class="card">
     <div class="search-row">
-      <input type="text" placeholder="Search..." [(ngModel)]="searchText" (keyup.enter)="search()">
-      <button class="btn-primary" (click)="search()">Search</button>
+      <input type="text" class="search-input" placeholder="Search by any column..." [(ngModel)]="searchText" (input)="applySearch()" />
+      <div class="search-right">
+        <div class="status-toggle">
+          <span>Active Only</span>
+          <label class="switch">
+            <input type="checkbox" [(ngModel)]="isActiveFilter" (change)="applySearch()" />
+            <span class="slider"></span>
+          </label>
+        </div>
+        <button class="filter-btn" (click)="clearFilters()">Reset Filters</button>
+      </div>
     </div>
 
-    <table>
-      <thead>
-        <tr>
-          <th>Site Name</th>
-          <th>Building</th>
-          <th>City</th>
-          <th>State</th>
-          <th>Department</th>
-          <th>Status</th>
-          <th>Action</th>
-        </tr>
-      </thead>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th (click)="sort('siteName')">Site Name <span>{{ getSortArrow('siteName') }}</span></th>
+            <th (click)="sort('buildingName')">Building <span>{{ getSortArrow('buildingName') }}</span></th>
+            <th (click)="sort('city')">City <span>{{ getSortArrow('city') }}</span></th>
+            <th (click)="sort('state')">State <span>{{ getSortArrow('state') }}</span></th>
+            <th (click)="sort('departmentName')">Department <span>{{ getSortArrow('departmentName') }}</span></th>
+            <th (click)="sort('status')">Status <span>{{ getSortArrow('status') }}</span></th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let site of siteList">
+            <td>{{ site.siteName }}</td>
+            <td>{{ site.buildingName }}</td>
+            <td>{{ site.city }}</td>
+            <td>{{ site.state }}</td>
+            <td>{{ site.departmentName }}</td>
+            <td>
+              <label class="switch">
+                <input type="checkbox" [checked]="site.isActive" (change)="toggleStatus(site)" />
+                <span class="slider"></span>
+              </label>
+              <span>{{ site.isActive ? 'Active' : 'Inactive' }}</span>
+            </td>
+            <td class="actions">
+              <button class="edit-btn" (click)="edit(site)">Edit</button>
+              <button class="delete-btn" (click)="delete(site)">Delete</button>
+            </td>
+          </tr>
+          <tr *ngIf="siteList.length === 0">
+            <td colspan="7" class="no-data">No records found</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
-      <tbody>
-        <tr *ngFor="let site of siteList">
-          <td>{{ site.siteName }}</td>
-          <td>{{ site.buildingName }}</td>
-          <td>{{ site.city }}</td>
-          <td>{{ site.state }}</td>
-          <td>{{ site.departmentName }}</td>
-
-          <!-- Toggle button for status -->
-          <td>
-            <label class="toggle-btn">
-              <input type="checkbox" [checked]="site.isActive" (change)="toggleStatus(site)">
-              <span class="slider"></span>
-            </label>
-            <span>{{ site.isActive ? 'Active' : 'Inactive' }}</span>
-          </td>
-
-          <td>
-            <button class="btn-primary" (click)="edit(site)">Edit</button>
-            <button class="delete-btn" (click)="delete(site)">Delete</button>
-          </td>
-        </tr>
-
-        <tr *ngIf="siteList.length === 0">
-          <td colspan="7" style="text-align:center;">No records found</td>
-        </tr>
-      </tbody>
-    </table>
-
-    <div class="pagination">
-      <div class="left">
-        Page Size:
-        <select [(ngModel)]="pageSize" (change)="changePageSize()">
+    <!-- ================= PAGINATION ================= -->
+    <div class="pagination-info">
+      <span>Total Records: {{ totalRecords }}</span>
+      <div class="pagination-controls">
+        <button (click)="prevPage()" [disabled]="pageNumber===1">Previous</button>
+        <span>Page {{ pageNumber }} of {{ totalPages }}</span>
+        <button (click)="nextPage()" [disabled]="pageNumber===totalPages">Next</button>
+        <label for="pageSize">Page Size:</label>
+        <select id="pageSize" [value]="pageSize" (change)="changePageSize($event)">
           <option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</option>
         </select>
       </div>
-
-      <div class="right">
-        Total: {{ totalRecords }}
-        <button (click)="prevPage()" [disabled]="pageNumber===1">Prev</button>
-        <span>{{ pageNumber }} / {{ totalPages }}</span>
-        <button (click)="nextPage()" [disabled]="pageNumber===totalPages">Next</button>
-      </div>
     </div>
   </div>
+
 </div>

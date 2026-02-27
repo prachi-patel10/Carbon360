@@ -26,7 +26,10 @@ export class Sitelocationmaster implements OnInit {
   totalPages = 0;
   pageSizeOptions = [5, 10, 20, 50];
 
-  constructor(private fb: FormBuilder, private service: SiteLocationMasterService) {}
+  sortColumnName = 'siteName';
+  sortDir: 'asc' | 'desc' = 'asc';
+
+  constructor(private fb: FormBuilder, private service: SiteLocationMasterService) { }
 
   ngOnInit(): void {
     // Form for create/edit
@@ -104,32 +107,12 @@ export class Sitelocationmaster implements OnInit {
   }
 
   // ================= SEARCH =================
-  applySearch() {
-    this.pageNumber = 1;
-    this.search();
-  }
 
   clearFilters() {
     this.searchText = '';
     this.isActiveFilter = null;
     this.pageNumber = 1;
     this.search();
-  }
-
-  search() {
-    const params = {
-      search: this.searchText,
-      isActive: this.isActiveFilter,
-      pageNumber: this.pageNumber,
-      pageSize: this.pageSize,
-      sortColumn: 'SiteName',
-      sortDirection: 'ASC',
-    };
-    this.service.search(params).subscribe((res: any) => {
-      this.siteList = res.data || [];
-      this.totalRecords = res.totalRecords || 0;
-      this.totalPages = res.totalPages || 1;
-    });
   }
 
   // ================= PAGINATION =================
@@ -147,15 +130,60 @@ export class Sitelocationmaster implements OnInit {
     }
   }
 
-  changePageSize() {
-    this.pageNumber = 1;
-    this.search();
-  }
 
   // ================= LOAD DEPARTMENTS =================
   loadDepartments() {
     this.service.getDepartments().subscribe((res: any) => {
       this.departments = res || [];
     });
+  }
+
+  // Sorting function
+  sort(column: string) {
+    if (this.sortColumnName === column) {
+      this.sortDir = this.sortDir === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.sortColumnName = column;
+      this.sortDir = 'asc';
+    }
+    this.search();
+  }
+
+  // Arrow display
+  getSortArrow(column: string): string {
+    if (this.sortColumnName === column) {
+      return this.sortDir === 'asc' ? '▲' : '▼';
+    }
+    return '';
+  }
+
+  // Modified search to include sorting
+  search() {
+    const params = {
+      search: this.searchText,
+      isActive: this.isActiveFilter,
+      pageNumber: this.pageNumber,
+      pageSize: this.pageSize,
+      sortColumn: this.sortColumnName,
+      sortDirection: this.sortDir.toUpperCase(),
+    };
+    this.service.search(params).subscribe((res: any) => {
+      this.siteList = res.data || [];
+      this.totalRecords = res.totalRecords || 0;
+      this.totalPages = res.totalPages || 1;
+    });
+  }
+
+  // Called when search box or toggle changes
+  applySearch() {
+    this.pageNumber = 1;
+    this.search();
+  }
+
+  // Page size change
+  changePageSize(event: any) {
+    this.pageSize = +event.target.value;
+    this.pageNumber = 1;
+    this.search();
   }
 }
