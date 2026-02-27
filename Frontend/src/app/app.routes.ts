@@ -16,6 +16,7 @@ import { Generatormaster } from './private/power-generator/generatormaster/gener
 import { EmissionFactorComponent } from './private/masters/emissionfactor/emissionfactor';
 import { GeneratorOperationComponent } from './private/power-generator/generator-ec/generator-ec';
 import { Citymaster } from './private/fleet-transport/citymaster/citymaster';
+import { Sitelocationmaster } from './private/power-generator/sitelocationmaster/sitelocationmaster';
 
 export const routes: Routes = [
 
@@ -41,13 +42,16 @@ export const routes: Routes = [
             { path: 'role', component: MasterRoleComponent },
             { path: 'department', component: DepartmentComponent }, // create/import DepartmentComponent
             { path: 'vehicle', component: TripComponent },
+            { path: 'vehicleReport', component: vehicleReport },
             { path: 'vehiclemaster', component: Vehicles },// create/import VehicleComponent
             { path: 'fueltype', component: Fueltype },
             { path: 'emissionFactors', component: EmissionFactorComponent },
               { path: 'vehicletypeservice', component: Vehicletype },
+              {path: 'generator', component: Generatormaster},
             // { path: 'waste', component: WasteComponent },           // create/import WasteComponent
             { path: 'generator-ec', component:GeneratorOperationComponent  },   // create/import GeneratorComponent
             { path: 'citymaster',component:Citymaster},
+            {path: 'sitelocation', component:Sitelocationmaster}
         ]
     },
 
