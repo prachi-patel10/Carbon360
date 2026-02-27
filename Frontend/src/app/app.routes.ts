@@ -13,6 +13,8 @@ import { Vehicles } from './private/fleet-transport/vehicles/vehicles';
 import { Fueltype } from './private/masters/fueltype/fueltype';
 import { Vehicletype } from './private/fleet-transport/vehicletype/vehicletype';  
 import { Generatormaster } from './private/power-generator/generatormaster/generatormaster';
+import { EmissionFactorComponent } from './private/masters/emissionfactor/emissionfactor';
+import { GeneratorOperationComponent } from './private/power-generator/generator-ec/generator-ec';
 
 export const routes: Routes = [
 
@@ -40,9 +42,10 @@ export const routes: Routes = [
             { path: 'vehicle', component: TripComponent },
             { path: 'vehiclemaster', component: Vehicles },// create/import VehicleComponent
             { path: 'fueltype', component: Fueltype },
+            { path: 'emissionFactors', component: EmissionFactorComponent },
               { path: 'vehicletypeservice', component: Vehicletype },
             // { path: 'waste', component: WasteComponent },           // create/import WasteComponent
-            { path: 'generator', component:Generatormaster  },   // create/import GeneratorComponent
+            { path: 'generator-ec', component:GeneratorOperationComponent  },   // create/import GeneratorComponent
         ]
     },
 
