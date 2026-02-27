@@ -1,9 +1,7 @@
 <div class="container">
 
-  <!-- ================= CREATE / EDIT FORM ================= -->
+  <!-- ================= CREATE / EDIT VEHICLE FORM ================= -->
   <div class="card">
-    <!-- <h3 class="card-title">{{ isEditMode() ? 'Edit Vehicle' : 'Create Vehicle' }}</h3> -->
-
     <form class="form-grid">
 
       <!-- Vehicle Number -->
@@ -60,7 +58,7 @@
       <!-- Status + Save Button -->
       <div class="form-actions">
         <div class="status-toggle">
-          <span>Status</span>
+          <span>Active</span>
           <label class="switch">
             <input type="checkbox" [(ngModel)]="newVehicle().isActive" name="status">
             <span class="slider"></span>
@@ -70,82 +68,65 @@
           {{ isEditMode() ? 'Update' : 'Save' }}
         </button>
       </div>
-
     </form>
   </div>
 
-  <!-- ================= SEARCH + LIST CARD ================= -->
+  <!-- ================= SEARCH + VEHICLE LIST ================= -->
   <div class="card">
+    <div class="search-row">
 
-   <div class="search-row">
+      <!-- Search Box -->
+      <div class="search-left">
+        <input type="text" class="search-input" placeholder="Search by any column..." [(ngModel)]="searchText"
+          (input)="search()" />
+      </div>
 
-  <!-- Left side: search + toggle + clear -->
-  <div class="search-left">
-    <input type="text" class="search-input" placeholder="Search by any column..." [(ngModel)]="searchText"
-      (input)="search()" />
+      <!-- Active Filter + Filter Button -->
+      <div class="search-right">
+        <div class="active-toggle">
+          <span>Active Only</span>
+          <label class="switch">
+            <input type="checkbox" [(ngModel)]="activeFilter" (change)="search()" />
+            <span class="slider"></span>
+          </label>
+        </div>
+        <button class="filter-btn" (click)="showFilterModal()">Filter</button>
+      </div>
 
-    <div class="active-toggle">
-      <span>Active</span>
-      <label class="switch">
-        <input type="checkbox" [(ngModel)]="activeFilter" (change)="search()" />
-        <span class="slider"></span>
-      </label>
     </div>
 
-    <button class="clear-btn" (click)="clearFilters()">Clear</button>
-  </div>
-
-  <!-- Right side: filter button -->
-  <button class="filter-btn" (click)="openFilterModal()">Filter</button>
-
-</div>
-
-    <!-- Table -->
+    <!-- Vehicle Table -->
     <div class="table-wrapper">
       <table>
         <thead>
           <tr>
             <th (click)="sort('vehicle_number')">
               Vehicle No
-              <span *ngIf="sortColumn() === 'vehicle_number'">
-                {{ sortDirection() === 'asc' ? '▲' : '▼' }}
-              </span>
+              <span *ngIf="sortColumn() === 'vehicle_number'">{{ sortDirection() === 'asc' ? '▲' : '▼' }}</span>
             </th>
             <th (click)="sort('vehicle_type')">
               Type
-              <span *ngIf="sortColumn() === 'vehicle_type'">
-                {{ sortDirection() === 'asc' ? '▲' : '▼' }}
-              </span>
+              <span *ngIf="sortColumn() === 'vehicle_type'">{{ sortDirection() === 'asc' ? '▲' : '▼' }}</span>
             </th>
             <th (click)="sort('fuel')">
               Fuel
-              <span *ngIf="sortColumn() === 'fuel'">
-                {{ sortDirection() === 'asc' ? '▲' : '▼' }}
-              </span>
+              <span *ngIf="sortColumn() === 'fuel'">{{ sortDirection() === 'asc' ? '▲' : '▼' }}</span>
             </th>
             <th (click)="sort('department')">
               Department
-              <span *ngIf="sortColumn() === 'department'">
-                {{ sortDirection() === 'asc' ? '▲' : '▼' }}
-              </span>
+              <span *ngIf="sortColumn() === 'department'">{{ sortDirection() === 'asc' ? '▲' : '▼' }}</span>
             </th>
             <th (click)="sort('engine')">
               Engine
-              <span *ngIf="sortColumn() === 'engine'">
-                {{ sortDirection() === 'asc' ? '▲' : '▼' }}
-              </span>
+              <span *ngIf="sortColumn() === 'engine'">{{ sortDirection() === 'asc' ? '▲' : '▼' }}</span>
             </th>
             <th (click)="sort('emission')">
               Emission
-              <span *ngIf="sortColumn() === 'emission'">
-                {{ sortDirection() === 'asc' ? '▲' : '▼' }}
-              </span>
+              <span *ngIf="sortColumn() === 'emission'">{{ sortDirection() === 'asc' ? '▲' : '▼' }}</span>
             </th>
             <th (click)="sort('status')">
               Status
-              <span *ngIf="sortColumn() === 'status'">
-                {{ sortDirection() === 'asc' ? '▲' : '▼' }}
-              </span>
+              <span *ngIf="sortColumn() === 'status'">{{ sortDirection() === 'asc' ? '▲' : '▼' }}</span>
             </th>
             <th>Actions</th>
           </tr>
@@ -176,19 +157,15 @@
       </table>
     </div>
 
-    <!-- Total Records + Pagination -->
-    <!-- Total Records + Pagination -->
+    <!-- Pagination + Page Size -->
     <div class="pagination-info">
       <span>Total Records: {{ totalRecords() }}</span>
-      <div class="pagination-controls" style="display: flex; align-items: center; gap: 10px;">
+      <div class="pagination-controls">
         <button (click)="previousPage()">Previous</button>
         <span>Page {{ pageNumber() }} of {{ totalPages() }}</span>
         <button (click)="nextPage()">Next</button>
-
-        <!-- Page Size Selector -->
         <label for="pageSize">Page Size:</label>
-        <select id="pageSize" [value]="pageSize()" (change)="onPageSizeChange($event)"
-          style="padding: 3px 6px; border-radius: 5px; border: 1px solid #ccc;">
+        <select id="pageSize" [value]="pageSize()" (change)="onPageSizeChange($event)">
           <option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</option>
         </select>
       </div>
@@ -196,68 +173,73 @@
   </div>
 
   <!-- ================= FILTER MODAL ================= -->
-  <div class="modal-overlay" *ngIf="filterModalOpen()">
-    <div class="modal-box card">
-      <h3>Filter Vehicles</h3>
-      <form class="form-grid">
+  <div class="modal" [class.show]="filterModalOpen()">
+  <div class="modal-card filter-card">
+    
+    <div class="modal-header">
+      <div class="title-wrapper">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="header-icon">
+          <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+        </svg>
+        <h3>Filter Options</h3>
+      </div>
+      <button class="close-btn-x" (click)="closeFilterModal()">&times;</button>
+    </div>
 
-        <div class="form-group">
-          <label>Vehicle Number</label>
-          <input type="text" [(ngModel)]="filter().vehicle_number" name="fVehicleNumber"
-            placeholder="Enter Vehicle Number" />
+    <div class="modal-body">
+      
+      <div class="filter-section">
+        <label class="section-label">Vehicle Type</label>
+        <div class="checkbox-grid">
+          <div class="filter-chip" *ngFor="let vt of vehicleTypes()" 
+               [class.active]="isVehicleTypeSelected(vt.vehicle_type_id)"
+               (click)="toggleVehicleType(vt.vehicle_type_id)">
+            <input type="checkbox" [checked]="isVehicleTypeSelected(vt.vehicle_type_id)">
+            <span>{{ vt.vehicle_type_name }}</span>
+          </div>
         </div>
+      </div>
 
-        <div class="form-group">
-          <label>Vehicle Type</label>
-          <select [(ngModel)]="filter().vehicle_type_id" name="fVehicleType" multiple>
-            <option *ngFor="let vt of vehicleTypes()" [ngValue]="vt.vehicle_type_id">{{ vt.vehicle_type_name }}</option>
-          </select>
+      <hr class="divider">
+
+      <div class="filter-section">
+        <label class="section-label">Fuel Type</label>
+        <div class="checkbox-grid">
+          <div class="filter-chip" *ngFor="let f of fuelTypes()" 
+               [class.active]="isFuelTypeSelected(f.fuel_id)"
+               (click)="toggleFuelType(f.fuel_id)">
+            <input type="checkbox" [checked]="isFuelTypeSelected(f.fuel_id)">
+            <span>{{ f.fuel_name }}</span>
+          </div>
         </div>
+      </div>
 
-        <div class="form-group">
-          <label>Fuel</label>
-          <select [(ngModel)]="filter().fuel_id" name="fFuel" multiple>
-            <option *ngFor="let f of fuelTypes()" [ngValue]="f.fuel_id">{{ f.fuel_name }}</option>
-          </select>
+      <hr class="divider">
+
+      <div class="filter-section">
+        <label class="section-label">Department</label>
+        <div class="list-container">
+          <div class="list-item" *ngFor="let d of departments()" (click)="toggleDepartment(d.department_id)">
+            <label class="custom-checkbox">
+              <input type="checkbox" [checked]="isDepartmentSelected(d.department_id)">
+              <span class="checkmark"></span>
+              {{ d.department_name }}
+            </label>
+          </div>
         </div>
+      </div>
 
-        <div class="form-group">
-          <label>Department</label>
-          <select [(ngModel)]="filter().department_id" name="fDept" multiple>
-            <option *ngFor="let d of departments()" [ngValue]="d.department_id">{{ d.department_name }}</option>
-          </select>
-        </div>
+    </div>
 
-        <div class="form-group">
-          <label>Engine Capacity</label>
-          <input type="number" [(ngModel)]="filter().engine_capacity" name="fEngine"
-            placeholder="Enter Engine Capacity" />
-        </div>
-
-        <div class="form-group">
-          <label>Emission Standard</label>
-          <select [(ngModel)]="filter().emission_standard" name="fEmission" multiple>
-            <option value="BS4">BS4</option>
-            <option value="BS6">BS6</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label>Status</label>
-          <label class="switch">
-            <input type="checkbox" [(ngModel)]="filter().isActive" name="fStatus">
-            <span class="slider"></span>
-          </label>
-        </div>
-
-      </form>
-
-      <div class="modal-actions">
-        <button class="primary-btn" (click)="applyFilter()">Apply Filter</button>
-        <button class="clear-btn" (click)="resetFilter()">Reset</button>
-        <button class="clear-btn" (click)="closeFilterModal()">Close</button>
+    <div class="modal-footer">
+      <button class="reset-btn" (click)="resetFilter()">Reset All</button>
+      <div class="main-actions">
+        <button class="cancel-btn" (click)="closeFilterModal()">Cancel</button>
+        <button class="apply-btn" (click)="applyFilter()">Apply Filters</button>
       </div>
     </div>
+
   </div>
+</div>
 
 </div>

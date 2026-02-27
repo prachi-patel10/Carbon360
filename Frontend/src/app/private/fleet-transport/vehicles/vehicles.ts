@@ -43,7 +43,7 @@ export class Vehicles implements OnInit {
   sortColumn = signal<string>(''); // current column to sort
   sortDirection = signal<'asc' | 'desc'>('asc'); // sort direction
 
-pageSizeOptions = [5, 10, 20, 50];
+  pageSizeOptions = [5, 10, 20, 50];
 
   filter = signal<any>({
     vehicle_number: '',
@@ -174,9 +174,10 @@ pageSizeOptions = [5, 10, 20, 50];
   }
 
   search() {
+    const searchValue = this.searchText()?.trim().toLowerCase();
     this.pageNumber.set(1);
-    this.loadVehicles();
 
+    this.loadVehicles();
   }
 
   nextPage() {
@@ -335,10 +336,90 @@ pageSizeOptions = [5, 10, 20, 50];
   }
 
   onPageSizeChange(event: Event) {
-  const target = event.target as HTMLSelectElement;
-  const newSize = Number(target.value);
-  this.pageSize.set(newSize);      
-  this.pageNumber.set(1);           
-  this.loadVehicles();            
-}
+    const target = event.target as HTMLSelectElement;
+    const newSize = Number(target.value);
+    this.pageSize.set(newSize);
+    this.pageNumber.set(1);
+    this.loadVehicles();
+  }
+
+  // ----------------- VEHICLE TYPE MULTI-SELECT -----------------
+  isVehicleTypeSelected(id: number): boolean {
+    const selected = this.filter().vehicle_type_id;
+    return Array.isArray(selected) && selected.includes(id);
+  }
+
+  toggleVehicleType(id: number) {
+    const selected = [...(this.filter().vehicle_type_id || [])];
+    const index = selected.indexOf(id);
+
+    if (index > -1) {
+      selected.splice(index, 1); // remove if already selected
+    } else {
+      selected.push(id); // add if not selected
+    }
+
+    this.filter.update(f => ({ ...f, vehicle_type_id: selected }));
+  }
+
+  // Get count of selected vehicle types
+  getSelectedVehicleTypesCount(): number {
+    const selected = this.filter().vehicle_type_id;
+    return Array.isArray(selected) ? selected.length : 0;
+  }
+
+  // ----------------- FUEL TYPE MULTI-SELECT -----------------
+  isFuelTypeSelected(id: number): boolean {
+    const selected = this.filter().fuel_id;
+    return Array.isArray(selected) && selected.includes(id);
+  }
+
+  toggleFuelType(id: number) {
+    const selected = [...(this.filter().fuel_id || [])];
+    const index = selected.indexOf(id);
+
+    if (index > -1) {
+      selected.splice(index, 1); // remove if already selected
+    } else {
+      selected.push(id); // add if not selected
+    }
+
+    this.filter.update(f => ({ ...f, fuel_id: selected }));
+  }
+
+  // Get count of selected fuel types
+  getSelectedFuelTypesCount(): number {
+    const selected = this.filter().fuel_id;
+    return Array.isArray(selected) ? selected.length : 0;
+  }
+
+  // ----------------- DEPARTMENT MULTI-SELECT -----------------
+  isDepartmentSelected(id: number): boolean {
+    const selected = this.filter().department_id;
+    return Array.isArray(selected) && selected.includes(id);
+  }
+
+  toggleDepartment(id: number) {
+    const selected = [...(this.filter().department_id || [])];
+    const index = selected.indexOf(id);
+
+    if (index > -1) {
+      selected.splice(index, 1); // remove if already selected
+    } else {
+      selected.push(id); // add if not selected
+    }
+
+    this.filter.update(f => ({ ...f, department_id: selected }));
+  }
+
+  // ----------------- OPTIONAL: GET COUNT -----------------
+  getSelectedDepartmentsCount(): number {
+    const selected = this.filter().department_id;
+    return Array.isArray(selected) ? selected.length : 0;
+  }
+
+  // ----------------- FILTER MODAL -----------------
+  showFilterModal() {
+    this.filterModalOpen.set(true);
+  }
 }
