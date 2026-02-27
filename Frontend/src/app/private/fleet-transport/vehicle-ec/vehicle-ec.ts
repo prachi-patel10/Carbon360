@@ -4,6 +4,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ToastService } from '../../../core/toast/toastservice';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-trip',
@@ -23,10 +24,14 @@ export class TripComponent implements OnInit {
   todayDateTime: string = '';
   tripDuration: string = '';
 
+  showSummary: boolean = false;
+summaryData: any;
+
   constructor(
     private fb: FormBuilder,
     private tripService: TripService,
-    private toastr: ToastService
+    private toastr: ToastService,
+    private router: Router   
   ) { }
 
   ngOnInit(): void {
@@ -196,49 +201,119 @@ export class TripComponent implements OnInit {
     this.tripForm.get('tripEndDateTime')?.valueChanges.subscribe(() => this.calculateDuration());
   }
 
+submitTrip() {
 
-
-  submitTrip() {
-
-    if (this.tripForm.invalid) {
-      this.tripForm.markAllAsTouched();
-      this.toastr.warning('Please fill all required fields');
-      return;
-    }
-
-    const formValue = this.tripForm.getRawValue();
-
-    // 🚨 EXTRA SAFETY CHECK
-    if (!formValue.fromCityId || !formValue.toCityId) {
-      this.toastr.error("Please select both cities properly");
-      return;
-    }
-
-    const payload = {
-      VehicleId: formValue.vehicle_id,
-      FromCityId: formValue.fromCityId,
-      ToCityId: formValue.toCityId,
-      DistanceKm: formValue.distanceKm,
-      FuelConsumedLtr: formValue.fuelConsumedLtr,
-      TripStartDateTime: formValue.tripStartDateTime,
-      TripEndDateTime: formValue.tripEndDateTime,
-      FuelType: formValue.fuelType?.toLowerCase()
-    };
-
-    console.log("FINAL PAYLOAD:", payload);
-
-    this.tripService.addTrip(payload).subscribe({
-      next: (res: any) => {
-        this.result = res.data || res;
-        this.toastr.success('Record submitted successfully');
-        this.resetForm();
-      },
-      error: (err) => {
-        console.error("SERVER ERROR:", err);
-        this.toastr.error('Failed to submit record');
-      }
-    });
+  if (this.tripForm.invalid) {
+    this.tripForm.markAllAsTouched();
+    this.toastr.warning('Please fill all required fields');
+    return;
   }
+
+  const formValue = this.tripForm.getRawValue();
+
+  if (!formValue.fromCityId || !formValue.toCityId) {
+    this.toastr.error("Please select both cities properly");
+    return;
+  }
+
+  const payload = {
+    VehicleId: formValue.vehicle_id,
+    FromCityId: formValue.fromCityId,
+    ToCityId: formValue.toCityId,
+    DistanceKm: formValue.distanceKm,
+    FuelConsumedLtr: formValue.fuelConsumedLtr,
+    TripStartDateTime: formValue.tripStartDateTime,
+    TripEndDateTime: formValue.tripEndDateTime,
+    FuelType: formValue.fuelType?.toLowerCase()
+  };
+
+  console.log("FINAL PAYLOAD:", payload);
+
+  this.tripService.addTrip(payload).subscribe({
+    next: (res: any) => {
+
+      const response = res.data || res;
+
+      // ✅ Get selected names for summary display
+      const vehicle = this.vehicles.find(v => v.vehicle_id === formValue.vehicle_id);
+      const fromCity = this.cities.find(c => c.cityId === formValue.fromCityId);
+      const toCity = this.cities.find(c => c.cityId === formValue.toCityId);
+
+      const summaryData = {
+        vehicleNumber: vehicle?.vehicle_number,
+        fromCityName: fromCity?.cityName,
+        toCityName: toCity?.cityName,
+        fuelType: formValue.fuelType,
+        distanceKm: formValue.distanceKm,
+        fuelConsumedLtr: formValue.fuelConsumedLtr,
+        co2Factor: formValue.co2Factor,
+        no2Factor: formValue.no2Factor,
+        ch4Factor: formValue.ch4Factor,
+        tripStartDateTime: formValue.tripStartDateTime,
+        tripEndDateTime: formValue.tripEndDateTime,
+        totalCo2: response.co2,
+        totalNo2: response.no2,
+        totalCh4: response.ch4,
+        totalEmission: response.totalEmission
+      };
+
+      this.toastr.success('Record submitted successfully');
+console.log("Navigating with data:", summaryData);
+      // ✅ Navigate to summary page
+     this.router.navigate(['/dashboard/vehicleReport'], {
+  state: { data: summaryData }
+});
+
+    },
+    error: (err) => {
+      console.error("SERVER ERROR:", err);
+      this.toastr.error('Failed to submit record');
+    }
+  });
+
+}
+
+  // submitTrip() {
+
+  //   if (this.tripForm.invalid) {
+  //     this.tripForm.markAllAsTouched();
+  //     this.toastr.warning('Please fill all required fields');
+  //     return;
+  //   }
+
+  //   const formValue = this.tripForm.getRawValue();
+
+  //   // 🚨 EXTRA SAFETY CHECK
+  //   if (!formValue.fromCityId || !formValue.toCityId) {
+  //     this.toastr.error("Please select both cities properly");
+  //     return;
+  //   }
+
+  //   const payload = {
+  //     VehicleId: formValue.vehicle_id,
+  //     FromCityId: formValue.fromCityId,
+  //     ToCityId: formValue.toCityId,
+  //     DistanceKm: formValue.distanceKm,
+  //     FuelConsumedLtr: formValue.fuelConsumedLtr,
+  //     TripStartDateTime: formValue.tripStartDateTime,
+  //     TripEndDateTime: formValue.tripEndDateTime,
+  //     FuelType: formValue.fuelType?.toLowerCase()
+  //   };
+
+  //   console.log("FINAL PAYLOAD:", payload);
+
+  //   this.tripService.addTrip(payload).subscribe({
+  //     next: (res: any) => {
+  //       this.result = res.data || res;
+  //       this.toastr.success('Record submitted successfully');
+  //       this.resetForm();
+  //     },
+  //     error: (err) => {
+  //       console.error("SERVER ERROR:", err);
+  //       this.toastr.error('Failed to submit record');
+  //     }
+  //   });
+  // }
   //   setupAutoCalculation() {
 
   //   this.tripForm.get('fuelConsumedLtr')?.valueChanges.subscribe(() => this.calculateEmission());
