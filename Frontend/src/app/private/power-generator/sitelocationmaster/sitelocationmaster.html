@@ -1,1 +1,99 @@
-<p>sitelocationmaster works!</p>
+<div class="container">
+
+  <!-- ================= CREATE / EDIT FORM ================= -->
+  <div class="card">
+    <h2>{{ editingSiteId ? 'Update Site Location' : 'Create Site Location' }}</h2>
+
+    <form [formGroup]="form" (ngSubmit)="submit()" class="form-grid">
+      <input type="text" placeholder="Site Name" formControlName="siteName" required>
+      <input type="text" placeholder="Building Name" formControlName="buildingName" required>
+      <input type="text" placeholder="City" formControlName="city" required>
+      <input type="text" placeholder="State" formControlName="state" required>
+      
+      <select formControlName="departmentId" required>
+        <option value="">-- Select Department --</option>
+        <option *ngFor="let dept of departments" [value]="dept.departmentId">{{ dept.departmentName }}</option>
+      </select>
+
+      <!-- Toggle button for status -->
+      <div class="toggle-btn">
+        <label>
+          <input type="checkbox" formControlName="isActive">
+          <span class="slider"></span>
+        </label>
+        <span>{{ form.value.isActive ? 'Active' : 'Inactive' }}</span>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn-primary">{{ editingSiteId ? 'Update' : 'Save' }}</button>
+        <button type="button" class="btn-secondary" (click)="form.reset(); editingSiteId=null;">Clear</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- ================= LIST WITH SEARCH ================= -->
+  <div class="card">
+    <div class="search-row">
+      <input type="text" placeholder="Search..." [(ngModel)]="searchText" (keyup.enter)="search()">
+      <button class="btn-primary" (click)="search()">Search</button>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Site Name</th>
+          <th>Building</th>
+          <th>City</th>
+          <th>State</th>
+          <th>Department</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr *ngFor="let site of siteList">
+          <td>{{ site.siteName }}</td>
+          <td>{{ site.buildingName }}</td>
+          <td>{{ site.city }}</td>
+          <td>{{ site.state }}</td>
+          <td>{{ site.departmentName }}</td>
+
+          <!-- Toggle button for status -->
+          <td>
+            <label class="toggle-btn">
+              <input type="checkbox" [checked]="site.isActive" (change)="toggleStatus(site)">
+              <span class="slider"></span>
+            </label>
+            <span>{{ site.isActive ? 'Active' : 'Inactive' }}</span>
+          </td>
+
+          <td>
+            <button class="btn-primary" (click)="edit(site)">Edit</button>
+            <button class="delete-btn" (click)="delete(site)">Delete</button>
+          </td>
+        </tr>
+
+        <tr *ngIf="siteList.length === 0">
+          <td colspan="7" style="text-align:center;">No records found</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="pagination">
+      <div class="left">
+        Page Size:
+        <select [(ngModel)]="pageSize" (change)="changePageSize()">
+          <option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</option>
+        </select>
+      </div>
+
+      <div class="right">
+        Total: {{ totalRecords }}
+        <button (click)="prevPage()" [disabled]="pageNumber===1">Prev</button>
+        <span>{{ pageNumber }} / {{ totalPages }}</span>
+        <button (click)="nextPage()" [disabled]="pageNumber===totalPages">Next</button>
+      </div>
+    </div>
+  </div>
+</div>

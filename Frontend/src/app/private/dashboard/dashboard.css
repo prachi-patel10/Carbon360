@@ -152,7 +152,7 @@ overflow: hidden;
 }
 /* ================= TOPBAR ================= */
 .topbar {
-  height: 70px;
+  height: 0px;
   background: #ffffff;
   padding: 0 30px;
   display: flex;
