@@ -212,11 +212,10 @@ input:checked + .slider:before {
 }
 
 /* ================= FORM ACTION ================= */
-.form-actions {
+.actions {
   display: flex;
+  gap: 10px;          /* space between buttons */
   align-items: center;
-  gap: 20px;
-  margin-top: 10px;
 }
 
 .save-btn {
