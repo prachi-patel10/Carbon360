@@ -35,7 +35,7 @@
 .form-group label { margin-bottom: 5px; font-weight: 500; }
 .form-group input, .form-group select { padding: 6px 10px; border-radius: 5px; border: 1px solid #ccc; }
 .form-buttons { display: flex; gap: 10px; margin-top: 15px; }
-.btn-primary { background: #4caf50; color: #fff; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer; }
+.btn-primary { background: #1b5e20; color: #fff; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer; }
 .btn-secondary { background: #f1f1f1; color: #333; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer; }
 
 .modern-input {

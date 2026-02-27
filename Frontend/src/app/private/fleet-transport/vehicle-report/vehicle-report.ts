@@ -14,21 +14,19 @@ export class VehicleReport implements OnInit{
 
   constructor(private router: Router) {}
 
-  ngOnInit(): void {
+ ngOnInit(): void {
+console.log("History state:", history.state);
+  // ✅ Correct way to get navigation state
+  this.data = history.state?.data;
 
-    // ✅ Get navigation state data
-    const navigation = this.router.getCurrentNavigation();
-    this.data = navigation?.extras?.state?.['data'];
-
-    if (!this.data) {
-      console.warn("No summary data found. Redirecting back.");
-      this.router.navigate(['/trip']);
-      return;
-    }
-
-    // ✅ Safety recalculation (always recalc for accuracy)
-    this.calculateEmission();
+  if (!this.data) {
+    console.warn("No summary data found.");
+    this.router.navigate(['/dashboard/vehicle']);
+    return;
   }
+
+  this.calculateEmission();
+}
 
   // =========================
   // CALCULATION LOGIC
@@ -85,7 +83,7 @@ export class VehicleReport implements OnInit{
   // NAVIGATION
   // =========================
   goBack() {
-    this.router.navigate(['/trip']);
+    this.router.navigate(['/dashboard/vehicle']);
   }
 
   // =========================
