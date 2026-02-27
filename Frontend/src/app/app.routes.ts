@@ -17,6 +17,7 @@ import { EmissionFactorComponent } from './private/masters/emissionfactor/emissi
 import { GeneratorOperationComponent } from './private/power-generator/generator-ec/generator-ec';
 import { Citymaster } from './private/fleet-transport/citymaster/citymaster';
 import { Sitelocationmaster } from './private/power-generator/sitelocationmaster/sitelocationmaster';
+import { VehicleReport } from './private/fleet-transport/vehicle-report/vehicle-report';
 
 export const routes: Routes = [
 
@@ -42,7 +43,7 @@ export const routes: Routes = [
             { path: 'role', component: MasterRoleComponent },
             { path: 'department', component: DepartmentComponent }, // create/import DepartmentComponent
             { path: 'vehicle', component: TripComponent },
-            { path: 'vehicleReport', component: vehicleReport },
+            { path: 'vehicleReport', component: VehicleReport },
             { path: 'vehiclemaster', component: Vehicles },// create/import VehicleComponent
             { path: 'fueltype', component: Fueltype },
             { path: 'emissionFactors', component: EmissionFactorComponent },
