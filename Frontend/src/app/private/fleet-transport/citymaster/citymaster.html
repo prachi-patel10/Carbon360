@@ -1,28 +1,27 @@
 <p>city works!</p>
-<div class="department-page">
 
-  <!-- FORM -->
+<div class="container">
+
+  <!-- ================= FORM ================= -->
   <div class="card">
     <h2 class="card-title">City Master</h2>
 
-    <form [formGroup]="cityForm" (ngSubmit)="submit()">
+    <form class="form-grid"
+          [formGroup]="cityForm"
+          (ngSubmit)="submit()">
 
-      <div class="form-row">
-
-        <div class="form-group">
-          <label>City Name</label>
-          <input type="text" formControlName="cityName">
-        </div>
-
-        <div class="form-group">
-          <label>State Name</label>
-          <input type="text" formControlName="stateName">
-        </div>
-
+      <div class="form-group">
+        <label>City Name</label>
+        <input type="text" formControlName="cityName">
       </div>
 
-      <div class="form-buttons">
-        <button class="btn-primary" type="submit">
+      <div class="form-group">
+        <label>State Name</label>
+        <input type="text" formControlName="stateName">
+      </div>
+
+      <div class="form-actions">
+        <button class="save-btn" type="submit">
           {{ !cityForm.value.cityId ? 'Save' : 'Update' }}
         </button>
       </div>
@@ -30,80 +29,98 @@
     </form>
   </div>
 
-  <!-- SEARCH -->
-  <form [formGroup]="searchForm">
-    <div class="search-row">
-
-      <input type="text"
-             placeholder="Search city..."
-             formControlName="searchText">
-
-      <label>
-        <input type="checkbox"
-          [checked]="onlyActive()"
-          (change)="onlyActive.set($event.target.checked)">
-        Active Only
-      </label>
-
-    </div>
-  </form>
-
-  <!-- TABLE -->
+  <!-- ================= LIST CARD ================= -->
   <div class="card">
 
-    <table>
-      <thead>
-        <tr>
-          <th>City</th>
-          <th>State</th>
-          <th>Status</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
+    <!-- ✅ SEARCH MOVED HERE -->
+    <form [formGroup]="searchForm">
 
-      <tbody>
-        <tr *ngFor="let c of cities()">
-          <td>{{c.cityName}}</td>
-          <td>{{c.stateName}}</td>
+      <div class="search-row">
 
-          <td>
-            <label class="toggle-switch">
-              <input type="checkbox"
-                     [checked]="c.isActive"
-                     (change)="toggleActive(c)">
-              <span class="toggle-slider"></span>
-            </label>
-          </td>
+        <input type="text"
+               class="search-input"
+               placeholder="Search city..."
+               formControlName="searchText">
 
-          <td>
-            <button (click)="edit(c)">Edit</button>
-            <button (click)="deleteUI(c)">Delete</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+        <div class="search-right">
+          <span>Active Only</span>
 
-  </div>
+          <label class="switch">
+            <input type="checkbox"
+                   [checked]="onlyActive()"
+                   (change)="onlyActive.set($event.target.checked)">
+            <span class="slider"></span>
+            
+          </label>
+          <button class="filter-btn">
+          Filter
+          </button>
+        </div>
 
-  <!-- PAGINATION -->
-  <div class="pagination-section">
 
-    <div class="record-info">
-      Showing {{startRecord}} to {{endRecord}}
-      of {{totalRecords()}} entries
+      </div>
+      
+
+    </form>
+
+    <!-- ================= TABLE ================= -->
+    <div class="table-wrapper">
+
+      <table>
+        <thead>
+          <tr>
+            <th>City</th>
+            <th>State</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr *ngFor="let c of cities()">
+            <td>{{c.cityName}}</td>
+            <td>{{c.stateName}}</td>
+
+            <td>
+              <label class="switch">
+                <input type="checkbox"
+                       [checked]="c.isActive"
+                       (change)="toggleActive(c)">
+                <span class="slider"></span>
+              </label>
+            </td>
+
+            <td class="actions">
+              <button class="edit-btn" (click)="edit(c)">Edit</button>
+              <button class="delete-btn" (click)="deleteUI(c)">Delete</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
     </div>
 
-    <div class="pagination-controls">
-      <button (click)="previousPage()" [disabled]="currentPage()===1">
-        Previous
-      </button>
+    <!-- ================= PAGINATION ================= -->
+    <div class="pagination-info">
 
-      Page {{currentPage()}} of {{totalPages()}}
+      <div>
+        Showing {{startRecord}} to {{endRecord}}
+        of {{totalRecords()}} entries
+      </div>
 
-      <button (click)="nextPage()"
-              [disabled]="currentPage()===totalPages()">
-        Next
-      </button>
+      <div class="pagination-controls">
+        <button (click)="previousPage()" [disabled]="currentPage()===1">
+          Previous
+        </button>
+
+        Page {{currentPage()}} of {{totalPages()}}
+
+        <button (click)="nextPage()"
+                [disabled]="currentPage()===totalPages()">
+          Next
+        </button>
+      </div>
+
     </div>
 
   </div>
