@@ -1,413 +1,297 @@
-/* PAGE */
-
-.department-page {
-  padding: 30px;
-  background: #f4f6f9;
+/* ================= CONTAINER ================= */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 15px;
+  font-family: Arial, sans-serif;
 }
 
-/* CARD */
-
+/* ================= CARD ================= */
 .card {
-  background: #ffffff;
+  background-color: #fff;
   border-radius: 12px;
-  padding: 25px;
-  margin-bottom: 25px;
+  padding: 20px;
+  margin-bottom: 15px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
 }
 
-.card-title {
-  margin-bottom: 20px;
-  font-size: 18px;
-  font-weight: 600;
-  color: #1b5e20;
-}
-
-/* ================= FORM ================= */
-
-.form-row {
-  display: flex;
-  gap: 20px;
-  flex-wrap: wrap;
-  align-items: flex-end;
+/* ================= FORM GRID ================= */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
 }
 
 .form-group {
-  flex: 1;
   display: flex;
   flex-direction: column;
 }
 
 .form-group label {
-  margin-bottom: 6px;
-  font-weight: 600;
+  margin-bottom: 5px;
+  font-weight: 500;
+  font-size: 14px;
 }
-
-/* SMALL WIDTH FOR DEPARTMENT & ROLE */
-
-.small-width {
-  flex: 0 0 220px;
-}
-
-/* INPUT & SELECT */
 
 .form-group input,
 .form-group select {
-  height: 38px;
-  padding: 8px 10px;
-  border-radius: 8px;
+  padding: 6px 10px;
+  border-radius: 5px;
   border: 1px solid #ccc;
-  background: #ffffff;
+  font-size: 14px;
 }
 
-.form-group input:focus,
-.form-group select:focus {
-  border-color: #1b5e20;
-  outline: none;
-}
-
-.custom-select {
-  background-color: #ffffff !important;
-  color: #000000 !important;
-}
-
-/* STATUS */
-
-.status-group {
-  max-width: 180px;
-}
-
-/* BUTTONS */
-
-.form-buttons {
-  margin-top: 20px;
+/* ================= ROLE CHECKBOX ================= */
+.role-checkbox-container {
   display: flex;
-  gap: 15px;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
-.btn-primary {
-  background: #1b5e20;
-  color: #fff;
-  padding: 8px 18px;
-  border-radius: 8px;
-  border: none;
+.role-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+}
+
+.dropdown-checkbox {
+  position: relative;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  width: 100%;
+  font-size: 14px;
+}
+
+.dropdown-header {
+  padding: 6px 10px;
   cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-.btn-secondary {
-  background: #e5e7eb;
-  padding: 8px 18px;
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
+.dropdown-list {
+  position: absolute;
+  background: #fff;
+  border: 1px solid #ccc;
+  width: 100%;
+  max-height: 150px;
+  overflow-y: auto;
+  z-index: 10;
+  margin-top: 2px;
+  border-radius: 5px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
 }
 
-/* ================= SEARCH ================= */
+.role-checkbox {
+  padding: 6px 10px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
 
-.search-row {
+/* ================= FORM ACTIONS ================= */
+.form-actions {
   display: flex;
   align-items: center;
   gap: 15px;
+  margin-top: 10px;
   flex-wrap: wrap;
 }
 
-.search-row input {
-  width: 220px;
-  height: 38px;
-  padding: 8px;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-}
-
-.btn-clear {
-  background: #fee2e2;
-  color: #991b1b;
-  padding: 8px 15px;
-  border-radius: 8px;
+.save-btn {
+  padding: 8px 16px;
+  border-radius: 5px;
   border: none;
+  background-color: #1b5e20;
+  color: #fff;
+  cursor: pointer;
+  font-size: 14px;
 }
 
-.record-select {
+.save-btn:hover {
+  background-color: #145214;
+}
+
+.reset-btn-ui {
+  padding: 8px 16px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  background-color: #f5f5f5;
+  cursor: pointer;
+}
+
+/* ================= SWITCH ================= */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 40px;
+  height: 20px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  inset: 0;
+  background-color: #ccc;
+  transition: 0.3s;
+  border-radius: 20px;
+}
+
+.slider:before {
+  content: "";
+  position: absolute;
+  height: 14px;
+  width: 14px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: 0.3s;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: #1b5e20;
+}
+
+input:checked + .slider:before {
+  transform: translateX(20px);
+}
+
+/* ================= SEARCH ================= */
+.search-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.search-input {
+  flex: 0 0 400px;
+  max-width: 100%;
+  padding: 6px 10px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+}
+
+.search-left {
+  flex: 1;              
+  min-width: 200px;     
+}
+
+/* Make the input fill the container */
+.search-left .search-input {
+  width: 50%;           /* fill parent width */
+  max-width: 50%;
+  box-sizing: border-box; /* includes padding in width */
+}
+
+.search-right {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 1px; /* spacing between toggle and button */
+}
+
+.filter-btn {
+  background-color: #959090c9;
+  color: #fff;
+  padding: 6px 12px;
+  border-radius: 5px;
+  border: none;
+  cursor: pointer;
 }
 
 /* ================= TABLE ================= */
+.table-wrapper {
+  overflow-x: auto;
+}
 
 table {
   width: 100%;
   border-collapse: collapse;
+  font-size: 14px;
 }
 
-thead {
-  background: #e5e7eb;
-}
-
-th,
-td {
-  padding: 12px;
-  text-align: center;
+th, td {
+  padding: 10px 8px;
   border-bottom: 1px solid #ddd;
+  text-align: left;
 }
 
-.action-buttons {
+th.sortable {
+  cursor: pointer;
+}
+
+.actions {
   display: flex;
+  gap: 8px;
   justify-content: center;
-  gap: 10px;
 }
 
-.btn-edit {
-  background: #e0f2fe;
+.edit-btn {
+  background-color: #d0ebff;
   color: #0369a1;
-  border-radius: 6px;
-  padding: 6px 12px;
   border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
 }
 
-.btn-delete {
-  background: #fee2e2;
-  color: #991b1b;
-  border-radius: 6px;
-  padding: 6px 12px;
+.delete-btn {
+  background-color: #ffe3e3;
+  color: #c92a2a;
   border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
 }
 
 /* ================= PAGINATION ================= */
-
-.pagination-section {
+.pagination-info {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-top: 15px;
   flex-wrap: wrap;
-  gap: 10px;
 }
 
-.record-info {
-  font-size: 14px;
-  color: #555;
-}
-
-.pagination-controls {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-}
-
-.pagination-section button {
-  padding: 6px 14px;
-  border-radius: 6px;
-  border: none;
-  background: #e5e7eb;
+.pagination-controls button {
+  padding: 5px 10px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  background-color: #f5f5f5;
   cursor: pointer;
 }
 
-.pagination-section button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-/* ================= TOGGLE ================= */
-
-.toggle-wrapper {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.toggle-switch {
-  position: relative;
-  width: 46px;
-  height: 24px;
-}
-
-.toggle-switch input {
-  opacity: 0;
-}
-
-.toggle-slider {
-  position: absolute;
-  inset: 0;
-  background-color: #ccc;
-  transition: .3s;
-  border-radius: 34px;
-}
-
-.toggle-slider:before {
-  content: "";
-  position: absolute;
-  height: 18px;
-  width: 18px;
-  left: 3px;
-  bottom: 3px;
-  background-color: white;
-  transition: .3s;
-  border-radius: 50%;
-}
-
-.toggle-switch input:checked+.toggle-slider {
-  background-color: #1b5e20;
-}
-
-.toggle-switch input:checked+.toggle-slider:before {
-  transform: translateX(22px);
-}
-
-/* ================= ROLE MULTI SELECT ================= */
-
-.role-container {
-  flex: 1;
-  min-width: 220px;
-}
-
-.multi-select {
-  position: relative;
-  width: 100%;
-}
-
-.select-box {
-  height: 38px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  padding: 8px 10px;
-  background: #ffffff;
+.records-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  cursor: pointer;
+  margin-bottom: 10px;
 }
 
-.select-box:hover {
-  border-color: #1b5e20;
-}
-
-.arrow {
-  font-size: 12px;
-}
-
-.checkbox-list {
-  position: absolute;
-  top: 42px;
-  width: 100%;
-  background: #ffffff;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  max-height: 180px;
-  overflow-y: auto;
-  z-index: 999;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  padding: 10px;
-}
-
-.checkbox-item {
+.records-left {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 6px 4px;
-  cursor: pointer;
 }
 
-.checkbox-item:hover {
-  background: #f3f4f6;
-}
-
-.checkbox-item input {
-  width: 16px;
-  height: 16px;
-}
-
-/* Single-line row for Department, Roles, Status */
-.single-line-row {
-  display: flex;
-  align-items: flex-end;
-  gap: 20px;
-  flex-wrap: wrap;
-}
-
-.single-line-row .form-group {
-  flex: 1 1 auto;
-}
-
-/* Adjust small-width & role-container for one line */
-.single-line-row .small-width {
-  flex: 0 0 220px;
-}
-
-.single-line-row .role-container {
-  flex: 1 1 300px;
-}
-
-.single-line-row .status-group {
-  flex: 0 0 180px;
-}
-
-/* For mobile, keep responsive */
+/* ================= RESPONSIVE ================= */
 @media (max-width: 768px) {
-  .single-line-row {
-    flex-direction: column;
-    gap: 15px;
-  }
-}
-
-/* ================= RESPONSIVE MEDIA QUERIES ================= */
-
-/* Tablet */
-@media (max-width: 992px) {
-  .form-row {
-    gap: 20px;
-  }
-
-  .small-width,
-  .role-container {
-    flex: 0 0 180px;
-  }
-
-  .search-row input {
-    width: 180px;
-  }
-}
-
-/* Mobile */
-@media (max-width: 768px) {
-  .form-row {
-    flex-direction: column;
-    gap: 15px;
-  }
-
-  .small-width,
-  .role-container {
-    flex: 1 1 100%;
-  }
-
-  .form-buttons {
-    flex-direction: column;
-    gap: 10px;
+  .form-grid {
+    grid-template-columns: 1fr;
   }
 
   .search-row {
     flex-direction: column;
     align-items: stretch;
-  }
-
-  .search-row input {
-    width: 100%;
-  }
-
-  table,
-  th,
-  td {
-    font-size: 14px;
-    padding: 8px;
-  }
-
-  .action-buttons {
-    flex-direction: column;
-    gap: 5px;
-  }
-
-  .pagination-section {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
   }
 }

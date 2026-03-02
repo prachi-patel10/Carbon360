@@ -21,10 +21,12 @@ export class VehicleService {
   }
 
   updateVehicleStatus(vehicleId: string, status: boolean) {
-    return this.http.patch(`${this.baseUrl}/status`, {
-      vehicle_id: vehicleId,
-      isActive: status ? 1 : 0  // send 1/0 instead of true/false
-    });
+    const payload = {
+      vehicle_id: vehicleId,  // must match backend
+      IsActive: status        // correct casing
+    };
+
+    return this.http.patch(`${this.baseUrl}/status`, payload);
   }
 
   searchVehicles(

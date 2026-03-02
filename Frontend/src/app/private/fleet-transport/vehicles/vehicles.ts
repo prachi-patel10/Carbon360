@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, WritableSignal } from '@angular/core';
+import { Component, effect, OnInit, signal, WritableSignal } from '@angular/core';
 import { VehicleService } from './vehicle-service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -8,8 +8,11 @@ export interface VehicleDto {
   vehicle_id?: string | null;
   vehicle_number: string;
   vehicle_type_id: string | null;
+  vehicle_type_name?: string | null;   // <--- add
   fuel_id: string | null;
+  fuel_name?: string | null;           // <--- add
   department_id: string | null;
+  department_name?: string | null;     // <--- add
   engine_capacity?: number | null;
   emission_standard?: string | null;
   isActive: boolean;
@@ -36,11 +39,14 @@ export class Vehicles implements OnInit {
   pageSize = signal<number>(5);
 
   searchText = signal<string>('');
-  filterModalOpen = signal<boolean>(false);
-  activeFilter = signal<boolean>(true);
+  // filterModalOpen = signal<boolean>(false);
+  activeFilter = signal<boolean>(false);
 
   sortColumn = signal<string>('');
   sortDirection = signal<'asc' | 'desc'>('asc');
+
+  showFilter = signal(false);
+
 
   pageSizeOptions = [5, 10, 20, 50];
 
@@ -49,7 +55,6 @@ export class Vehicles implements OnInit {
   filter = signal<any>({
     vehicle_type_id: [] as string[],
     fuel_id: [] as string[],
-    department_id: [] as string[],
   });
 
   newVehicle: WritableSignal<VehicleDto> = signal<VehicleDto>({
@@ -67,9 +72,21 @@ export class Vehicles implements OnInit {
 
   constructor(private vehicleService: VehicleService) { }
 
+  // ngOnInit() {
+  //   this.loadDropdowns();
+  //   this.activeFilter.set(false);  
+  //   this.loadVehicles();
+  // }
+
   ngOnInit() {
     this.loadDropdowns();
+  this.loadVehicles();
+
+  effect(() => {
+    this.activeFilter();   // track
+    this.pageNumber.set(1);
     this.loadVehicles();
+  });
   }
 
   // ----------------- DROPDOWNS -----------------
@@ -181,17 +198,59 @@ export class Vehicles implements OnInit {
 
   // ----------------- VEHICLE TABLE -----------------
   loadVehicles() {
+    const filterData = this.filter();
+
+    //  Correct isActive filter
+    const isActiveFilter: boolean | null = this.activeFilter() ? true : null;
     this.vehicleService
-      .searchVehicles(this.searchText(), this.activeFilter(), this.pageNumber(), this.pageSize())
-      .subscribe(res => {
-        let data: VehicleDto[] = res.data || [];
-        data = data.filter(v => !(v as any).isDeleted);
-        this.vehicles.set(data);
-        this.totalRecords.set(data.length);
-        this.totalPages.set(res.totalPages || 1);
+      .searchVehicles(
+        this.searchText(),
+        isActiveFilter,
+        this.pageNumber(),
+        this.pageSize(),
+        this.sortColumn(),
+        this.sortDirection(),
+        filterData.vehicle_type_id.length ? filterData.vehicle_type_id.join(',') : undefined,
+        filterData.fuel_id.length ? filterData.fuel_id.join(',') : undefined,
+        //filterData.department_id.length ? filterData.department_id.join(',') : undefined
+      )
+      .subscribe({
+        next: (res: any) => {
+          const data = res.data || [];
+
+          this.vehicles.set(
+            data.map((v: any) => ({
+              vehicle_id: v.vehicle_id,
+              vehicle_number: v.vehicle_number,
+              vehicle_type_id: v.vehicle_type_id,
+              vehicle_type_name: v.vehicle_type_name ?? this.getVehicleTypeName(v.vehicle_type_id),
+              fuel_id: v.fuel_id,
+              fuel_name: v.fuel_name ?? this.getFuelName(v.fuel_id),
+              department_id: v.department_id,
+              department_name: v.department_name ?? this.getDepartmentName(v.department_id),
+              engine_capacity: v.engine_capacity,
+              emission_standard: v.emission_standard,
+              isActive: v.isActive === 1 || v.isActive === true
+            }))
+          );
+
+          const totalRecords = res.totalRecords ?? data.length;
+          const pageSize = this.pageSize();
+          this.totalRecords.set(totalRecords);
+          this.totalPages.set(Math.ceil(totalRecords / pageSize));
+          this.pageNumber.set(res.currentPage ?? 1);
+        },
+        error: (err) => {
+          console.error('Vehicle load error', err);
+          this.vehicles.set([]);
+          this.totalRecords.set(0);
+          this.totalPages.set(1);
+        }
       });
   }
 
+
+  //search
   search() {
     this.pageNumber.set(1);
     this.loadVehicles();
@@ -214,16 +273,26 @@ export class Vehicles implements OnInit {
 
   onPageSizeChange(event: any) {
     this.pageSize.set(Number(event.target.value));
-    this.pageNumber.set(1);
+    this.pageNumber.set(1);  // reset to first page
     this.loadVehicles();
   }
 
   // ----------------- SORT -----------------
   sort(column: string) {
-    if (this.sortColumn() === column) {
+    const columnMap: any = {
+      'engine': 'engine_capacity',
+      'emission': 'emission_standard',
+      'vehicle_type': 'vehicle_type_name',
+      'fuel': 'fuel_name',
+      'department': 'department_name',
+      'status': 'isActive'
+    };
+    const backendColumn = columnMap[column] || column;
+
+    if (this.sortColumn() === backendColumn) {
       this.sortDirection.set(this.sortDirection() === 'asc' ? 'desc' : 'asc');
     } else {
-      this.sortColumn.set(column);
+      this.sortColumn.set(backendColumn);
       this.sortDirection.set('asc');
     }
     this.loadVehicles();
@@ -372,8 +441,9 @@ export class Vehicles implements OnInit {
   }
 
   toggleStatus(vehicle: VehicleDto) {
-    if (!vehicle.vehicle_id) return;
-    const newStatus = !vehicle.isActive;
+    const originalStatus = vehicle.isActive;
+    const newStatus = !originalStatus;
+
     Swal.fire({
       title: 'Are you sure?',
       text: `Set vehicle as ${newStatus ? 'Active' : 'Inactive'}?`,
@@ -381,14 +451,75 @@ export class Vehicles implements OnInit {
       showCancelButton: true,
       confirmButtonText: 'Yes',
     }).then(result => {
-      if (result.isConfirmed) {
-        this.vehicleService.updateVehicleStatus(vehicle.vehicle_id!.toString(), newStatus).subscribe(() => {
-          vehicle.isActive = newStatus;
-          this.showToast('Updated', 'Status updated successfully!', 'success');
-        });
+
+      if (!result.isConfirmed) {
+        return; // user canceled
       }
+
+      this.vehicleService.updateVehicleStatus(vehicle.vehicle_id!, newStatus)
+        .subscribe({
+          next: () => {
+            // update UI data immutably
+            this.vehicles.update(arr =>
+              arr.map(v =>
+                v.vehicle_id === vehicle.vehicle_id ? { ...v, isActive: newStatus } : v
+              )
+            );
+
+            // show correct toast
+            this.showToast(
+              'Status Updated',
+              `Vehicle is now ${newStatus ? 'Active' : 'Inactive'}!`,
+              'success'
+            );
+          },
+          error: () => {
+            // rollback UI state if API fails
+            this.vehicles.update(arr =>
+              arr.map(v =>
+                v.vehicle_id === vehicle.vehicle_id ? { ...v, isActive: originalStatus } : v
+              )
+            );
+
+            this.showToast('Error', 'Failed to update status', 'error');
+          }
+        });
     });
   }
+
+  //toggle click
+  // onToggleClick(event: Event, vehicle: VehicleDto) {
+  //   const checkbox = event.target as HTMLInputElement;
+  //   const newStatus = checkbox.checked;
+
+  //   Swal.fire({
+  //     title: 'Are you sure?',
+  //     text: `Set vehicle as ${newStatus ? 'Active' : 'Inactive'}?`,
+  //     icon: 'warning',
+  //     showCancelButton: true,
+  //     confirmButtonText: 'Yes'
+  //   }).then(result => {
+  //     if (result.isConfirmed) {
+  //       this.vehicleService.updateVehicleStatus(vehicle.vehicle_id!, newStatus)
+  //         .subscribe({
+  //           next: () => {
+  //             this.vehicles.update(arr =>
+  //               arr.map(v =>
+  //                 v.vehicle_id === vehicle.vehicle_id ? { ...v, isActive: newStatus } : v
+  //               )
+  //             );
+  //             this.showToast('Updated', 'Status updated successfully!', 'success');
+  //           },
+  //           error: () => {
+  //             checkbox.checked = !newStatus; // rollback
+  //             this.showToast('Error', 'Failed to update status', 'error');
+  //           }
+  //         });
+  //     } else {
+  //       checkbox.checked = !newStatus;
+  //     }
+  //   });
+  // }
 
   validateVehicleNumber(): boolean {
     const vehicleNo = this.newVehicle().vehicle_number?.trim();
@@ -412,43 +543,39 @@ export class Vehicles implements OnInit {
   }
 
   // ----------------- FILTER -----------------
-  showFilterModal() { this.filterModalOpen.set(true); }
-  closeFilterModal() { this.filterModalOpen.set(false); }
+  showFilterModal() {
+    this.showFilter.set(true);
+  }
+
+  closeFilterModal() {
+    this.showFilter.set(false);
+  }
 
   isVehicleTypeSelected(id: string) { return this.filter().vehicle_type_id.includes(id); }
   isFuelTypeSelected(id: string) { return this.filter().fuel_id.includes(id); }
   isDepartmentSelected(id: string) { return this.filter().department_id.includes(id); }
 
   toggleVehicleType(id: string) {
-    const current = this.filter().vehicle_type_id;
+    const current = this.filter().vehicle_type_id as string[];
+
     this.filter.update(f => ({
       ...f,
       vehicle_type_id: current.includes(id)
-        ? current.filter((x: string) => x !== id)
+        ? current.filter(x => x !== id)
         : [...current, id]
     }));
   }
 
   toggleFuelType(id: string) {
-    const current = this.filter().fuel_id;
+    const current = this.filter().fuel_id as string[];
+
     this.filter.update(f => ({
       ...f,
       fuel_id: current.includes(id)
-        ? current.filter((x: string) => x !== id)
+        ? current.filter(x => x !== id)
         : [...current, id]
     }));
   }
-
-  toggleDepartment(id: string) {
-    const current = this.filter().department_id;
-    this.filter.update(f => ({
-      ...f,
-      department_id: current.includes(id)
-        ? current.filter((x: string) => x !== id)
-        : [...current, id]
-    }));
-  }
-
   applyFilter() {
     this.pageNumber.set(1);
     this.loadVehicles();
@@ -464,4 +591,13 @@ export class Vehicles implements OnInit {
     Swal.fire({ icon, title, text, toast: true, position: 'top-end', timer: 2000, showConfirmButton: false });
   }
 
+  toggleVehicleTypeFromEvent(event: Event) {
+    const value = (event.target as HTMLSelectElement).value;
+    this.toggleVehicleType(value);
+  }
+
+  toggleFuelTypeFromEvent(event: Event) {
+    const value = (event.target as HTMLSelectElement).value;
+    this.toggleFuelType(value);
+  }
 }

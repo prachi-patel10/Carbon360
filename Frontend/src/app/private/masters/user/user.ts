@@ -52,8 +52,10 @@ export class MasterUserComponent implements OnInit {
   editingUserId: string | null = null;
 
   showRoleDropdown = false;
-  sortColumn = 'Fname';
+  sortColumn = 'fName'; // lowercase f
   sortDirection: 'ASC' | 'DESC' = 'ASC';
+
+  rolesDropdownOpen = false;
 
   ngOnInit(): void {
     this.initForm();
@@ -175,27 +177,27 @@ export class MasterUserComponent implements OnInit {
   //   });
   // }
 
-loadUsers() {
-  this.service.getPaged(
-    this.currentPage(),
-    this.requestedRecords(),
-    this.searchText(),
-    this.onlyActive()
-  ).subscribe(res => {
-    const data: User[] = res.data.data; // API response
+  loadUsers() {
+    this.service.getPaged(
+      this.currentPage(),
+      this.requestedRecords(),
+      this.searchText(),
+      this.onlyActive()
+    ).subscribe(res => {
+      const data: User[] = res.data.data; // API response
 
-    this.totalRecords.set(res.data.totalRecords);
-    this.totalPages.set(res.data.totalPages);
+      this.totalRecords.set(res.data.totalRecords);
+      this.totalPages.set(res.data.totalPages);
 
-    // Map roles array to string and update the signal
-    this.users.set(
-      data.map((u: User) => ({
-        ...u,
-        RoleNames: u.roles.join(', ')
-      }))
-    );
-  });
-}
+      // Map roles array to string and update the signal
+      this.users.set(
+        data.map((u: User) => ({
+          ...u,
+          RoleNames: u.roles.join(', ')
+        }))
+      );
+    });
+  }
   // ================= LOAD DEPARTMENTS =================
   loadDepartments(page: number, size: number, search: string, active: boolean) {
     this.service.getDepartments().subscribe(res => {
@@ -395,4 +397,30 @@ loadUsers() {
     this.currentPage.set(1);
   }
 
+  get sortedUsers() {
+    const column = this.sortColumn;
+    const direction = this.sortDirection;
+
+    return [...this.users()].sort((a: any, b: any) => {
+      let valueA = a[column];
+      let valueB = b[column];
+
+      if (valueA == null) valueA = '';
+      if (valueB == null) valueB = '';
+
+      if (typeof valueA === 'string') {
+        valueA = valueA.toLowerCase();
+        valueB = valueB.toLowerCase();
+      }
+
+      if (valueA > valueB) return direction === 'ASC' ? 1 : -1;
+      if (valueA < valueB) return direction === 'ASC' ? -1 : 1;
+      return 0;
+    });
+  }
+
+  applyFilter() {
+  this.currentPage.set(1);
+  this.loadUsers();
+}
 }

@@ -160,7 +160,8 @@ table {
   font-size: 14px;
 }
 
-th, td {
+th,
+td {
   padding: 10px 8px;
   text-align: left;
   border-bottom: 1px solid #ddd;
@@ -188,10 +189,23 @@ td.actions button {
   transition: all 0.2s ease-in-out;
 }
 
-.edit-btn { background-color: #d0ebff; color: #0369a1; }
-.edit-btn:hover { background-color: #a5d8ff; }
-.delete-btn { background-color: #ffe3e3; color: #c92a2a; }
-.delete-btn:hover { background-color: #ffc9c9; }
+.edit-btn {
+  background-color: #d0ebff;
+  color: #0369a1;
+}
+
+.edit-btn:hover {
+  background-color: #a5d8ff;
+}
+
+.delete-btn {
+  background-color: #ffe3e3;
+  color: #c92a2a;
+}
+
+.delete-btn:hover {
+  background-color: #ffc9c9;
+}
 
 /* ================= PAGINATION ================= */
 .pagination-info {
@@ -232,7 +246,7 @@ td.actions button {
   width: 100%;
   height: 100%;
   overflow: auto;
-  background-color: rgba(0,0,0,0.4);
+  background-color: rgba(0, 0, 0, 0.4);
   justify-content: center;
   align-items: center;
   transition: all 0.3s ease;
@@ -245,13 +259,15 @@ td.actions button {
 /* ================= MODAL CARD (small design) ================= */
 /* ================= FILTER CARD SPECIFIC ================= */
 .filter-card {
-  width: 450px !important; /* Slightly wider for better layout */
+  width: 450px !important;
+  /* Slightly wider for better layout */
   max-height: 85vh;
-  padding: 0 !important; /* Reset padding to use header/body/footer */
+  padding: 0 !important;
+  /* Reset padding to use header/body/footer */
   display: flex;
   flex-direction: column;
   border: none;
-  box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
 }
 
 /* Header */
@@ -275,7 +291,9 @@ td.actions button {
   font-size: 16px;
 }
 
-.header-icon { color: #1b5e20; }
+.header-icon {
+  color: #1b5e20;
+}
 
 .close-btn-x {
   background: none;
@@ -292,7 +310,9 @@ td.actions button {
   background-color: #ffffff;
 }
 
-.filter-section { margin-bottom: 15px; }
+.filter-section {
+  margin-bottom: 15px;
+}
 
 .section-label {
   display: block;
@@ -331,9 +351,15 @@ td.actions button {
   gap: 6px;
 }
 
-.filter-chip input { display: none; } /* Hide the real checkbox */
+.filter-chip input {
+  display: none;
+}
 
-.filter-chip:hover { background: #edf2f7; }
+/* Hide the real checkbox */
+
+.filter-chip:hover {
+  background: #edf2f7;
+}
 
 .filter-chip.active {
   background: #e6fffa;
@@ -356,7 +382,9 @@ td.actions button {
   transition: background 0.2s;
 }
 
-.list-item:hover { background: #f8fafc; }
+.list-item:hover {
+  background: #f8fafc;
+}
 
 /* Custom Checkbox UI */
 .custom-checkbox {
@@ -369,7 +397,10 @@ td.actions button {
   color: #2d3748;
 }
 
-.custom-checkbox input { position: absolute; opacity: 0; }
+.custom-checkbox input {
+  position: absolute;
+  opacity: 0;
+}
 
 .checkmark {
   position: absolute;
@@ -381,9 +412,11 @@ td.actions button {
   border-radius: 4px;
 }
 
-.custom-checkbox:hover input ~ .checkmark { background-color: #e2e8f0; }
+.custom-checkbox:hover input~.checkmark {
+  background-color: #e2e8f0;
+}
 
-.custom-checkbox input:checked ~ .checkmark {
+.custom-checkbox input:checked~.checkmark {
   background-color: #1b5e20;
   border-color: #1b5e20;
 }
@@ -401,7 +434,9 @@ td.actions button {
   transform: rotate(45deg);
 }
 
-.custom-checkbox input:checked ~ .checkmark:after { display: block; }
+.custom-checkbox input:checked~.checkmark:after {
+  display: block;
+}
 
 /* Footer */
 .modal-footer {
@@ -423,7 +458,10 @@ td.actions button {
   cursor: pointer;
 }
 
-.main-actions { display: flex; gap: 10px; }
+.main-actions {
+  display: flex;
+  gap: 10px;
+}
 
 .cancel-btn {
   background: white;
@@ -453,9 +491,18 @@ td.actions button {
 
 /* ================= RESPONSIVE ================= */
 @media (max-width: 768px) {
-  .form-grid { grid-template-columns: 1fr; }
-  .search-row { flex-direction: column; align-items: stretch; }
-  .search-row button { width: 100%; }
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .search-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .search-row button {
+    width: 100%;
+  }
 }
 
 .input-error {
@@ -467,4 +514,304 @@ td.actions button {
   font-size: 12px;
   margin-top: 4px;
   display: block;
+}
+
+/* --- Icon Button Styling --- */
+.icon-btn {
+  background: #f1f3f5;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+  color: #495057;
+}
+
+.icon-btn:hover {
+  background: #e9ecef;
+  color: #1b5e20;
+}
+
+.icon-btn.reset-btn {
+  color: #e03131;
+  background: #fff5f5;
+  border: 1px solid #ffc9c9;
+}
+
+.icon-btn.reset-btn:hover {
+  background: #ffe3e3;
+}
+
+/* --- Multi-Select Dropdown Box --- */
+.multi-select-box {
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  background: #fff;
+  max-height: 160px;
+  overflow-y: auto;
+  margin-top: 8px;
+}
+
+.select-items-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.select-item {
+  display: flex;
+  align-items: center;
+  padding: 10px 12px;
+  cursor: pointer;
+  border-bottom: 1px solid #f8f9fa;
+  transition: background 0.2s;
+}
+
+.select-item:last-child {
+  border-bottom: none;
+}
+
+.select-item:hover {
+  background-color: #f1f8f1;
+}
+
+.select-item input {
+  display: none;
+  /* Hide default checkbox */
+}
+
+/* --- Custom Checkbox UI --- */
+.custom-check {
+  width: 18px;
+  height: 18px;
+  border: 2px solid #adb5bd;
+  border-radius: 4px;
+  margin-right: 12px;
+  position: relative;
+  transition: all 0.2s;
+}
+
+.select-item input:checked+.custom-check {
+  background-color: #1b5e20;
+  border-color: #1b5e20;
+}
+
+.select-item input:checked+.custom-check::after {
+  content: "✓";
+  color: white;
+  font-size: 12px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.label-text {
+  font-size: 14px;
+  color: #343a40;
+}
+
+/* --- Modal Adjustments --- */
+.filter-group {
+  margin-bottom: 20px;
+}
+
+.btn-primary {
+  background: #1b5e20;
+  color: white;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.btn-secondary {
+  background: transparent;
+  border: 1px solid #ced4da;
+  padding: 8px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+/* --- Grid Layout for the Top Card --- */
+.filter-layout-grid {
+  display: flex;
+  align-items: flex-end;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.search-box {
+  flex: 2;
+  min-width: 200px;
+}
+
+.dropdown-container {
+  flex: 1;
+  min-width: 150px;
+}
+
+.action-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 2px;
+}
+
+/* --- Input & Dropdown Styling --- */
+.input-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+  margin-bottom: 5px;
+  text-transform: uppercase;
+}
+
+.input-wrapper,
+.custom-dropdown {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-wrapper i,
+.custom-dropdown i {
+  position: absolute;
+  left: 10px;
+  color: #94a3b8;
+  font-size: 14px;
+}
+
+.custom-dropdown i.chevron-down {
+  left: auto;
+  right: 10px;
+  font-size: 10px;
+  pointer-events: none;
+}
+
+.input-wrapper input,
+.custom-dropdown select {
+  width: 100%;
+  padding: 8px 10px 8px 32px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 14px;
+  background: #f8fafc;
+  appearance: none;
+  /* Removes default browser arrow */
+}
+
+.custom-dropdown select {
+  padding-left: 12px;
+  /* Dropdowns don't need the left search icon space */
+}
+
+/* --- Icon Buttons --- */
+.icon-btn-outline {
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.icon-btn-outline.apply {
+  color: #1b5e20;
+}
+
+.icon-btn-outline.apply:hover {
+  background: #f0fdf4;
+  border-color: #1b5e20;
+}
+
+.icon-btn-outline.reset {
+  color: #ef4444;
+}
+
+.icon-btn-outline.reset:hover {
+  background: #fef2f2;
+  border-color: #ef4444;
+}
+
+.btn-icon {
+  font-family: system-ui;
+  /* Or your icon font */
+  font-size: 18px;
+  font-weight: bold;
+}
+
+/* --- Small Toggle --- */
+.active-toggle-compact {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.active-toggle-compact span {
+  font-size: 10px;
+  font-weight: 700;
+  color: #64748b;
+}
+
+.switch.small {
+  width: 30px;
+  height: 16px;
+}
+
+.switch.small .slider:before {
+  height: 10px;
+  width: 10px;
+  left: 3px;
+  bottom: 3px;
+}
+
+/* input:checked+.slider:before {
+  transform: translateX(14px);
+} */
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-card {
+  background: #fff;
+  width: 500px;
+  padding: 20px;
+  border-radius: 10px;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.filter-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+@media (max-width: 768px) {
+  .filter-grid {
+    grid-template-columns: 1fr;
+  }
 }
