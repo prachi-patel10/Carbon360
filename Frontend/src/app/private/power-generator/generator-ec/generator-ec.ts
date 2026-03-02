@@ -20,6 +20,8 @@ export class GeneratorOperationComponent implements OnInit {
   operations: any[] = [];
   fuels: any[] = [];
   generators: any[] = [];
+  calculatedResult: any = null;
+
 
   constructor(private fb: FormBuilder, private service: GeneratorecService) {}
 
@@ -33,8 +35,8 @@ export class GeneratorOperationComponent implements OnInit {
     OperationId: [''],
     GeneratorId: [null, Validators.required],
     OperationDate: ['', Validators.required],
-    StartTime: [''],
-    EndTime: [''],
+     StartTime: ['', Validators.required],
+  EndTime: ['', Validators.required],
     RunHours: [{ value: 0, disabled: true }],
     LoadFactor: [0],
     PowerOutputKWH: [{ value: 0, disabled: true }],
@@ -95,41 +97,44 @@ console.log("Generator IDs:", this.generators.map(g => g.generatorId));
 
 submitOperation() {
   if (this.operationForm.invalid) {
-    Swal.fire('Error', 'Please select generator', 'error');
+    Swal.fire('Error', 'Please fill required fields', 'error');
     return;
   }
 
   const raw = this.operationForm.getRawValue();
 
-  if (!raw.GeneratorId) {
-    Swal.fire('Error', 'Generator is required', 'error');
-    return;
-  }
-
   const payload = {
-    generatorId: raw.GeneratorId,   // ✅ FIXED
+    generatorId: raw.GeneratorId,
     operationDate: raw.OperationDate,
-    startTime: this.formatTime(raw.StartTime),
-    endTime: this.formatTime(raw.EndTime),
+    startTime: raw.StartTime,
+    endTime: raw.EndTime,
     loadFactor: raw.LoadFactor,
     fuelConsumedLiters: raw.FuelConsumedLiters
   };
 
-  console.log("Final Payload:", payload);
-
   this.service.create(payload).subscribe({
-    next: () => {
-      Swal.fire('Success', 'Operation saved successfully', 'success');
-      this.loadOperations();
-      this.resetForm();
+    next: (res: any) => {
+
+      if (res.status) {
+
+        // STORE COMPLETE RESPONSE
+        this.calculatedResult = res.data;
+
+        // Update calculated UI fields
+        this.operationForm.patchValue({
+          RunHours: res.data.runHours,
+          PowerOutputKWH: res.data.powerOutputKWH
+        });
+
+        Swal.fire('Success', 'Operation saved successfully', 'success');
+        this.loadOperations();
+      }
     },
-    error: (err) => {
-      console.error(err);
+    error: () => {
       Swal.fire('Error', 'Failed to save', 'error');
     }
   });
 }
-
 formatTime(time: string): string {
   if (!time) return '';
 
@@ -143,16 +148,15 @@ formatTime(time: string): string {
 edit(op: any) {
   this.operationForm.patchValue({
     OperationId: op.operationId,
-    GeneratorId: op.generatorId  , // IMPORTANT
-    OperationDate: op.operationDate,
-    StartTime: op.startTime || '',
-    EndTime: op.endTime || '',
-    LoadFactor: op.loadFactor || 0,
-    FuelConsumedLiters: op.fuelConsumedLiters || 0
+    GeneratorId: op.generatorId,
+    StartTime: op.startTime?.substring(0,16),
+    EndTime: op.endTime?.substring(0,16),
+    LoadFactor: op.loadFactor,
+    FuelConsumedLiters: op.fuelConsumedLiters
   });
 
-  this.operationForm.get('RunHours')?.setValue(op.runHours || 0);
-  this.operationForm.get('PowerOutputKWH')?.setValue(op.powerOutputKWH || 0);
+  this.operationForm.get('RunHours')?.setValue(op.runHours);
+  this.operationForm.get('PowerOutputKWH')?.setValue(op.powerOutputKWH);
 }
 
   deleteUI(op: any) {
@@ -172,6 +176,8 @@ edit(op: any) {
       }
     });
   }
+
+  
 
   resetForm() {
     this.operationForm.reset();

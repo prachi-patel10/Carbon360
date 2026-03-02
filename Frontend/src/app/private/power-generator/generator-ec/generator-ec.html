@@ -1,8 +1,6 @@
-<div class="department-page">
+<div class="generator-ecpage">
   <!-- ================= INPUT FORM ================= -->
   <div class="card form-card">
-    <h2 class="card-title">Add / Update Generator Operation</h2>
-
     <form [formGroup]="operationForm" (ngSubmit)="submitOperation()">
       <div class="form-row">
         <!-- Generator -->
@@ -25,35 +23,25 @@
           <input type="date" formControlName="OperationDate" />
         </div>
 
-        <!-- Start Time -->
-        <div class="form-group">
-          <label>Start Time</label>
-          <input type="time" formControlName="StartTime" />
-        </div>
+       <!-- Start Date & Time -->
+<div class="form-group">
+  <label>Start Date & Time</label>
+  <input type="datetime-local" formControlName="StartTime" class="form-control" />
+</div>
 
-        <!-- End Time -->
-        <div class="form-group">
-          <label>End Time</label>
-          <input type="time" formControlName="EndTime" />
-        </div>
+<!-- End Date & Time -->
+<div class="form-group">
+  <label>End Date & Time</label>
+  <input type="datetime-local" formControlName="EndTime" class="form-control" />
+</div>
 
-        <!-- Run Hours -->
-        <div class="form-group">
-          <label>Run Hours</label>
-          <input type="number" formControlName="RunHours" />
-        </div>
-
+      
         <!-- Load Factor -->
         <div class="form-group">
           <label>Load Factor</label>
           <input type="number" formControlName="LoadFactor" />
         </div>
 
-        <!-- Power Output -->
-        <div class="form-group">
-          <label>Power Output (KWH)</label>
-          <input type="number" formControlName="PowerOutputKWH" />
-        </div>
 
         <!-- Fuel Consumed -->
         <div class="form-group">
@@ -71,38 +59,68 @@
     </form>
   </div>
 
-  <!-- ================= TABLE ================= -->
-  <div class="card table-card">
-    <h2 class="card-title">Generator Operation List</h2>
+<!-- ================= CALCULATION RESULT ================= -->
+<div class="card result-card" *ngIf="calculatedResult">
 
-    <table>
-      <thead>
-        <tr>
-          <th>Date</th>
-          <th>Generator</th>
-          <th>Fuel</th>
-          <th>Run Hours</th>
-          <th>Fuel (L)</th>
-          <th>Total CO2e (kg)</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
+  <h2 class="card-title">Emission Calculation Result</h2>
 
-      <tbody>
-        <tr *ngFor="let op of operations">
-          <td>{{ op.operationDate }}</td>
-          <td>{{ op.GeneratorName }}</td>
-          <td>{{ op.FuelName }}</td>
-          <td>{{ op.runHours }}</td>
-          <td>{{ op.fuelConsumedLiters }}</td>
-          <td>{{ op.total_co2e_kg || 0 }}</td>
+  <div class="result-grid">
 
-          <td class="action-buttons">
-            <button class="btn-edit" (click)="edit(op)">Edit</button>
-            <button class="btn-delete" (click)="deleteUI(op)">Delete</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+    <!-- BASIC DATA -->
+    <div><strong>Run Hours:</strong> {{ calculatedResult.runHours }} hrs</div>
+    <div><strong>Load Factor:</strong> {{ calculatedResult.loadFactor }} %</div>
+
+    <div><strong>Power Output:</strong> {{ calculatedResult.powerOutputKWH }} kWh</div>
+    <div><strong>Fuel Consumed:</strong> {{ calculatedResult.fuelConsumedLiters }} L</div>
+
+    <hr class="full-width">
+
+    <!-- EMISSION FACTORS USED -->
+    <h3 class="section-title">Emission Factors Used</h3>
+
+    <div><strong>CO₂ Factor:</strong> {{ calculatedResult.cO2Factor }} kg/L</div>
+    <div><strong>NO₂ Factor:</strong> {{ calculatedResult.nO2Factor }} kg/L</div>
+    <div><strong>CH₄ Factor:</strong> {{ calculatedResult.cH4Factor }} kg/L</div>
+
+    <div><strong>GWP (CH₄):</strong> {{ calculatedResult.gwP_CH4 }}</div>
+    <div><strong>GWP (NO₂):</strong> {{ calculatedResult.gwP_NO2 }}</div>
+
+    <hr class="full-width">
+
+    <!-- FORMULA SECTION -->
+    <h3 class="section-title">Calculation Formula</h3>
+
+    <div class="formula full-width">
+      CO₂ = Fuel × CO₂ Factor <br>
+      = {{ calculatedResult.fuelConsumedLiters }} × {{ calculatedResult.cO2Factor }} <br>
+      = {{ calculatedResult.cO2 }} kg
+    </div>
+
+    <div class="formula full-width">
+      NO₂ = Fuel × NO₂ Factor <br>
+      = {{ calculatedResult.fuelConsumedLiters }} × {{ calculatedResult.nO2Factor }} <br>
+      = {{ calculatedResult.nO2 }} kg
+    </div>
+
+    <div class="formula full-width">
+      CH₄ = Fuel × CH₄ Factor <br>
+      = {{ calculatedResult.fuelConsumedLiters }} × {{ calculatedResult.cH4Factor }} <br>
+      = {{ calculatedResult.cH4 }} kg
+    </div>
+
+    <div class="formula full-width">
+      Total CO₂e = CO₂ + (CH₄ × GWP) + (NO₂ × GWP) <br>
+      = {{ calculatedResult.cO2 }}
+      + ({{ calculatedResult.cH4 }} × {{ calculatedResult.gwP_CH4 }})
+      + ({{ calculatedResult.nO2 }} × {{ calculatedResult.gwP_NO2 }}) <br>
+      = {{ calculatedResult.totalEmission }} kg CO₂e
+    </div>
+
+    <hr class="full-width">
+
+    <div class="total-emission full-width">
+      ✅ Final Emission: {{ calculatedResult.totalEmission }} kg CO₂e
+    </div>
+
   </div>
 </div>

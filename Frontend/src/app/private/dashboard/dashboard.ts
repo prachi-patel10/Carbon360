@@ -59,6 +59,7 @@ export class DashboardComponent {
          else if (url.includes('fueltype')) this.pageTitle = 'FuelType Master';
          else if (url.includes('vehicle')) this.pageTitle = 'Report Fleet & Transport';
          else if (url.includes('emissionFactors')) this.pageTitle = ' Emisssion factors ';
+         else if (url.includes('generator-ec')) this.pageTitle = ' Report Power Generation ';
 
         else this.pageTitle = 'Dashboard';
       });

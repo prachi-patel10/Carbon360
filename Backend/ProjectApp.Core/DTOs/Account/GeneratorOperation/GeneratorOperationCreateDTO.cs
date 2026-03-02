@@ -11,11 +11,11 @@ namespace ProjectApp.Core.DTOs.Account.GeneratorOperation
     {
         public string GeneratorId { get; set; }
 
-        public DateTime OperationDate { get; set; }
+        //public DateTime OperationDate { get; set; }
 
-        public TimeSpan StartTime { get; set; }
+        public DateTime StartTime { get; set; }
             
-        public TimeSpan EndTime { get; set; }
+        public DateTime EndTime { get; set; }
 
         public decimal LoadFactor { get; set; }
 

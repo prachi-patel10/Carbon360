@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using ProjectApp.Core.DTOs.Account.GeneratorOperation;
@@ -11,6 +12,7 @@ using ProjectApp.Repository.Services.Common;
 using ProjectApp.Repository.Utilities.Auth;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -72,11 +74,11 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
      GeneratorOperationCreateDTO dto)
         {
             if (dto == null)
-                return null;
+                throw new ArgumentNullException(nameof(dto));
 
             int generatorId = _idEncoder.Decode(dto.GeneratorId);
 
-            if (generatorId == 0)
+            if (generatorId <= 0)
                 throw new Exception("Invalid Generator Id");
 
             if (dto.EndTime <= dto.StartTime)
@@ -84,37 +86,61 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
 
             int userId = GetCurrentUserId();
 
-            // Execute Stored Procedure
-            var result = await _context.CB_GeneratorOperations
-                .FromSqlRaw(
-                    @"EXEC USP_CB_GeneratorOperationInsert 
-                @GeneratorId={0},
-                @OperationDate={1},
-                @StartTime={2},
-                @EndTime={3},
-                @LoadFactor={4},
-                @FuelConsumedLiters={5},
-                @UserId={6}",
-                    generatorId,
-                    dto.OperationDate,
-                    dto.StartTime,
-                    dto.EndTime,
-                    dto.LoadFactor,
-                    dto.FuelConsumedLiters,
-                    userId
-                )
-                .AsNoTracking()
-                .ToListAsync();
+            int insertedId;
 
-            // Stored procedure returns inserted ID
-            var insertedId = result.FirstOrDefault()?.OperationId;
+            await using var connection = _context.Database.GetDbConnection();
+            await using var command = connection.CreateCommand();
 
-            if (insertedId == null || insertedId == 0)
+            command.CommandText = "USP_CB_GeneratorOperationInsert";
+            command.CommandType = CommandType.StoredProcedure;
+
+            command.Parameters.Add(new SqlParameter("@GeneratorId", SqlDbType.Int)
+            {
+                Value = generatorId
+            });
+
+            command.Parameters.Add(new SqlParameter("@StartTime", SqlDbType.DateTime)
+            {
+                Value = dto.StartTime
+            });
+
+            command.Parameters.Add(new SqlParameter("@EndTime", SqlDbType.DateTime)
+            {
+                Value = dto.EndTime
+            });
+
+            command.Parameters.Add(new SqlParameter("@LoadFactor", SqlDbType.Decimal)
+            {
+                Precision = 5,
+                Scale = 2,
+                Value = dto.LoadFactor
+            });
+
+            command.Parameters.Add(new SqlParameter("@FuelConsumedLiters", SqlDbType.Decimal)
+            {
+                Precision = 10,
+                Scale = 2,
+                Value = dto.FuelConsumedLiters
+            });
+
+            command.Parameters.Add(new SqlParameter("@UserId", SqlDbType.Int)
+            {
+                Value = userId
+            });
+
+            if (connection.State != ConnectionState.Open)
+                await connection.OpenAsync();
+
+            var result = await command.ExecuteScalarAsync();
+
+            if (result == null || result == DBNull.Value)
                 throw new Exception("Insert failed");
 
-            // Fetch inserted record (optional but recommended)
+            insertedId = Convert.ToInt32(result);
+            Console.WriteLine("Inserted ID: " + insertedId);
             var insertedEntity = await _context.CB_GeneratorOperations
-                .FirstOrDefaultAsync(x => x.OperationId == insertedId);
+     .AsNoTracking()
+     .FirstOrDefaultAsync(x => x.OperationId == insertedId);
 
             if (insertedEntity == null)
                 throw new Exception("Inserted record not found");
@@ -128,17 +154,15 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
                 LoadFactor = insertedEntity.LoadFactor ?? 0,
                 PowerOutputKWH = insertedEntity.PowerOutputKWH ?? 0,
                 FuelConsumedLiters = insertedEntity.FuelConsumedLiters ?? 0,
-
                 CO2 = insertedEntity.co2_kg ?? 0,
                 NO2 = insertedEntity.no2_kg ?? 0,
                 CH4 = insertedEntity.ch4_kg ?? 0,
                 TotalEmission = insertedEntity.total_co2e_kg ?? 0,
-
                 EntryBy = insertedEntity.EntryBy,
                 EntryDate = insertedEntity.EntryDate
             };
-
         }
+               
 
         public async Task<GeneratorOperationResponseDTO> GetByIdAsync(string encryptedId)
         {
@@ -171,9 +195,24 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
             int id = _idEncoder.Decode(encryptedId);
             int userId = GetCurrentUserId();
 
-            var rows = await _context.Database.ExecuteSqlRawAsync(
-                "EXEC USP_CB_GeneratorOperationDelete @OperationId={0}, @UpdatedBy={1}",
-                id, userId);
+            await using var connection = _context.Database.GetDbConnection();
+            await using var command = connection.CreateCommand();
+
+            command.CommandText = "USP_CB_GeneratorOperationDelete";
+            command.CommandType = CommandType.StoredProcedure;
+
+            command.Parameters.Add(new SqlParameter("@OperationId", SqlDbType.Int)
+            { Value = id });
+
+            command.Parameters.Add(new SqlParameter("@UpdatedBy", SqlDbType.Int)
+            { Value = userId });
+
+            if (connection.State != ConnectionState.Open)
+                await connection.OpenAsync();
+
+            var result = await command.ExecuteScalarAsync();
+
+            int rows = result != null ? Convert.ToInt32(result) : 0;
 
             return rows > 0;
         }

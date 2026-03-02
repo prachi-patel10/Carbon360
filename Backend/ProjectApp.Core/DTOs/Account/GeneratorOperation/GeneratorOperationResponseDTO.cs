@@ -10,15 +10,29 @@ namespace ProjectApp.Core.DTOs.Account.GeneratorOperation
     {
         public string OperationId { get; set; }
         public string GeneratorId { get; set; }
+
         public DateOnly OperationDate { get; set; }
         public decimal RunHours { get; set; }
         public decimal LoadFactor { get; set; }
         public decimal PowerOutputKWH { get; set; }
         public decimal FuelConsumedLiters { get; set; }
+
         public decimal CO2 { get; set; }
         public decimal NO2 { get; set; }
         public decimal CH4 { get; set; }
         public decimal TotalEmission { get; set; }
+
+        // NEW 🔥
+        public decimal CO2Factor { get; set; }
+        public decimal NO2Factor { get; set; }
+        public decimal CH4Factor { get; set; }
+
+        public decimal GWP_CH4 { get; set; }
+        public decimal GWP_NO2 { get; set; }
+
+        public decimal RatedCapacityKW { get; set; }
+        public string GeneratorName { get; set; }
+
         public int EntryBy { get; set; }
         public DateTime EntryDate { get; set; }
     }

@@ -16,6 +16,7 @@ builder.Services.AddControllers();
 builder.Services.AddDbContext<CBContext>(op =>
 {
     op.UseSqlServer(builder.Configuration.GetConnectionString("DbString"));
+   
 });
 
 //JWT

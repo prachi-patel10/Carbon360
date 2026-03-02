@@ -82,6 +82,7 @@ public partial class CBContext : DbContext
 
             entity.ToTable("CB_GeneratorOperation");
 
+            entity.Property(e => e.EndTime).HasColumnType("datetime");
             entity.Property(e => e.EntryDate)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
@@ -89,6 +90,7 @@ public partial class CBContext : DbContext
             entity.Property(e => e.LoadFactor).HasColumnType("decimal(16, 8)");
             entity.Property(e => e.PowerOutputKWH).HasColumnType("decimal(16, 8)");
             entity.Property(e => e.RunHours).HasColumnType("decimal(16, 8)");
+            entity.Property(e => e.StartTime).HasColumnType("datetime");
             entity.Property(e => e.UpdateDate).HasColumnType("datetime");
             entity.Property(e => e.ch4_kg).HasColumnType("decimal(16, 8)");
             entity.Property(e => e.co2_kg).HasColumnType("decimal(16, 8)");
