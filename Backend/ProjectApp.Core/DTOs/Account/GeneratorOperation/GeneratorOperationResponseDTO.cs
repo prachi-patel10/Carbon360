@@ -9,13 +9,16 @@ namespace ProjectApp.Core.DTOs.Account.GeneratorOperation
     public class GeneratorOperationResponseDTO
     {
         public string OperationId { get; set; }
-        public int GeneratorId { get; set; }
+        public string GeneratorId { get; set; }
         public DateOnly OperationDate { get; set; }
         public decimal RunHours { get; set; }
         public decimal LoadFactor { get; set; }
         public decimal PowerOutputKWH { get; set; }
         public decimal FuelConsumedLiters { get; set; }
-        public int FuelId { get; set; }
+        public decimal CO2 { get; set; }
+        public decimal NO2 { get; set; }
+        public decimal CH4 { get; set; }
+        public decimal TotalEmission { get; set; }
         public int EntryBy { get; set; }
         public DateTime EntryDate { get; set; }
     }

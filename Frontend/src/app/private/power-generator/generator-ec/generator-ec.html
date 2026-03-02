@@ -1,83 +1,73 @@
 <div class="department-page">
-
   <!-- ================= INPUT FORM ================= -->
   <div class="card form-card">
     <h2 class="card-title">Add / Update Generator Operation</h2>
 
     <form [formGroup]="operationForm" (ngSubmit)="submitOperation()">
-
       <div class="form-row">
-
         <!-- Generator -->
         <div class="form-group">
           <label>Generator</label>
-          <select formControlName="GeneratorId">
-            <option value="">-- Select Generator --</option>
-<option *ngFor="let g of generators" [value]="g.generatorId">{{ g.generatorName }}</option>    
-      </select>
+      <select formControlName="GeneratorId">
+  <option [ngValue]="null">-- Select Generator --</option>
+
+  <option *ngFor="let g of generators" [ngValue]="g.generatorId">
+    {{ g.generatorName }}
+  </option>
+</select>
         </div>
 
-        <!-- Fuel -->
-        <div class="form-group">
-          <label>Fuel</label>
-         <select formControlName="FuelId">
-  <option value="">-- Select Fuel --</option>
-<option *ngFor="let f of fuels" [value]="f.fuel_id">{{ f.fuel_name }}</option></select>
-        </div>
+    
 
         <!-- Operation Date -->
         <div class="form-group">
           <label>Date</label>
-          <input type="date" formControlName="OperationDate">
+          <input type="date" formControlName="OperationDate" />
         </div>
 
         <!-- Start Time -->
         <div class="form-group">
           <label>Start Time</label>
-          <input type="time" formControlName="StartTime">
+          <input type="time" formControlName="StartTime" />
         </div>
 
         <!-- End Time -->
         <div class="form-group">
           <label>End Time</label>
-          <input type="time" formControlName="EndTime">
+          <input type="time" formControlName="EndTime" />
         </div>
 
         <!-- Run Hours -->
         <div class="form-group">
           <label>Run Hours</label>
-          <input type="number" formControlName="RunHours">
+          <input type="number" formControlName="RunHours" />
         </div>
 
         <!-- Load Factor -->
         <div class="form-group">
           <label>Load Factor</label>
-          <input type="number" formControlName="LoadFactor">
+          <input type="number" formControlName="LoadFactor" />
         </div>
 
         <!-- Power Output -->
         <div class="form-group">
           <label>Power Output (KWH)</label>
-          <input type="number" formControlName="PowerOutputKWH">
+          <input type="number" formControlName="PowerOutputKWH" />
         </div>
 
         <!-- Fuel Consumed -->
         <div class="form-group">
           <label>Fuel Consumed (Liters)</label>
-          <input type="number" formControlName="FuelConsumedLiters">
+          <input type="number" formControlName="FuelConsumedLiters" />
         </div>
-
       </div>
 
       <div class="form-buttons">
         <button type="submit" class="btn-primary">
           {{ !operationForm.value.OperationId ? 'Save' : 'Update' }}
         </button>
-        <button type="button" class="btn-secondary" (click)="resetForm()">
-          Reset
-        </button>
+        <button type="button" class="btn-secondary" (click)="resetForm()">Reset</button>
       </div>
-
     </form>
   </div>
 
@@ -100,12 +90,12 @@
 
       <tbody>
         <tr *ngFor="let op of operations">
-          <td>{{ op.OperationDate }}</td>
+          <td>{{ op.operationDate }}</td>
           <td>{{ op.GeneratorName }}</td>
           <td>{{ op.FuelName }}</td>
           <td>{{ op.runHours }}</td>
-          <td>{{ op.FuelConsumedLiters }}</td>
-          <td>{{ op.total_co2e_kg }}</td>
+          <td>{{ op.fuelConsumedLiters }}</td>
+          <td>{{ op.total_co2e_kg || 0 }}</td>
 
           <td class="action-buttons">
             <button class="btn-edit" (click)="edit(op)">Edit</button>
@@ -114,7 +104,5 @@
         </tr>
       </tbody>
     </table>
-
   </div>
-
 </div>

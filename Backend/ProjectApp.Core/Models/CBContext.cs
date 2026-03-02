@@ -98,11 +98,6 @@ public partial class CBContext : DbContext
             entity.Property(e => e.total_co2e_kg).HasColumnType("decimal(16, 8)");
             entity.Property(e => e.total_no2_kg).HasColumnType("decimal(16, 8)");
 
-            entity.HasOne(d => d.Fuel).WithMany(p => p.CB_GeneratorOperations)
-                .HasForeignKey(d => d.FuelId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_GeneratorOperation_Fuel");
-
             entity.HasOne(d => d.Generator).WithMany(p => p.CB_GeneratorOperations)
                 .HasForeignKey(d => d.GeneratorId)
                 .OnDelete(DeleteBehavior.ClientSetNull)

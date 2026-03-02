@@ -29,8 +29,6 @@ public partial class CB_MasterFuelType
 
     public virtual ICollection<CB_EmissionFactor> CB_EmissionFactors { get; set; } = new List<CB_EmissionFactor>();
 
-    public virtual ICollection<CB_GeneratorOperation> CB_GeneratorOperations { get; set; } = new List<CB_GeneratorOperation>();
-
     public virtual ICollection<CB_MasterGenerator> CB_MasterGenerators { get; set; } = new List<CB_MasterGenerator>();
 
     public virtual ICollection<CB_MasterVehicle> CB_MasterVehicles { get; set; } = new List<CB_MasterVehicle>();

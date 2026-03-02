@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using ProjectApp.Core.DTOs.Account.GeneratorOperation;
 using ProjectApp.Core.Models;
 using ProjectApp.Repository.Interfaces.Common;
@@ -35,68 +36,115 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
             _idEncoder = idEncoder;
         }
 
-        // ================= GET ALL =================
-
         public async Task<List<GeneratorOperationResponseDTO>> GetAllAsync()
         {
-            var list = await _context.CB_GeneratorOperations
-                .FromSqlRaw("EXEC USP_CB_GeneratorOperationGetAllList")
-                .AsNoTracking()
-                .ToListAsync();
+            var data = await _commonService.GetAllAsync();
 
-            var response = _mapper.Map<List<GeneratorOperationResponseDTO>>(list);
+            if (data == null || !data.Any())
+                return new List<GeneratorOperationResponseDTO>();
 
-            for (int i = 0; i < list.Count; i++)
+            return data.Select(x => new GeneratorOperationResponseDTO
             {
-                response[i].OperationId = _idEncoder.Encode(list[i].OperationId);
-            }
+                OperationId = _idEncoder.Encode(x.OperationId),     // encode OperationId
+                GeneratorId = _idEncoder.Encode(x.GeneratorId),   // encode GeneratorId as string
+                OperationDate = x.OperationDate,
+                RunHours = x.RunHours ?? 0,
+                LoadFactor = x.LoadFactor ?? 0,
+                PowerOutputKWH = x.PowerOutputKWH ?? 0,
+                FuelConsumedLiters = x.FuelConsumedLiters ?? 0,
 
-            return response;
+                CO2 = x.co2_kg ?? 0,                  // match DB columns
+                NO2 = x.no2_kg ?? 0,
+                CH4 = x.ch4_kg ?? 0,
+                TotalEmission = x.total_co2e_kg ?? 0,
+
+                EntryBy = x.EntryBy,
+                EntryDate = x.EntryDate
+            })
+            .OrderByDescending(x => x.OperationDate)
+            .ThenByDescending(x => x.OperationId)
+            .ToList();
+
         }
-        // ================= CREATE =================
+
 
         public async Task<GeneratorOperationResponseDTO> CreateAsync(
-    GeneratorOperationCreateDTO dto)
+     GeneratorOperationCreateDTO dto)
         {
+            if (dto == null)
+                return null;
+
+            int generatorId = _idEncoder.Decode(dto.GeneratorId);
+
+            if (generatorId == 0)
+                throw new Exception("Invalid Generator Id");
+
+            if (dto.EndTime <= dto.StartTime)
+                throw new Exception("End Time must be greater than Start Time");
+
             int userId = GetCurrentUserId();
 
-            var result = await _context.Database
-                .SqlQueryRaw<decimal>(
+            // Execute Stored Procedure
+            var result = await _context.CB_GeneratorOperations
+                .FromSqlRaw(
                     @"EXEC USP_CB_GeneratorOperationInsert 
-                @GeneratorId={0}, 
-                @OperationDate={1}, 
-                @StartTime={2}, 
-                @EndTime={3}, 
-                @LoadFactor={4}, 
-                @FuelConsumedLiters={5}, 
+                @GeneratorId={0},
+                @OperationDate={1},
+                @StartTime={2},
+                @EndTime={3},
+                @LoadFactor={4},
+                @FuelConsumedLiters={5},
                 @UserId={6}",
-                    dto.GeneratorId,
+                    generatorId,
                     dto.OperationDate,
                     dto.StartTime,
                     dto.EndTime,
                     dto.LoadFactor,
                     dto.FuelConsumedLiters,
-                    userId)
+                    userId
+                )
+                .AsNoTracking()
                 .ToListAsync();
 
-            int newId = Convert.ToInt32(result.FirstOrDefault());
+            // Stored procedure returns inserted ID
+            var insertedId = result.FirstOrDefault()?.OperationId;
 
-            var entity = await _context.CB_GeneratorOperations
-                .AsNoTracking()
-                .FirstOrDefaultAsync(x => x.OperationId == newId);
+            if (insertedId == null || insertedId == 0)
+                throw new Exception("Insert failed");
 
-            if (entity == null)
-                return null;
+            // Fetch inserted record (optional but recommended)
+            var insertedEntity = await _context.CB_GeneratorOperations
+                .FirstOrDefaultAsync(x => x.OperationId == insertedId);
 
-            var response = _mapper.Map<GeneratorOperationResponseDTO>(entity);
-            response.OperationId = _idEncoder.Encode(entity.OperationId);
+            if (insertedEntity == null)
+                throw new Exception("Inserted record not found");
 
-            return response;
+            return new GeneratorOperationResponseDTO
+            {
+                OperationId = _idEncoder.Encode(insertedEntity.OperationId),
+                GeneratorId = _idEncoder.Encode(insertedEntity.GeneratorId),
+                OperationDate = insertedEntity.OperationDate,
+                RunHours = insertedEntity.RunHours ?? 0,
+                LoadFactor = insertedEntity.LoadFactor ?? 0,
+                PowerOutputKWH = insertedEntity.PowerOutputKWH ?? 0,
+                FuelConsumedLiters = insertedEntity.FuelConsumedLiters ?? 0,
+
+                CO2 = insertedEntity.co2_kg ?? 0,
+                NO2 = insertedEntity.no2_kg ?? 0,
+                CH4 = insertedEntity.ch4_kg ?? 0,
+                TotalEmission = insertedEntity.total_co2e_kg ?? 0,
+
+                EntryBy = insertedEntity.EntryBy,
+                EntryDate = insertedEntity.EntryDate
+            };
+
         }
-        // ================= GET BY ID =================
 
         public async Task<GeneratorOperationResponseDTO> GetByIdAsync(string encryptedId)
         {
+            if (string.IsNullOrEmpty(encryptedId))
+                return null;
+
             int id = _idEncoder.Decode(encryptedId);
 
             var list = await _context.CB_GeneratorOperations
@@ -114,10 +162,12 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
 
             return response;
         }
-        // ================= DELETE =================
 
         public async Task<bool> DeleteAsync(string encryptedId)
         {
+            if (string.IsNullOrEmpty(encryptedId))
+                return false;
+
             int id = _idEncoder.Decode(encryptedId);
             int userId = GetCurrentUserId();
 

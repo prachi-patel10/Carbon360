@@ -28,91 +28,132 @@ export class GeneratorOperationComponent implements OnInit {
     this.loadAllData();
   }
 
-  initForm() {
-    this.operationForm = this.fb.group({
-      OperationId: [''],
-      GeneratorId: ['', Validators.required],
-      FuelId: ['', Validators.required],
-      OperationDate: ['', Validators.required],
-      StartTime: [''],
-      EndTime: [''],
-      RunHours: [{ value: 0, disabled: true }],
-      LoadFactor: [0],
-      PowerOutputKWH: [{ value: 0, disabled: true }],
-      FuelConsumedLiters: [0]
-    });
-  }
+ initForm() {
+  this.operationForm = this.fb.group({
+    OperationId: [''],
+    GeneratorId: [null, Validators.required],
+    OperationDate: ['', Validators.required],
+    StartTime: [''],
+    EndTime: [''],
+    RunHours: [{ value: 0, disabled: true }],
+    LoadFactor: [0],
+    PowerOutputKWH: [{ value: 0, disabled: true }],
+    FuelConsumedLiters: [0]
+  });
+}
 
   // Load generators, fuels, then operations
-  loadAllData() {
-    forkJoin({
-      generators: this.service.getGenerators(),
-      fuels: this.service.getFuels()
-    }).subscribe({
-      next: (res: any) => {
-        // normalize IDs as strings for dropdown binding
-        this.generators = (res.generators.data || []).map((g: any) => ({
-          ...g,
-          generatorId: g.generatorId.toString()
-        }));
-        this.fuels = (res.fuels.data || []).map((f: any) => ({
-          ...f,
-          fuel_id: f.fuel_id.toString()
-        }));
+loadAllData() {
+  this.service.getGenerators().subscribe({
+    next: (res: any) => {
 
-        this.loadOperations();
-      },
-      error: () => console.error('Failed to load generators or fuels')
-    });
+      console.log("Generator API Response:", res);
+
+      // If API returns array directly
+      this.generators = res || [];
+
+      console.log("Generators Loaded:", this.generators);
+
+      this.loadOperations();
+    },
+    error: () => console.error('Failed to load generators')
+  });
+}
+
+loadOperations() {
+  this.service.getAll().subscribe({
+    next: (res: any) => {
+
+      // Convert generatorId to string in map
+      const genMap = new Map(
+        this.generators.map(g => [String(g.generatorId), g])
+      );
+
+      this.operations = (res.data || []).map((op: any) => {
+
+        const generator = genMap.get(String(op.generatorId));
+
+        return {
+          operationId: op.operationId,
+          operationDate: op.operationDate,
+          runHours: op.runHours,
+          fuelConsumedLiters: op.fuelConsumedLiters,
+          loadFactor: op.loadFactor,
+          powerOutputKWH: op.powerOutputKWH,
+          generatorId: String(op.generatorId),
+
+          GeneratorName: generator?.generatorName || 'N/A',
+          FuelName: generator?.fuelName || 'N/A'
+        };
+      });
+
+console.log("Generator IDs:", this.generators.map(g => g.generatorId));
+    },
+    error: () => console.error('Failed to load operations')
+  });
+}
+
+submitOperation() {
+  if (this.operationForm.invalid) {
+    Swal.fire('Error', 'Please select generator', 'error');
+    return;
   }
 
-  loadOperations() {
-    this.service.getAll().subscribe({
-      next: (res: any) => {
-        const genMap = new Map(this.generators.map(g => [g.generatorId, g.generatorName]));
-        const fuelMap = new Map(this.fuels.map(f => [f.fuel_id, f.fuel_name]));
+  const raw = this.operationForm.getRawValue();
 
-        this.operations = (res.data || []).map((op: any) => ({
-          ...op,
-          generatorId: op.generatorId.toString(),
-          fuelId: op.fuelId.toString(),
-          GeneratorName: genMap.get(op.generatorId.toString()) || '',
-          FuelName: fuelMap.get(op.fuelId.toString()) || ''
-        }));
-      },
-      error: () => console.error('Failed to load operations')
-    });
+  if (!raw.GeneratorId) {
+    Swal.fire('Error', 'Generator is required', 'error');
+    return;
   }
 
-  submitOperation() {
-    if (this.operationForm.invalid) return;
+  const payload = {
+    generatorId: raw.GeneratorId,   // ✅ FIXED
+    operationDate: raw.OperationDate,
+    startTime: this.formatTime(raw.StartTime),
+    endTime: this.formatTime(raw.EndTime),
+    loadFactor: raw.LoadFactor,
+    fuelConsumedLiters: raw.FuelConsumedLiters
+  };
 
-    const data = this.operationForm.getRawValue();
-    this.service.create(data).subscribe({
-      next: () => {
-        Swal.fire('Success', 'Operation saved successfully', 'success');
-        this.loadOperations();
-        this.resetForm();
-      },
-      error: () => Swal.fire('Error', 'Failed to save', 'error')
-    });
-  }
+  console.log("Final Payload:", payload);
 
-  edit(op: any) {
-    this.operationForm.patchValue({
-      OperationId: op.operationId,
-      GeneratorId: op.generatorId.toString(),
-      FuelId: op.fuelId.toString(),
-      OperationDate: op.operationDate,
-      StartTime: op.startTime || '',
-      EndTime: op.endTime || '',
-      LoadFactor: op.loadFactor || 0,
-      FuelConsumedLiters: op.fuelConsumedLiters || 0
-    });
+  this.service.create(payload).subscribe({
+    next: () => {
+      Swal.fire('Success', 'Operation saved successfully', 'success');
+      this.loadOperations();
+      this.resetForm();
+    },
+    error: (err) => {
+      console.error(err);
+      Swal.fire('Error', 'Failed to save', 'error');
+    }
+  });
+}
 
-    this.operationForm.get('RunHours')?.setValue(op.runHours || 0);
-    this.operationForm.get('PowerOutputKWH')?.setValue(op.powerOutputKWH || 0);
-  }
+formatTime(time: string): string {
+  if (!time) return '';
+
+  const parts = time.split(':');
+  const h = parts[0].padStart(2, '0');
+  const m = parts[1].padStart(2, '0');
+
+  return `${h}:${m}:00`;
+}
+
+edit(op: any) {
+  this.operationForm.patchValue({
+    OperationId: op.operationId,
+    GeneratorId: op.generatorId  , // IMPORTANT
+    OperationDate: op.operationDate,
+    StartTime: op.startTime || '',
+    EndTime: op.endTime || '',
+    LoadFactor: op.loadFactor || 0,
+    FuelConsumedLiters: op.fuelConsumedLiters || 0
+  });
+
+  this.operationForm.get('RunHours')?.setValue(op.runHours || 0);
+  this.operationForm.get('PowerOutputKWH')?.setValue(op.powerOutputKWH || 0);
+}
 
   deleteUI(op: any) {
     Swal.fire({

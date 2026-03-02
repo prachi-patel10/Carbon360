@@ -38,6 +38,9 @@ namespace ProjectApp.API.Controllers.Account.GeneratorOperation
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(string id)
         {
+            if (string.IsNullOrEmpty(id))
+                return BadRequest("Invalid Id");
+
             var data = await _service.GetByIdAsync(id);
 
             if (data == null)
@@ -55,8 +58,14 @@ namespace ProjectApp.API.Controllers.Account.GeneratorOperation
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create(GeneratorOperationCreateDTO dto)
+        public async Task<IActionResult> Create([FromBody] GeneratorOperationCreateDTO dto)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            if (dto == null)
+                return BadRequest("Invalid data");
+
             var result = await _service.CreateAsync(dto);
 
             if (result == null)

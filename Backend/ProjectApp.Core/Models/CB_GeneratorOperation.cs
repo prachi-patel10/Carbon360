@@ -25,8 +25,6 @@ public partial class CB_GeneratorOperation
 
     public decimal? FuelConsumedLiters { get; set; }
 
-    public int FuelId { get; set; }
-
     public int EntryBy { get; set; }
 
     public DateTime EntryDate { get; set; }
@@ -50,8 +48,6 @@ public partial class CB_GeneratorOperation
     public decimal? total_ch4_kg { get; set; }
 
     public decimal? total_co2e_kg { get; set; }
-
-    public virtual CB_MasterFuelType Fuel { get; set; }
 
     public virtual CB_MasterGenerator Generator { get; set; }
 }
