@@ -187,6 +187,63 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
             return response;
         }
 
+        public async Task<GeneratorOperationResponseDTO> UpdateAsync(string encryptedId, GeneratorOperationCreateDTO dto)
+        {
+            if (string.IsNullOrEmpty(encryptedId) || dto == null)
+                throw new ArgumentNullException(nameof(encryptedId), "Invalid data for update");
+
+            int operationId = _idEncoder.Decode(encryptedId);
+            int generatorId = _idEncoder.Decode(dto.GeneratorId);
+            int userId = GetCurrentUserId();
+
+            await using var connection = _context.Database.GetDbConnection();
+            await using var command = connection.CreateCommand();
+
+            command.CommandText = "USP_CB_GeneratorOperationUpdate";
+            command.CommandType = CommandType.StoredProcedure;
+
+            command.Parameters.Add(new SqlParameter("@OperationId", SqlDbType.Int) { Value = operationId });
+            command.Parameters.Add(new SqlParameter("@GeneratorId", SqlDbType.Int) { Value = generatorId });
+            command.Parameters.Add(new SqlParameter("@StartTime", SqlDbType.DateTime) { Value = dto.StartTime });
+            command.Parameters.Add(new SqlParameter("@EndTime", SqlDbType.DateTime) { Value = dto.EndTime });
+            command.Parameters.Add(new SqlParameter("@LoadFactor", SqlDbType.Decimal) { Precision = 5, Scale = 2, Value = dto.LoadFactor });
+            command.Parameters.Add(new SqlParameter("@FuelConsumedLiters", SqlDbType.Decimal) { Precision = 10, Scale = 2, Value = dto.FuelConsumedLiters });
+            command.Parameters.Add(new SqlParameter("@UserId", SqlDbType.Int) { Value = userId });
+
+            if (connection.State != ConnectionState.Open)
+                await connection.OpenAsync();
+
+            await command.ExecuteNonQueryAsync();
+
+            // Fetch updated record
+            var updatedEntity = await _context.CB_GeneratorOperations
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x => x.OperationId == operationId);
+
+            // ✅ Make sure **all paths return**
+            if (updatedEntity == null)
+                throw new Exception("Record not found after update.");
+
+            var response = new GeneratorOperationResponseDTO
+            {
+                OperationId = _idEncoder.Encode(updatedEntity.OperationId),
+                GeneratorId = _idEncoder.Encode(updatedEntity.GeneratorId),
+                OperationDate = updatedEntity.OperationDate,
+                RunHours = updatedEntity.RunHours ?? 0,
+                LoadFactor = updatedEntity.LoadFactor ?? 0,
+                PowerOutputKWH = updatedEntity.PowerOutputKWH ?? 0,
+                FuelConsumedLiters = updatedEntity.FuelConsumedLiters ?? 0,
+                CO2 = updatedEntity.co2_kg ?? 0,
+                NO2 = updatedEntity.no2_kg ?? 0,
+                CH4 = updatedEntity.ch4_kg ?? 0,
+                TotalEmission = updatedEntity.total_co2e_kg ?? 0,
+                EntryBy = updatedEntity.EntryBy,
+                EntryDate = updatedEntity.EntryDate
+            };
+
+            return response; // ✅ guaranteed return
+        }
+
         public async Task<bool> DeleteAsync(string encryptedId)
         {
             if (string.IsNullOrEmpty(encryptedId))
