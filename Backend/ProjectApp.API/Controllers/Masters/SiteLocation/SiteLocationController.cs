@@ -89,5 +89,12 @@ namespace ProjectApp.API.Controllers.Masters.SiteLocation
             var result = await _service.SearchAsync(request);
             return Ok(result);
         }
+
+        [HttpGet("departments")]
+        public async Task<IActionResult> GetDepartments()
+        {
+            var result = await _service.GetDepartments();
+            return Ok(result);
+        }
     }
 }

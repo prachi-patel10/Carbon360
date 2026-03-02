@@ -188,5 +188,23 @@ namespace ProjectApp.Repository.Services.SiteLocation
                 IsActive = GetBool("IsActive")
             };
         }
+
+        public async Task<List<object>> GetDepartments()
+        {
+            var result = await _spService.ExecuteSpAsync("USP_CB_DepartmentGetAll");
+
+            var dataList = (result["Data"] as IEnumerable<object>)
+                ?.Cast<Dictionary<string, object>>()
+                ?.Select(x => new
+                {
+                    departmentId = Convert.ToInt32(x["DepartmentId"]),
+                    departmentName = x["DepartmentName"].ToString()
+                })
+                .ToList<object>()
+                ?? new List<object>();
+
+            return dataList;
+        }
+
     }
 }
