@@ -8,6 +8,7 @@
 
 /* ================= CARD ================= */
 .card {
+
   background-color: #fff;
   border-radius: 12px;
   padding: 20px;
@@ -49,31 +50,18 @@
   margin-top: 10px;
 }
 
-button[type="submit"],
-.form-actions button {
+.save-btn {
   padding: 8px 16px;
   border-radius: 5px;
   border: none;
+  background-color: #1b5e20;
+  color: #fff;
   cursor: pointer;
   font-size: 14px;
-  transition: 0.2s;
 }
 
-button[type="submit"] {
-  background-color: #1b5e20;
-  color: white;
-}
-
-button[type="submit"]:hover {
+.save-btn:hover {
   background-color: #145214;
-}
-
-.form-actions button[type="button"] {
-  background-color: #e0e0e0;
-}
-
-.form-actions button[type="button"]:hover {
-  background-color: #cfcfcf;
 }
 
 /* ================= SWITCH TOGGLE ================= */
@@ -81,11 +69,6 @@ button[type="submit"]:hover {
   display: flex;
   align-items: center;
   gap: 8px;
-}
-
-.status-toggle span {
-  font-weight: 500;
-  font-size: 14px;
 }
 
 .switch {
@@ -125,38 +108,64 @@ button[type="submit"]:hover {
   border-radius: 50%;
 }
 
-input:checked + .slider {
+input:checked+.slider {
   background-color: #1b5e20;
 }
 
-input:checked + .slider:before {
+input:checked+.slider:before {
   transform: translateX(20px);
 }
 
 /* ================= SEARCH ROW ================= */
 .search-row {
   display: flex;
-  justify-content: space-between;
   align-items: center;
   gap: 10px;
-  margin-bottom: 10px;
+  margin-top: 5px;
   flex-wrap: wrap;
 }
 
-.search-left input {
-  flex: 0 0 220px;
-  padding: 6px 10px;
+.search-left {
+  flex: 1 1 auto;       /* flexible input */
+  max-width: 300px;     
+}
+
+.search-left .search-input {
+  width: 100%;
+  padding: 6px 12px;
   border-radius: 5px;
   border: 1px solid #ccc;
   font-size: 14px;
+  box-sizing: border-box;
+  min-width: 150px;
 }
 
 .search-right {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
+  margin-left: auto;      /* <-- push this group to the right */
 }
 
+.filter-btn {
+  background-color: #959090c9;
+  color: #fff;
+  padding: 6px 12px;
+  border-radius: 5px;
+  border: none;
+  cursor: pointer;
+}
+
+.filter-btn:hover {
+  background-color: #454748eb;
+}
+
+.active-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+/* ================= FILTER BUTTON ================= */
 .filter-btn {
   background-color: #959090c9;
   color: #fff;
@@ -181,7 +190,8 @@ table {
   font-size: 14px;
 }
 
-th, td {
+th,
+td {
   padding: 10px 8px;
   text-align: left;
   border-bottom: 1px solid #ddd;
@@ -208,10 +218,40 @@ td.actions button {
   transition: all 0.2s ease-in-out;
 }
 
-.edit-btn { background-color: #d0ebff; color: #0369a1; }
-.edit-btn:hover { background-color: #a5d8ff; }
-.delete-btn { background-color: #ffe3e3; color: #c92a2a; }
-.delete-btn:hover { background-color: #ffc9c9; }
+.edit-btn {
+  background-color: #d0ebff;
+  color: #0369a1;
+}
+
+.edit-btn:hover {
+  background-color: #a5d8ff;
+}
+
+.delete-btn {
+  background-color: #ffe3e3;
+  color: #c92a2a;
+}
+
+.delete-btn:hover {
+  background-color: #ffc9c9;
+}
+
+/* ================= TABLE HEADER SORT ================= */
+th.sortable {
+  cursor: pointer;
+}
+
+.th-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+th span {
+  font-size: 12px;
+  color: #1b5e20;
+}
 
 /* ================= PAGINATION ================= */
 .pagination-info {
@@ -234,24 +274,157 @@ td.actions button {
   background-color: #e0e0e0;
 }
 
-.pagination-controls select {
-  margin-left: 5px;
-  padding: 3px 6px;
-  font-size: 14px;
-  border-radius: 5px;
-  border: 1px solid #ccc;
+/* ================= ERROR ================= */
+.input-error {
+  border: 1px solid #e74c3c !important;
 }
 
-/* ================= NO DATA ================= */
-.no-data {
-  text-align: center;
-  font-style: italic;
-  color: #888;
+.error-text {
+  color: #e74c3c;
+  font-size: 12px;
+  margin-top: 4px;
+  display: block;
 }
 
 /* ================= RESPONSIVE ================= */
 @media (max-width: 768px) {
-  .form-grid { grid-template-columns: 1fr; }
-  .search-row { flex-direction: column; align-items: stretch; }
-  .search-row button { width: 100%; }
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .search-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .search-row button {
+    width: 100%;
+  }
+}
+
+/* ================= FILTER OVERLAY ================= */
+.filter-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+
+/* ================= FILTER MODAL ================= */
+.filter-modal {
+  width: 420px;
+  max-width: 95%;
+  max-height: 85vh;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+/* ================= HEADER ================= */
+.filter-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.filter-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1b5e20;
+}
+
+/* ================= BODY ================= */
+.filter-body {
+  padding: 18px 20px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+/* ================= MULTI SELECT BOX ================= */
+.multi-select-box {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 10px;
+  max-height: 140px;
+  overflow-y: auto;
+  background: #fafafa;
+}
+
+.checkbox-item {
+  margin-bottom: 6px;
+}
+
+.checkbox-item label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.checkbox-item input {
+  accent-color: #1b5e20;
+  cursor: pointer;
+}
+
+/* ================= FOOTER ================= */
+.filter-footer {
+  padding: 14px 20px;
+  border-top: 1px solid #eee;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+/* Reset button */
+.reset-btn {
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  background: #f5f5f5;
+  cursor: pointer;
+}
+
+.reset-btn:hover {
+  background: #e0e0e0;
+}
+
+/* Apply button */
+.apply-btn {
+  padding: 6px 16px;
+  border-radius: 6px;
+  border: none;
+  background-color: #1b5e20;
+  color: #fff;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.apply-btn:hover {
+  background-color: #145214;
+}
+
+/* Close button */
+.close-btn {
+  background: transparent;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+/* ================= ANIMATION ================= */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
 }

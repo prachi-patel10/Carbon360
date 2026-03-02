@@ -1,27 +1,34 @@
-<div class="container">
+<div class="master-container">
 
   <!-- ================= CREATE / UPDATE GENERATOR FORM ================= -->
   <div class="card">
-
     <form [formGroup]="generatorForm" (ngSubmit)="submit()" class="form-grid">
 
       <!-- Generator Name -->
       <div class="form-group">
         <label>Generator Name</label>
-        <input type="text" formControlName="generatorName" placeholder="Enter generator name" required />
+        <input type="text" formControlName="generatorName" placeholder="Enter generator name" />
+        <span class="error-text"
+          *ngIf="generatorForm.get('generatorName')?.invalid && generatorForm.get('generatorName')?.touched">
+          Name is required
+        </span>
       </div>
 
       <!-- Rated Capacity -->
       <div class="form-group">
         <label>Rated Capacity (kW)</label>
-        <input type="number" formControlName="ratedCapacityKW" placeholder="Enter capacity" required />
+        <input type="number" formControlName="ratedCapacityKW" placeholder="Enter capacity" />
+        <span class="error-text"
+          *ngIf="generatorForm.get('ratedCapacityKW')?.invalid && generatorForm.get('ratedCapacityKW')?.touched">
+          Capacity is required
+        </span>
       </div>
 
       <!-- Fuel -->
       <div class="form-group">
         <label>Fuel</label>
-        <select formControlName="fuelId" required>
-          <option value="">Select Fuel</option>
+        <select formControlName="fuelId">
+          <option value="" disabled selected>Select Fuel</option>
           <option *ngFor="let fuel of fuels" [value]="fuel.fuelId">{{ fuel.fuelName }}</option>
         </select>
       </div>
@@ -29,8 +36,8 @@
       <!-- Site -->
       <div class="form-group">
         <label>Site</label>
-        <select formControlName="siteId" required>
-          <option value="">Select Site</option>
+        <select formControlName="siteId">
+          <option value="" disabled selected>Select Site</option>
           <option *ngFor="let site of sites" [value]="site.siteId">{{ site.siteName }}</option>
         </select>
       </div>
@@ -38,25 +45,24 @@
       <!-- Department -->
       <div class="form-group">
         <label>Department</label>
-        <select formControlName="departmentId" required>
-          <option value="">Select Department</option>
+        <select formControlName="departmentId">
+          <option value="" disabled selected>Select Department</option>
           <option *ngFor="let dept of departments" [value]="dept.departmentId">{{ dept.departmentName }}</option>
         </select>
       </div>
 
-      <!-- Status -->
-      <div class="form-group status-toggle">
-        <span>Active</span>
-        <label class="switch">
-          <input type="checkbox" formControlName="isActive" />
-          <span class="slider"></span>
-        </label>
-      </div>
-
-      <!-- Form Actions -->
+      <!-- Status + Save -->
       <div class="form-actions">
-        <button type="submit">{{ editingGeneratorId ? 'Update' : 'Create' }}</button>
-        <button type="button" (click)="generatorForm.reset(); editingGeneratorId=null;">Clear</button>
+        <div class="status-toggle">
+          <span>Active</span>
+          <label class="switch">
+            <input type="checkbox" formControlName="isActive" />
+            <span class="slider"></span>
+          </label>
+        </div>
+        <button type="submit" class="save-btn">
+          {{ editingGeneratorId ? 'Update' : 'Save' }}
+        </button>
       </div>
 
     </form>
@@ -64,11 +70,13 @@
 
   <!-- ================= SEARCH + GENERATOR LIST ================= -->
   <div class="card">
-
     <div class="search-row">
+
       <div class="search-left">
-        <input type="text" class="search-input" placeholder="Search generator..." [(ngModel)]="searchText" (input)="loadGenerators()" />
+        <input type="text" class="search-input" placeholder="Search generator..." [(ngModel)]="searchText"
+          (input)="loadGenerators()" />
       </div>
+
       <div class="search-right">
         <div class="status-toggle">
           <span>Active Only</span>
@@ -77,20 +85,51 @@
             <span class="slider"></span>
           </label>
         </div>
-        <button class="filter-btn" (click)="clearFilter()">Clear</button>
+        <button type="button" class="filter-btn" (click)="openFilterModal()">Filter</button>
       </div>
-    </div>
+
+    </div> <!-- end search-row -->
 
     <div class="table-wrapper">
       <table>
         <thead>
           <tr>
-            <th>Name</th>
-            <th>Rated KW</th>
-            <th>Fuel</th>
-            <th>Site</th>
-            <th>Dept</th>
-            <th>Status</th>
+            <th class="sortable" (click)="sort('generatorName')">
+              <div class="th-content">
+                Name
+                <span *ngIf="sortColumn() === 'generatorName'">{{ sortDirection() === 'asc' ? '▲' : '▼' }}</span>
+              </div>
+            </th>
+            <th class="sortable" (click)="sort('ratedCapacityKW')">
+              <div class="th-content">
+                Rated KW
+                <span *ngIf="sortColumn() === 'ratedCapacityKW'">{{ sortDirection() === 'asc' ? '▲' : '▼' }}</span>
+              </div>
+            </th>
+            <th class="sortable" (click)="sort('fuelName')">
+              <div class="th-content">
+                Fuel
+                <span *ngIf="sortColumn() === 'fuelName'">{{ sortDirection() === 'asc' ? '▲' : '▼' }}</span>
+              </div>
+            </th>
+            <th class="sortable" (click)="sort('siteName')">
+              <div class="th-content">
+                Site
+                <span *ngIf="sortColumn() === 'siteName'">{{ sortDirection() === 'asc' ? '▲' : '▼' }}</span>
+              </div>
+            </th>
+            <th class="sortable" (click)="sort('departmentName')">
+              <div class="th-content">
+                Dept
+                <span *ngIf="sortColumn() === 'departmentName'">{{ sortDirection() === 'asc' ? '▲' : '▼' }}</span>
+              </div>
+            </th>
+            <th class="sortable" (click)="sort('isActive')">
+              <div class="th-content">
+                Status
+                <span *ngIf="sortColumn() === 'isActive'">{{ sortDirection() === 'asc' ? '▲' : '▼' }}</span>
+              </div>
+            </th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -117,21 +156,80 @@
           </tr>
         </tbody>
       </table>
-    </div>
+    </div> <!-- end table-wrapper -->
 
-    <!-- Pagination -->
+    <!-- ================= PAGINATION ================= -->
     <div class="pagination-info">
       <span>Total Records: {{ totalRecords }}</span>
       <div class="pagination-controls">
         <button (click)="prevPage()" [disabled]="pageNumber === 1">Previous</button>
         <span>Page {{ pageNumber }} of {{ totalPages }}</span>
         <button (click)="nextPage()" [disabled]="pageNumber === totalPages">Next</button>
-        <label for="pageSize">Page Size:</label>
-        <select id="pageSize" [(ngModel)]="pageSize" (change)="changePageSize()">
+        <select [(ngModel)]="pageSize" (change)="changePageSize()">
           <option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</option>
         </select>
       </div>
     </div>
 
   </div>
+
+
+  <!-- ================= FILTER MODAL ================= -->
+  <div class="filter-overlay" *ngIf="filterModalOpen">
+    <div class="filter-modal">
+
+      <!-- Header -->
+      <div class="filter-header">
+        <h3>Filter Generators</h3>
+        <button type="button" class="close-btn" (click)="closeFilter()">✖</button>
+      </div>
+
+      <!-- Body -->
+      <div class="filter-body">
+
+        <!-- Search -->
+        <div class="form-group">
+          <label>Search</label>
+          <input type="text" [(ngModel)]="filterSearchText" placeholder="Search generator..." />
+        </div>
+
+        <!-- Fuel Type Multi Select -->
+        <div class="form-group">
+          <label>Fuel Type</label>
+          <div class="multi-select-box">
+            <div *ngFor="let fuel of fuels" class="checkbox-item">
+              <label>
+                <input type="checkbox" [checked]="selectedFuelIds.includes(fuel.fuelId)"
+                  (change)="toggleFuel(fuel.fuelId)" />
+                <span>{{ fuel.fuelName }}</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Site Multi Select -->
+        <div class="form-group">
+          <label>Site</label>
+          <div class="multi-select-box">
+            <div *ngFor="let site of sites" class="checkbox-item">
+              <label>
+                <input type="checkbox" [checked]="selectedSiteIds.includes(site.siteId)"
+                  (change)="toggleSite(site.siteId)" />
+                <span>{{ site.siteName }}</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Footer -->
+      <div class="filter-footer">
+        <button type="button" class="reset-btn" (click)="resetFilterModal()">Reset</button>
+        <button type="button" class="apply-btn" (click)="applyFilter()">Apply Filter</button>
+      </div>
+
+    </div>
+  </div>
+
 </div>

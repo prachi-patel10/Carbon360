@@ -6,7 +6,7 @@ import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-generatormaster',
-  imports : [CommonModule, FormsModule, ReactiveFormsModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule],
   templateUrl: './generatormaster.html',
   styleUrls: ['./generatormaster.css']
 })
@@ -26,9 +26,19 @@ export class Generatormaster implements OnInit {
   totalRecords = 0;
   totalPages = 1;
 
+  sortColumnName: string = 'generatorName';
+  sortDir: 'asc' | 'desc' = 'asc';
+
+  filterModalOpen = false;
+
+  // Filter selections
+  selectedFuelIds: string[] = [];
+  selectedSiteIds: string[] = [];
+  filterSearchText: string = '';
+
   editingGeneratorId: string | null = null;
 
-  constructor(private fb: FormBuilder, private service: GeneratorService) {}
+  constructor(private fb: FormBuilder, private service: GeneratorService) { }
 
   ngOnInit() {
     this.generatorForm = this.fb.group({
@@ -147,7 +157,46 @@ export class Generatormaster implements OnInit {
   prevPage() { if (this.pageNumber > 1) { this.pageNumber--; this.loadGenerators(); } }
   nextPage() { if (this.pageNumber < this.totalPages) { this.pageNumber++; this.loadGenerators(); } }
   changePageSize() { this.pageNumber = 1; this.loadGenerators(); }
-  clearFilter() { this.searchText=''; this.isActiveFilter=null; this.pageNumber=1; this.loadGenerators(); }
+  clearFilter() { this.searchText = ''; this.isActiveFilter = null; this.pageNumber = 1; this.loadGenerators(); }
+
+  // Call this when a column header is clicked
+  sort(column: string) {
+    if (this.sortColumnName === column) {
+      // toggle direction
+      this.sortDir = this.sortDir === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.sortColumnName = column;
+      this.sortDir = 'asc';
+    }
+
+    // Sort the generator array
+    this.generators.sort((a, b) => {
+      let valA = a[column] || '';
+      let valB = b[column] || '';
+
+      // If numbers, convert
+      if (!isNaN(valA) && !isNaN(valB)) {
+        valA = Number(valA);
+        valB = Number(valB);
+      } else {
+        valA = valA.toString().toLowerCase();
+        valB = valB.toString().toLowerCase();
+      }
+
+      if (valA < valB) return this.sortDir === 'asc' ? -1 : 1;
+      if (valA > valB) return this.sortDir === 'asc' ? 1 : -1;
+      return 0;
+    });
+  }
+
+  // These are used in HTML
+  sortColumn() {
+    return this.sortColumnName;
+  }
+
+  sortDirection() {
+    return this.sortDir;
+  }
 
   // ================= Filter Modal (optional) =================
   openFilterModal() {
@@ -157,8 +206,8 @@ export class Generatormaster implements OnInit {
         <input id="swal-search" class="swal2-input" placeholder="Search" value="${this.searchText}">
         <select id="swal-status" class="swal2-select">
           <option value="">All</option>
-          <option value="true" ${this.isActiveFilter===true ? 'selected':''}>Active</option>
-          <option value="false" ${this.isActiveFilter===false ? 'selected':''}>Inactive</option>
+          <option value="true" ${this.isActiveFilter === true ? 'selected' : ''}>Active</option>
+          <option value="false" ${this.isActiveFilter === false ? 'selected' : ''}>Inactive</option>
         </select>
       `,
       focusConfirm: false,
@@ -170,5 +219,48 @@ export class Generatormaster implements OnInit {
         this.loadGenerators();
       }
     });
+  }
+
+
+  //filter
+  // ===== OPEN / CLOSE =====
+  openFilter() {
+    this.filterModalOpen = true;
+  }
+
+  closeFilter() {
+    this.filterModalOpen = false;
+  }
+
+  // ===== TOGGLE CHECKBOX =====
+  toggleFuel(id: string) {
+    if (this.selectedFuelIds.includes(id)) {
+      this.selectedFuelIds = this.selectedFuelIds.filter(x => x !== id);
+    } else {
+      this.selectedFuelIds.push(id);
+    }
+  }
+
+  toggleSite(id: string) {
+    if (this.selectedSiteIds.includes(id)) {
+      this.selectedSiteIds = this.selectedSiteIds.filter(x => x !== id);
+    } else {
+      this.selectedSiteIds.push(id);
+    }
+  }
+
+  // ===== APPLY FILTER =====
+  applyFilter() {
+    this.searchText = this.filterSearchText;
+    this.pageNumber = 1;
+    this.loadGenerators();
+    this.closeFilter();
+  }
+
+  // ===== RESET FILTER =====
+  resetFilterModal() {
+    this.filterSearchText = '';
+    this.selectedFuelIds = [];
+    this.selectedSiteIds = [];
   }
 }
