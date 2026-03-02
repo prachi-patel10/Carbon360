@@ -18,5 +18,8 @@ namespace ProjectApp.Repository.Interfaces.GenerationOperation
         Task<GeneratorOperationResponseDTO> GetByIdAsync(string encryptedId);
 
         Task<bool> DeleteAsync(string encryptedId);
+
+        Task<GeneratorOperationResponseDTO> UpdateAsync(string encryptedId, GeneratorOperationCreateDTO dto);
+
     }
 }

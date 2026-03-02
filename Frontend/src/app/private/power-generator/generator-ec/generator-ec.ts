@@ -102,47 +102,51 @@ submitOperation() {
   }
 
   const raw = this.operationForm.getRawValue();
-
   const payload = {
     generatorId: raw.GeneratorId,
-    operationDate: raw.OperationDate,
     startTime: raw.StartTime,
     endTime: raw.EndTime,
     loadFactor: raw.LoadFactor,
     fuelConsumedLiters: raw.FuelConsumedLiters
   };
 
-  this.service.create(payload).subscribe({
-    next: (res: any) => {
+  const operationId = raw.OperationId;
 
-      if (res.status) {
-
-        // STORE COMPLETE RESPONSE
-        this.calculatedResult = res.data;
-
-        // Update calculated UI fields
-        this.operationForm.patchValue({
-          RunHours: res.data.runHours,
-          PowerOutputKWH: res.data.powerOutputKWH
-        });
-
-        Swal.fire('Success', 'Operation saved successfully', 'success');
-        this.loadOperations();
-      }
-    },
-    error: () => {
-      Swal.fire('Error', 'Failed to save', 'error');
-    }
-  });
-}
-formatTime(time: string): string {
-  if (!time) return '';
-
-  const parts = time.split(':');
-  const h = parts[0].padStart(2, '0');
-  const m = parts[1].padStart(2, '0');
-
-  return `${h}:${m}:00`;
+  if (operationId) {
+    // ===== UPDATE =====
+    this.service.update(operationId, payload).subscribe({
+      next: (res: any) => {
+        if (res.status) {
+          this.calculatedResult = res.data;
+          this.operationForm.patchValue({
+            RunHours: res.data.runHours,
+            PowerOutputKWH: res.data.powerOutputKWH
+          });
+          Swal.fire('Success', 'Operation updated successfully', 'success');
+          this.loadOperations();
+          this.resetForm();
+        }
+      },
+      error: () => Swal.fire('Error', 'Failed to update operation', 'error')
+    });
+  } else {
+    // ===== CREATE =====
+    this.service.create(payload).subscribe({
+      next: (res: any) => {
+        if (res.status) {
+          this.calculatedResult = res.data;
+          this.operationForm.patchValue({
+            RunHours: res.data.runHours,
+            PowerOutputKWH: res.data.powerOutputKWH
+          });
+          Swal.fire('Success', 'Operation saved successfully', 'success');
+          this.loadOperations();
+          this.resetForm();
+        }
+      },
+      error: () => Swal.fire('Error', 'Failed to save operation', 'error')
+    });
+  }
 }
 
 edit(op: any) {
@@ -158,6 +162,20 @@ edit(op: any) {
   this.operationForm.get('RunHours')?.setValue(op.runHours);
   this.operationForm.get('PowerOutputKWH')?.setValue(op.powerOutputKWH);
 }
+
+
+formatTime(time: string): string {
+  if (!time) return '';
+
+  const parts = time.split(':');
+  const h = parts[0].padStart(2, '0');
+  const m = parts[1].padStart(2, '0');
+
+  return `${h}:${m}:00`;
+}
+
+
+
 
   deleteUI(op: any) {
     Swal.fire({

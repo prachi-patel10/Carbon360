@@ -82,6 +82,29 @@ namespace ProjectApp.API.Controllers.Account.GeneratorOperation
             return StatusCode((int)HttpStatusCode.Created, _apiResponse);
         }
 
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(string id, [FromBody] GeneratorOperationCreateDTO dto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            try
+            {
+                var result = await _service.UpdateAsync(id, dto);
+                _apiResponse.data = result;
+                _apiResponse.status = true;
+                _apiResponse.StatusCode = HttpStatusCode.OK;
+                return Ok(_apiResponse);
+            }
+            catch (Exception ex)
+            {
+                _apiResponse.status = false;
+                _apiResponse.StatusCode = HttpStatusCode.BadRequest;
+                _apiResponse.Message = ex.Message;
+                return BadRequest(_apiResponse);
+            }
+        }
+
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(string id)
         {
