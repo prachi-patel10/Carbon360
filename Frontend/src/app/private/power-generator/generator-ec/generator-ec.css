@@ -162,18 +162,7 @@
   transition: color 0.3s ease;
 }
 
-/* Add a small colored bar before each label */
-.form-group label::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 4px;
-  height: 18px;
-  background: linear-gradient(45deg, #4caf50, #1b5e20);
-  border-radius: 2px;
-}
+
 
 /* Label hover effect */
 .form-group label:hover {
@@ -195,9 +184,9 @@
 .form-group input:focus,
 .form-group select:focus {
   border-color: #4caf50;
-  box-shadow: 0 0 5px rgba(76, 175, 80, 0.3);
+  /* box-shadow: 0 0 5px rgba(76, 175, 80, 0.3); */
   outline: none;
-  background: #f0fff0;
+  /* background: #f0fff0; */
 }
 
 /* Placeholder color */
@@ -206,17 +195,7 @@
   font-style: italic;
 }
 
-/* Optional: make select arrow color match theme */
-.form-group select {
-  appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"><polygon points="0,0 16,0 8,8" fill="%231b5e20"/></svg>');
-  background-repeat: no-repeat;
-  background-position: right 10px center;
-  background-size: 12px;
-  padding-right: 30px;
-}
+
 
 /* Responsive tweaks */
 @media (max-width: 768px) {

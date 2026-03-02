@@ -19,7 +19,7 @@ namespace ProjectApp.API.Controllers.Masters.Fuel
         }
 
         [HttpPost("Create")]
-        public async Task<IActionResult> Create([FromBody] FuelResponseDTO dto)
+        public async Task<IActionResult> Create([FromBody] FuelCreateUpdateDTO dto)
         {
             var result = await _fuelService.CreateAsync(dto);
             return Ok(result);

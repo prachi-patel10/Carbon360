@@ -11,7 +11,7 @@ namespace ProjectApp.Repository.Interfaces.Masters.Fuel
     {
         Task<IEnumerable<FuelResponseDTO>> GetAllAsync();
         Task<FuelResponseDTO> GetByIdAsync(string encryptedId);
-        Task<FuelResponseDTO> CreateAsync(FuelResponseDTO dto);
+        Task<FuelResponseDTO> CreateAsync(FuelCreateUpdateDTO dto);
         Task<bool> UpdateAsync(FuelResponseDTO dto);
         Task<bool> DeleteAsync(string encryptedId);
 

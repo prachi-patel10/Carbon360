@@ -27,11 +27,15 @@ export class FueltypeService {
   }
 
   updateStatus(data: any): Observable<any> {
-    return this.http.patch(`${this.baseUrl}/UpdateStatus`, data);
-  }
+  return this.http.patch(
+    `${this.baseUrl}/UpdateStatus`,
+    data,
+    { responseType: 'text' }  
+  );
+}
 
   updateGenerator(data: any): Observable<any> {
-    return this.http.patch(`${this.baseUrl}/UpdateGenerator`, data);
+    return this.http.patch(`${this.baseUrl}/UpdateGenerator`, data, { responseType: 'text' } );
   }
 
   search(payload: any): Observable<any> {

@@ -19,7 +19,7 @@
         <label class="switch">
           <input type="checkbox"
                  [(ngModel)]="newFuel.isapplicable">
-          <span class="slider round"></span>
+          <span class="slider round green"></span>
         </label>
 
         <span class="toggle-text">
@@ -58,9 +58,9 @@
           <!-- ✅ Generator Toggle -->
           <td>
             <label class="switch">
-              <input type="checkbox"
-                     [checked]="fuel.isapplicable"
-                     (change)="confirmToggleGenerator(fuel)">
+             <input type="checkbox"
+         [checked]="fuel.isapplicable"
+         (change)="confirmApplicableChange($event, fuel)" />
               <span class="slider round green"></span>
             </label>
           </td>
@@ -68,9 +68,9 @@
           <!-- ✅ Status Toggle -->
           <td>
             <label class="switch">
-              <input type="checkbox"
-                     [checked]="fuel.isActive"
-                     (change)="confirmToggleStatus(fuel)">
+  <input type="checkbox"
+       [checked]="fuel.isActive"
+       (click)="confirmStatusChange($event, fuel)" />
               <span class="slider round blue"></span>
             </label>
           </td>
