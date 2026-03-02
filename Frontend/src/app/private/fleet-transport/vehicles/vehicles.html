@@ -204,15 +204,6 @@
 
         </div>
 
-        <!-- Active Toggle -->
-        <div class="active-toggle" style="margin-top:20px;">
-          <span>Active Only</span>
-          <label class="switch">
-            <input type="checkbox" [checked]="activeFilter()" (change)="activeFilter.set($event.target.checked)" />
-            <span class="slider"></span>
-          </label>
-        </div>
-
         <!-- Buttons -->
         <div class="modal-actions">
           <button class="apply-btn" (click)="search(); closeFilterModal()">Apply</button>

@@ -1,5 +1,5 @@
-import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Component, OnInit, signal, WritableSignal } from '@angular/core';
+import { FormBuilder, FormGroup, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import Swal from 'sweetalert2';
 import { GeneratorService } from './generator-service';
 import { CommonModule } from '@angular/common';
@@ -12,10 +12,13 @@ import { CommonModule } from '@angular/common';
 })
 export class Generatormaster implements OnInit {
   generatorForm!: FormGroup;
+
+  // Arrays for dropdowns and table
   generators: any[] = [];
-  fuels: any[] = [];
-  sites: any[] = [];
-  departments: any[] = [];
+  //fuels: any[] = [];
+  fuels: WritableSignal<{ fuelId: string; fuelName: string }[]> = signal([]);
+  sites: WritableSignal<{ siteId: string; siteName: string }[]> = signal([]);
+  departments: WritableSignal<{ departmentId: string; departmentName: string }[]> = signal([]);
 
   // Filter & pagination
   searchText = '';
@@ -29,9 +32,8 @@ export class Generatormaster implements OnInit {
   sortColumnName: string = 'generatorName';
   sortDir: 'asc' | 'desc' = 'asc';
 
+  // Filter modal
   filterModalOpen = false;
-
-  // Filter selections
   selectedFuelIds: string[] = [];
   selectedSiteIds: string[] = [];
   filterSearchText: string = '';
@@ -44,48 +46,82 @@ export class Generatormaster implements OnInit {
     this.generatorForm = this.fb.group({
       generatorName: ['', Validators.required],
       ratedCapacityKW: ['', Validators.required],
-      fuelId: ['', Validators.required],
+        fuelId: ['', Validators.required], 
       siteId: ['', Validators.required],
       departmentId: ['', Validators.required],
+      isActive: [true]
     });
 
-    this.loadLookups();
+    
+    this.loadDropdowns(); // now calls correct APIs
     this.loadGenerators();
   }
 
-  // ================= Load Lookup Data =================
+  // ================== Load dropdown data ==================
   loadLookups() {
-    this.service.getFuels().subscribe(res => this.fuels = res || []);
-    this.service.getSites().subscribe(res => this.sites = res || []);
-    this.service.getDepartments().subscribe(res => this.departments = res || []);
+   this.loadDropdowns();
   }
+ 
 
-  // ================= Load Generators =================
-  loadGenerators() {
-    const params = {
-      search: this.searchText || null,
-      isActive: this.isActiveFilter,
-      pageNumber: this.pageNumber,
-      pageSize: this.pageSize
-    };
+  loadDropdowns() {
+    // ----------------- Fuels -----------------
+    // this.service.getFuels().subscribe((res: { fuelId: string; fuelName: string }[]) => {
+    //   const mapped = (res || []).map((f: { fuelId: string; fuelName: string }) => ({
+    //     fuelId: f.fuelId,
+    //     fuelName: f.fuelName
+    //   }));
+    //   this.fuels.set(mapped);
+    // });
 
-    this.service.search(params).subscribe(res => {
-      const dataList = (res.Data as any[]) || [];
+      this.service.getFuels().subscribe((res: any) => {
+    // If API returns { data: [...] } adjust like this:
+    const data = res.data || res || [];
+    const mapped = data.map((f: any) => ({
+      fuelId: f.fuelId,
+      fuelName: f.fuel_name
+    }));
+    this.fuels.set(mapped);
+     console.log('Fuels:', this.fuels());
+  });
 
-      // Map IDs to names
-      this.generators = dataList.map(g => ({
-        ...g,
-        fuelName: this.fuels.find(f => f.fuelId === g.fuelId)?.fuelName || g.fuelId,
-        siteName: this.sites.find(s => s.siteId === g.siteId)?.siteName || g.siteId,
-        departmentName: this.departments.find(d => d.departmentId === g.departmentId)?.departmentName || g.departmentId
+    // ----------------- Sites -----------------
+    this.service.getSites().subscribe((res: { siteId: string; siteName: string }[]) => {
+      const mapped = (res || []).map((s: { siteId: string; siteName: string }) => ({
+        siteId: s.siteId,
+        siteName: s.siteName
       }));
+      this.sites.set(mapped);
+    });
 
-      this.totalRecords = res.TotalRecords || 0;
-      this.totalPages = res.TotalPages || 1;
+    // ----------------- Departments -----------------
+    this.service.getDepartments().subscribe((res: { departmentId: string; departmentName: string }[]) => {
+      const mapped = (res || []).map((d: { departmentId: string; departmentName: string }) => ({
+        departmentId: d.departmentId,
+        departmentName: d.departmentName
+      }));
+      this.departments.set(mapped);
     });
   }
 
-  // ================= Create / Update =================
+
+  // ================== Load generators ==================
+  loadGenerators() {
+    this.service.search({
+      search: this.searchText || '',
+      isActive: this.isActiveFilter,
+      sortColumn: this.sortColumnName,
+      sortDirection: this.sortDir.toUpperCase(),
+      pageNumber: this.pageNumber,
+      pageSize: this.pageSize
+    }).subscribe(res => {
+      console.log('Generators API response:', res);
+      this.generators = res.data || []; // correct, only data array
+      this.totalRecords = res.totalRecords || 0;
+      this.totalPages = res.totalPages || 1;
+    });
+  }
+
+  // ================== Submit ==================
   submit() {
     if (this.generatorForm.invalid) return;
 
@@ -107,18 +143,20 @@ export class Generatormaster implements OnInit {
     }
   }
 
+  // ================== Edit ==================
   edit(gen: any) {
     this.editingGeneratorId = gen.generatorId;
     this.generatorForm.patchValue({
-      generatorName: gen.generatorName,
-      ratedCapacityKW: gen.ratedCapacityKW,
-      fuelId: gen.fuelId,
-      siteId: gen.siteId,
-      departmentId: gen.departmentId
+      generatorName: gen.generatorName || '',
+      ratedCapacityKW: gen.ratedCapacityKW || '',
+      fuelId: gen.fuelId || '',
+      siteId: gen.siteId || '',
+      departmentId: gen.departmentId || '',
+      isActive: gen.isActive ?? true
     });
   }
 
-  // ================= Delete / Toggle Status =================
+  // ================== Delete / Toggle Status ==================
   delete(gen: any) {
     Swal.fire({
       title: 'Delete?',
@@ -153,114 +191,42 @@ export class Generatormaster implements OnInit {
     });
   }
 
-  // ================= Pagination / Filter =================
+  get noRecords() {
+    return (this.generators?.length ?? 0) === 0;
+  }
+
+  // ================== Pagination ==================
   prevPage() { if (this.pageNumber > 1) { this.pageNumber--; this.loadGenerators(); } }
   nextPage() { if (this.pageNumber < this.totalPages) { this.pageNumber++; this.loadGenerators(); } }
   changePageSize() { this.pageNumber = 1; this.loadGenerators(); }
   clearFilter() { this.searchText = ''; this.isActiveFilter = null; this.pageNumber = 1; this.loadGenerators(); }
 
-  // Call this when a column header is clicked
+  // ================== Sorting ==================
   sort(column: string) {
-    if (this.sortColumnName === column) {
-      // toggle direction
-      this.sortDir = this.sortDir === 'asc' ? 'desc' : 'asc';
-    } else {
-      this.sortColumnName = column;
-      this.sortDir = 'asc';
-    }
+    if (this.sortColumnName === column) this.sortDir = this.sortDir === 'asc' ? 'desc' : 'asc';
+    else { this.sortColumnName = column; this.sortDir = 'asc'; }
 
-    // Sort the generator array
     this.generators.sort((a, b) => {
-      let valA = a[column] || '';
-      let valB = b[column] || '';
+      let valA = a[column] ?? '';
+      let valB = b[column] ?? '';
 
-      // If numbers, convert
-      if (!isNaN(valA) && !isNaN(valB)) {
-        valA = Number(valA);
-        valB = Number(valB);
-      } else {
-        valA = valA.toString().toLowerCase();
-        valB = valB.toString().toLowerCase();
-      }
+      if (!isNaN(valA) && !isNaN(valB)) { valA = Number(valA); valB = Number(valB); }
+      else { valA = valA.toString().toLowerCase(); valB = valB.toString().toLowerCase(); }
 
-      if (valA < valB) return this.sortDir === 'asc' ? -1 : 1;
-      if (valA > valB) return this.sortDir === 'asc' ? 1 : -1;
-      return 0;
+      return valA < valB ? (this.sortDir === 'asc' ? -1 : 1) :
+        valA > valB ? (this.sortDir === 'asc' ? 1 : -1) : 0;
     });
   }
 
-  // These are used in HTML
-  sortColumn() {
-    return this.sortColumnName;
-  }
+  sortColumn() { return this.sortColumnName; }
+  sortDirection() { return this.sortDir; }
 
-  sortDirection() {
-    return this.sortDir;
-  }
+  // ================== Filter Modal ==================
+  openFilterModal() { this.filterModalOpen = true; }
+  closeFilter() { this.filterModalOpen = false; }
+  toggleFuel(id: string) { this.selectedFuelIds.includes(id) ? this.selectedFuelIds = this.selectedFuelIds.filter(x => x !== id) : this.selectedFuelIds.push(id); }
+  toggleSite(id: string) { this.selectedSiteIds.includes(id) ? this.selectedSiteIds = this.selectedSiteIds.filter(x => x !== id) : this.selectedSiteIds.push(id); }
 
-  // ================= Filter Modal (optional) =================
-  openFilterModal() {
-    Swal.fire({
-      title: 'Filters',
-      html: `
-        <input id="swal-search" class="swal2-input" placeholder="Search" value="${this.searchText}">
-        <select id="swal-status" class="swal2-select">
-          <option value="">All</option>
-          <option value="true" ${this.isActiveFilter === true ? 'selected' : ''}>Active</option>
-          <option value="false" ${this.isActiveFilter === false ? 'selected' : ''}>Inactive</option>
-        </select>
-      `,
-      focusConfirm: false,
-      preConfirm: () => {
-        const search = (document.getElementById('swal-search') as HTMLInputElement).value;
-        const statusValue = (document.getElementById('swal-status') as HTMLSelectElement).value;
-        this.searchText = search;
-        this.isActiveFilter = statusValue === '' ? null : statusValue === 'true';
-        this.loadGenerators();
-      }
-    });
-  }
-
-
-  //filter
-  // ===== OPEN / CLOSE =====
-  openFilter() {
-    this.filterModalOpen = true;
-  }
-
-  closeFilter() {
-    this.filterModalOpen = false;
-  }
-
-  // ===== TOGGLE CHECKBOX =====
-  toggleFuel(id: string) {
-    if (this.selectedFuelIds.includes(id)) {
-      this.selectedFuelIds = this.selectedFuelIds.filter(x => x !== id);
-    } else {
-      this.selectedFuelIds.push(id);
-    }
-  }
-
-  toggleSite(id: string) {
-    if (this.selectedSiteIds.includes(id)) {
-      this.selectedSiteIds = this.selectedSiteIds.filter(x => x !== id);
-    } else {
-      this.selectedSiteIds.push(id);
-    }
-  }
-
-  // ===== APPLY FILTER =====
-  applyFilter() {
-    this.searchText = this.filterSearchText;
-    this.pageNumber = 1;
-    this.loadGenerators();
-    this.closeFilter();
-  }
-
-  // ===== RESET FILTER =====
-  resetFilterModal() {
-    this.filterSearchText = '';
-    this.selectedFuelIds = [];
-    this.selectedSiteIds = [];
-  }
+  applyFilter() { this.searchText = this.filterSearchText; this.pageNumber = 1; this.loadGenerators(); this.closeFilter(); }
+  resetFilterModal() { this.filterSearchText = ''; this.selectedFuelIds = []; this.selectedSiteIds = []; }
 }

@@ -1,12 +1,15 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { map, Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
 })
 export class GeneratorService {
   private baseUrl = 'http://localhost:5236/api/generator';
+  private fuelUrl = 'http://localhost:5236/api/Fuel'; 
+  private siteUrl = 'http://localhost:5236/api/SiteLocation'; 
+  private deptUrl = 'http://localhost:5236/api/Department'; 
 
   constructor(private http: HttpClient) { }
 
@@ -22,8 +25,13 @@ export class GeneratorService {
     return this.http.delete(`${this.baseUrl}/${id}`);
   }
 
-  toggleStatus(generatorId: string, isActive: boolean): Observable<any> {
-    return this.http.patch(`${this.baseUrl}/${generatorId}/toggle-status?isActive=${isActive}`, {});
+  toggleStatus(generatorId: string, isActive: boolean) {
+    const body = new URLSearchParams();
+    body.set('GeneratorId', generatorId);
+    body.set('IsActive', String(isActive));
+    return this.http.patch(`${this.baseUrl}/toggle-status`, body.toString(), {
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+    });
   }
 
   search(paramsObj: any): Observable<any> {
@@ -35,16 +43,20 @@ export class GeneratorService {
     });
     return this.http.get(`${this.baseUrl}/search`, { params });
   }
-
-  getFuels(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.baseUrl}/fuel/all`);
+  // ================== Lookup APIs ==================
+   getFuels(): Observable<any> {
+    return this.http.get(`${this.fuelUrl}/All`);
   }
 
   getSites(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.baseUrl}/site/all`);
+    return this.http.get<any>(`${this.siteUrl}/All`).pipe(
+      map(res => res.data || res || [])
+    );
   }
 
   getDepartments(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.baseUrl}/department/all`);
+    return this.http.get<any>(`${this.deptUrl}/All`).pipe(
+      map(res => res.data || [])
+    );
   }
 }

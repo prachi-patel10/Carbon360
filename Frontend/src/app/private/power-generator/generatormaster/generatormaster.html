@@ -24,31 +24,45 @@
         </span>
       </div>
 
-      <!-- Fuel -->
-      <div class="form-group">
-        <label>Fuel</label>
-        <select formControlName="fuelId">
-          <option value="" disabled selected>Select Fuel</option>
-          <option *ngFor="let fuel of fuels" [value]="fuel.fuelId">{{ fuel.fuelName }}</option>
-        </select>
-      </div>
-
-      <!-- Site -->
+      <!-- ================= Site Dropdown ================= -->
       <div class="form-group">
         <label>Site</label>
         <select formControlName="siteId">
-          <option value="" disabled selected>Select Site</option>
-          <option *ngFor="let site of sites" [value]="site.siteId">{{ site.siteName }}</option>
+          <option value="" disabled>Select Site</option>
+          <option *ngFor="let s of sites()" [value]="s.siteId">{{ s.siteName }}</option>
         </select>
+        <span class="error-text" *ngIf="generatorForm.get('siteId')?.invalid && generatorForm.get('siteId')?.touched">
+          Site is required
+        </span>
       </div>
 
-      <!-- Department -->
+      <!-- ================= Department Dropdown ================= -->
       <div class="form-group">
         <label>Department</label>
         <select formControlName="departmentId">
-          <option value="" disabled selected>Select Department</option>
-          <option *ngFor="let dept of departments" [value]="dept.departmentId">{{ dept.departmentName }}</option>
+          <option value="" disabled>Select Department</option>
+          <option *ngFor="let d of departments()" [value]="d.departmentId">{{ d.departmentName }}</option>
         </select>
+        <span class="error-text"
+          *ngIf="generatorForm.get('departmentId')?.invalid && generatorForm.get('departmentId')?.touched">
+          Department is required
+        </span>
+      </div>
+
+       <div class="form-group">
+        <label>Fuel</label>
+        <!-- <select formControlName="fuelId">
+          <option value="" disabled>Select Fuel</option>
+          <option *ngFor="let f of fuels()" [value]="f.fuelId">{{ f.fuelName }}</option>
+        </select> -->
+        <select formControlName="fuelId">
+  <option value="" disabled>Select Fuel</option>
+  <option *ngFor="let f of fuels()" [value]="f.fuelId">{{ f.fuelName }}</option>
+</select>
+        <span class="error-text"
+          *ngIf="generatorForm.get('fuelId')?.invalid && generatorForm.get('fuelId')?.touched">
+          Fuel is required
+        </span>
       </div>
 
       <!-- Status + Save -->
@@ -95,54 +109,36 @@
         <thead>
           <tr>
             <th class="sortable" (click)="sort('generatorName')">
-              <div class="th-content">
-                Name
-                <span *ngIf="sortColumn() === 'generatorName'">{{ sortDirection() === 'asc' ? '▲' : '▼' }}</span>
-              </div>
+              <div class="th-content">Name</div>
             </th>
             <th class="sortable" (click)="sort('ratedCapacityKW')">
-              <div class="th-content">
-                Rated KW
-                <span *ngIf="sortColumn() === 'ratedCapacityKW'">{{ sortDirection() === 'asc' ? '▲' : '▼' }}</span>
-              </div>
+              <div class="th-content">Rated KW</div>
             </th>
             <th class="sortable" (click)="sort('fuelName')">
-              <div class="th-content">
-                Fuel
-                <span *ngIf="sortColumn() === 'fuelName'">{{ sortDirection() === 'asc' ? '▲' : '▼' }}</span>
-              </div>
+              <div class="th-content">Fuel</div>
             </th>
             <th class="sortable" (click)="sort('siteName')">
-              <div class="th-content">
-                Site
-                <span *ngIf="sortColumn() === 'siteName'">{{ sortDirection() === 'asc' ? '▲' : '▼' }}</span>
-              </div>
+              <div class="th-content">Site</div>
             </th>
             <th class="sortable" (click)="sort('departmentName')">
-              <div class="th-content">
-                Dept
-                <span *ngIf="sortColumn() === 'departmentName'">{{ sortDirection() === 'asc' ? '▲' : '▼' }}</span>
-              </div>
+              <div class="th-content">Dept</div>
             </th>
             <th class="sortable" (click)="sort('isActive')">
-              <div class="th-content">
-                Status
-                <span *ngIf="sortColumn() === 'isActive'">{{ sortDirection() === 'asc' ? '▲' : '▼' }}</span>
-              </div>
+              <div class="th-content">Status</div>
             </th>
             <th>Actions</th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let gen of generators">
-            <td>{{ gen.generatorName }}</td>
-            <td>{{ gen.ratedCapacityKW }}</td>
-            <td>{{ gen.fuelName }}</td>
-            <td>{{ gen.siteName }}</td>
-            <td>{{ gen.departmentName }}</td>
+          <tr *ngFor="let gen of generators || []">
+            <td>{{ gen?.generatorName }}</td>
+            <td>{{ gen?.ratedCapacityKW }}</td>
+            <td>{{ gen?.fuelName }}</td>
+            <td>{{ gen?.siteName }}</td>
+            <td>{{ gen?.departmentName }}</td>
             <td>
               <label class="switch">
-                <input type="checkbox" [checked]="gen.isActive" (change)="toggleStatus(gen)" />
+                <input type="checkbox" [checked]="gen?.isActive" (change)="toggleStatus(gen)" />
                 <span class="slider"></span>
               </label>
             </td>
@@ -152,7 +148,7 @@
             </td>
           </tr>
           <tr *ngIf="generators.length === 0">
-            <td colspan="7" class="no-data">No records found</td>
+            <td colspan="7">No records found</td>
           </tr>
         </tbody>
       </table>
@@ -194,10 +190,11 @@
         </div>
 
         <!-- Fuel Type Multi Select -->
+        <!-- Fuel Type Multi Select -->
         <div class="form-group">
           <label>Fuel Type</label>
           <div class="multi-select-box">
-            <div *ngFor="let fuel of fuels" class="checkbox-item">
+            <div *ngFor="let fuel of fuels()" class="checkbox-item">
               <label>
                 <input type="checkbox" [checked]="selectedFuelIds.includes(fuel.fuelId)"
                   (change)="toggleFuel(fuel.fuelId)" />
@@ -211,7 +208,7 @@
         <div class="form-group">
           <label>Site</label>
           <div class="multi-select-box">
-            <div *ngFor="let site of sites" class="checkbox-item">
+            <div *ngFor="let site of sites()" class="checkbox-item">
               <label>
                 <input type="checkbox" [checked]="selectedSiteIds.includes(site.siteId)"
                   (change)="toggleSite(site.siteId)" />
@@ -220,7 +217,6 @@
             </div>
           </div>
         </div>
-
       </div>
 
       <!-- Footer -->
