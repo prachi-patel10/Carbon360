@@ -25,13 +25,24 @@ export class SiteLocationMasterService {
     return this.http.delete(`${this.baseUrl}/${id}`);
   }
 
+  // // ================= TOGGLE STATUS =================
+  // toggleStatus(id: string, isActive: boolean): Observable<any> {
+  //   const formData = new FormData();
+  //   formData.append('siteId', id);
+  //   formData.append('isActive', isActive.toString());
+
+  //   return this.http.patch(`${this.baseUrl}/toggle-status`, formData);
+  // }
+
   // ================= TOGGLE STATUS =================
   toggleStatus(id: string, isActive: boolean): Observable<any> {
-    const formData = new FormData();
-    formData.append('siteId', id);
-    formData.append('isActive', isActive.toString());
-
-    return this.http.patch(`${this.baseUrl}/toggle-status`, formData);
+    return this.http.patch(
+      `${this.baseUrl}/${id}/toggle-status`,
+      null,
+      {
+        params: { isActive: isActive }
+      }
+    );
   }
 
   // ================= SEARCH =================
