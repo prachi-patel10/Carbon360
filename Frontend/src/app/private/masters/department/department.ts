@@ -111,6 +111,7 @@ export class DepartmentComponent implements OnInit {
       this.currentPage.set(this.currentPage() - 1);
     }
   }
+  
 
   nextPage() {
     if (this.currentPage() < this.totalPages()) {

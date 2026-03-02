@@ -248,3 +248,4 @@ th, td {
 .toggle-switch input:checked + .toggle-slider:before {
   transform: translateX(22px);
 }
+
