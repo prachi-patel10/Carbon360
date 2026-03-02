@@ -227,10 +227,10 @@ namespace ProjectApp.Repository.Services.Masters.Vehicle
                 vehicle_id = _idEncoder.Encode(GetInt("vehicle_id")),
                 vehicle_number = GetString("vehicle_number"),
 
-                //  Encrypt foreign keys
-                vehicle_type_id = _idEncoder.Encode(GetInt("vehicle_type_id")),
-                fuel_id = _idEncoder.Encode(GetInt("fuel_id")),
-                department_id = _idEncoder.Encode(GetInt("department_id")),
+                // Instead of returning encrypted IDs, return the actual names
+                vehicle_type_name = GetString("vehicle_type_name"),
+                fuel_name = GetString("fuel_name"),
+                department_name = GetString("DepartmentName"),
 
                 engine_capacity = GetNullableInt("engine_capacity"),
                 emission_standard = GetString("emission_standard"),

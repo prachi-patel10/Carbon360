@@ -21,16 +21,38 @@ export class VehicleService {
   }
 
   updateVehicleStatus(vehicleId: string, status: boolean) {
-    return this.http.patch(`${this.baseUrl}/update-status/${vehicleId}`, { isActive: status });
+    return this.http.patch(`${this.baseUrl}/status`, {
+      vehicle_id: vehicleId,
+      isActive: status ? 1 : 0  // send 1/0 instead of true/false
+    });
   }
 
-  searchVehicles(search: string, isActive: boolean | null, pageNumber: number, pageSize: number) {
-    let params: any = { pageNumber, pageSize };
-    if (search) params.search = search;
-    if (isActive !== null) params.isActive = isActive;
-    return this.http.get<any>(`${this.baseUrl}/search`, { params });
-  }
+  searchVehicles(
+    search: string,
+    isActive: boolean | null,   // <-- allow null
+    pageNumber: number,
+    pageSize: number,
+    sortColumn: string = 'vehicle_number',
+    sortDirection: string = 'asc',
+    vehicle_type_id?: string,
+    fuel_id?: string,
+    department_id?: string
+  ): Observable<any> {
+    const params: any = {
+      search: search,
+      pageNumber: pageNumber,
+      pageSize: pageSize,
+      sortColumn: sortColumn,
+      sortDirection: sortDirection.toUpperCase()
+    };
 
+    if (isActive !== null) params.isActive = isActive; // only send if true/false
+    if (vehicle_type_id) params.vehicle_type_id = vehicle_type_id;
+    if (fuel_id) params.fuel_id = fuel_id;
+    if (department_id) params.department_id = department_id;
+
+    return this.http.get(`${this.baseUrl}/search`, { params });
+  }
   getFuelList(): Observable<any> {
     return this.http.get(`${this.fuelUrl}/All`);
   }

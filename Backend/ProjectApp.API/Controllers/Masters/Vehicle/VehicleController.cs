@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Azure.Core;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using ProjectApp.Core.DTOs.Masters.Vehicle;
@@ -30,7 +31,12 @@ namespace ProjectApp.API.Controllers.Masters.Vehicle
         public async Task<IActionResult> Update([FromBody] VehicleUpdateDto dto)
         {
             await _service.UpdateAsync(dto);
-            return Ok("Updated Successfully");
+
+            return Ok(new
+            {
+                success = true,
+                message = "Vehicle updated successfully"
+            });
         }
 
         [HttpDelete("delete/{id}")]
@@ -70,21 +76,27 @@ namespace ProjectApp.API.Controllers.Masters.Vehicle
 
         [HttpGet("search")]
         public async Task<IActionResult> Search(
-    string? search,
-    bool? isActive,
-    string sortColumn = "vehicle_number",
-    string sortDirection = "ASC",
-    int pageNumber = 1,
-    int pageSize = 10)
+    [FromQuery] string? search,
+    [FromQuery] bool? isActive,
+    [FromQuery] int pageNumber = 1,
+    [FromQuery] int pageSize = 10,
+    [FromQuery] string sortColumn = "vehicle_number",
+    [FromQuery] string sortDirection = "ASC",
+    [FromQuery] int? vehicle_type_id = null,
+    [FromQuery] int? fuel_id = null,
+    [FromQuery] int? department_id = null)
         {
             var request = new VehicleSearchRequest
             {
                 Search = search,
                 IsActive = isActive,
+                PageNumber = pageNumber,
+                PageSize = pageSize,
                 SortColumn = sortColumn,
                 SortDirection = sortDirection,
-                PageNumber = pageNumber,
-                PageSize = pageSize
+                vehicle_type_id = vehicle_type_id,
+                fuel_id = fuel_id,
+                department_id = department_id
             };
 
             var result = await _service.SearchAsync(request);
