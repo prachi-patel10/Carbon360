@@ -29,6 +29,16 @@ export class Sitelocationmaster implements OnInit {
   sortColumnName = 'siteName';
   sortDir: 'asc' | 'desc' = 'asc';
 
+  // Filter modal
+  filterModalOpen = false;
+  filterSiteName = '';
+  filterCityName = '';
+
+  filterDropdownOpen = false;
+
+  selectedSiteNames: string[] = [];
+  selectedCityNames: string[] = [];
+
   constructor(private fb: FormBuilder, private service: SiteLocationMasterService) { }
 
   ngOnInit(): void {
@@ -166,7 +176,11 @@ export class Sitelocationmaster implements OnInit {
       pageSize: this.pageSize,
       sortColumn: this.sortColumnName,
       sortDirection: this.sortDir.toUpperCase(),
+
+      siteNames: this.selectedSiteNames,
+      cityNames: this.selectedCityNames
     };
+
     this.service.search(params).subscribe((res: any) => {
       this.siteList = res.data || [];
       this.totalRecords = res.totalRecords || 0;
@@ -185,5 +199,57 @@ export class Sitelocationmaster implements OnInit {
     this.pageSize = +event.target.value;
     this.pageNumber = 1;
     this.search();
+  }
+
+  openFilterModal() {
+    this.filterModalOpen = true;
+  }
+
+  closeFilter() {
+    this.filterModalOpen = false;
+  }
+
+  applyFilter() {
+    this.pageNumber = 1;
+    this.search();
+    this.closeFilter();
+  }
+
+  resetFilterModal() {
+    this.filterSiteName = '';
+    this.filterCityName = '';
+  }
+
+  toggleFilterDropdown() {
+    this.filterDropdownOpen = !this.filterDropdownOpen;
+  }
+
+  toggleSiteName(name: string) {
+    if (this.selectedSiteNames.includes(name)) {
+      this.selectedSiteNames =
+        this.selectedSiteNames.filter(x => x !== name);
+    } else {
+      this.selectedSiteNames.push(name);
+    }
+  }
+
+  toggleCityName(city: string) {
+    if (this.selectedCityNames.includes(city)) {
+      this.selectedCityNames =
+        this.selectedCityNames.filter(x => x !== city);
+    } else {
+      this.selectedCityNames.push(city);
+    }
+  }
+
+  applyDropdownFilter() {
+    this.pageNumber = 1;
+    this.search();
+    this.filterDropdownOpen = false;
+  }
+
+  resetFilterDropdown() {
+    this.selectedSiteNames = [];
+    this.selectedCityNames = [];
   }
 }

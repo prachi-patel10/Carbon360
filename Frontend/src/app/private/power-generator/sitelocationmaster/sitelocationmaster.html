@@ -34,7 +34,7 @@
 
       <div class="form-actions">
         <div class="status-toggle">
-          <span>Status</span>
+          <span>Active</span>
           <label class="switch">
             <input type="checkbox" formControlName="isActive" />
             <span class="slider"></span>
@@ -43,7 +43,7 @@
         <button type="submit" class="save-btn">
           {{ editingSiteId ? 'Update' : 'Save' }}
         </button>
-        <button type="button" class="cancel-btn" (click)="form.reset({ isActive: true }); editingSiteId=null;">Clear</button>
+        <!-- <button type="button" class="cancel-btn" (click)="form.reset({ isActive: true }); editingSiteId=null;">Clear</button> -->
       </div>
     </form>
   </div>
@@ -60,7 +60,7 @@
             <span class="slider"></span>
           </label>
         </div>
-        <button class="filter-btn" (click)="clearFilters()">Reset Filters</button>
+        <button type="button" class="filter-btn" (click)="openFilterModal()">Filter</button>
       </div>
     </div>
 
@@ -89,7 +89,6 @@
                 <input type="checkbox" [checked]="site.isActive" (change)="toggleStatus(site)" />
                 <span class="slider"></span>
               </label>
-              <span>{{ site.isActive ? 'Active' : 'Inactive' }}</span>
             </td>
             <td class="actions">
               <button class="edit-btn" (click)="edit(site)">Edit</button>
@@ -118,4 +117,50 @@
     </div>
   </div>
 
+ <!-- ================= FILTER MODAL ================= -->
+<div class="modal-overlay" *ngIf="filterModalOpen">
+  <div class="modal-box">
+
+    <div class="modal-header">
+      <h3>Filter</h3>
+      <button type="button" class="close-btn" (click)="closeFilter()">✕</button>
+    </div>
+
+    <div class="modal-body">
+
+      <!-- Site Name Multi Select -->
+      <div class="filter-section">
+        <label>Site Name</label>
+        <div class="checkbox-list">
+          <label *ngFor="let site of siteList">
+            <input type="checkbox"
+                   [checked]="selectedSiteNames.includes(site.siteName)"
+                   (change)="toggleSiteName(site.siteName)" />
+            {{ site.siteName }}
+          </label>
+        </div>
+      </div>
+
+      <!-- City Multi Select -->
+      <div class="filter-section">
+        <label>City</label>
+        <div class="checkbox-list">
+          <label *ngFor="let site of siteList">
+            <input type="checkbox"
+                   [checked]="selectedCityNames.includes(site.city)"
+                   (change)="toggleCityName(site.city)" />
+            {{ site.city }}
+          </label>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="modal-footer">
+      <button type="button" class="reset-btn" (click)="resetFilterDropdown()">Reset</button>
+      <button type="button" class="apply-btn" (click)="applyDropdownFilter()">Apply</button>
+    </div>
+
+  </div>
+</div>
 </div>
