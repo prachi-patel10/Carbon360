@@ -13,7 +13,7 @@ namespace ProjectApp.Repository.Interfaces.VehicleTripEmission
         Task<List<ResponseVehicleTripEmissionDTO>> GetAllAsync();
         Task<ResponseVehicleTripEmissionDTO> GetByHashIdAsync(string hashId);
         Task<bool> DeleteAsync(string hashId);
-        //Task<VehicleTripEmissionDTO> UpdateAsync(VehicleTripEmissionDTO dto);
+        Task<ResponseVehicleTripEmissionDTO> UpdateAsync(UpdateVehicleTripEmissionDTO dto);
 
     }
 }
