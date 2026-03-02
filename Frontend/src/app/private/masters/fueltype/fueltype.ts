@@ -95,25 +95,78 @@ export class Fueltype implements OnInit {
     });
   }
 
-  confirmToggleGenerator(fuel: any) {
-    this.fuelService.updateGenerator({
-      fuel_id: fuel.fuel_id,
-      isApplicable: !fuel.isapplicable
-    }).subscribe(() => {
-      fuel.isapplicable = !fuel.isapplicable;
-      this.toastr.success('Generator Updated');
-    });
-  }
+ confirmApplicableChange(event: any, fuel: any) {
 
-  confirmToggleStatus(fuel: any) {
-    this.fuelService.updateStatus({
-      fuel_id: fuel.fuel_id,
-      isActive: !fuel.isActive
-    }).subscribe(() => {
-      fuel.isActive = !fuel.isActive;
-      this.toastr.success('Status Updated');
-    });
-  }
+  event.preventDefault();
+
+  const newValue = !fuel.isapplicable;
+
+  Swal.fire({
+    title: 'Are you sure?',
+    text: `You want to ${newValue ? 'Enable' : 'Disable'} generator applicability?`,
+    icon: 'question',
+    showCancelButton: true,
+  }).then((result) => {
+
+    if (result.isConfirmed) {
+
+      const payload = {
+        fuel_id: fuel.fuel_id,
+        isapplicable: newValue
+      };
+
+      this.fuelService.updateGenerator(payload).subscribe({
+        next: () => {
+          fuel.isapplicable = newValue;
+          Swal.fire('Updated!', 'Generator updated.', 'success');
+        },
+        error: () => {
+          Swal.fire('Error!', 'Update failed.', 'error');
+        }
+      });
+
+    }
+  });
+}
+
+ confirmStatusChange(event: any, fuel: any) {
+
+  event.preventDefault();   // 🔥 STOP automatic toggle
+
+  const newStatus = !fuel.IsActive;
+
+  Swal.fire({
+    title: 'Are you sure?',
+    text: `You want to ${newStatus ? 'Activate' : 'Deactivate'} this fuel?`,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Yes, change it!'
+  }).then((result) => {
+
+    if (result.isConfirmed) {
+
+      const payload = {
+        fuel_id: fuel.fuel_id,
+        IsActive: newStatus
+      };
+
+      this.fuelService.updateStatus(payload).subscribe({
+        next: (res: any) => {
+
+          fuel.IsActive = newStatus;   // update manually
+
+          Swal.fire('Updated!', 'Status changed successfully.', 'success');
+        },
+        error: (err) => {
+          console.error(err);
+
+          Swal.fire('Error!', 'Update failed.', 'error');
+        }
+      });
+
+    }
+  });
+}
 
   resetForm() {
     this.editingFuelId = null;

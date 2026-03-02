@@ -61,7 +61,7 @@ export class DashboardComponent {
          else if (url.includes('vehicle')) this.pageTitle = 'Report Fleet & Transport';
          else if (url.includes('emissionFactors')) this.pageTitle = ' Emisssion factors ';
          else if (url.includes('generator-ec')) this.pageTitle = ' Report Power Generation ';
-         else if (url.includes('gcitymaster')) this.pageTitle = ' Citis ';
+         else if (url.includes('citymaster')) this.pageTitle = ' Citis ';
          else if (url.includes('sitelocation')) this.pageTitle = ' Site location ';
          else if (url.includes('generator')) this.pageTitle = ' Generator Master ';
 

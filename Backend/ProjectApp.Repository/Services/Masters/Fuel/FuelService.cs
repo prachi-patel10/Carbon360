@@ -43,15 +43,15 @@ namespace ProjectApp.Repository.Services.Masters.Fuel
 
             return _userContext.UserId;
         }
-        public async Task<FuelResponseDTO> CreateAsync(FuelResponseDTO dto)
+        public async Task<FuelResponseDTO> CreateAsync(FuelCreateUpdateDTO dto)
         {
             var parameters = new[]
             {
-                new SqlParameter("@FuelName", dto.fuel_name),
-                new SqlParameter("@FuelDesc", (object?)dto.fuel_Desc ?? DBNull.Value),
-                new SqlParameter("@IsApplicable", dto.isapplicable),
-                new SqlParameter("@EntryBy", GetCurrentUserId())
-            };
+        new SqlParameter("@FuelName", dto.fuel_name),
+        new SqlParameter("@FuelDesc", (object?)dto.fuel_Desc ?? DBNull.Value),
+        new SqlParameter("@IsApplicable", dto.isapplicable),
+        new SqlParameter("@EntryBy", GetCurrentUserId())
+    };
 
             var insertedId = _context.Database
                 .SqlQueryRaw<int>(
@@ -60,8 +60,14 @@ namespace ProjectApp.Repository.Services.Masters.Fuel
                 .AsEnumerable()
                 .FirstOrDefault();
 
-            dto.fuel_id = _idEncoder.Encode(insertedId);
-            return dto;
+            return new FuelResponseDTO
+            {
+                fuel_id = _idEncoder.Encode(insertedId),
+                fuel_name = dto.fuel_name,
+                fuel_Desc = dto.fuel_Desc,
+                isapplicable = dto.isapplicable,
+                IsActive = true
+            };
         }
 
 
@@ -177,11 +183,6 @@ namespace ProjectApp.Repository.Services.Masters.Fuel
 
             return true; throw new NotImplementedException();
         }
-
-        //public async Task<FuelTypeSearchDTO> SearchAsync(FuelTypeSearchDTO dto)
-        //{
-           
-        //}
 
         public async Task<PagedFuelResponseDTO> SearchAsync(FuelTypeSearchDTO dto)
         {

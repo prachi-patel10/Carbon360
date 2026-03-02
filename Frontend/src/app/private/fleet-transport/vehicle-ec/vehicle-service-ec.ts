@@ -32,4 +32,18 @@ export class TripService {
     return this.http.post(`${this.apiUrl}/VehicleTripEmission`, data);
   }
 
+// updateTrip(hashId: string, data: any): Observable<any> {
+//   return this.http.put(
+//     `${this.apiUrl}/VehicleTripEmission/${hashId}`,
+//     data
+//   );
+// }
+
+  // deleteTrip(hashId: string): Observable<any> {
+  //   return this.http.delete(
+  //     `${this.apiUrl}/VehicleTripEmission/${hashId}`
+  //   );
+  // }
+
+
 }

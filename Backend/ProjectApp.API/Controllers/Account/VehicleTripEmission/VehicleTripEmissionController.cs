@@ -57,5 +57,26 @@ namespace ProjectApp.API.Controllers.Account.VehicleTripEmission
 
             return Ok(new { message = "Deleted Successfully" });
         }
+
+        [HttpPut("{hashId}")]
+        public async Task<IActionResult> Update(string hashId, [FromBody] UpdateVehicleTripEmissionDTO dto)
+        {
+            if (dto == null)
+                return BadRequest("Invalid request.");
+
+            dto.TripId = hashId;
+
+            var result = await _service.UpdateAsync(dto);
+
+            if (result == null)
+                return NotFound("Trip not found.");
+
+            return Ok(new
+            {
+                success = true,
+                message = "Vehicle trip updated successfully.",
+                data = result
+            });
+        }
     }
 }
