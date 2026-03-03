@@ -51,7 +51,8 @@
   <!-- ================= SEARCH + TABLE ================= -->
   <div class="card">
     <div class="search-row">
-      <input type="text" class="search-input" placeholder="Search by any column..." [(ngModel)]="searchText" (input)="applySearch()" />
+      <input type="text" class="search-input" placeholder="Search by any column..." [(ngModel)]="searchText"
+        (input)="applySearch()" />
       <div class="search-right">
         <div class="status-toggle">
           <span>Active Only</span>
@@ -67,15 +68,15 @@
     <div class="table-wrapper">
       <table>
         <thead>
-          <tr>
-            <th (click)="sort('siteName')">Site Name <span>{{ getSortArrow('siteName') }}</span></th>
-            <th (click)="sort('buildingName')">Building <span>{{ getSortArrow('buildingName') }}</span></th>
-            <th (click)="sort('city')">City <span>{{ getSortArrow('city') }}</span></th>
-            <th (click)="sort('state')">State <span>{{ getSortArrow('state') }}</span></th>
-            <th (click)="sort('departmentName')">Department <span>{{ getSortArrow('departmentName') }}</span></th>
-            <th (click)="sort('status')">Status <span>{{ getSortArrow('status') }}</span></th>
-            <th>Actions</th>
-          </tr>
+         <tr>
+          <th (click)="sort('siteName')">Site Name</th>
+          <th (click)="sort('buildingName')">Building Name</th>
+          <th (click)="sort('city')">City</th>
+          <th (click)="sort('state')">State</th>
+          <th (click)="sort('departmentId')">Department</th>
+          <th (click)="sort('isActive')">Status</th>
+          <th>Actions</th>
+        </tr>
         </thead>
         <tbody>
           <tr *ngFor="let site of siteList">
@@ -117,50 +118,58 @@
     </div>
   </div>
 
- <!-- ================= FILTER MODAL ================= -->
-<div class="modal-overlay" *ngIf="filterModalOpen">
-  <div class="modal-box">
+  <!-- ================= FILTER MODAL ================= -->
+  <div class="filter-overlay" *ngIf="filterModalOpen()">
+    <div class="filter-modal">
 
-    <div class="modal-header">
-      <h3>Filter</h3>
-      <button type="button" class="close-btn" (click)="closeFilter()">✕</button>
-    </div>
-
-    <div class="modal-body">
-
-      <!-- Site Name Multi Select -->
-      <div class="filter-section">
-        <label>Site Name</label>
-        <div class="checkbox-list">
-          <label *ngFor="let site of siteList">
-            <input type="checkbox"
-                   [checked]="selectedSiteNames.includes(site.siteName)"
-                   (change)="toggleSiteName(site.siteName)" />
-            {{ site.siteName }}
-          </label>
-        </div>
+      <!-- Header -->
+      <div class="filter-header">
+        <h3>Filter Site Locations</h3>
+        <button type="button" class="close-btn" (click)="closeFilter()">✖</button>
       </div>
 
-      <!-- City Multi Select -->
-      <div class="filter-section">
-        <label>City</label>
-        <div class="checkbox-list">
-          <label *ngFor="let site of siteList">
-            <input type="checkbox"
-                   [checked]="selectedCityNames.includes(site.city)"
-                   (change)="toggleCityName(site.city)" />
-            {{ site.city }}
-          </label>
+      <!-- Body -->
+      <div class="filter-body">
+
+        <div class="form-row">
+
+          <!-- Site Name Multi Select -->
+          <div class="form-group half-width">
+            <label>Site Name</label>
+            <div class="multi-select-box">
+              <div *ngFor="let site of siteList" class="checkbox-item">
+                <label>
+                  <input type="checkbox" [checked]="selectedSiteNames.includes(site.siteName)"
+                    (change)="toggleSiteName(site.siteName)" />
+                  <span>{{ site.siteName }}</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- City Name Multi Select -->
+          <div class="form-group half-width">
+            <label>City Name</label>
+            <div class="multi-select-box">
+              <div *ngFor="let site of siteList" class="checkbox-item">
+                <label>
+                  <input type="checkbox" [checked]="selectedCityNames.includes(site.city)"
+                    (change)="toggleCityName(site.city)" />
+                  <span>{{ site.city }}</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
         </div>
+
+        <!-- Footer -->
+        <div class="filter-footer">
+          <button type="button" class="reset-btn" (click)="resetFilterModal()">Reset</button>
+          <button type="button" class="apply-btn" (click)="applyFilter()">Apply Filter</button>
+        </div>
+
       </div>
-
     </div>
-
-    <div class="modal-footer">
-      <button type="button" class="reset-btn" (click)="resetFilterDropdown()">Reset</button>
-      <button type="button" class="apply-btn" (click)="applyDropdownFilter()">Apply</button>
-    </div>
-
   </div>
-</div>
 </div>

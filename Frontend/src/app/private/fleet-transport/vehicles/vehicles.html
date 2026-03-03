@@ -95,7 +95,7 @@
           </label>
         </div>
 
-        <button class="filter-btn" (click)="showFilterModal()">Filter</button>
+        <button class="filter-btn" (click)="openVehicleFilter()">Filter</button>
       </div>
 
     </div>
@@ -151,66 +151,57 @@
     </div>
   </div>
 
-  <!-- ================= FILTER POPUP MODAL ================= -->
-  <div class="modal-overlay" *ngIf="showFilter()">
-
-    <div class="modal-container">
+  <!-- ================= FILTER MODAL ================= -->
+  <div class="filter-overlay" *ngIf="vehicleFilterModalOpen()">
+    <div class="filter-modal">
 
       <!-- Header -->
-      <div class="modal-header">
+      <div class="filter-header">
         <h3>Filter Vehicles</h3>
-        <button class="close-btn" (click)="closeFilterModal()">✖</button>
+        <button type="button" class="close-btn" (click)="closeVehicleFilter()">✖</button>
       </div>
 
       <!-- Body -->
-      <div class="modal-body">
-
-        <div class="filter-grid">
-
-          <!-- Vehicle Type -->
-          <div class="filter-group">
-            <label class="input-label">Vehicle Type</label>
-
-            <div class="multi-select-box">
-              <div class="select-items-container">
-                <div class="select-item" *ngFor="let vt of vehicleTypes()"
-                  (click)="toggleVehicleType(vt.vehicle_type_id.toString())">
-
-                  <input type="checkbox" [checked]="isVehicleTypeSelected(vt.vehicle_type_id.toString())" />
-
-                  <span class="custom-check"></span>
-                  <span class="label-text">{{ vt.vehicle_type_name }}</span>
-                </div>
-              </div>
-            </div>
-          </div>
+      <div class="filter-body">
+        <div class="form-grid">
 
           <!-- Fuel Type -->
-          <div class="filter-group">
-            <label class="input-label">Fuel Type</label>
+          <div class="form-group">
+            <label>Fuel Type</label>
+            <div class="multi-select-container">
+              <div *ngFor="let fuel of fuelTypes()" class="checkbox-item">
+                <label>
+                  <input type="checkbox" [checked]="selectedFuelIds.includes(fuel.fuel_id)"
+                    (change)="toggleVehicleFuel(fuel.fuel_id)" />
+                  <span>{{ fuel.fuel_name }}</span>
+                </label>
+              </div>
+            </div>
+          </div>
 
-            <div class="multi-select-box">
-              <div class="select-items-container">
-                <div class="select-item" *ngFor="let f of fuelTypes()" (click)="toggleFuelType(f.fuel_id.toString())">
-
-                  <input type="checkbox" [checked]="isFuelTypeSelected(f.fuel_id.toString())" />
-
-                  <span class="custom-check"></span>
-                  <span class="label-text">{{ f.fuel_name }}</span>
-                </div>
+          <!-- Vehicle Type -->
+          <div class="form-group">
+            <label>Vehicle Type</label>
+            <div class="multi-select-container">
+              <div *ngFor="let vt of vehicleTypes()" class="checkbox-item">
+                <label>
+                  <input type="checkbox" [checked]="selectedVehicleTypeIds.includes(vt.vehicle_type_id)"
+                    (change)="toggleVehicleType(vt.vehicle_type_id)" />
+                  <span>{{ vt.vehicle_type_name }}</span>
+                </label>
               </div>
             </div>
           </div>
 
         </div>
 
-        <!-- Buttons -->
-        <div class="modal-actions">
-          <button class="apply-btn" (click)="search(); closeFilterModal()">Apply</button>
-          <button class="reset-btn" (click)="resetFilter()">Reset</button>
+        <!-- Footer -->
+        <div class="filter-footer">
+          <button type="button" class="reset-btn" (click)="resetVehicleFilter()">Reset</button>
+          <button type="button" class="apply-btn" (click)="applyVehicleFilter()">Apply Filter</button>
         </div>
-
       </div>
+
     </div>
   </div>
 

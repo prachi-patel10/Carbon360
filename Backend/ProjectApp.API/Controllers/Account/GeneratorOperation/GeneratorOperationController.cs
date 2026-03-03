@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using ProjectApp.Core.DTOs.Account.GeneratorOperation;
+using ProjectApp.Core.DTOs.Masters.Generator;
 using ProjectApp.Core.Entities;
 using ProjectApp.Repository.Interfaces.GenerationOperation;
 using System.Net;

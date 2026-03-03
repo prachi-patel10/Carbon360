@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { SiteLocationMasterService } from './site-location-master-service';
 import Swal from 'sweetalert2';
@@ -29,15 +29,18 @@ export class Sitelocationmaster implements OnInit {
   sortColumnName = 'siteName';
   sortDir: 'asc' | 'desc' = 'asc';
 
+  filterModalOpen = signal(false);
+
+selectedSiteNames: string[] = [];
+selectedCityNames: string[] = [];
+
+
   // Filter modal
-  filterModalOpen = false;
   filterSiteName = '';
   filterCityName = '';
 
   filterDropdownOpen = false;
 
-  selectedSiteNames: string[] = [];
-  selectedCityNames: string[] = [];
 
   constructor(private fb: FormBuilder, private service: SiteLocationMasterService) { }
 
@@ -202,23 +205,23 @@ export class Sitelocationmaster implements OnInit {
   }
 
   openFilterModal() {
-    this.filterModalOpen = true;
-  }
+  this.filterModalOpen.set(true);
+}
 
-  closeFilter() {
-    this.filterModalOpen = false;
-  }
+closeFilter() {
+  this.filterModalOpen.set(false);
+}
 
-  applyFilter() {
-    this.pageNumber = 1;
-    this.search();
-    this.closeFilter();
-  }
+applyFilter() {
+  this.pageNumber = 1;
+  this.search();
+  this.filterModalOpen.set(false);
+}
 
   resetFilterModal() {
-    this.filterSiteName = '';
-    this.filterCityName = '';
-  }
+  this.selectedSiteNames = [];
+  this.selectedCityNames = [];
+}
 
   toggleFilterDropdown() {
     this.filterDropdownOpen = !this.filterDropdownOpen;
@@ -234,13 +237,10 @@ export class Sitelocationmaster implements OnInit {
   }
 
   toggleCityName(city: string) {
-    if (this.selectedCityNames.includes(city)) {
-      this.selectedCityNames =
-        this.selectedCityNames.filter(x => x !== city);
-    } else {
-      this.selectedCityNames.push(city);
-    }
-  }
+  this.selectedCityNames.includes(city)
+    ? this.selectedCityNames = this.selectedCityNames.filter(x => x !== city)
+    : this.selectedCityNames.push(city);
+}
 
   applyDropdownFilter() {
     this.pageNumber = 1;
@@ -252,4 +252,9 @@ export class Sitelocationmaster implements OnInit {
     this.selectedSiteNames = [];
     this.selectedCityNames = [];
   }
+
+  openFilter() {
+  this.filterModalOpen.set(true);
+}
+
 }

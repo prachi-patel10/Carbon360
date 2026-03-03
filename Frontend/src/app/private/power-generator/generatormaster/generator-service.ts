@@ -17,8 +17,8 @@ export class GeneratorService {
     return this.http.post(this.baseUrl, data);
   }
 
-  update(id: string, data: any): Observable<any> {
-    return this.http.put(`${this.baseUrl}/${id}`, data);
+  update(data: any): Observable<any> {
+    return this.http.put(this.baseUrl, data);
   }
 
   delete(id: string): Observable<any> {

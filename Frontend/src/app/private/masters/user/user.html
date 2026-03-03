@@ -119,70 +119,21 @@
       <table>
         <thead>
           <tr>
-
-            <th (click)="sort('fName')" class="sortable">
-              <div class="th-content">
-                First Name
-                <span *ngIf="sortColumn === 'fName'">
-                  {{ sortDirection === 'ASC' ? '▲' : '▼' }}
-                </span>
-              </div>
-            </th>
-
-            <th (click)="sort('lName')" class="sortable">
-              <div class="th-content">
-                Last Name
-                <span *ngIf="sortColumn ==='lName'">
-                  {{ sortDirection === 'ASC' ? '▲' : '▼' }}
-                </span>
-              </div>
-            </th>
-
-            <th (click)="sort('email')" class="sortable">
-              <div class="th-content">
-                Email
-                <span *ngIf="sortColumn === 'email'">
-                  {{ sortDirection === 'ASC' ? '▲' : '▼' }}
-                </span>
-              </div>
-            </th>
-
-            <th (click)="sort('departmentName')" class="sortable">
-              <div class="th-content">
-                Department
-                <span *ngIf="sortColumn === 'departmentName'">
-                  {{ sortDirection === 'ASC' ? '▲' : '▼' }}
-                </span>
-              </div>
-            </th>
-
-            <th (click)="sort('RoleNames')" class="sortable">
-              <div class="th-content">
-                Roles
-                <span *ngIf="sortColumn === 'RoleNames'">
-                  {{ sortDirection === 'ASC' ? '▲' : '▼' }}
-                </span>
-              </div>
-            </th>
-
-            <th (click)="sort('isActive')" class="sortable">
-              <div class="th-content">
-                Status
-                <span *ngIf="sortColumn === 'isActive'">
-                  {{ sortDirection === 'ASC' ? '▲' : '▼' }}
-                </span>
-              </div>
-            </th>
-
+            <th (click)="sort('Fname')" class="sortable">First Name</th>
+            <th (click)="sort('Lname')" class="sortable">Last Name</th>
+            <th (click)="sort('UserName')" class="sortable">User Name</th>
+            <th (click)="sort('Email')" class="sortable">Email</th>
+            <th (click)="sort('DepartmentName')" class="sortable">Department</th>
+            <th (click)="sort('RoleNames')" class="sortable">Roles</th>
+            <th (click)="sort('IsActive')" class="sortable">Status</th>
             <th>Actions</th>
-
           </tr>
         </thead>
-
         <tbody>
           <tr *ngFor="let u of users()">
             <td>{{ u.fName }}</td>
             <td>{{ u.lName }}</td>
+            <td>{{ u.userName }}</td>
             <td>{{ u.email }}</td>
             <td>{{ u.departmentName || 'N/A' }}</td>
             <td>{{ u.RoleNames }}</td>

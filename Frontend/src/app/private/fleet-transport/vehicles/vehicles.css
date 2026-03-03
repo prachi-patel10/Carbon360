@@ -256,223 +256,78 @@ td.actions button {
   display: flex;
 }
 
-/* ================= MODAL CARD (small design) ================= */
-/* ================= FILTER CARD SPECIFIC ================= */
-.filter-card {
-  width: 450px !important;
-  /* Slightly wider for better layout */
-  max-height: 85vh;
-  padding: 0 !important;
-  /* Reset padding to use header/body/footer */
-  display: flex;
-  flex-direction: column;
-  border: none;
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
-}
-
-/* Header */
-.modal-header {
-  padding: 16px 20px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px solid #f0f0f0;
-}
-
-.title-wrapper {
+/* ================= FILTER MODAL ================= */
+.filter-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
   display: flex;
   align-items: center;
-  gap: 10px;
+  justify-content: center;
+  z-index: 1000;
 }
 
-.title-wrapper h3 {
-  margin: 0 !important;
-  color: #1a202c;
-  font-size: 16px;
+.filter-modal {
+  background: #fff;
+  width: 600px;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
 }
 
-.header-icon {
-  color: #1b5e20;
-}
-
-.close-btn-x {
-  background: none;
-  border: none;
-  font-size: 22px;
-  color: #a0aec0;
-  cursor: pointer;
-}
-
-/* Body & Sections */
-.modal-body {
-  padding: 20px;
-  overflow-y: auto;
-  background-color: #ffffff;
-}
-
-.filter-section {
-  margin-bottom: 15px;
-}
-
-.section-label {
-  display: block;
-  font-weight: 700;
-  font-size: 12px;
-  color: #718096;
-  text-transform: uppercase;
-  margin-bottom: 12px;
-  letter-spacing: 0.5px;
-}
-
-.divider {
-  border: 0;
-  border-top: 1px solid #f0f0f0;
-  margin: 15px 0;
-}
-
-/* Chip Style Selection */
-.checkbox-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.filter-chip {
-  padding: 6px 14px;
-  border-radius: 20px;
-  background: #f7fafc;
-  border: 1px solid #e2e8f0;
-  font-size: 13px;
-  color: #4a5568;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.filter-chip input {
-  display: none;
-}
-
-/* Hide the real checkbox */
-
-.filter-chip:hover {
-  background: #edf2f7;
-}
-
-.filter-chip.active {
-  background: #e6fffa;
-  border-color: #1b5e20;
-  color: #1b5e20;
-  font-weight: 600;
-}
-
-/* List Style Selection */
-.list-container {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.list-item {
-  padding: 8px 10px;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.list-item:hover {
-  background: #f8fafc;
-}
-
-/* Custom Checkbox UI */
-.custom-checkbox {
-  display: flex;
-  align-items: center;
-  position: relative;
-  padding-left: 30px;
-  cursor: pointer;
-  font-size: 14px;
-  color: #2d3748;
-}
-
-.custom-checkbox input {
-  position: absolute;
-  opacity: 0;
-}
-
-.checkmark {
-  position: absolute;
-  left: 0;
-  height: 18px;
-  width: 18px;
-  background-color: #edf2f7;
-  border: 1px solid #cbd5e0;
-  border-radius: 4px;
-}
-
-.custom-checkbox:hover input~.checkmark {
-  background-color: #e2e8f0;
-}
-
-.custom-checkbox input:checked~.checkmark {
-  background-color: #1b5e20;
-  border-color: #1b5e20;
-}
-
-.checkmark:after {
-  content: "";
-  position: absolute;
-  display: none;
-  left: 6px;
-  top: 2px;
-  width: 4px;
-  height: 9px;
-  border: solid white;
-  border-width: 0 2px 2px 0;
-  transform: rotate(45deg);
-}
-
-.custom-checkbox input:checked~.checkmark:after {
-  display: block;
-}
-
-/* Footer */
-.modal-footer {
+.filter-header {
   padding: 15px 20px;
-  background: #f8fafc;
-  border-top: 1px solid #f0f0f0;
+  background: #f5f6fa;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-radius: 0 0 12px 12px;
+}
+
+.filter-body {
+  padding: 20px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.multi-select-container {
+  max-height: 180px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  padding: 10px;
+  border-radius: 6px;
+  background: #fafafa;
+}
+
+.checkbox-item {
+  margin-bottom: 6px;
+}
+
+.filter-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
 }
 
 .reset-btn {
-  background: none;
+  background: #eee;
   border: none;
-  color: #e53e3e;
-  font-weight: 600;
-  font-size: 13px;
+  padding: 8px 15px;
+  border-radius: 5px;
   cursor: pointer;
 }
 
-.main-actions {
-  display: flex;
-  gap: 10px;
-}
-
-.cancel-btn {
-  background: white;
-  border: 1px solid #cbd5e0;
-  color: #4a5568;
-}
-
 .apply-btn {
-  background: #1b5e20;
-  color: white;
-  box-shadow: 0 4px 6px rgba(27, 94, 32, 0.2);
+  background: #007bff;
+  color: #fff;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 5px;
+  cursor: pointer;
 }
 
 /* ================= FILTER BUTTON ================= */

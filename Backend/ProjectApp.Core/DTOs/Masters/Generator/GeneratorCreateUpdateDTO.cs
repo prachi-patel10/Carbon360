@@ -8,10 +8,13 @@ namespace ProjectApp.Core.DTOs.Masters.Generator
 {
     public class GeneratorCreateUpdateDTO
     {
+        public string? GeneratorId { get; set; }  // encoded ID for update
         public string GeneratorName { get; set; }
-        public int FuelId { get; set; }
+        // Foreign keys as strings (encoded)
+        public string FuelId { get; set; }
+        public string SiteId { get; set; }
+        public string DepartmentId { get; set; }
+
         public decimal RatedCapacityKW { get; set; }
-        public int SiteId { get; set; }
-        public int DepartmentId { get; set; }
     }
 }

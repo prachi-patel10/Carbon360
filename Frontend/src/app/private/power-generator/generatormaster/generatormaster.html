@@ -49,18 +49,13 @@
         </span>
       </div>
 
-       <div class="form-group">
+      <!-- fuel -->
+      <div class="form-group">
         <label>Fuel</label>
-        <!-- <select formControlName="fuelId">
-          <option value="" disabled>Select Fuel</option>
-          <option *ngFor="let f of fuels()" [value]="f.fuelId">{{ f.fuelName }}</option>
-        </select> -->
         <select formControlName="fuelId">
-  <option value="" disabled>Select Fuel</option>
-  <option *ngFor="let f of fuels()" [value]="f.fuelId">{{ f.fuelName }}</option>
-</select>
-        <span class="error-text"
-          *ngIf="generatorForm.get('fuelId')?.invalid && generatorForm.get('fuelId')?.touched">
+          <option *ngFor="let f of fuels()" [value]="f.fuelId">{{ f.fuelName }}</option>
+        </select>
+        <span class="error-text" *ngIf="generatorForm.get('fuelId')?.invalid && generatorForm.get('fuelId')?.touched">
           Fuel is required
         </span>
       </div>
@@ -115,13 +110,13 @@
               <div class="th-content">Rated KW</div>
             </th>
             <th class="sortable" (click)="sort('fuelName')">
-              <div class="th-content">Fuel</div>
+              <div class="th-content">Fuel Type</div>
             </th>
             <th class="sortable" (click)="sort('siteName')">
-              <div class="th-content">Site</div>
+              <div class="th-content">Site Location</div>
             </th>
             <th class="sortable" (click)="sort('departmentName')">
-              <div class="th-content">Dept</div>
+              <div class="th-content">Department</div>
             </th>
             <th class="sortable" (click)="sort('isActive')">
               <div class="th-content">Status</div>
@@ -130,7 +125,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let gen of generators || []">
+          <tr *ngFor="let gen of generators()">
             <td>{{ gen?.generatorName }}</td>
             <td>{{ gen?.ratedCapacityKW }}</td>
             <td>{{ gen?.fuelName }}</td>
@@ -138,7 +133,7 @@
             <td>{{ gen?.departmentName }}</td>
             <td>
               <label class="switch">
-                <input type="checkbox" [checked]="gen?.isActive" (change)="toggleStatus(gen)" />
+                <input type="checkbox" [checked]="gen.isActive" (click)="confirmToggleStatus($event, gen)" />
                 <span class="slider"></span>
               </label>
             </td>
@@ -146,9 +141,6 @@
               <button class="edit-btn" (click)="edit(gen)">Edit</button>
               <button class="delete-btn" (click)="delete(gen)">Delete</button>
             </td>
-          </tr>
-          <tr *ngIf="generators.length === 0">
-            <td colspan="7">No records found</td>
           </tr>
         </tbody>
       </table>
@@ -161,7 +153,7 @@
         <button (click)="prevPage()" [disabled]="pageNumber === 1">Previous</button>
         <span>Page {{ pageNumber }} of {{ totalPages }}</span>
         <button (click)="nextPage()" [disabled]="pageNumber === totalPages">Next</button>
-        <select [(ngModel)]="pageSize" (change)="changePageSize()">
+        <select [ngModel]="pageSize" (ngModelChange)="changePageSize($event)">
           <option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</option>
         </select>
       </div>
@@ -170,34 +162,29 @@
   </div>
 
 
-  <!-- ================= FILTER MODAL ================= -->
-  <div class="filter-overlay" *ngIf="filterModalOpen">
-    <div class="filter-modal">
+<!-- ================= FILTER MODAL ================= -->
+<div class="filter-overlay" *ngIf="filterModalOpen">
+  <div class="filter-modal">
 
-      <!-- Header -->
-      <div class="filter-header">
-        <h3>Filter Generators</h3>
-        <button type="button" class="close-btn" (click)="closeFilter()">✖</button>
-      </div>
+    <!-- Header -->
+    <div class="filter-header">
+      <h3>Filter Generators</h3>
+      <button type="button" class="close-btn" (click)="closeFilter()">✖</button>
+    </div>
 
-      <!-- Body -->
-      <div class="filter-body">
+    <!-- Body -->
+    <div class="filter-body">
 
-        <!-- Search -->
-        <div class="form-group">
-          <label>Search</label>
-          <input type="text" [(ngModel)]="filterSearchText" placeholder="Search generator..." />
-        </div>
-
+      <div class="form-row">
         <!-- Fuel Type Multi Select -->
-        <!-- Fuel Type Multi Select -->
-        <div class="form-group">
+        <div class="form-group half-width">
           <label>Fuel Type</label>
           <div class="multi-select-box">
             <div *ngFor="let fuel of fuels()" class="checkbox-item">
               <label>
-                <input type="checkbox" [checked]="selectedFuelIds.includes(fuel.fuelId)"
-                  (change)="toggleFuel(fuel.fuelId)" />
+                <input type="checkbox" 
+                       [checked]="selectedFuelIds.includes(fuel.fuelId)" 
+                       (change)="toggleFuel(fuel.fuelId)" />
                 <span>{{ fuel.fuelName }}</span>
               </label>
             </div>
@@ -205,13 +192,14 @@
         </div>
 
         <!-- Site Multi Select -->
-        <div class="form-group">
+        <div class="form-group half-width">
           <label>Site</label>
           <div class="multi-select-box">
             <div *ngFor="let site of sites()" class="checkbox-item">
               <label>
-                <input type="checkbox" [checked]="selectedSiteIds.includes(site.siteId)"
-                  (change)="toggleSite(site.siteId)" />
+                <input type="checkbox" 
+                       [checked]="selectedSiteIds.includes(site.siteId)" 
+                       (change)="toggleSite(site.siteId)" />
                 <span>{{ site.siteName }}</span>
               </label>
             </div>
@@ -227,5 +215,6 @@
 
     </div>
   </div>
+</div>
 
 </div>

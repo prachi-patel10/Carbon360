@@ -302,30 +302,6 @@ th span {
   }
 }
 
-/* ================= FILTER OVERLAY ================= */
-.filter-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.45);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 2000;
-}
-
-/* ================= FILTER MODAL ================= */
-.filter-modal {
-  width: 420px;
-  max-width: 95%;
-  max-height: 85vh;
-  background: #fff;
-  border-radius: 14px;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
-  display: flex;
-  flex-direction: column;
-  animation: fadeIn 0.2s ease-in-out;
-}
-
 /* ================= HEADER ================= */
 .filter-header {
   padding: 16px 20px;
@@ -508,4 +484,101 @@ td.actions button {
 
 .delete-btn:hover {
   background-color: #ffc9c9;
+}
+
+/* ================= FILTER MODAL ================= */
+.filter-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.filter-modal {
+  background: #fff;
+  padding: 20px;
+  width: 600px;
+  border-radius: 10px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.filter-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.filter-body.side-by-side {
+  display: flex;
+  gap: 20px;
+  margin-top: 15px;
+}
+
+/* Each dropdown box */
+.dropdown-multi {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.dropdown-multi label {
+  font-weight: 500;
+  margin-bottom: 5px;
+}
+
+/* Scrollable checkbox area */
+.dropdown-box {
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding: 8px;
+  max-height: 200px;
+  overflow-y: auto;
+  background: #f9f9f9;
+}
+
+.checkbox-item {
+  margin-bottom: 5px;
+}
+
+.filter-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 15px;
+}
+.reset-btn, .apply-btn {
+  padding: 6px 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+.reset-btn { background: #ccc; }
+.apply-btn { background: #007bff; color: #fff; }
+
+/* Form row to display two fields side by side */
+.form-row {
+  display: flex;
+  gap: 20px; /* spacing between two fields */
+  flex-wrap: wrap; /* wrap on small screens */
+}
+
+.half-width {
+  flex: 1; /* each field takes 50% width */
+  min-width: 200px; /* optional: minimum width */
+}
+
+/* Optional styling for dropdowns */
+select {
+  width: 100%;
+  padding: 6px 10px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
 }

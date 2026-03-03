@@ -1,6 +1,7 @@
 ﻿using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using ProjectApp.Core.DTOs.Account.GeneratorOperation;
 using ProjectApp.Core.DTOs.Masters.Generator;
 using ProjectApp.Core.Models;
 using ProjectApp.Repository.Interfaces.Common;
@@ -33,15 +34,16 @@ namespace ProjectApp.Repository.Services.Masters.Generator
         // ================= CREATE =================
         public async Task<string> Create(GeneratorCreateUpdateDTO dto, int userId)
         {
+            // Decode FK IDs before passing to SP
             var parameters = new[]
             {
-                new SqlParameter("@GeneratorName", dto.GeneratorName),
-                new SqlParameter("@RatedCapacityKW", dto.RatedCapacityKW),
-                new SqlParameter("@FuelId", dto.FuelId),
-                new SqlParameter("@SiteId", dto.SiteId),
-                new SqlParameter("@DepartmentId", dto.DepartmentId),
-                new SqlParameter("@EntryBy", userId)
-            };
+        new SqlParameter("@GeneratorName", dto.GeneratorName),
+        new SqlParameter("@RatedCapacityKW", dto.RatedCapacityKW),
+        new SqlParameter("@FuelId", _idEncoder.Decode(dto.FuelId)),
+        new SqlParameter("@SiteId", _idEncoder.Decode(dto.SiteId)),
+        new SqlParameter("@DepartmentId", _idEncoder.Decode(dto.DepartmentId)),
+        new SqlParameter("@EntryBy", userId)
+    };
 
             var result = await _spService.ExecuteSpAsync(
                 "USP_CB_CreateGenerator",
@@ -57,24 +59,28 @@ namespace ProjectApp.Repository.Services.Masters.Generator
 
             int newId = Convert.ToInt32(data["GeneratorId"]);
 
+            // Return encoded ID
             return _idEncoder.Encode(newId);
         }
 
         // ================= UPDATE =================
-        public async Task Update(string encryptedId, GeneratorCreateUpdateDTO dto, int userId)
+        public async Task Update(GeneratorCreateUpdateDTO dto, int userId)
         {
-            int id = _idEncoder.Decode(encryptedId);
+            if (string.IsNullOrEmpty(dto.GeneratorId))
+                throw new Exception("GeneratorId is required for update.");
+
+            int generatorId = _idEncoder.Decode(dto.GeneratorId);
 
             var parameters = new[]
             {
-                new SqlParameter("@GeneratorId", id),
-                new SqlParameter("@GeneratorName", dto.GeneratorName),
-                new SqlParameter("@RatedCapacityKW", dto.RatedCapacityKW),
-                new SqlParameter("@FuelId", dto.FuelId),
-                new SqlParameter("@SiteId", dto.SiteId),
-                new SqlParameter("@DepartmentId", dto.DepartmentId),
-                new SqlParameter("@UpdatedBy", userId)
-            };
+        new SqlParameter("@GeneratorId", generatorId),
+        new SqlParameter("@GeneratorName", dto.GeneratorName),
+        new SqlParameter("@RatedCapacityKW", dto.RatedCapacityKW),
+        new SqlParameter("@FuelId", _idEncoder.Decode(dto.FuelId)),
+        new SqlParameter("@SiteId", _idEncoder.Decode(dto.SiteId)),
+        new SqlParameter("@DepartmentId", _idEncoder.Decode(dto.DepartmentId)),
+        new SqlParameter("@UpdatedBy", userId)
+    };
 
             await _spService.ExecuteSpAsync(
                 "USP_CB_UpdateGenerator",

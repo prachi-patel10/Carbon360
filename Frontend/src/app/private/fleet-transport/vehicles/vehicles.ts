@@ -8,11 +8,11 @@ export interface VehicleDto {
   vehicle_id?: string | null;
   vehicle_number: string;
   vehicle_type_id: string | null;
-  vehicle_type_name?: string | null;   // <--- add
+  vehicle_type_name?: string | null;
   fuel_id: string | null;
-  fuel_name?: string | null;           // <--- add
+  fuel_name?: string | null;
   department_id: string | null;
-  department_name?: string | null;     // <--- add
+  department_name?: string | null;
   engine_capacity?: number | null;
   emission_standard?: string | null;
   isActive: boolean;
@@ -39,22 +39,33 @@ export class Vehicles implements OnInit {
   pageSize = signal<number>(5);
 
   searchText = signal<string>('');
-  // filterModalOpen = signal<boolean>(false);
   activeFilter = signal<boolean>(false);
 
   sortColumn = signal<string>('');
   sortDirection = signal<'asc' | 'desc'>('asc');
 
-  showFilter = signal(false);
-
+  sites = signal<{ siteId: string; siteName: string }[]>([]);
+  selectedSiteIds: string[] = [];
 
   pageSizeOptions = [5, 10, 20, 50];
 
   vehicleNumberError = signal<string>('');
+  vehicleFilterModalOpen: WritableSignal<boolean> = signal(false);
 
-  filter = signal<any>({
-    vehicle_type_id: [] as string[],
-    fuel_id: [] as string[],
+  selectedVehicleTypeIds: string[] = [];
+  selectedFuelIds: string[] = [];
+  appliedFuelIds: string[] = [];
+  appliedVehicleTypeIds: string[] = [];
+
+  // ----------------- FIXED VEHICLE FILTER SIGNAL -----------------
+  vehicleFilter: WritableSignal<{
+    vehicle_type_id: string[];
+    fuel_id: string[];
+    department_id: string[];
+  }> = signal({
+    vehicle_type_id: [],
+    fuel_id: [],
+    department_id: [],
   });
 
   newVehicle: WritableSignal<VehicleDto> = signal<VehicleDto>({
@@ -72,111 +83,49 @@ export class Vehicles implements OnInit {
 
   constructor(private vehicleService: VehicleService) { }
 
-  // ngOnInit() {
-  //   this.loadDropdowns();
-  //   this.activeFilter.set(false);  
-  //   this.loadVehicles();
-  // }
-
   ngOnInit() {
     this.loadDropdowns();
-  this.loadVehicles();
-
-  effect(() => {
-    this.activeFilter();   // track
-    this.pageNumber.set(1);
     this.loadVehicles();
-  });
+
+    effect(() => {
+      this.activeFilter();
+      this.pageNumber.set(1);
+      this.loadVehicles();
+    });
   }
 
   // ----------------- DROPDOWNS -----------------
   loadDropdowns() {
-    // Vehicle Types
     this.vehicleService.getVehicleTypeList().subscribe((res: any[]) => {
       const mapped = (res || []).map(vt => ({
-        vehicle_type_id: vt.vehicle_type_id,
+        vehicle_type_id: String(vt.vehicle_type_id),
         vehicle_type_name: vt.vehicle_type_name
       }));
       this.vehicleTypes.set(mapped);
     });
 
-    // Fuel Types
     this.vehicleService.getFuelList().subscribe((res: any[]) => {
       const mapped = (res || []).map(f => ({
-        fuel_id: f.fuel_id,
+        fuel_id: String(f.fuel_id),
         fuel_name: f.fuel_name
       }));
       this.fuelTypes.set(mapped);
     });
 
-    // Departments
-    // this.vehicleService.getDepartmentList().subscribe(res => {
-    //   const mapped = (res.data || []).map((d: any) => ({
-    //     department_id: d.department_id,       // convert to string
-    //     department_name: d.departmentName,
-    //   }));
-    //   this.departments.set(mapped);
-    // });
-
-    // Departments
     this.vehicleService.getDepartmentList().subscribe((res: any) => {
-      // Check if API returns array or single object
       let deptArray: any[] = [];
       if (Array.isArray(res.data)) {
         deptArray = res.data;
       } else if (res.data) {
-        // If API returns single department, wrap in array
         deptArray = [res.data];
       }
-
       const mapped = deptArray.map((d: any) => ({
-        department_id: String(d.id),          // use `id` from your department API
+        department_id: String(d.id),
         department_name: d.departmentName
       }));
-
       this.departments.set(mapped);
     });
   }
-
-  //   loadDropdowns() {
-  //   // ---------------- Vehicle Types ----------------
-  //   this.vehicleService.getVehicleTypeList().subscribe((res: any) => {
-  //     const mapped = (res.data || []).map((vt: any) => ({
-  //       vehicle_type_id: String(vt.vehicle_type_id),
-  //       vehicle_type_name: vt.vehicle_type_name
-  //     }));
-  //     this.vehicleTypes.set(mapped);
-  //   });
-
-  //   // ---------------- Fuel Types ----------------
-  //   this.vehicleService.getFuelList().subscribe((res: any) => {
-  //     const mapped = (res.data || []).map((f: any) => ({
-  //       fuel_id: String(f.fuel_id),
-  //       fuel_name: f.fuel_name
-  //     }));
-  //     this.fuelTypes.set(mapped);
-  //   });
-
-  //   // ---------------- Departments ----------------
-  //   // Fetch all departments to map id -> name
-  //   this.vehicleService.getDepartmentList().subscribe((res: any) => {
-  //     // Check if API returns array or single object
-  //     let deptArray: any[] = [];
-  //     if (Array.isArray(res.data)) {
-  //       deptArray = res.data;
-  //     } else if (res.data) {
-  //       // If API returns single department, wrap in array
-  //       deptArray = [res.data];
-  //     }
-
-  //     const mapped = deptArray.map((d: any) => ({
-  //       department_id: String(d.id),          // use `id` from your department API
-  //       department_name: d.departmentName
-  //     }));
-
-  //     this.departments.set(mapped);
-  //   });
-  // }
 
   getVehicleTypeName(id: string | null) {
     if (!id) return '-';
@@ -198,10 +147,10 @@ export class Vehicles implements OnInit {
 
   // ----------------- VEHICLE TABLE -----------------
   loadVehicles() {
-    const filterData = this.filter();
+    const filterData = this.vehicleFilter();
 
-    //  Correct isActive filter
     const isActiveFilter: boolean | null = this.activeFilter() ? true : null;
+
     this.vehicleService
       .searchVehicles(
         this.searchText(),
@@ -212,12 +161,11 @@ export class Vehicles implements OnInit {
         this.sortDirection(),
         filterData.vehicle_type_id.length ? filterData.vehicle_type_id.join(',') : undefined,
         filterData.fuel_id.length ? filterData.fuel_id.join(',') : undefined,
-        //filterData.department_id.length ? filterData.department_id.join(',') : undefined
+        filterData.department_id.length ? filterData.department_id.join(',') : undefined
       )
       .subscribe({
         next: (res: any) => {
           const data = res.data || [];
-
           this.vehicles.set(
             data.map((v: any) => ({
               vehicle_id: v.vehicle_id,
@@ -249,8 +197,7 @@ export class Vehicles implements OnInit {
       });
   }
 
-
-  //search
+  // ----------------- SEARCH -----------------
   search() {
     this.pageNumber.set(1);
     this.loadVehicles();
@@ -273,7 +220,7 @@ export class Vehicles implements OnInit {
 
   onPageSizeChange(event: any) {
     this.pageSize.set(Number(event.target.value));
-    this.pageNumber.set(1);  // reset to first page
+    this.pageNumber.set(1);
     this.loadVehicles();
   }
 
@@ -299,58 +246,9 @@ export class Vehicles implements OnInit {
   }
 
   // ----------------- CREATE / UPDATE -----------------
-  // saveVehicle() {
-  //   if (!this.validateVehicleNumber()) {
-  //     this.showToast('Error', this.vehicleNumberError(), 'error');
-  //     return;
-  //   }
-
-  //   const raw = this.newVehicle();
-  //   const vehicle: VehicleDto = {
-  //     ...raw,
-  //     // Keep hashed IDs as string (or null)
-  //     vehicle_type_id: raw.vehicle_type_id || null,
-  //     fuel_id: raw.fuel_id || null,
-  //     department_id: raw.department_id || null,
-  //     // Only convert numeric field
-  //     engine_capacity: raw.engine_capacity ? Number(raw.engine_capacity) : null
-  //   };
-
-  //   // Required fields check
-  //   if (
-  //     vehicle.vehicle_type_id == null ||
-  //     vehicle.fuel_id == null ||
-  //     vehicle.department_id == null ||
-  //     vehicle.engine_capacity == null ||
-  //     !vehicle.emission_standard?.trim()
-  //   ) {
-  //     this.showToast('Error', 'Please fill all required fields!', 'error');
-  //     return;
-  //   }
-
-  //   // Create payload
-  //   const payload = { dto: vehicle };
-
-  //   // Save or update
-  //   if (this.isEditMode()) {
-  //     this.vehicleService.updateVehicle(payload).subscribe(() => {
-  //       this.showToast('Updated', 'Vehicle updated successfully!', 'success');
-  //       this.resetForm();
-  //       this.loadVehicles();
-  //     });
-  //   } else {
-  //     this.vehicleService.createVehicle(payload).subscribe(() => {
-  //       this.showToast('Created', 'Vehicle created successfully!', 'success');
-  //       this.resetForm();
-  //       this.loadVehicles();
-  //     });
-  //   }
-  // }
-
   saveVehicle() {
     const raw = this.newVehicle();
 
-    // ------------------ VALIDATION ------------------
     if (!raw.vehicle_number?.trim()) { this.showToast('Error', 'Vehicle number is required!', 'error'); return; }
     if (!raw.emission_standard?.trim()) { this.showToast('Error', 'Emission standard is required!', 'error'); return; }
     if (!raw.vehicle_type_id) { this.showToast('Error', 'Select vehicle type!', 'error'); return; }
@@ -358,11 +256,9 @@ export class Vehicles implements OnInit {
     if (!raw.department_id) { this.showToast('Error', 'Select department!', 'error'); return; }
     if (!raw.engine_capacity && raw.engine_capacity !== 0) { this.showToast('Error', 'Engine capacity is required!', 'error'); return; }
 
-    // ------------------ PREPARE PAYLOAD ------------------
-    // For update, include vehicle_id; for create, omit it
     const payload = this.isEditMode()
       ? {
-        vehicle_id: raw.vehicle_id!,            // must exist for update
+        vehicle_id: raw.vehicle_id!,
         vehicle_number: raw.vehicle_number.trim(),
         vehicle_type_id: raw.vehicle_type_id!,
         fuel_id: raw.fuel_id!,
@@ -381,7 +277,6 @@ export class Vehicles implements OnInit {
         IsActive: raw.isActive ?? true
       };
 
-    // ------------------ CALL SERVICE ------------------
     const request$ = this.isEditMode()
       ? this.vehicleService.updateVehicle(payload)
       : this.vehicleService.createVehicle(payload);
@@ -401,10 +296,14 @@ export class Vehicles implements OnInit {
     });
   }
 
-  //edit
   editVehicle(vehicle: VehicleDto) {
     this.isEditMode.set(true);
-    this.newVehicle.set({ ...vehicle });
+    this.newVehicle.set({
+      ...vehicle,
+      vehicle_type_id: String(vehicle.vehicle_type_id),
+      fuel_id: String(vehicle.fuel_id),
+      department_id: String(vehicle.department_id)
+    });
   }
 
   resetForm() {
@@ -451,75 +350,25 @@ export class Vehicles implements OnInit {
       showCancelButton: true,
       confirmButtonText: 'Yes',
     }).then(result => {
-
-      if (!result.isConfirmed) {
-        return; // user canceled
-      }
+      if (!result.isConfirmed) return;
 
       this.vehicleService.updateVehicleStatus(vehicle.vehicle_id!, newStatus)
         .subscribe({
           next: () => {
-            // update UI data immutably
             this.vehicles.update(arr =>
-              arr.map(v =>
-                v.vehicle_id === vehicle.vehicle_id ? { ...v, isActive: newStatus } : v
-              )
+              arr.map(v => v.vehicle_id === vehicle.vehicle_id ? { ...v, isActive: newStatus } : v)
             );
-
-            // show correct toast
-            this.showToast(
-              'Status Updated',
-              `Vehicle is now ${newStatus ? 'Active' : 'Inactive'}!`,
-              'success'
-            );
+            this.showToast('Status Updated', `Vehicle is now ${newStatus ? 'Active' : 'Inactive'}!`, 'success');
           },
           error: () => {
-            // rollback UI state if API fails
             this.vehicles.update(arr =>
-              arr.map(v =>
-                v.vehicle_id === vehicle.vehicle_id ? { ...v, isActive: originalStatus } : v
-              )
+              arr.map(v => v.vehicle_id === vehicle.vehicle_id ? { ...v, isActive: originalStatus } : v)
             );
-
             this.showToast('Error', 'Failed to update status', 'error');
           }
         });
     });
   }
-
-  //toggle click
-  // onToggleClick(event: Event, vehicle: VehicleDto) {
-  //   const checkbox = event.target as HTMLInputElement;
-  //   const newStatus = checkbox.checked;
-
-  //   Swal.fire({
-  //     title: 'Are you sure?',
-  //     text: `Set vehicle as ${newStatus ? 'Active' : 'Inactive'}?`,
-  //     icon: 'warning',
-  //     showCancelButton: true,
-  //     confirmButtonText: 'Yes'
-  //   }).then(result => {
-  //     if (result.isConfirmed) {
-  //       this.vehicleService.updateVehicleStatus(vehicle.vehicle_id!, newStatus)
-  //         .subscribe({
-  //           next: () => {
-  //             this.vehicles.update(arr =>
-  //               arr.map(v =>
-  //                 v.vehicle_id === vehicle.vehicle_id ? { ...v, isActive: newStatus } : v
-  //               )
-  //             );
-  //             this.showToast('Updated', 'Status updated successfully!', 'success');
-  //           },
-  //           error: () => {
-  //             checkbox.checked = !newStatus; // rollback
-  //             this.showToast('Error', 'Failed to update status', 'error');
-  //           }
-  //         });
-  //     } else {
-  //       checkbox.checked = !newStatus;
-  //     }
-  //   });
-  // }
 
   validateVehicleNumber(): boolean {
     const vehicleNo = this.newVehicle().vehicle_number?.trim();
@@ -543,61 +392,101 @@ export class Vehicles implements OnInit {
   }
 
   // ----------------- FILTER -----------------
-  showFilterModal() {
-    this.showFilter.set(true);
-  }
-
-  closeFilterModal() {
-    this.showFilter.set(false);
-  }
-
-  isVehicleTypeSelected(id: string) { return this.filter().vehicle_type_id.includes(id); }
-  isFuelTypeSelected(id: string) { return this.filter().fuel_id.includes(id); }
-  isDepartmentSelected(id: string) { return this.filter().department_id.includes(id); }
-
-  toggleVehicleType(id: string) {
-    const current = this.filter().vehicle_type_id as string[];
-
-    this.filter.update(f => ({
-      ...f,
-      vehicle_type_id: current.includes(id)
-        ? current.filter(x => x !== id)
-        : [...current, id]
-    }));
-  }
-
-  toggleFuelType(id: string) {
-    const current = this.filter().fuel_id as string[];
-
-    this.filter.update(f => ({
-      ...f,
-      fuel_id: current.includes(id)
-        ? current.filter(x => x !== id)
-        : [...current, id]
-    }));
-  }
-  applyFilter() {
-    this.pageNumber.set(1);
-    this.loadVehicles();
-    this.closeFilterModal();
+  isDepartmentSelected(id: string) {
+    return this.vehicleFilter().department_id.includes(id);
   }
 
   resetFilter() {
-    this.filter.set({ vehicle_type_id: [], fuel_id: [], department_id: [] });
+    this.vehicleFilter.set({ vehicle_type_id: [], fuel_id: [], department_id: [] });
     this.applyFilter();
+  }
+
+  toggleFuel(id: string) {
+    this.selectedFuelIds.includes(id)
+      ? this.selectedFuelIds = this.selectedFuelIds.filter(x => x !== id)
+      : this.selectedFuelIds.push(id);
+
+    this.vehicleFilter.update((f: any) => ({ ...f, fuel_id: this.selectedFuelIds }));
+  }
+
+  toggleVehicleType(id: string) {
+    this.selectedVehicleTypeIds.includes(id)
+      ? this.selectedVehicleTypeIds = this.selectedVehicleTypeIds.filter(x => x !== id)
+      : this.selectedVehicleTypeIds.push(id);
+
+    this.vehicleFilter.update((f: any) => ({ ...f, vehicle_type_id: this.selectedVehicleTypeIds }));
+  }
+
+  toggleSite(id: string) {
+    this.selectedSiteIds.includes(id)
+      ? this.selectedSiteIds = this.selectedSiteIds.filter(x => x !== id)
+      : this.selectedSiteIds.push(id);
+
+    this.vehicleFilter.update((f: any) => ({ ...f, department_id: this.selectedSiteIds }));
+  }
+
+  applyFilter() {
+    this.pageNumber.set(1);
+    this.loadVehicles();
+   // this.closeFilterModal();
+  }
+
+  resetFilterModal() {
+    this.selectedVehicleTypeIds = [];
+    this.selectedFuelIds = [];
+    this.vehicleFilter.set({ vehicle_type_id: [], fuel_id: [], department_id: [] });
   }
 
   showToast(title: string, text: string, icon: 'success' | 'error' = 'success') {
     Swal.fire({ icon, title, text, toast: true, position: 'top-end', timer: 2000, showConfirmButton: false });
   }
 
-  toggleVehicleTypeFromEvent(event: Event) {
-    const value = (event.target as HTMLSelectElement).value;
-    this.toggleVehicleType(value);
+  // ----------------- MODAL -----------------
+
+  // ----------------- MODAL -----------------
+openVehicleFilter() {
+  this.vehicleFilterModalOpen.set(true);
+}
+
+closeVehicleFilter() {
+  this.vehicleFilterModalOpen.set(false);
+}
+
+  isVehicleTypeSelected(id: string) {
+    return this.vehicleFilter().vehicle_type_id.includes(id);
   }
 
-  toggleFuelTypeFromEvent(event: Event) {
-    const value = (event.target as HTMLSelectElement).value;
-    this.toggleFuelType(value);
+  isFuelTypeSelected(id: string) {
+    return this.vehicleFilter().fuel_id.includes(id);
   }
+
+  applyVehicleFilter() {
+  this.vehicleFilterModalOpen.set(false);  // ✅ correct
+  this.appliedFuelIds = [...this.selectedFuelIds];
+  this.appliedVehicleTypeIds = [...this.selectedVehicleTypeIds];
+  this.pageNumber.set(1);
+  this.loadVehicles();
+}
+
+  resetVehicleFilter() {
+    this.selectedFuelIds = [];
+    this.selectedVehicleTypeIds = [];
+  }
+
+  get vehicleTypesList() { return this.vehicleTypes(); }
+  get fuelTypesList() { return this.fuelTypes(); }
+
+  toggleVehicleFuel(fuelId: string) {
+  if (this.selectedFuelIds.includes(fuelId)) {
+    this.selectedFuelIds = this.selectedFuelIds.filter(id => id !== fuelId);
+  } else {
+    this.selectedFuelIds.push(fuelId);
+  }
+
+  this.vehicleFilter.update(f => ({
+    ...f,
+    fuel_id: this.selectedFuelIds
+  }));
+}
+
 }

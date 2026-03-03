@@ -43,14 +43,14 @@ namespace ProjectApp.API.Controllers.Masters.Generator
             return Ok(new { EncryptedId = id });
         }
 
-        [HttpPut("{id}")]
-        public async Task<IActionResult> Update(string id, GeneratorCreateUpdateDTO dto)
+        [HttpPut]
+        public async Task<IActionResult> Update([FromBody] GeneratorCreateUpdateDTO dto)
         {
             int userId = Convert.ToInt32(User.FindFirst("UserId")?.Value);
 
-            await _service.Update(id, dto, userId);
+            await _service.Update(dto, userId);
 
-            return Ok();
+            return Ok(new { Message = "Generator updated successfully" });
         }
 
         [HttpDelete("{id}")]
