@@ -156,7 +156,7 @@
         <li *ngIf="isAdmin() || isReporter()" (click)="goTo('generator-ec')" [class.active-link]="isActive('/generator-ec')">
           <i class="fas fa-chart-bar"></i> <span>Report</span>
         </li>
-        <li *ngIf="isAdmin() || isReporter()" routerLink="/waste" routerLinkActive="active-link">
+        <li *ngIf="isAdmin() || isReporter()" routerLink="/searchGenerator" routerLinkActive="active-link">
           <i class="fas fa-chart-line"></i> <span>Search</span>
         </li>
       </ul>

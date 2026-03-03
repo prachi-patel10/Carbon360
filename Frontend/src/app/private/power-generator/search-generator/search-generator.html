@@ -1,0 +1,96 @@
+<div class="generator-report-container py-4">
+  <div class="container">
+    
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2 class="page-title"><i class="fas fa-chart-line text-primary me-2"></i>Generator Emission Records</h2>
+      <button class="btn btn-outline-primary btn-sm px-3"><i class="fas fa-download me-1"></i> Export Report</button>
+    </div>
+
+    <div class="card filter-card mb-4">
+      <div class="card-body p-4">
+        <form class="row g-3 align-items-end">
+          <div class="col-md-3">
+            <label class="form-label fw-bold"><i class="fas fa-gas-pump icon-addon"></i> Fuel Type</label>
+            <select class="form-select" (change)="onFuelTypeChange($event)">
+              <option value="All">All Fuel Types</option>
+              <option value="Diesel">Diesel</option>
+              <option value="Petrol">Petrol</option>
+              <option value="Natural Gas">Natural Gas</option>
+            </select>
+          </div>
+
+          <div class="col-md-3">
+            <label class="form-label fw-bold"><i class="fas fa-calendar-alt icon-addon"></i> Start Time</label>
+            <input type="datetime-local" class="form-control" (change)="onStartTimeChange($event)" />
+          </div>
+
+          <div class="col-md-3">
+            <label class="form-label fw-bold"><i class="fas fa-calendar-check icon-addon"></i> End Time</label>
+            <input type="datetime-local" class="form-control" (change)="onEndTimeChange($event)" />
+          </div>
+
+          <div class="col-md-3">
+            <button type="button" class="btn btn-filter btn-primary w-100" (click)="applyFilters()">
+              <i class="fas fa-filter me-2"></i>Apply Filters
+            </button>
+          </div>
+          
+          <div class="col-md-12 mt-3">
+            <div class="input-group">
+              <span class="input-group-text bg-white border-end-0"><i class="fas fa-search text-muted"></i></span>
+              <input type="text" class="form-control border-start-0" placeholder="Quick search by ID or Generator Name..." (input)="onSearch($event)" />
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="card table-card">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th><i class="fas fa-bolt me-1"></i> Generator</th>
+              <th><i class="far fa-calendar me-1"></i> Date</th>
+              <th>Start/End Time</th>
+              <th>Load (%)</th>
+              <th>Fuel (L)</th>
+              <th><i class="fas fa-smog me-1"></i> Emission (kg CO₂e)</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let e of filteredEmissions()">
+              <td class="text-muted fw-bold">{{ e.operationId }}</td>
+              <td class="fw-bold text-dark">{{ e.generatorName }}</td>
+              <td>{{ e.operationDate | date: 'shortDate' }}</td>
+              <td class="small text-muted">
+                {{ e.startTime | date: 'HH:mm' }} - {{ e.endTime | date: 'HH:mm' }}
+              </td>
+              <td>{{ e.loadFactor }}%</td>
+              <td>{{ e.fuelConsumedLiters }}</td>
+              <td><span class="emission-value">{{ e.totalEmission }}</span></td>
+              <td>
+                <span [ngClass]="{
+                    'badge-status-completed': e.status === 'Completed', 
+                    'badge-status-pending': e.status === 'Pending'
+                  }">
+                  <i class="fas fa-circle font-xs me-1"></i> {{ e.status }}
+                </span>
+              </td>
+            </tr>
+
+            <tr *ngIf="filteredEmissions().length === 0">
+              <td colspan="8" class="text-center py-5 text-muted">
+                <!-- <i class="fas fa-folder-open d-block mb-2 fa-2x"></i> -->
+                No records found matching your filters
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>

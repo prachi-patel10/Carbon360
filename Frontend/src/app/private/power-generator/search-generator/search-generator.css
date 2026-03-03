@@ -1,0 +1,103 @@
+body {
+    background-color: #f0f2f5;
+    font-family: 'Inter', 'Segoe UI', Roboto, sans-serif;
+    color: #1b5e20;
+}
+
+.generator-report-container {
+    min-height: 100vh;
+}
+
+.page-title {
+    font-weight: 700;
+    color: #1b5e20;
+    letter-spacing: -0.5px;
+}
+
+/* Card Enhancements */
+.filter-card, .table-card {
+    border: none;
+    border-radius: 12px;
+    background: #ffffff;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+/* Form Styling */
+.form-label {
+    font-size: 0.85rem;
+    color:#1b5e20;
+    margin-bottom: 6px;
+}
+
+.icon-addon {
+    color: #1b5e20;
+    margin-right: 4px;
+}
+
+.form-control, .form-select {
+    border: 1px solid #e2e8f0;
+    padding: 0.6rem 0.75rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #1b5e20;
+    box-shadow: 0 0 0 3px rgba(11, 90, 23, 0.1);
+}
+
+/* Filter Button Animation */
+.btn-filter {
+    height: 44px;
+    font-weight: 600;
+    border-radius: 8px;
+    transition: transform 0.2s;
+}
+
+.btn-filter:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(8, 123, 22, 0.3);
+}
+
+/* Table Design */
+.table thead th {
+    background-color: #f8fafc;
+    color: #64748b;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 1.1rem 1rem;
+    border-bottom: 2px solid #f1f5f9;
+}
+
+.table tbody td {
+    padding: 1rem;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.emission-value {
+    font-weight: 700;
+    color: #0f172a;
+}
+
+/* Badges */
+.badge-status-completed {
+    background-color: #dcfce7;
+    color: #15803d;
+    padding: 5px 12px;
+    border-radius: 50px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.badge-status-pending {
+    background-color: #fef9c3;
+    color: #a16207;
+    padding: 5px 12px;
+    border-radius: 50px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.font-xs { font-size: 0.5rem; vertical-align: middle; }
