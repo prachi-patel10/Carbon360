@@ -38,6 +38,35 @@
 
   <!-- 🔹 Fuel List -->
   <div class="card">
+    <!-- ================= SEARCH ROW ================= -->
+  <div class="search-row">
+
+    <div class="search-left">
+      <input type="text"
+             class="search-input"
+             placeholder="Search fuel..."
+             [(ngModel)]="searchText"
+             (input)="onSearchChange()">
+    </div>
+
+    <div class="search-right">
+
+      <!-- Active Only Filter -->
+      <div class="status-toggle">
+        <span>Active Only</span>
+        <label class="switch">
+          <input type="checkbox"
+                 [(ngModel)]="onlyActive"
+                 (change)="onFilterChange()">
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <button class="btn-delete" (click)="clearSearch()">Clear</button>
+
+    </div>
+  </div>
+  
     <table>
       <thead>
         <tr>
@@ -86,5 +115,30 @@
     </table>
 
   </div>
+
+  <!-- ================= PAGINATION ================= -->
+<div class="pagination-info">
+  <span>Total Records: {{ fuels.length }}</span>
+
+  <div class="pagination-controls">
+    <button (click)="previousPage()" [disabled]="currentPage === 1">
+      Previous
+    </button>
+
+    <span>Page {{ currentPage }} of {{ totalPages }}</span>
+
+    <button (click)="nextPage()" [disabled]="currentPage === totalPages">
+      Next
+    </button>
+
+    <label>Page Size:</label>
+    <select [(ngModel)]="pageSize" (change)="updatePagination()">
+      <option [value]="5">5</option>
+      <option [value]="10">10</option>
+      <option [value]="20">20</option>
+    </select>
+  </div>
+</div>
+
 
 </div>

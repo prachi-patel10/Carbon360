@@ -16,6 +16,69 @@ export class Fueltype implements OnInit {
 
   fuels: any[] = [];
   editingFuelId: number | null = null;
+  searchText: string = '';
+onlyActive: boolean = false;
+
+currentPage: number = 1;
+pageSize: number = 5;
+
+get filteredFuels() {
+  let data = this.fuels;
+
+  // Search filter
+  if (this.searchText) {
+    data = data.filter(f =>
+      f.fuel_name.toLowerCase().includes(this.searchText.toLowerCase()) ||
+      f.fuel_Desc.toLowerCase().includes(this.searchText.toLowerCase())
+    );
+  }
+
+  // Active filter
+  if (this.onlyActive) {
+    data = data.filter(f => f.isActive);
+  }
+
+  return data;
+}
+
+get totalPages() {
+  return Math.ceil(this.filteredFuels.length / this.pageSize) || 1;
+}
+
+get paginatedFuels() {
+  const start = (this.currentPage - 1) * this.pageSize;
+  return this.filteredFuels.slice(start, start + this.pageSize);
+}
+
+previousPage() {
+  if (this.currentPage > 1) {
+    this.currentPage--;
+  }
+}
+
+nextPage() {
+  if (this.currentPage < this.totalPages) {
+    this.currentPage++;
+  }
+}
+
+updatePagination() {
+  this.currentPage = 1;
+}
+
+onSearchChange() {
+  this.currentPage = 1;
+}
+
+onFilterChange() {
+  this.currentPage = 1;
+}
+
+clearSearch() {
+  this.searchText = '';
+  this.onlyActive = false;
+  this.currentPage = 1;
+}
 
   newFuel = {
     fuel_name: '',

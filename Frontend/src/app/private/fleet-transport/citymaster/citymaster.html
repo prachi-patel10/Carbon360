@@ -115,6 +115,18 @@
                 [disabled]="currentPage()===totalPages()">
           Next
         </button>
+
+        <div class="page-size">
+      <span>Show</span>
+      <select [value]="pageSize()"
+              (change)="onPageSizeChange($event)">
+        <option *ngFor="let size of pageSizeOptions"
+                [value]="size">
+          {{ size }}
+        </option>
+      </select>
+    </div>
+
       </div>
 
     </div>

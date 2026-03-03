@@ -31,10 +31,12 @@ export class Vehicletype implements OnInit{
   totalRecords = signal(0);
   totalPages = signal(1);
   currentPage = signal(1);
-  requestedRecords = signal(5);
+  //requestedRecords = signal(5);
   onlyActive = signal(false);
   searchText = signal('');
   refreshTrigger = signal(0);
+  pageSizeOptions = [5, 10, 20];
+pageSize = signal(5);
 
   constructor(
     private fb: FormBuilder,
@@ -43,7 +45,8 @@ export class Vehicletype implements OnInit{
   ) {
     effect(() => {
       const page = this.currentPage();
-      const size = this.requestedRecords();
+      const size = this.pageSize();
+      //const size = this.requestedRecords();
       const search = this.searchText();
       const active = this.onlyActive();
       this.refreshTrigger();
@@ -75,14 +78,19 @@ export class Vehicletype implements OnInit{
     });
   }
 
+  onPageSizeChange(event: any) {
+  this.pageSize.set(+event.target.value);
+  this.currentPage.set(1);
+}
 
-   get startRecord(): number {
+
+get startRecord(): number {
   if (this.totalRecords() === 0) return 0;
-  return (this.currentPage() - 1) * this.requestedRecords() + 1;
+  return (this.currentPage() - 1) * this.pageSize() + 1;
 }
 
 get endRecord(): number {
-  const end = this.currentPage() * this.requestedRecords();
+  const end = this.currentPage() * this.pageSize();
   return end > this.totalRecords() ? this.totalRecords() : end;
 }
 

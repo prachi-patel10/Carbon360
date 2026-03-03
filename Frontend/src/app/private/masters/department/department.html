@@ -1,47 +1,42 @@
-<div class="department-page">
+<div class="container">
 
-  <!-- ================= INPUT FORM ================= -->
-  <div class="card form-card">
+  <!-- ================= CREATE / EDIT DEPARTMENT FORM ================= -->
+  <div class="card">
+    <form [formGroup]="departmentForm" (ngSubmit)="submitdept()" class="form-grid">
 
-    <form [formGroup]="departmentForm" (ngSubmit)="submitdept()">
+      <!-- Department Name -->
+      <div class="form-group">
+        <label>Department Name</label>
+        <input type="text" formControlName="DepartmentName" placeholder="Enter department name">
 
-      <div class="form-row">
-
-        <!-- Department Name -->
-        <div class="form-group">
-          <label>Department Name</label>
-          <input type="text" formControlName="DepartmentName" placeholder="Enter department name">
-          <div class="validation"
-            *ngIf="departmentForm.get('DepartmentName')?.touched && departmentForm.get('DepartmentName')?.invalid">
-            Department Name is required
-          </div>
-        </div>
-
-        <!-- Status Toggle -->
-        <div class="form-group status-group">
-          <label for="statusToggle">Status</label>
-
-          <div class="toggle-wrapper">
-
-            <label class="toggle-switch">
-              <input id="statusToggle" type="checkbox" formControlName="IsActive">
-              <span class="toggle-slider"></span>
-            </label>
-
-            <span class="toggle-text"
-              [ngClass]="departmentForm.get('IsActive')?.value ? 'text-active' : 'text-inactive'">
-
-              {{ departmentForm.get('IsActive')?.value ? 'Active' : 'Inactive' }}
-            </span>
-          </div>
-        </div>
-
+        <small class="error-text"
+          *ngIf="departmentForm.get('DepartmentName')?.touched && departmentForm.get('DepartmentName')?.invalid">
+          Department Name is required
+        </small>
       </div>
 
-      <div class="form-buttons">
-        <button type="submit" class="btn-primary">
+      <!-- Status -->
+      <div class="form-group">
+        <label>Status</label>
+
+        <div class="status-toggle">
+          <label class="switch">
+            <input type="checkbox" formControlName="IsActive">
+            <span class="slider"></span>
+          </label>
+
+          <span>
+            {{ departmentForm.get('IsActive')?.value ? 'Active' : 'Inactive' }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Buttons -->
+      <div class="form-actions">
+        <button type="submit" class="save-btn">
           {{ !departmentForm.value.DepartmentId ? 'Save' : 'Update' }}
         </button>
+
         <button type="button" class="btn-secondary" (click)="resetForm()">
           Reset
         </button>
@@ -50,103 +45,101 @@
     </form>
   </div>
 
+  <!-- ================= SEARCH + TABLE + PAGINATION ================= -->
+  <div class="card">
 
-  <!-- ================= SEARCH SECTION ================= -->
-  <div class="card search-card">
-    <h2 class="card-title">Department List</h2>
+    <!-- Search Row -->
+    <div class="search-row">
 
-    <form [formGroup]="searchForm">
-      <div class="search-row">
+      <div class="search-left">
+        <input type="text"
+               class="search-input"
+               placeholder="Search department..."
+               formControlName="searchText"
+               [formGroup]="searchForm">
+      </div>
 
-        <input type="text" placeholder="Search department..." formControlName="searchText">
+      <div class="search-right">
 
-        <button type="button" class="btn-clear" (click)="clearSearch()">
-          Clear
-        </button>
-
-        <div class="record-select">
-          <label>Records</label>
-          <select (change)="onRecordsChange($event)">
-            <option value="5">5</option>
-            <option value="10">10</option>
-            <option value="20">20</option>
-          </select>
-        </div>
-
-        <div class="active-filter">
-          <label class="toggle-switch">
-            <input type="checkbox" [checked]="onlyActive()" (change)="onActiveFilterChange($event)">
-            <span class="toggle-slider"></span>
+        <!-- Active Filter -->
+        <div class="status-toggle">
+          <span>Active Only</span>
+          <label class="switch">
+            <input type="checkbox"
+                   [checked]="onlyActive()"
+                   (change)="onActiveFilterChange($event)">
+            <span class="slider"></span>
           </label>
-          <span class="toggle-text">
-            {{ onlyActive() ? 'Active Only' : 'All Records' }}
-          </span>
         </div>
+
+        <button class="delete-btn" (click)="clearSearch()">Clear</button>
 
       </div>
-    </form>
-  </div>
-
-
-  <!-- ================= TABLE ================= -->
-  <div class="card table-card">
-
-    <table>
-      <thead>
-        <tr>
-          <th>Department Name</th>
-          <th>Status</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-
-      <tbody>
-        <tr *ngFor="let d of departments()">
-          <td>{{ d.DepartmentName }}</td>
-
-          <td>
-            <label class="toggle-switch">
-              <input type="checkbox" [checked]="d.IsActive" (change)="toggleActive(d)">
-              <span class="toggle-slider"></span>
-            </label>
-          </td>
-
-          <td class="action-buttons">
-            <button class="btn-edit" (click)="edit(d)">Edit</button>
-            <button class="btn-delete" (click)="deleteUI(d)">Delete</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-
-  </div>
-
-
-  <!-- ================= PAGINATION ================= -->
-  <div class="pagination-section">
-
-    <!-- Record Info -->
-    <div class="record-info">
-      Showing {{ startRecord }} to {{ endRecord }}
-      of {{ totalRecords() }} entries
     </div>
 
-    <!-- Pagination Controls -->
-    <div class="pagination-controls">
+    <!-- Table -->
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Department Name</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
 
-      <button (click)="previousPage()" [disabled]="currentPage() === 1">
-        Previous
-      </button>
+        <tbody>
+          <tr *ngFor="let d of departments()">
+            <td>{{ d.DepartmentName }}</td>
 
-      <span>
-        Page {{ currentPage() }} of {{ totalPages() }}
-      </span>
+            <td>
+              <label class="switch">
+                <input type="checkbox"
+                       [checked]="d.IsActive"
+                       (change)="toggleActive(d)">
+                <span class="slider"></span>
+              </label>
+            </td>
 
-      <button (click)="nextPage()" [disabled]="currentPage() === totalPages()">
-        Next
-      </button>
-
+            <td class="actions">
+              <button class="edit-btn" (click)="edit(d)">Edit</button>
+              <button class="delete-btn" (click)="deleteUI(d)">Delete</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
+
+    <!-- Pagination -->
+  <!-- Pagination -->
+<div class="pagination-bar">
+
+  <button 
+    (click)="previousPage()" 
+    [disabled]="currentPage() === 1">
+    Previous
+  </button>
+
+  <span class="page-info">
+    Page {{ currentPage() }} of {{ totalPages() }}
+  </span>
+
+  <button 
+    (click)="nextPage()" 
+    [disabled]="currentPage() === totalPages()">
+    Next
+  </button>
+
+  <div class="page-size">
+    <span>Page Size:</span>
+    <select (change)="onRecordsChange($event)">
+      <option value="5">5</option>
+      <option value="10">10</option>
+      <option value="20">20</option>
+    </select>
+  </div>
+
+</div>
 
   </div>
 

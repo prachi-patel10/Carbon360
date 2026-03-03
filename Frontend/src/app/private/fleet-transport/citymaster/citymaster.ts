@@ -35,6 +35,8 @@ export class Citymaster implements OnInit {
   onlyActive = signal(false);
   searchText = signal('');
   refreshTrigger = signal(0);
+  pageSizeOptions = [5, 10, 20];
+pageSize = signal(5); // default 5
 
   constructor(
     private fb: FormBuilder,
@@ -45,12 +47,18 @@ export class Citymaster implements OnInit {
     effect(() => {
       this.loadCities(
         this.currentPage(),
-        this.requestedRecords(),
+        this.pageSize(),
+        //this.requestedRecords(),
         this.searchText(),
         this.onlyActive()
       );
     });
   }
+
+  onPageSizeChange(event: any) {
+  this.pageSize.set(+event.target.value);
+  this.currentPage.set(1); // reset to first page
+}
 
   ngOnInit(): void {
     this.initForms();
@@ -187,15 +195,15 @@ export class Citymaster implements OnInit {
     });
   }
 
-  get startRecord(){
-    if(this.totalRecords()===0) return 0;
-    return (this.currentPage()-1)*this.requestedRecords()+1;
-  }
+ get startRecord(){
+  if(this.totalRecords()===0) return 0;
+  return (this.currentPage()-1)*this.pageSize()+1;
+}
 
-  get endRecord(){
-    const end=this.currentPage()*this.requestedRecords();
-    return end>this.totalRecords()?this.totalRecords():end;
-  }
+get endRecord(){
+  const end=this.currentPage()*this.pageSize();
+  return end>this.totalRecords()?this.totalRecords():end;
+}
 
 }
 

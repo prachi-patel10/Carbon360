@@ -127,37 +127,68 @@ th {
 }
 
 /* Pagination */
-.pagination {
-  margin-top: 15px;
+/* ================= PAGINATION (Exactly like User List) ================= */
+.pagination-info {
   display: flex;
-  justify-content: space-between;
+  justify-content: space-between; /* Isse text left aur buttons right mein jayenge */
   align-items: center;
+  margin-top: 15px;
+  flex-wrap: wrap;
+  font-size: 14px;
+  color: #333;
 }
 
-/* 🔹 Responsive Breakpoints */
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px; /* Sabhi elements ke beech gap */
+}
 
-/* Tablet */
+/* Pagination Buttons Style */
+.pagination-controls button {
+  padding: 5px 12px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  background-color: #f5f5f5;
+  color: #333;
+  cursor: pointer;
+  font-size: 13px;
+  transition: background 0.2s;
+}
+
+.pagination-controls button:hover:not(:disabled) {
+  background-color: #e0e0e0;
+}
+
+.pagination-controls button:disabled {
+  background-color: #f9f9f9;
+  color: #bbb;
+  cursor: not-allowed;
+  border-color: #eee;
+}
+
+/* Page Size Dropdown Style */
+.pagination-controls select {
+  padding: 4px 8px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  background-color: #fff;
+  cursor: pointer;
+  outline: none;
+}
+
+.pagination-controls label {
+  font-weight: 500;
+  margin-left: 5px;
+}
+
+/* Responsive for Mobile */
 @media (max-width: 768px) {
-  .form-grid,
-  .search-grid {
+  .pagination-info {
     flex-direction: column;
-  }
-
-  .pagination {
-    flex-direction: column;
-    gap: 10px;
-  }
-}
-
-/* Mobile */
-@media (max-width: 480px) {
-  h2 {
-    font-size: 18px;
-  }
-
-  input,
-  select {
-    flex: 1 1 100%;
+    gap: 12px;
+    align-items: center;
+    text-align: center;
   }
 }
 
@@ -248,4 +279,41 @@ input:checked + .slider:before {
 .btn-delete {
   background: #f8d7da;
   color: #842029;
+}
+
+.search-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.search-left {
+  display: flex;
+  align-items: center;
+}
+
+.search-input {
+  flex: 0 0 220px;
+  padding: 6px 10px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+}
+
+.search-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pagination-bar {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+  margin-top: 15px;
+  flex-wrap: wrap;
 }
