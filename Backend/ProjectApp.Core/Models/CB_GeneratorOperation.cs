@@ -49,5 +49,7 @@ public partial class CB_GeneratorOperation
 
     public decimal? total_co2e_kg { get; set; }
 
+    public int StatusId { get; set; }
+
     public virtual CB_MasterGenerator Generator { get; set; }
 }

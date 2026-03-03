@@ -11,10 +11,6 @@ public partial class CB_EmissionFactor
 
     public decimal CO2_Factor_KgPerL { get; set; }
 
-    public decimal NO2_Factor_KgPerKm { get; set; }
-
-    public decimal CH4_Factor_KgPerKm { get; set; }
-
     public bool? IsActive { get; set; }
 
     public int? EntryBy { get; set; }
@@ -26,6 +22,10 @@ public partial class CB_EmissionFactor
     public DateTime? UpdateDate { get; set; }
 
     public int? FuelId { get; set; }
+
+    public decimal? NO2_Factor_KgPerL { get; set; }
+
+    public decimal? CH4_Factor_KgPerL { get; set; }
 
     public virtual CB_MasterFuelType Fuel { get; set; }
 }

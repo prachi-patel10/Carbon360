@@ -49,6 +49,8 @@ public partial class CB_VehicleTripEmission
 
     public DateTime? updatedate { get; set; }
 
+    public int StatusId { get; set; }
+
     public virtual CB_User entrybyNavigation { get; set; }
 
     public virtual CB_MasterCity fromcity { get; set; }

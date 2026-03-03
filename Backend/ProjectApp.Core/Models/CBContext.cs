@@ -62,13 +62,13 @@ public partial class CBContext : DbContext
 
             entity.ToTable("CB_EmissionFactor");
 
-            entity.Property(e => e.CH4_Factor_KgPerKm).HasColumnType("decimal(10, 6)");
-            entity.Property(e => e.CO2_Factor_KgPerL).HasColumnType("decimal(10, 4)");
+            entity.Property(e => e.CH4_Factor_KgPerL).HasColumnType("decimal(16, 8)");
+            entity.Property(e => e.CO2_Factor_KgPerL).HasColumnType("decimal(16, 8)");
             entity.Property(e => e.EntryDate)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
             entity.Property(e => e.IsActive).HasDefaultValue(true);
-            entity.Property(e => e.NO2_Factor_KgPerKm).HasColumnType("decimal(10, 6)");
+            entity.Property(e => e.NO2_Factor_KgPerL).HasColumnType("decimal(16, 8)");
             entity.Property(e => e.UpdateDate).HasColumnType("datetime");
 
             entity.HasOne(d => d.Fuel).WithMany(p => p.CB_EmissionFactors)
@@ -91,6 +91,7 @@ public partial class CBContext : DbContext
             entity.Property(e => e.PowerOutputKWH).HasColumnType("decimal(16, 8)");
             entity.Property(e => e.RunHours).HasColumnType("decimal(16, 8)");
             entity.Property(e => e.StartTime).HasColumnType("datetime");
+            entity.Property(e => e.StatusId).HasDefaultValue(1);
             entity.Property(e => e.UpdateDate).HasColumnType("datetime");
             entity.Property(e => e.ch4_kg).HasColumnType("decimal(16, 8)");
             entity.Property(e => e.co2_kg).HasColumnType("decimal(16, 8)");
@@ -346,6 +347,7 @@ public partial class CBContext : DbContext
 
             entity.ToTable("CB_VehicleTripEmission");
 
+            entity.Property(e => e.StatusId).HasDefaultValue(1);
             entity.Property(e => e.ch4).HasColumnType("decimal(16, 8)");
             entity.Property(e => e.co2).HasColumnType("decimal(16, 8)");
             entity.Property(e => e.distancekm).HasColumnType("decimal(16, 8)");
