@@ -48,8 +48,8 @@ namespace ProjectApp.Repository.Services.Masters.EmissionFactor
                     FuelId = Convert.ToInt32(reader["FuelId"]),
                     FuelName = reader["fuel_name"]?.ToString(),
                     CO2_Factor_KgPerL = Convert.ToDecimal(reader["CO2_Factor_KgPerL"]),
-                    NO2_Factor_KgPerKm = Convert.ToDecimal(reader["NO2_Factor_KgPerKm"]),
-                    CH4_Factor_KgPerKm = Convert.ToDecimal(reader["CH4_Factor_KgPerKm"]),
+                    NO2_Factor_KgPerL = Convert.ToDecimal(reader["NO2_Factor_KgPerL"]),
+                    CH4_Factor_KgPerL = Convert.ToDecimal(reader["CH4_Factor_KgPerL"]),
                     IsActive = Convert.ToBoolean(reader["IsActive"])
                 });
             }
@@ -83,8 +83,8 @@ namespace ProjectApp.Repository.Services.Masters.EmissionFactor
                     FuelId = Convert.ToInt32(reader["FuelId"]),
                     FuelName = reader["fuel_name"]?.ToString(),
                     CO2_Factor_KgPerL = Convert.ToDecimal(reader["CO2_Factor_KgPerL"]),
-                    NO2_Factor_KgPerKm = Convert.ToDecimal(reader["NO2_Factor_KgPerKm"]),
-                    CH4_Factor_KgPerKm = Convert.ToDecimal(reader["CH4_Factor_KgPerKm"]),
+                    NO2_Factor_KgPerL = Convert.ToDecimal(reader["NO2_Factor_KgPerKm"]),
+                    CH4_Factor_KgPerL = Convert.ToDecimal(reader["CH4_Factor_KgPerKm"]),
                     IsActive = Convert.ToBoolean(reader["IsActive"])
                 };
 

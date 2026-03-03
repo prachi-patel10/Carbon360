@@ -21,8 +21,8 @@ namespace ProjectApp.Core.DTOs.Masters.EmissionFactor
         public string FuelName { get; set; }  // added
 
         public decimal CO2_Factor_KgPerL { get; set; }
-        public decimal NO2_Factor_KgPerKm { get; set; }
-        public decimal CH4_Factor_KgPerKm { get; set; }
+        public decimal NO2_Factor_KgPerL { get; set; }
+        public decimal CH4_Factor_KgPerL { get; set; }
 
         public bool? IsActive { get; set; }
     }
