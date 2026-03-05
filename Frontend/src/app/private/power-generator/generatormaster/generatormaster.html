@@ -153,8 +153,10 @@
         <button (click)="prevPage()" [disabled]="pageNumber === 1">Previous</button>
         <span>Page {{ pageNumber }} of {{ totalPages }}</span>
         <button (click)="nextPage()" [disabled]="pageNumber === totalPages">Next</button>
-        <select [ngModel]="pageSize" (ngModelChange)="changePageSize($event)">
-          <option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</option>
+        <select (change)="changePageSize($any($event.target).value)">
+          <option *ngFor="let size of pageSizeOptions" [value]="size">
+            {{size}}
+          </option>
         </select>
       </div>
     </div>
@@ -162,59 +164,57 @@
   </div>
 
 
-<!-- ================= FILTER MODAL ================= -->
-<div class="filter-overlay" *ngIf="filterModalOpen">
-  <div class="filter-modal">
+  <!-- ================= FILTER MODAL ================= -->
+  <div class="filter-overlay" *ngIf="filterModalOpen">
+    <div class="filter-modal">
 
-    <!-- Header -->
-    <div class="filter-header">
-      <h3>Filter Generators</h3>
-      <button type="button" class="close-btn" (click)="closeFilter()">✖</button>
-    </div>
+      <!-- Header -->
+      <div class="filter-header">
+        <h3>Filter Generators</h3>
+        <button type="button" class="close-btn" (click)="closeFilter()">✖</button>
+      </div>
 
-    <!-- Body -->
-    <div class="filter-body">
+      <!-- Body -->
+      <div class="filter-body">
 
-      <div class="form-row">
-        <!-- Fuel Type Multi Select -->
-        <div class="form-group half-width">
-          <label>Fuel Type</label>
-          <div class="multi-select-box">
-            <div *ngFor="let fuel of fuels()" class="checkbox-item">
-              <label>
-                <input type="checkbox" 
-                       [checked]="selectedFuelIds.includes(fuel.fuelId)" 
-                       (change)="toggleFuel(fuel.fuelId)" />
-                <span>{{ fuel.fuelName }}</span>
-              </label>
+        <div class="form-row">
+          <!-- Fuel Type Multi Select -->
+          <div class="form-group half-width">
+            <label>Fuel Type</label>
+            <div class="multi-select-box">
+              <div *ngFor="let fuel of fuels()" class="checkbox-item">
+                <label>
+                  <input type="checkbox" [checked]="selectedFuelIds.includes(fuel.fuelId)"
+                    (change)="toggleFuel(fuel.fuelId)" />
+                  <span>{{ fuel.fuelName }}</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Site Multi Select -->
+          <div class="form-group half-width">
+            <label>Site</label>
+            <div class="multi-select-box">
+              <div *ngFor="let site of sites()" class="checkbox-item">
+                <label>
+                  <input type="checkbox" [checked]="selectedSiteIds.includes(site.siteId)"
+                    (change)="toggleSite(site.siteId)" />
+                  <span>{{ site.siteName }}</span>
+                </label>
+              </div>
             </div>
           </div>
         </div>
 
-        <!-- Site Multi Select -->
-        <div class="form-group half-width">
-          <label>Site</label>
-          <div class="multi-select-box">
-            <div *ngFor="let site of sites()" class="checkbox-item">
-              <label>
-                <input type="checkbox" 
-                       [checked]="selectedSiteIds.includes(site.siteId)" 
-                       (change)="toggleSite(site.siteId)" />
-                <span>{{ site.siteName }}</span>
-              </label>
-            </div>
-          </div>
+        <!-- Footer -->
+        <div class="filter-footer">
+          <button type="button" class="reset-btn" (click)="resetFilterModal()">Reset</button>
+          <button type="button" class="apply-btn" (click)="applyFilter()">Apply Filter</button>
         </div>
-      </div>
 
-      <!-- Footer -->
-      <div class="filter-footer">
-        <button type="button" class="reset-btn" (click)="resetFilterModal()">Reset</button>
-        <button type="button" class="apply-btn" (click)="applyFilter()">Apply Filter</button>
       </div>
-
     </div>
   </div>
-</div>
 
 </div>

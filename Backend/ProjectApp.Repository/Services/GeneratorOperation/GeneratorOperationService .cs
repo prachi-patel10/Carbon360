@@ -59,7 +59,7 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
                 PowerOutputKWH = x.PowerOutputKWH ?? 0,
                 FuelConsumedLiters = x.FuelConsumedLiters ?? 0,
 
-         
+
 
                 TotalCO2 = x.total_co2_kg ?? 0,
                 TotalNO2 = x.total_no2_kg ?? 0,
@@ -197,12 +197,12 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
                 TotalNO2 = updatedEntity.total_no2_kg ?? 0,
                 TotalCH4 = updatedEntity.total_ch4_kg ?? 0,
                 TotalEmission = updatedEntity.total_co2e_kg ?? 0,
-                StatusId = updatedEntity.StatusId, // ✅ include
+                StatusId = updatedEntity.StatusId, // :white_check_mark: include
                 EntryBy = updatedEntity.EntryBy,
                 EntryDate = updatedEntity.EntryDate
             };
 
-            //return response; // ✅ guaranteed return
+            //return response; // :white_check_mark: guaranteed return
 
         }
 
@@ -260,6 +260,68 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
             int rows = result != null ? Convert.ToInt32(result) : 0;
 
             return rows > 0;
+        }
+
+        public async Task<List<GeneratorOperationResponseDTO>> SearchAsync(
+    string search = null,
+    string fuelType = null,
+    string generatorName = null,
+    DateTime? startDate = null,
+    DateTime? endDate = null,
+    int? statusId = null,
+    int pageNumber = 1,
+    int pageSize = 10,
+    string sortColumn = "OperationDate",
+    string sortDirection = "DESC"
+)
+        {
+            await using var connection = _context.Database.GetDbConnection();
+            await using var command = connection.CreateCommand();
+
+            command.CommandText = "USP_CB_SearchGeneratorOperation"; // Your SP name
+            command.CommandType = CommandType.StoredProcedure;
+
+            command.Parameters.Add(new SqlParameter("@Search", search ?? (object)DBNull.Value));
+            command.Parameters.Add(new SqlParameter("@FuelType", fuelType ?? (object)DBNull.Value));
+            command.Parameters.Add(new SqlParameter("@GeneratorName", generatorName ?? (object)DBNull.Value));
+            command.Parameters.Add(new SqlParameter("@StartDate", startDate ?? (object)DBNull.Value));
+            command.Parameters.Add(new SqlParameter("@EndDate", endDate ?? (object)DBNull.Value));
+            command.Parameters.Add(new SqlParameter("@StatusId", statusId ?? (object)DBNull.Value));
+            command.Parameters.Add(new SqlParameter("@PageNumber", pageNumber));
+            command.Parameters.Add(new SqlParameter("@PageSize", pageSize));
+            command.Parameters.Add(new SqlParameter("@SortColumn", sortColumn));
+            command.Parameters.Add(new SqlParameter("@SortDirection", sortDirection));
+
+            if (connection.State != ConnectionState.Open)
+                await connection.OpenAsync();
+
+            var reader = await command.ExecuteReaderAsync();
+            var result = new List<GeneratorOperationResponseDTO>();
+
+            while (await reader.ReadAsync())
+            {
+                result.Add(new GeneratorOperationResponseDTO
+                {
+                    OperationId = _idEncoder.Encode(reader.GetInt32(reader.GetOrdinal("OperationId"))),
+                    GeneratorId = _idEncoder.Encode(reader.GetInt32(reader.GetOrdinal("GeneratorId"))),
+                    OperationDate = DateOnly.FromDateTime(reader.GetDateTime(reader.GetOrdinal("OperationDate"))),
+                    RunHours = reader.GetDecimal(reader.GetOrdinal("RunHours")),
+                    LoadFactor = reader.GetDecimal(reader.GetOrdinal("LoadFactor")),
+                    PowerOutputKWH = reader.GetDecimal(reader.GetOrdinal("PowerOutputKWH")),
+                    FuelConsumedLiters = reader.GetDecimal(reader.GetOrdinal("FuelConsumedLiters")),
+                    TotalCO2 = reader.GetDecimal(reader.GetOrdinal("total_co2_kg")),
+                    TotalNO2 = reader.GetDecimal(reader.GetOrdinal("total_no2_kg")),
+                    TotalCH4 = reader.GetDecimal(reader.GetOrdinal("total_ch4_kg")),
+                    TotalEmission = reader.GetDecimal(reader.GetOrdinal("total_co2e_kg")),
+                    StatusId = reader.GetInt32(reader.GetOrdinal("StatusId")),
+                    EntryBy = reader.GetInt32(reader.GetOrdinal("EntryBy")),
+                    EntryDate = reader.GetDateTime(reader.GetOrdinal("EntryDate")),
+                    GeneratorName = reader["GeneratorName"].ToString(),
+                    FuelType = reader["FuelType"].ToString() // Make sure your SP returns this
+                });
+            }
+
+            return result;
         }
     }
 }

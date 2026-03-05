@@ -169,11 +169,11 @@
           <div class="form-group">
             <label>Fuel Type</label>
             <div class="multi-select-container">
-              <div *ngFor="let fuel of fuelTypes()" class="checkbox-item">
+              <div *ngFor="let fuel of fuelTypesList">
                 <label>
                   <input type="checkbox" [checked]="selectedFuelIds.includes(fuel.fuel_id)"
-                    (change)="toggleVehicleFuel(fuel.fuel_id)" />
-                  <span>{{ fuel.fuel_name }}</span>
+                    (change)="toggleFuel(fuel.fuel_id)" />
+                  {{ fuel.fuel_name }}
                 </label>
               </div>
             </div>
@@ -183,11 +183,11 @@
           <div class="form-group">
             <label>Vehicle Type</label>
             <div class="multi-select-container">
-              <div *ngFor="let vt of vehicleTypes()" class="checkbox-item">
+              <div *ngFor="let vt of vehicleTypesList">
                 <label>
                   <input type="checkbox" [checked]="selectedVehicleTypeIds.includes(vt.vehicle_type_id)"
                     (change)="toggleVehicleType(vt.vehicle_type_id)" />
-                  <span>{{ vt.vehicle_type_name }}</span>
+                  {{ vt.vehicle_type_name }}
                 </label>
               </div>
             </div>

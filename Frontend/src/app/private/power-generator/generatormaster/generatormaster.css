@@ -261,6 +261,14 @@ th span {
   margin-top: 15px;
 }
 
+.pagination-container{
+display:flex;
+align-items:center;
+gap:10px;
+justify-content:flex-end;
+margin-top:15px;
+}
+
 .pagination-controls button {
   padding: 5px 10px;
   margin: 0 5px;
