@@ -192,7 +192,10 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
                 LoadFactor = updatedEntity.LoadFactor ?? 0,
                 PowerOutputKWH = updatedEntity.PowerOutputKWH ?? 0,
                 FuelConsumedLiters = updatedEntity.FuelConsumedLiters ?? 0,
-              
+
+                TotalCO2 = updatedEntity.total_co2_kg ?? 0,
+                TotalNO2 = updatedEntity.total_no2_kg ?? 0,
+                TotalCH4 = updatedEntity.total_ch4_kg ?? 0,
                 TotalEmission = updatedEntity.total_co2e_kg ?? 0,
                 StatusId = updatedEntity.StatusId, // ✅ include
                 EntryBy = updatedEntity.EntryBy,
@@ -232,6 +235,31 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
 
             return rows > 0;
 
+        }
+
+        public async Task<bool> UpdateStatusAsync(string encryptedId, int statusId)
+        {
+            int id = _idEncoder.Decode(encryptedId);
+            int userId = GetCurrentUserId();
+
+            await using var connection = _context.Database.GetDbConnection();
+            await using var command = connection.CreateCommand();
+
+            command.CommandText = "USP_CB_GeneratorOperationUpdateStatus";
+            command.CommandType = CommandType.StoredProcedure;
+
+            command.Parameters.Add(new SqlParameter("@OperationId", id));
+            command.Parameters.Add(new SqlParameter("@StatusId", statusId));
+            command.Parameters.Add(new SqlParameter("@UpdatedBy", userId));
+
+            if (connection.State != ConnectionState.Open)
+                await connection.OpenAsync();
+
+            var result = await command.ExecuteScalarAsync();
+
+            int rows = result != null ? Convert.ToInt32(result) : 0;
+
+            return rows > 0;
         }
     }
 }

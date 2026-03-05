@@ -119,5 +119,19 @@ namespace ProjectApp.API.Controllers.Account.GeneratorOperation
 
             return StatusCode((int)_apiResponse.StatusCode, _apiResponse);
         }
+
+        [HttpPatch("status/{id}")]
+        public async Task<IActionResult> UpdateStatus(string id, int statusId)
+        {
+            var result = await _service.UpdateStatusAsync(id, statusId);
+
+            _apiResponse.data = result;
+            _apiResponse.status = result;
+            _apiResponse.StatusCode = result
+                ? HttpStatusCode.OK
+                : HttpStatusCode.BadRequest;
+
+            return StatusCode((int)_apiResponse.StatusCode, _apiResponse);
+        }
     }
 }

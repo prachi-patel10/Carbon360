@@ -21,5 +21,6 @@ namespace ProjectApp.Repository.Interfaces.GenerationOperation
 
         Task<GeneratorOperationResponseDTO> UpdateAsync(string encryptedId, GeneratorOperationCreateDTO dto);
 
+        Task<bool> UpdateStatusAsync(string encryptedId, int statusId);
     }
 }

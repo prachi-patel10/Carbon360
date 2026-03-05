@@ -25,12 +25,6 @@ public partial class CB_VehicleTripEmission
 
     public decimal fuelconsumedltr { get; set; }
 
-    public decimal? co2 { get; set; }
-
-    public decimal? no2 { get; set; }
-
-    public decimal? ch4 { get; set; }
-
     public decimal? totalco2 { get; set; }
 
     public decimal? totalno2 { get; set; }
@@ -51,9 +45,11 @@ public partial class CB_VehicleTripEmission
 
     public int StatusId { get; set; }
 
-    public int? EmissionFactorId { get; set; }
+    public decimal? co2 { get; set; }
 
-    public virtual CB_EmissionFactor EmissionFactor { get; set; }
+    public decimal? no2 { get; set; }
+
+    public decimal? ch4 { get; set; }
 
     public virtual CB_User entrybyNavigation { get; set; }
 

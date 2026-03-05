@@ -21,6 +21,6 @@ namespace ProjectApp.Core.DTOs.Account.GeneratorOperation
 
         public decimal FuelConsumedLiters { get; set; }
 
-        //public int? StatusId { get; set; }
+        public int? StatusId { get; set; }
     }
 }
