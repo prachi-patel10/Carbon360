@@ -40,31 +40,42 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
 
         public async Task<List<GeneratorOperationResponseDTO>> GetAllAsync()
         {
-            var data = await _commonService.GetAllAsync();
+            var list = await _context.CB_GeneratorOperations
+                 .FromSqlRaw("EXEC USP_CB_GeneratorOperationGetAllList")
+                 .AsNoTracking()
+                 .ToListAsync();
 
-            if (data == null || !data.Any())
+            if (list == null || !list.Any())
                 return new List<GeneratorOperationResponseDTO>();
 
-            return data.Select(x => new GeneratorOperationResponseDTO
+            return list.Select(x => new GeneratorOperationResponseDTO
             {
-                OperationId = _idEncoder.Encode(x.OperationId),     // encode OperationId
-                GeneratorId = _idEncoder.Encode(x.GeneratorId),   // encode GeneratorId as string
+                OperationId = _idEncoder.Encode(x.OperationId),
+                GeneratorId = _idEncoder.Encode(x.GeneratorId),
+
                 OperationDate = x.OperationDate,
                 RunHours = x.RunHours ?? 0,
                 LoadFactor = x.LoadFactor ?? 0,
                 PowerOutputKWH = x.PowerOutputKWH ?? 0,
                 FuelConsumedLiters = x.FuelConsumedLiters ?? 0,
 
-                CO2 = x.co2_kg ?? 0,                  // match DB columns
+                CO2 = x.co2_kg ?? 0,
                 NO2 = x.no2_kg ?? 0,
                 CH4 = x.ch4_kg ?? 0,
+
+                TotalCO2 = x.total_co2_kg ?? 0,
+                TotalNO2 = x.total_no2_kg ?? 0,
+                TotalCH4 = x.total_ch4_kg ?? 0,
                 TotalEmission = x.total_co2e_kg ?? 0,
 
+                //GeneratorName = x.GeneratorName,
+                //RatedCapacityKW = x.RatedCapacityKW ?? 0,
+
                 EntryBy = x.EntryBy,
-                EntryDate = x.EntryDate
+                EntryDate = x.EntryDate,
+                StatusId = x.StatusId
             })
             .OrderByDescending(x => x.OperationDate)
-            .ThenByDescending(x => x.OperationId)
             .ToList();
 
         }
@@ -77,16 +88,7 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
                 throw new ArgumentNullException(nameof(dto));
 
             int generatorId = _idEncoder.Decode(dto.GeneratorId);
-
-            if (generatorId <= 0)
-                throw new Exception("Invalid Generator Id");
-
-            if (dto.EndTime <= dto.StartTime)
-                throw new Exception("End Time must be greater than Start Time");
-
             int userId = GetCurrentUserId();
-
-            int insertedId;
 
             await using var connection = _context.Database.GetDbConnection();
             await using var command = connection.CreateCommand();
@@ -94,99 +96,23 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
             command.CommandText = "USP_CB_GeneratorOperationInsert";
             command.CommandType = CommandType.StoredProcedure;
 
-            command.Parameters.Add(new SqlParameter("@GeneratorId", SqlDbType.Int)
-            {
-                Value = generatorId
-            });
-
-            command.Parameters.Add(new SqlParameter("@StartTime", SqlDbType.DateTime)
-            {
-                Value = dto.StartTime
-            });
-
-            command.Parameters.Add(new SqlParameter("@EndTime", SqlDbType.DateTime)
-            {
-                Value = dto.EndTime
-            });
-
-            command.Parameters.Add(new SqlParameter("@LoadFactor", SqlDbType.Decimal)
-            {
-                Precision = 5,
-                Scale = 2,
-                Value = dto.LoadFactor
-            });
-
-            command.Parameters.Add(new SqlParameter("@FuelConsumedLiters", SqlDbType.Decimal)
-            {
-                Precision = 10,
-                Scale = 2,
-                Value = dto.FuelConsumedLiters
-            });
-
-            command.Parameters.Add(new SqlParameter("@UserId", SqlDbType.Int)
-            {
-                Value = userId
-            });
+            command.Parameters.Add(new SqlParameter("@GeneratorId", generatorId));
+            command.Parameters.Add(new SqlParameter("@StartTime", dto.StartTime));
+            command.Parameters.Add(new SqlParameter("@EndTime", dto.EndTime));
+            command.Parameters.Add(new SqlParameter("@LoadFactor", dto.LoadFactor));
+            command.Parameters.Add(new SqlParameter("@FuelConsumedLiters", dto.FuelConsumedLiters));
+            command.Parameters.Add(new SqlParameter("@UserId", userId));
 
             if (connection.State != ConnectionState.Open)
                 await connection.OpenAsync();
 
             var result = await command.ExecuteScalarAsync();
+            int insertedId = Convert.ToInt32(result);
 
-            if (result == null || result == DBNull.Value)
-                throw new Exception("Insert failed");
+            return await GetByIdAsync(_idEncoder.Encode(insertedId));
 
-            insertedId = Convert.ToInt32(result);
-            Console.WriteLine("Inserted ID: " + insertedId);
-            var insertedEntity = await _context.CB_GeneratorOperations
-     .AsNoTracking()
-     .FirstOrDefaultAsync(x => x.OperationId == insertedId);
-
-            // 🔥 FETCH GENERATOR
-            var generator = await _context.CB_MasterGenerators
-                .AsNoTracking()
-                .FirstOrDefaultAsync(x => x.GeneratorId == insertedEntity.GeneratorId);
-
-            if (generator == null)
-                throw new Exception("Generator not found");
-
-            // 🔥 FETCH EMISSION FACTOR
-            var factor = await _context.CB_EmissionFactors
-                .AsNoTracking()
-                .FirstOrDefaultAsync(x => x.FuelId == generator.FuelId && x.IsActive == true);
-
-            if (factor == null)
-                throw new Exception("Emission factor not found");
-
-            if (insertedEntity == null)
-                throw new Exception("Inserted record not found");
-
-            return new GeneratorOperationResponseDTO
-            {
-                OperationId = _idEncoder.Encode(insertedEntity.OperationId),
-                GeneratorId = _idEncoder.Encode(insertedEntity.GeneratorId),
-                OperationDate = insertedEntity.OperationDate,
-                RunHours = insertedEntity.RunHours ?? 0,
-                LoadFactor = insertedEntity.LoadFactor ?? 0,
-                PowerOutputKWH = insertedEntity.PowerOutputKWH ?? 0,
-                FuelConsumedLiters = insertedEntity.FuelConsumedLiters ?? 0,
-                CO2 = insertedEntity.co2_kg ?? 0,
-                NO2 = insertedEntity.no2_kg ?? 0,
-                CH4 = insertedEntity.ch4_kg ?? 0,
-                TotalEmission = insertedEntity.total_co2e_kg ?? 0,
-
-                // 🔥 ADD THESE LINES
-                CO2Factor = factor.CO2_Factor_KgPerL,
-                //NO2Factor = factor.NO2_Factor_KgPerL,
-                //CH4Factor = factor.CH4_Factor_KgPerL,
-                GWP_CH4 = 28m,
-                GWP_NO2 = 265m,
-
-                EntryBy = insertedEntity.EntryBy,
-                EntryDate = insertedEntity.EntryDate
-            };
         }
-               
+
 
         public async Task<GeneratorOperationResponseDTO> GetByIdAsync(string encryptedId)
         {
@@ -205,17 +131,36 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
             if (entity == null)
                 return null;
 
-            var response = _mapper.Map<GeneratorOperationResponseDTO>(entity);
-            response.OperationId = _idEncoder.Encode(entity.OperationId);
+            return new GeneratorOperationResponseDTO
+            {
+                OperationId = _idEncoder.Encode(entity.OperationId),
+                GeneratorId = _idEncoder.Encode(entity.GeneratorId),
 
-            return response;
+                OperationDate = entity.OperationDate,
+                RunHours = entity.RunHours ?? 0,
+                LoadFactor = entity.LoadFactor ?? 0,
+                PowerOutputKWH = entity.PowerOutputKWH ?? 0,
+                FuelConsumedLiters = entity.FuelConsumedLiters ?? 0,
+
+                CO2 = entity.co2_kg ?? 0,
+                NO2 = entity.no2_kg ?? 0,
+                CH4 = entity.ch4_kg ?? 0,
+
+                TotalCO2 = entity.total_co2_kg ?? 0,
+                TotalNO2 = entity.total_no2_kg ?? 0,
+                TotalCH4 = entity.total_ch4_kg ?? 0,
+                TotalEmission = entity.total_co2e_kg ?? 0,
+
+                StatusId = entity.StatusId,
+
+                EntryBy = entity.EntryBy,
+                EntryDate = entity.EntryDate
+            };
+
         }
 
         public async Task<GeneratorOperationResponseDTO> UpdateAsync(string encryptedId, GeneratorOperationCreateDTO dto)
         {
-            if (string.IsNullOrEmpty(encryptedId) || dto == null)
-                throw new ArgumentNullException(nameof(encryptedId), "Invalid data for update");
-
             int operationId = _idEncoder.Decode(encryptedId);
             int generatorId = _idEncoder.Decode(dto.GeneratorId);
             int userId = GetCurrentUserId();
@@ -239,16 +184,11 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
 
             await command.ExecuteNonQueryAsync();
 
-            // Fetch updated record
             var updatedEntity = await _context.CB_GeneratorOperations
                 .AsNoTracking()
                 .FirstOrDefaultAsync(x => x.OperationId == operationId);
 
-            // ✅ Make sure **all paths return**
-            if (updatedEntity == null)
-                throw new Exception("Record not found after update.");
-
-            var response = new GeneratorOperationResponseDTO
+            return new GeneratorOperationResponseDTO
             {
                 OperationId = _idEncoder.Encode(updatedEntity.OperationId),
                 GeneratorId = _idEncoder.Encode(updatedEntity.GeneratorId),
@@ -261,11 +201,13 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
                 NO2 = updatedEntity.no2_kg ?? 0,
                 CH4 = updatedEntity.ch4_kg ?? 0,
                 TotalEmission = updatedEntity.total_co2e_kg ?? 0,
+                StatusId = updatedEntity.StatusId, // ✅ include
                 EntryBy = updatedEntity.EntryBy,
                 EntryDate = updatedEntity.EntryDate
             };
 
-            return response; // ✅ guaranteed return
+            //return response; // ✅ guaranteed return
+
         }
 
         public async Task<bool> DeleteAsync(string encryptedId)
@@ -296,6 +238,7 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
             int rows = result != null ? Convert.ToInt32(result) : 0;
 
             return rows > 0;
+
         }
     }
 }
