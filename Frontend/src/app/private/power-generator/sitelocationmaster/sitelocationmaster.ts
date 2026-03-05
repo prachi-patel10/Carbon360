@@ -3,6 +3,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, FormsModule } from '@angul
 import { SiteLocationMasterService } from './site-location-master-service';
 import Swal from 'sweetalert2';
 import { CommonModule } from '@angular/common';
+import { CityService } from '../../fleet-transport/citymaster/city-service';
 
 @Component({
   selector: 'app-sitelocationmaster',
@@ -15,6 +16,7 @@ export class Sitelocationmaster implements OnInit {
   form!: FormGroup;
   siteList: any[] = [];
   departments: any[] = [];
+  cityList: any[] = [];
 
   editingSiteId: string | null = null;
   searchText: string = '';
@@ -31,8 +33,8 @@ export class Sitelocationmaster implements OnInit {
 
   filterModalOpen = signal(false);
 
-selectedSiteNames: string[] = [];
-selectedCityNames: string[] = [];
+  selectedSiteNames: string[] = [];
+  selectedCityNames: string[] = [];
 
 
   // Filter modal
@@ -42,7 +44,7 @@ selectedCityNames: string[] = [];
   filterDropdownOpen = false;
 
 
-  constructor(private fb: FormBuilder, private service: SiteLocationMasterService) { }
+  constructor(private fb: FormBuilder, private service: SiteLocationMasterService, private cityService: CityService) { }
 
   ngOnInit(): void {
     // Form for create/edit
@@ -56,6 +58,7 @@ selectedCityNames: string[] = [];
     });
 
     this.loadDepartments();
+    this.loadCities();
     this.search();
   }
 
@@ -88,7 +91,7 @@ selectedCityNames: string[] = [];
       buildingName: site.buildingName,
       city: site.city,
       state: site.state,
-      departmentId: site.departmentId,
+      departmentId: site.departmentId ?? null,
       isActive: site.isActive,
     });
   }
@@ -109,6 +112,26 @@ selectedCityNames: string[] = [];
         });
       }
     });
+  }
+
+  //Load Cities
+  loadCities() {
+    this.cityService.getAll().subscribe((res: any) => {
+      this.cityList = res.data || res || [];
+    });
+  }
+
+  //CityChange
+  onCityChange(event: any) {
+    const selectedCity = event.target.value;
+
+    const city = this.cityList.find(c => c.cityName === selectedCity);
+
+    if (city) {
+      this.form.patchValue({
+        state: city.stateName
+      });
+    }
   }
 
   // ================= TOGGLE STATUS =================
@@ -146,10 +169,17 @@ selectedCityNames: string[] = [];
 
   // ================= LOAD DEPARTMENTS =================
   loadDepartments() {
-    this.service.getDepartments().subscribe((res: any) => {
-      this.departments = res || [];
-    });
-  }
+  this.service.getDepartments().subscribe((res: any) => {
+    this.departments = res || [];
+
+    // Repatch department after dropdown loads
+    if (this.editingSiteId && this.form.value.departmentId) {
+      this.form.patchValue({
+        departmentId: this.form.value.departmentId
+      });
+    }
+  });
+}
 
   // Sorting function
   sort(column: string) {
@@ -205,23 +235,23 @@ selectedCityNames: string[] = [];
   }
 
   openFilterModal() {
-  this.filterModalOpen.set(true);
-}
+    this.filterModalOpen.set(true);
+  }
 
-closeFilter() {
-  this.filterModalOpen.set(false);
-}
+  closeFilter() {
+    this.filterModalOpen.set(false);
+  }
 
-applyFilter() {
-  this.pageNumber = 1;
-  this.search();
-  this.filterModalOpen.set(false);
-}
+  applyFilter() {
+    this.pageNumber = 1;
+    this.search();
+    this.filterModalOpen.set(false);
+  }
 
   resetFilterModal() {
-  this.selectedSiteNames = [];
-  this.selectedCityNames = [];
-}
+    this.selectedSiteNames = [];
+    this.selectedCityNames = [];
+  }
 
   toggleFilterDropdown() {
     this.filterDropdownOpen = !this.filterDropdownOpen;
@@ -237,10 +267,10 @@ applyFilter() {
   }
 
   toggleCityName(city: string) {
-  this.selectedCityNames.includes(city)
-    ? this.selectedCityNames = this.selectedCityNames.filter(x => x !== city)
-    : this.selectedCityNames.push(city);
-}
+    this.selectedCityNames.includes(city)
+      ? this.selectedCityNames = this.selectedCityNames.filter(x => x !== city)
+      : this.selectedCityNames.push(city);
+  }
 
   applyDropdownFilter() {
     this.pageNumber = 1;
@@ -254,7 +284,10 @@ applyFilter() {
   }
 
   openFilter() {
-  this.filterModalOpen.set(true);
-}
+    this.filterModalOpen.set(true);
+  }
 
+  compareDepartment(d1: any, d2: any): boolean {
+  return d1 == d2;
+}
 }

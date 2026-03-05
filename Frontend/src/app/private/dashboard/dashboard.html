@@ -59,23 +59,23 @@
           <ul class="submenu" *ngIf="isSubMenuOpen('admin')">
             <li (click)="goTo('user')" [class.active-link]="isActive('/user')">
               <i class="fas fa-users"></i>
-              <span>User Management</span>
+              <span> User Management</span>
             </li>
             <li (click)="goTo('role')" [class.active-link]="isActive('/role')">
               <i class="fas fa-user-lock"></i>
-              <span>Access Control</span>
+              <span> Access Control</span>
             </li>
             <li (click)="goTo('department')" [class.active-link]="isActive('/department')">
               <i class="fas fa-sitemap"></i>
-              <span>Organizational Units</span>
+              <span> Organizational Units</span>
             </li>
             <li (click)="goTo('emissionFactors')" [class.active-link]="isActive('/emissionFactors')">
               <i class="fas fa-cloud"></i>
-              <span>Emission Factors</span>
+              <span> Emission Factors</span>
             </li>
             <li (click)="goTo('fueltype')" [class.active-link]="isActive('/fueltype')">
               <i class="fas fa-gas-pump"></i>
-              <span>Fuel Management</span>
+              <span> Fuel Management</span>
             </li>
           </ul>
         </li>
@@ -91,15 +91,15 @@
           <ul class="submenu" *ngIf="isSubMenuOpen('vehicle')">
             <li (click)="goTo('vehiclemaster')" [class.active-link]="isActive('/vehiclemaster')">
               <i class="fas fa-truck-moving"></i>
-              <span>Vehicle Master</span>
+              <span> Vehicle Master</span>
             </li>
             <li (click)="goTo('citymaster')" [class.active-link]="isActive('/citymaster')">
               <i class="fas fa-city"></i>
-              <span>City Master</span>
+              <span> City Master</span>
             </li>
             <li (click)="goTo('vehicletypeservice')" [class.active-link]="isActive('/vehicletypeservice')">
               <i class="fas fa-car-side"></i>
-              <span>Vehicle Type</span>
+              <span> Vehicle Type</span>
             </li>
           </ul>
         </li>
@@ -115,11 +115,11 @@
           <ul class="submenu" *ngIf="isSubMenuOpen('generator')">
             <li (click)="goTo('generator')" [class.active-link]="isActive('/generator')">
               <i class="fas fa-bolt"></i>
-              <span>Generator Master</span>
+              <span> Generator Master</span>
             </li>
             <li (click)="goTo('sitelocation')" [class.active-link]="isActive('/sitelocation')">
               <i class="fas fa-map-marker-alt"></i>
-              <span>Site Location</span>
+              <span> Site Location</span>
             </li>
           </ul>
         </li>
@@ -136,10 +136,10 @@
 
       <ul class="submenu" *ngIf="isMainMenuOpen('fleet')">
         <li *ngIf="isAdmin() || isReporter()" (click)="goTo('vehicle')" [class.active-link]="isActive('/vehicle')">
-          <i class="fas fa-file-alt"></i> <span>EntryForm</span>
+          <i class="fas fa-file-alt"></i> <span> EntryForm</span>
         </li>
         <li *ngIf="isAdmin() || isReporter()" routerLink="/waste" routerLinkActive="active-link">
-          <i class="fas fa-search"></i> <span>Search</span>
+          <i class="fas fa-search"></i> <span> Search</span>
         </li>
       </ul>
     </li>
@@ -154,10 +154,10 @@
 
       <ul class="submenu" *ngIf="isMainMenuOpen('power')">
         <li *ngIf="isAdmin() || isReporter()" (click)="goTo('generator-ec')" [class.active-link]="isActive('/generator-ec')">
-          <i class="fas fa-chart-bar"></i> <span>Report</span>
+          <i class="fas fa-chart-bar"></i> <span> Report</span>
         </li>
-        <li *ngIf="isAdmin() || isReporter()" routerLink="/searchGenerator" routerLinkActive="active-link">
-          <i class="fas fa-chart-line"></i> <span>Search</span>
+        <li *ngIf="isAdmin() || isReporter()" (click)="goTo('searchGenerator')" [class.active-link]="isActive('/searchGenerator')">
+          <i class="fas fa-search"></i> <span> Search</span>
         </li>
       </ul>
     </li>
