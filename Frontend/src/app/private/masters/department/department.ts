@@ -32,6 +32,10 @@ export class DepartmentComponent implements OnInit {
   onlyActive = signal(false);
   searchText = signal('');
   refreshTrigger = signal(0);
+  departmentFilterModalOpen = signal(false);
+
+  selectedDepartmentIds: string[] = [];
+  appliedDepartmentIds: string[] = [];
 
   constructor(
     private fb: FormBuilder,
@@ -52,6 +56,57 @@ export class DepartmentComponent implements OnInit {
       this.loadDepartments(page, size, search, active);
     });
   }
+
+  openDepartmentFilter() {
+  this.departmentFilterModalOpen.set(true);
+}
+
+closeDepartmentFilter() {
+  this.departmentFilterModalOpen.set(false);
+}
+
+toggleDepartmentFilter(id: string) {
+
+  if (this.selectedDepartmentIds.includes(id)) {
+    this.selectedDepartmentIds =
+      this.selectedDepartmentIds.filter(x => x !== id);
+  }
+  else {
+    this.selectedDepartmentIds.push(id);
+  }
+
+}
+
+applyDepartmentFilter() {
+
+  this.departmentFilterModalOpen.set(false);
+
+  this.appliedDepartmentIds = [...this.selectedDepartmentIds];
+  this.currentPage.set(1);
+
+  // trigger reload
+  this.refreshTrigger.update(v => v + 1);
+
+
+}
+
+ResetDepartmentFilter() {
+
+  // clear selected checkboxes
+  this.selectedDepartmentIds = [];
+
+  // remove applied filter
+  this.appliedDepartmentIds = [];
+
+  // reset page
+  this.currentPage.set(1);
+
+  // reload data
+  this.refreshTrigger.update(v => v + 1);
+
+  // close modal
+  this.departmentFilterModalOpen.set(false);
+}
 
   ngOnInit(): void {
     this.initForms();

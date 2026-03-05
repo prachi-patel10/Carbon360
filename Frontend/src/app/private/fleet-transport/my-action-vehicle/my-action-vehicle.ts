@@ -1,43 +1,80 @@
-import { Component,signal } from '@angular/core';
+import { Component,OnInit,signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { MyActionVehicleService,VehicleTrip } from './my-action-vehicle-service';
+
+
+interface VehicleTripDisplay extends VehicleTrip {
+
+  vehicleName: string
+  fromCity: string
+  toCity: string
+  status: string
+
+}
 
 @Component({
   selector: 'app-my-action-vehicle',
+  standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './my-action-vehicle.html',
   styleUrl: './my-action-vehicle.css',
 })
-export class MyActionVehicle {
 
-   searchText = signal<string>('');
-  filterEmission = signal<number | null>(null);
-  filterStartDate = signal<string | null>(null);
-  filterEndDate = signal<string | null>(null);
+export class MyActionVehicle implements OnInit{
 
-  onSearch(event: any) {
-    this.searchText.set(event.target.value);
+  trips = signal<VehicleTripDisplay[]>([])
+
+  constructor(private service: MyActionVehicleService) {}
+
+  ngOnInit(): void {
+    this.loadTrips()
   }
 
-  onEmissionChange(event: any) {
-    this.filterEmission.set(event.target.value);
-  }
+  loadTrips() {
 
-  onStartDateChange(event: any) {
-    this.filterStartDate.set(event.target.value);
-  }
+  this.service.getTrips().subscribe(data => {
 
-  onEndDateChange(event: any) {
-    this.filterEndDate.set(event.target.value);
-  }
+    const mapped = data.map((t: VehicleTrip) => ({
 
-  applyFilters() {
+      ...t,
 
-    console.log("Search", this.searchText());
-    console.log("Emission", this.filterEmission());
-    console.log("Start", this.filterStartDate());
-    console.log("End", this.filterEndDate());
+      vehicleName: `${t.vehicleId}`,
+      fromCity: `${t.fromCityId}`,
+      toCity: `${t.toCityId}`,
 
-  }
+      status: t.statusId === 1 ? 'Completed' : 'Pending'
+
+    }))
+
+    this.trips.set(mapped)
+
+  })
 
 }
+
+  // loadTrips() {
+
+  //   this.service.getTrips().subscribe(data => {
+
+  //     const mapped = data.map((t: VehicleTrip) => ({
+
+  //       ...t,
+
+  //       vehicleName: `Vehicle ${t.vehicleid}`,   // temporary
+  //       fromCity: `City ${t.fromcityid}`,
+  //       toCity: `City ${t.tocityid}`,
+
+  //       status: t.StatusId === 1 ? 'Completed' : 'Pending'
+
+  //     }))
+
+  //     this.trips.set(mapped)
+
+  //   })
+
+  // }
+
+}
+
+

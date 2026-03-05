@@ -72,7 +72,11 @@
           </label>
         </div>
 
-        <button class="delete-btn" (click)="clearSearch()">Clear</button>
+        <!-- <button class="delete-btn" (click)="clearSearch()">Clear</button> -->
+         <!-- Filter Button -->
+        <button class="filter-btn" (click)="openDepartmentFilter()">
+          Filter
+        </button>
 
       </div>
     </div>
@@ -109,6 +113,59 @@
         </tbody>
       </table>
     </div>
+
+    <!-- ================= FILTER MODAL ================= -->
+
+<div class="filter-overlay" *ngIf="departmentFilterModalOpen()">
+
+  <div class="filter-modal">
+
+    <!-- Header -->
+    <div class="filter-header">
+      <h3>Filter Department</h3>
+      <button class="close-btn" (click)="closeDepartmentFilter()">✖</button>
+    </div>
+
+    <!-- Body -->
+    <div class="filter-body">
+
+      <div class="form-group">
+        <label>Select Department</label>
+
+        <div class="multi-select-container">
+
+          <div *ngFor="let d of departments()" class="checkbox-item">
+
+            <label>
+              <input type="checkbox"
+                     [checked]="selectedDepartmentIds.includes(d.DepartmentId)"
+                     (change)="toggleDepartmentFilter(d.DepartmentId)" />
+
+              <span>{{ d.DepartmentName }}</span>
+
+            </label>
+
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Footer -->
+    <div class="filter-footer">
+      <button class="apply-btn" (click)="ResetDepartmentFilter()">
+        RESET
+      </button>
+      <button class="apply-btn" (click)="applyDepartmentFilter()">
+        Apply Filter
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
 
     <!-- Pagination -->
   <!-- Pagination -->

@@ -55,6 +55,16 @@ export class MasterUserComponent implements OnInit {
   sortColumn = 'fName'; // lowercase f
   sortDirection: 'ASC' | 'DESC' = 'ASC';
 
+  userFilterModalOpen = signal(false);
+
+  selectedDepartmentIds: string[] = [];
+  selectedRoleIds: string[] = [];
+
+  userFilter = signal({
+    department_id: [] as string[],
+    role_id: [] as string[]
+  });
+
   rolesDropdownOpen = false;
 
   ngOnInit(): void {
@@ -74,6 +84,68 @@ export class MasterUserComponent implements OnInit {
     // Load users after roles and departments
     this.loadUsers();
   }
+
+  openUserFilter() {
+  this.userFilterModalOpen.set(true);
+}
+
+closeUserFilter() {
+  this.userFilterModalOpen.set(false);
+}
+
+toggleDepartmentFilter(id: string) {
+
+  if (this.selectedDepartmentIds.includes(id)) {
+    this.selectedDepartmentIds =
+      this.selectedDepartmentIds.filter(x => x !== id);
+  } 
+  else {
+    this.selectedDepartmentIds.push(id);
+  }
+
+  this.userFilter.update(f => ({
+    ...f,
+    department_id: this.selectedDepartmentIds
+  }));
+}
+
+toggleRoleFilter(id: string) {
+
+  if (this.selectedRoleIds.includes(id)) {
+    this.selectedRoleIds =
+      this.selectedRoleIds.filter(x => x !== id);
+  } 
+  else {
+    this.selectedRoleIds.push(id);
+  }
+
+  this.userFilter.update(f => ({
+    ...f,
+    role_id: this.selectedRoleIds
+  }));
+}
+
+applyUserFilter() {
+
+  this.userFilterModalOpen.set(false);
+
+  this.currentPage.set(1);
+
+  this.loadUsers();
+}
+
+resetUserFilter() {
+
+  this.selectedDepartmentIds = [];
+  this.selectedRoleIds = [];
+
+  this.userFilter.set({
+    department_id: [],
+    role_id: []
+  });
+
+  this.loadUsers();
+}
 
   initForm() {
     this.userForm = this.fb.group({
@@ -177,27 +249,54 @@ export class MasterUserComponent implements OnInit {
   //   });
   // }
 
-  loadUsers() {
-    this.service.getPaged(
-      this.currentPage(),
-      this.requestedRecords(),
-      this.searchText(),
-      this.onlyActive()
-    ).subscribe(res => {
-      const data: User[] = res.data.data; // API response
+    loadUsers() {
 
-      this.totalRecords.set(res.data.totalRecords);
-      this.totalPages.set(res.data.totalPages);
+  const filter = this.userFilter();
 
-      // Map roles array to string and update the signal
-      this.users.set(
-        data.map((u: User) => ({
-          ...u,
-          RoleNames: u.roles.join(', ')
-        }))
-      );
-    });
-  }
+  this.service.getPaged(
+    this.currentPage(),
+    this.requestedRecords(),
+    this.searchText(),
+    this.onlyActive(),
+    filter.department_id.length ? filter.department_id.join(',') : '',
+    filter.role_id.length ? filter.role_id.join(',') : ''
+  ).subscribe((res: any) => {
+
+    const data: User[] = res.data.data;
+
+    this.totalRecords.set(res.data.totalRecords);
+    this.totalPages.set(res.data.totalPages);
+
+    this.users.set(
+      data.map((u: User) => ({
+        ...u,
+        RoleNames: u.roles.join(', ')
+      }))
+    );
+
+  });
+}
+  // loadUsers() {
+  //   this.service.getPaged(
+  //     this.currentPage(),
+  //     this.requestedRecords(),
+  //     this.searchText(),
+  //     this.onlyActive()
+  //   ).subscribe(res => {
+  //     const data: User[] = res.data.data; // API response
+
+  //     this.totalRecords.set(res.data.totalRecords);
+  //     this.totalPages.set(res.data.totalPages);
+
+  //     // Map roles array to string and update the signal
+  //     this.users.set(
+  //       data.map((u: User) => ({
+  //         ...u,
+  //         RoleNames: u.roles.join(', ')
+  //       }))
+  //     );
+  //   });
+  // }
   // ================= LOAD DEPARTMENTS =================
   loadDepartments(page: number, size: number, search: string, active: boolean) {
     this.service.getDepartments().subscribe(res => {

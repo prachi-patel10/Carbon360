@@ -108,7 +108,7 @@
             <span class="slider"></span>
           </label>
         </div>
-        <button class="filter-btn" (click)="applyFilter()">
+        <button class="filter-btn" (click)="openUserFilter()">
           Filter
         </button>
       </div>
@@ -182,4 +182,68 @@
     </div>
 
   </div>
+
+  <!-- ================= USER FILTER MODAL ================= -->
+
+<div class="filter-overlay" *ngIf="userFilterModalOpen()">
+
+  <div class="filter-modal">
+
+    <div class="filter-header">
+      <h3>Filter Users</h3>
+      <button class="close-btn" (click)="closeUserFilter()">✖</button>
+    </div>
+
+    <div class="filter-body">
+
+      <div class="form-grid">
+
+        <!-- Department Filter -->
+        <div class="form-group">
+          <label>Department</label>
+
+          <div class="multi-select-container">
+
+            <div *ngFor="let dept of departments()" class="checkbox-item">
+              <label>
+                <input type="checkbox"
+                  [checked]="selectedDepartmentIds.includes(dept.DepartmentId)"
+                  (change)="toggleDepartmentFilter(dept.DepartmentId)" />
+                <span>{{ dept.DepartmentName }}</span>
+              </label>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Role Filter -->
+        <div class="form-group">
+          <label>Roles</label>
+
+          <div class="multi-select-container">
+
+            <div *ngFor="let role of rolesList()" class="checkbox-item">
+              <label>
+                <input type="checkbox"
+                  [checked]="selectedRoleIds.includes(role.roleId)"
+                  (change)="toggleRoleFilter(role.roleId)" />
+                <span>{{ role.roleName }}</span>
+              </label>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+      <div class="filter-footer">
+        <button class="reset-btn" (click)="resetUserFilter()">Reset</button>
+        <button class="apply-btn" (click)="applyUserFilter()">Apply Filter</button>
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
 </div>

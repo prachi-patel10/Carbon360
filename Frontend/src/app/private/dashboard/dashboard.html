@@ -138,8 +138,11 @@
         <li *ngIf="isAdmin() || isReporter()" (click)="goTo('vehicle')" [class.active-link]="isActive('/vehicle')">
           <i class="fas fa-file-alt"></i> <span> EntryForm</span>
         </li>
-        <li *ngIf="isAdmin() || isReporter()" (click)="goTo('MyActionVehicle')" routerLink="/MyActionVehicle" routerLinkActive="active-link">
-          <i class="fas fa-search"></i> <span>MyAction Vehicle Search</span>
+        <li *ngIf="isAdmin() || isReporter()" routerLink="/waste" routerLinkActive="active-link">
+          <i class="fas fa-search"></i> <span> Search</span>
+        </li>
+         <li *ngIf="isAdmin() || isReporter()" (click)="goTo('MyActionVehicle')" routerLink="/MyActionVehicle" routerLinkActive="active-link">
+          <i class="fas fa-search"></i> <span>MyAction</span>
         </li>
       </ul>
     </li>
@@ -158,6 +161,9 @@
         </li>
         <li *ngIf="isAdmin() || isReporter()" (click)="goTo('searchGenerator')" [class.active-link]="isActive('/searchGenerator')">
           <i class="fas fa-search"></i> <span> Search</span>
+        </li>
+         <li *ngIf="isAdmin() || isReporter()" (click)="goTo('MyActionGenerator')" [class.active-link]="isActive('/MyActionGenerator')">
+          <i class="fas fa-search"></i> <span> MyAction </span>
         </li>
       </ul>
     </li>
