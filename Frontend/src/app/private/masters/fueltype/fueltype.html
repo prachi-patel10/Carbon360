@@ -87,9 +87,12 @@
           <!-- ✅ Generator Toggle -->
           <td>
             <label class="switch">
-             <input type="checkbox"
+              <input type="checkbox"
+       [(ngModel)]="fuel.isapplicable"
+       (ngModelChange)="confirmApplicableChange($event, fuel)" />
+             <!-- <input type="checkbox"
          [checked]="fuel.isapplicable"
-         (change)="confirmApplicableChange($event, fuel)" />
+         (change)="confirmApplicableChange($event, fuel)" /> -->
               <span class="slider round green"></span>
             </label>
           </td>
@@ -118,7 +121,7 @@
 
   <!-- ================= PAGINATION ================= -->
 <div class="pagination-info">
-  <span>Total Records: {{ fuels.length }}</span>
+  <span>Total Records: {{ totalRecords  }}</span>
 
   <div class="pagination-controls">
     <button (click)="previousPage()" [disabled]="currentPage === 1">

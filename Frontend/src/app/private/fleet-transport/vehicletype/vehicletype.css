@@ -261,3 +261,45 @@ input:checked + .slider:before {
 .filter-btn:hover {
   background-color: #454748eb;   /* darker color */
 }
+
+.filter-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.filter-modal {
+  background: white;
+  width: 450px;
+  border-radius: 8px;
+  padding: 20px;
+}
+
+.filter-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.multi-select-box {
+  border: 1px solid #ddd;
+  padding: 10px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.checkbox-item {
+  margin-bottom: 8px;
+}
+
+.filter-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 15px;
+}

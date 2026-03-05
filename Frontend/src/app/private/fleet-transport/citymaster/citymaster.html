@@ -48,9 +48,11 @@
             <span class="slider"></span>
             
           </label>
-          <button class="filter-btn">
-          Filter
-          </button>
+        <button type="button"
+        class="filter-btn"
+        (click)="openFilterModal()">
+        Filter
+      </button>
         </div>
 
 
@@ -127,6 +129,79 @@
       </select>
     </div>
 
+      </div>
+
+    </div>
+    
+
+  </div>
+
+</div>
+<!-- ================= FILTER MODAL ================= -->
+<div class="filter-overlay"
+     *ngIf="filterModalOpen()"
+     (click)="closeFilterModal()">
+
+  <div class="filter-modal"
+       (click)="$event.stopPropagation()">
+
+    <div class="filter-header">
+      <h2>Filter Cities</h2>
+      <button type="button"
+              class="close-btn"
+              (click)="closeFilterModal()">✖</button>
+    </div>
+
+    <div class="filter-body">
+
+      <div class="filter-group">
+        <label>State</label>
+
+        <div class="multi-select-box">
+          <div class="checkbox-item"
+               *ngFor="let state of allStates()">
+
+            <label>
+              <input type="checkbox"
+                     [checked]="isStateSelected(state)"
+                     (change)="toggleState(state)" />
+              <span>{{ state }}</span>
+            </label>
+
+          </div>
+        </div>
+      </div>
+
+      <div class="filter-group">
+  <label>City</label>
+
+  <div class="multi-select-box">
+    <div class="checkbox-item"
+         *ngFor="let city of allCities()">
+
+      <label>
+        <input type="checkbox"
+               [checked]="isCitySelected(city)"
+               (change)="toggleCity(city)" />
+        <span>{{ city }}</span>
+      </label>
+
+    </div>
+  </div>
+</div>
+
+      <div class="filter-footer">
+        <button type="button"
+                class="reset-btn"
+                (click)="resetFilter()">
+          Reset
+        </button>
+
+        <button type="button"
+                class="apply-btn"
+                (click)="applyFilter()">
+          Apply Filter
+        </button>
       </div>
 
     </div>

@@ -1,4 +1,5 @@
 ﻿using ProjectApp.Core.DTOs.Masters.Fuel;
+using ProjectApp.Repository.Utilities.SP;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,6 +20,7 @@ namespace ProjectApp.Repository.Interfaces.Masters.Fuel
 
         Task<bool> UpdateGeneratorAsync(FuelGeneratorUpdateDTO dto);
 
-        Task<PagedFuelResponseDTO> SearchAsync(FuelTypeSearchDTO dto);
+        //Task<PagedFuelResponseDTO> SearchAsync(FuelTypeSearchDTO dto);
+        Task<PageResult> SearchFuelAsync(SearchRequest request);
     }
 }

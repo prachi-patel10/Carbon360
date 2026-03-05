@@ -8,8 +8,10 @@ using ProjectApp.Repository.Interfaces.Masters.Fuel;
 using ProjectApp.Repository.Interfaces.User;
 using ProjectApp.Repository.Services.Common;
 using ProjectApp.Repository.Utilities.Auth;
+using ProjectApp.Repository.Utilities.SP;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -32,7 +34,7 @@ namespace ProjectApp.Repository.Services.Masters.Fuel
             _commonService = commonService;
             _idEncoder = new IdEncoder();
             _userContext = userContext;
-        
+
         }
 
 
@@ -184,70 +186,140 @@ namespace ProjectApp.Repository.Services.Masters.Fuel
             return true; throw new NotImplementedException();
         }
 
-        public async Task<PagedFuelResponseDTO> SearchAsync(FuelTypeSearchDTO dto)
+        public async Task<PageResult> SearchFuelAsync(SearchRequest request)
         {
-            int? decodedId = null;
-            if (!string.IsNullOrWhiteSpace(dto.fuel_id))
-            {
-                var temp = _idEncoder.Decode(dto.fuel_id);
-                if (temp > 0)
-                    decodedId = temp;
-            }
-
             using var connection = _context.Database.GetDbConnection();
             await connection.OpenAsync();
 
             using var command = connection.CreateCommand();
             command.CommandText = "USP_CB_FuelTypeSearch";
-            command.CommandType = System.Data.CommandType.StoredProcedure;
+            command.CommandType = CommandType.StoredProcedure;
 
-            command.Parameters.AddRange(new[]
-            {
-                new SqlParameter("@fuel_id", (object?)decodedId ?? DBNull.Value),
-                new SqlParameter("@fuel_name", (object?)dto.fuel_name ?? DBNull.Value),
-                new SqlParameter("@fuel_desc", (object?)dto.fuel_Desc ?? DBNull.Value),
-                new SqlParameter("@IsActive", (object?)dto.IsActive ?? DBNull.Value),
-                new SqlParameter("@IsApplicable", (object?)dto.IsApplicable ?? DBNull.Value),
-                new SqlParameter("@PageNumber", dto.PageNumber),
-                new SqlParameter("@PageSize", dto.PageSize),
-                new SqlParameter("@SortColumn", dto.SortColumn),
-                new SqlParameter("@SortDirection", dto.SortDirection)
-            });
+            command.Parameters.Add(new SqlParameter("@Search",
+                (object?)request.Search ?? DBNull.Value));
 
-            var list = new List<FuelResponseDTO>();
-            int totalRecords = 0, totalPages = 0, currentPage = 0;
+            command.Parameters.Add(new SqlParameter("@IsActive",
+                (object?)request.IsActive ?? DBNull.Value));
+
+            // 🔥 You said no new DTO — so pass NULL for IsApplicable
+            //command.Parameters.Add(new SqlParameter("@IsApplicable",
+            //    DBNull.Value));
+
+            command.Parameters.Add(new SqlParameter("@PageNumber",
+                request.PageNumber));
+
+            command.Parameters.Add(new SqlParameter("@PageSize",
+                request.PageSize));
+
+            command.Parameters.Add(new SqlParameter("@SortColumn",
+                request.SortColumn ?? "fuel_name"));
+
+            command.Parameters.Add(new SqlParameter("@SortDirection",
+                request.SortDirection ?? "ASC"));
 
             using var reader = await command.ExecuteReaderAsync();
 
+            int totalRecords = 0;
+
+            // ✅ FIRST RESULT SET (COUNT)
+            if (await reader.ReadAsync())
+                totalRecords = reader.GetInt32(0);
+
+            await reader.NextResultAsync();
+
+            // ✅ SECOND RESULT SET (DATA)
+            var fuels = new List<FuelResponseDTO>();
+
             while (await reader.ReadAsync())
             {
-                list.Add(new FuelResponseDTO
+                fuels.Add(new FuelResponseDTO
                 {
-                    fuel_id = _idEncoder.Encode(Convert.ToInt32(reader["fuel_id"])),
-                    fuel_name = reader["fuel_name"].ToString(),
-                    fuel_Desc = reader["fuel_Desc"].ToString(),
-                    IsActive = Convert.ToBoolean(reader["IsActive"]),
-                    isapplicable = Convert.ToBoolean(reader["isapplicable"])
+                    fuel_id = _idEncoder.Encode(
+                        reader.GetInt32(reader.GetOrdinal("fuel_id"))),
+
+                    fuel_name = reader["fuel_name"]?.ToString(),
+                    fuel_Desc = reader["fuel_desc"]?.ToString(),
+                    IsActive = (bool)reader["IsActive"],
+                    //isapplicable = (bool)reader["IsApplicable"]
                 });
             }
 
-            if (await reader.NextResultAsync())
-            {
-                if (await reader.ReadAsync())
-                {
-                    totalRecords = Convert.ToInt32(reader["TotalRecords"]);
-                    totalPages = Convert.ToInt32(reader["TotalPages"]);
-                    currentPage = Convert.ToInt32(reader["CurrentPage"]);
-                }
-            }
+            await connection.CloseAsync();
 
-            return new PagedFuelResponseDTO
+            return new PageResult
             {
-                Data = list,
+                Data = fuels,
                 TotalRecords = totalRecords,
-                TotalPages = totalPages,
-                CurrentPage = currentPage
+                CurrentPage = request.PageNumber,
+                TotalPages = (int)Math.Ceiling(
+                    (double)totalRecords / request.PageSize)
             };
+
+            //public async Task<PagedFuelResponseDTO> SearchAsync(FuelTypeSearchDTO dto)
+            //{
+            //    int? decodedId = null;
+            //    if (!string.IsNullOrWhiteSpace(dto.fuel_id))
+            //    {
+            //        var temp = _idEncoder.Decode(dto.fuel_id);
+            //        if (temp > 0)
+            //            decodedId = temp;
+            //    }
+
+            //    using var connection = _context.Database.GetDbConnection();
+            //    await connection.OpenAsync();
+
+            //    using var command = connection.CreateCommand();
+            //    command.CommandText = "USP_CB_FuelTypeSearch";
+            //    command.CommandType = System.Data.CommandType.StoredProcedure;
+
+            //    command.Parameters.AddRange(new[]
+            //    {
+            //        new SqlParameter("@fuel_id", (object?)decodedId ?? DBNull.Value),
+            //        new SqlParameter("@fuel_name", (object?)dto.fuel_name ?? DBNull.Value),
+            //        new SqlParameter("@fuel_desc", (object?)dto.fuel_Desc ?? DBNull.Value),
+            //        new SqlParameter("@IsActive", (object?)dto.IsActive ?? DBNull.Value),
+            //        new SqlParameter("@IsApplicable", (object?)dto.IsApplicable ?? DBNull.Value),
+            //        new SqlParameter("@PageNumber", dto.PageNumber),
+            //        new SqlParameter("@PageSize", dto.PageSize),
+            //        new SqlParameter("@SortColumn", dto.SortColumn),
+            //        new SqlParameter("@SortDirection", dto.SortDirection)
+            //    });
+
+            //    var list = new List<FuelResponseDTO>();
+            //    int totalRecords = 0, totalPages = 0, currentPage = 0;
+
+            //    using var reader = await command.ExecuteReaderAsync();
+
+            //    while (await reader.ReadAsync())
+            //    {
+            //        list.Add(new FuelResponseDTO
+            //        {
+            //            fuel_id = _idEncoder.Encode(Convert.ToInt32(reader["fuel_id"])),
+            //            fuel_name = reader["fuel_name"].ToString(),
+            //            fuel_Desc = reader["fuel_Desc"].ToString(),
+            //            IsActive = Convert.ToBoolean(reader["IsActive"]),
+            //            isapplicable = Convert.ToBoolean(reader["isapplicable"])
+            //        });
+            //    }
+
+            //    if (await reader.NextResultAsync())
+            //    {
+            //        if (await reader.ReadAsync())
+            //        {
+            //            totalRecords = Convert.ToInt32(reader["TotalRecords"]);
+            //            totalPages = Convert.ToInt32(reader["TotalPages"]);
+            //            currentPage = Convert.ToInt32(reader["CurrentPage"]);
+            //        }
+            //    }
+
+            //    return new PagedFuelResponseDTO
+            //    {
+            //        Data = list,
+            //        TotalRecords = totalRecords,
+            //        TotalPages = totalPages,
+            //        CurrentPage = currentPage
+            //    };
+            //}
         }
     }
 }

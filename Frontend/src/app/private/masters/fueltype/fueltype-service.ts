@@ -38,10 +38,15 @@ export class FueltypeService {
     return this.http.patch(`${this.baseUrl}/UpdateGenerator`, data, { responseType: 'text' } );
   }
 
-  search(payload: any): Observable<any> {
-    return this.http.post<any>(
-      `${this.baseUrl}/search`,
-      payload
-    );
-  }
+  search(params: any): Observable<any> {
+  return this.http.get<any>(`${this.baseUrl}/Search`, {
+    params: params
+  });
+}
+  // search(payload: any): Observable<any> {
+  //   return this.http.post<any>(
+  //     `${this.baseUrl}/search`,
+  //     payload
+  //   );
+  // }
 }
