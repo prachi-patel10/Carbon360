@@ -51,6 +51,10 @@ public partial class CB_VehicleTripEmission
 
     public int StatusId { get; set; }
 
+    public int? EmissionFactorId { get; set; }
+
+    public virtual CB_EmissionFactor EmissionFactor { get; set; }
+
     public virtual CB_User entrybyNavigation { get; set; }
 
     public virtual CB_MasterCity fromcity { get; set; }

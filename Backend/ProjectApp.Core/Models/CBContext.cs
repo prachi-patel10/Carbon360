@@ -101,6 +101,10 @@ public partial class CBContext : DbContext
             entity.Property(e => e.total_co2e_kg).HasColumnType("decimal(16, 8)");
             entity.Property(e => e.total_no2_kg).HasColumnType("decimal(16, 8)");
 
+            entity.HasOne(d => d.EmissionFactor).WithMany(p => p.CB_GeneratorOperations)
+                .HasForeignKey(d => d.EmissionFactorId)
+                .HasConstraintName("FK_CB_GeneratorOperation_EmissionFactor");
+
             entity.HasOne(d => d.Generator).WithMany(p => p.CB_GeneratorOperations)
                 .HasForeignKey(d => d.GeneratorId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
@@ -368,6 +372,10 @@ public partial class CBContext : DbContext
             entity.Property(e => e.tripenddatetime).HasColumnType("datetime");
             entity.Property(e => e.tripstartdatetime).HasColumnType("datetime");
             entity.Property(e => e.updatedate).HasColumnType("datetime");
+
+            entity.HasOne(d => d.EmissionFactor).WithMany(p => p.CB_VehicleTripEmissions)
+                .HasForeignKey(d => d.EmissionFactorId)
+                .HasConstraintName("FK_VehicleTripEmission_EmissionFactor");
 
             entity.HasOne(d => d.entrybyNavigation).WithMany(p => p.CB_VehicleTripEmissionentrybyNavigations)
                 .HasForeignKey(d => d.entryby)
