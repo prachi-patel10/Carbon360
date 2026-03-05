@@ -145,8 +145,8 @@
       <h3 class="section-title">Emission Factors Used</h3>
 
       <div><strong>CO₂ Factor:</strong> {{ result.co2Factor }} kg/L</div>
-      <div><strong>NO₂ Factor:</strong> {{ result.no2Factor }} kg/km</div>
-      <div><strong>CH₄ Factor:</strong> {{ result.ch4Factor }} kg/km</div>
+      <div><strong>NO₂ Factor:</strong> {{ result.no2Factor }} kg/L</div>
+      <div><strong>CH₄ Factor:</strong> {{ result.ch4Factor }} kg/L</div>
 
       <hr class="full-width">
 
@@ -155,31 +155,32 @@
       <div class="formula full-width">
         CO₂ = Fuel × CO₂ Factor <br>
         = {{ result.fuel }} × {{ result.co2Factor }} <br>
-        = {{ result.totalCo2 | number:'1.3-3' }} kg
+        = {{ result.totalCo2 | number:'1.3-3' }} L
       </div>
 
       <div class="formula full-width">
-        NO₂ = Distance × NO₂ Factor <br>
-        = {{ result.distance }} × {{ result.no2Factor }} <br>
-        = {{ result.totalNo2 | number:'1.3-3' }} kg
+        NO₂ = Fuel × NO₂ Factor <br>
+        = {{ result.fuel }} × {{ result.no2Factor }} <br>
+        = {{ result.totalNo2 | number:'1.3-3' }} L
       </div>
 
       <div class="formula full-width">
-        CH₄ = Distance × CH₄ Factor <br>
-        = {{ result.distance }} × {{ result.ch4Factor }} <br>
-        = {{ result.totalCh4 | number:'1.3-3' }} kg
+        CH₄ = Fuel × CH₄ Factor <br>
+        = {{ result.fuel }} × {{ result.ch4Factor }} <br>
+        = {{ result.totalCh4 | number:'1.3-3' }} L
       </div>
 
       <div class="formula full-width">
         Total Emission = CO₂ + NO₂ + CH₄ <br>
-        = {{ result.totalEmission | number:'1.3-3' }} kg
+        = {{ result.co2Factor }} + {{ result.no2Factor }} + {{ result.ch4Factor }} <br>
+        = {{ result.totalEmission | number:'1.3-3' }} L
       </div>
 
-      <hr class="full-width">
+     
 
-      <div class="total-emission full-width">
-        Final Emission: {{ result.totalEmission | number:'1.3-3' }} kg CO₂e
-      </div>
+      <!-- <div class="total-emission full-width">
+        Final Emission: {{ result.totalEmission | number:'1.3-3' }} L CO₂e
+      </div> -->
 
     </div>
   </div>

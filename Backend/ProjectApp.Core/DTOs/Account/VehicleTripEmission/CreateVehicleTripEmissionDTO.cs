@@ -14,9 +14,11 @@ namespace ProjectApp.Core.DTOs.Account.VehicleTripEmission
         public DateTime TripStartDateTime { get; set; }
         public DateTime? TripEndDateTime { get; set; }
         public decimal DistanceKm { get; set; }
-        public string FuelType { get; set; }
+        //public string FuelType { get; set; }
         public decimal FuelConsumedLtr { get; set; }
-        public int StatusId { get; set; }        // ✅ NEW
+        public int StatusId { get; set; }
+
+       
 
     }
 }

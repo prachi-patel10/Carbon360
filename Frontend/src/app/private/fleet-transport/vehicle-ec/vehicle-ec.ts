@@ -99,6 +99,7 @@ summaryData: any;
 
             this.emissionFactors = emissionRes.data || [];
             console.log("Emission Factors:", this.emissionFactors);
+            
 
             console.log("All master data loaded successfully");
 
@@ -132,11 +133,11 @@ setupVehicleChangeListener() {
     );
 
     this.tripForm.patchValue({
-      fuelType: fuel ? Number(fuel.fuel_id) : null, // 🔹 numeric fuel ID for backend
-      fuelId: fuel?.fuel_id || '',                  // optional, display only
-      co2Factor: factor?.cO2_Factor_KgPerL,
-      no2Factor: factor?.nO2_Factor_KgPerL,
-      ch4Factor: factor?.cH4_Factor_KgPerL
+       fuelType: fuel?.fuel_name || '',   
+  fuelId: fuel?.fuel_id || '',  
+  co2Factor: factor?.cO2_Factor_KgPerL,
+  no2Factor: factor?.nO2_Factor_KgPerL,
+  ch4Factor: factor?.cH4_Factor_KgPerL
     });
 
     console.log("Patched FuelType (numeric):", this.tripForm.get('fuelType')?.value);
@@ -204,7 +205,7 @@ submitTrip() {
     FuelConsumedLtr: Number(formValue.fuelConsumedLtr),
     TripStartDateTime: formValue.tripStartDateTime,
     TripEndDateTime: formValue.tripEndDateTime,
-    FuelType: Number(formValue.fuelType), // 🔹 IMPORTANT: numeric ID
+   FuelType: formValue.fuelId, // 🔹 IMPORTANT: numeric ID
     StatusId: 1
   };
 
@@ -221,14 +222,15 @@ submitTrip() {
       this.lockFormIfNeeded();
 
       this.result = {
+        tripId: res.tripId,
         distance: payload.DistanceKm,
         fuel: payload.FuelConsumedLtr,
         co2Factor: this.tripForm.get('co2Factor')?.value,
         no2Factor: this.tripForm.get('no2Factor')?.value,
         ch4Factor: this.tripForm.get('ch4Factor')?.value,
-        totalCo2: Number(res.co2),
-        totalNo2: Number(res.no2),
-        totalCh4: Number(res.ch4),
+         totalCo2: Number(res.cO2),   // ✅ FIXED
+  totalNo2: Number(res.nO2),   // ✅ FIXED
+  totalCh4: Number(res.cH4),   // 
         totalEmission: Number(res.totalEmission),
         statusId: res.statusId
       };
