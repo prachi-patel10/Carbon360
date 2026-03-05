@@ -21,6 +21,21 @@ namespace ProjectApp.Repository.Interfaces.GenerationOperation
 
         Task<GeneratorOperationResponseDTO> UpdateAsync(string encryptedId, GeneratorOperationCreateDTO dto);
 
+
         Task<bool> UpdateStatusAsync(string encryptedId, int statusId);
+
+        Task<List<GeneratorOperationResponseDTO>> SearchAsync(
+            string search = null,
+            string fuelType = null,
+            string generatorName = null,
+            DateTime? startDate = null,
+            DateTime? endDate = null,
+            int? statusId = null,
+            int pageNumber = 1,
+            int pageSize = 10,
+            string sortColumn = "OperationDate",
+            string sortDirection = "DESC"
+        );
+
     }
 }

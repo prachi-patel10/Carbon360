@@ -52,8 +52,12 @@ export class Vehicles implements OnInit {
   vehicleNumberError = signal<string>('');
   vehicleFilterModalOpen: WritableSignal<boolean> = signal(false);
 
-  selectedVehicleTypeIds: string[] = [];
+  // selectedFuelIds: WritableSignal<string[]> = signal([]);
+  // selectedVehicleTypeIds: WritableSignal<string[]> = signal([]);
+
   selectedFuelIds: string[] = [];
+  selectedVehicleTypeIds: string[] = [];
+
   appliedFuelIds: string[] = [];
   appliedVehicleTypeIds: string[] = [];
 
@@ -96,22 +100,25 @@ export class Vehicles implements OnInit {
 
   // ----------------- DROPDOWNS -----------------
   loadDropdowns() {
+    // Vehicle Types
     this.vehicleService.getVehicleTypeList().subscribe((res: any[]) => {
       const mapped = (res || []).map(vt => ({
-        vehicle_type_id: String(vt.vehicle_type_id),
-        vehicle_type_name: vt.vehicle_type_name
+        vehicle_type_id: vt.id?.toString() || '',  // <--- string
+        vehicle_type_name: vt.vehicle_type_name || ''
       }));
       this.vehicleTypes.set(mapped);
     });
 
+    // Fuel Types
     this.vehicleService.getFuelList().subscribe((res: any[]) => {
       const mapped = (res || []).map(f => ({
-        fuel_id: String(f.fuel_id),
-        fuel_name: f.fuel_name
+        fuel_id: f.id?.toString() || '',          // <--- string
+        fuel_name: f.fuel_name || ''
       }));
       this.fuelTypes.set(mapped);
     });
 
+    // Departments
     this.vehicleService.getDepartmentList().subscribe((res: any) => {
       let deptArray: any[] = [];
       if (Array.isArray(res.data)) {
@@ -119,9 +126,9 @@ export class Vehicles implements OnInit {
       } else if (res.data) {
         deptArray = [res.data];
       }
-      const mapped = deptArray.map((d: any) => ({
-        department_id: String(d.id),
-        department_name: d.departmentName
+      const mapped = deptArray.map(d => ({
+        department_id: d.id?.toString() || '',     // <--- string
+        department_name: d.departmentName || ''
       }));
       this.departments.set(mapped);
     });
@@ -146,9 +153,60 @@ export class Vehicles implements OnInit {
   }
 
   // ----------------- VEHICLE TABLE -----------------
+  // loadVehicles() {
+  //   const filterData = this.vehicleFilter();
+
+  //   const isActiveFilter: boolean | null = this.activeFilter() ? true : null;
+
+  //   this.vehicleService
+  //     .searchVehicles(
+  //       this.searchText(),
+  //       isActiveFilter,
+  //       this.pageNumber(),
+  //       this.pageSize(),
+  //       this.sortColumn(),
+  //       this.sortDirection(),
+  //       filterData.vehicle_type_id.length ? filterData.vehicle_type_id.map(x => Number(x)).join(',') : undefined,
+  //       filterData.fuel_id.length ? filterData.fuel_id.map(x => Number(x)).join(',') : undefined,
+  //       filterData.department_id.length ? filterData.department_id.map(x => Number(x)).join(',') : undefined
+  //     )
+  //     .subscribe({
+  //       next: (res: any) => {
+  //         const data = res.data || [];
+  //         this.vehicles.set(
+  //           data.map((v: any) => ({
+  //             vehicle_id: v.vehicle_id,
+  //             vehicle_number: v.vehicle_number,
+  //             vehicle_type_id: v.vehicle_type_id,
+  //             vehicle_type_name: v.vehicle_type_name ?? this.getVehicleTypeName(v.vehicle_type_id),
+  //             fuel_id: v.fuel_id,
+  //             fuel_name: v.fuel_name ?? this.getFuelName(v.fuel_id),
+  //             department_id: v.department_id,
+  //             department_name: v.department_name ?? this.getDepartmentName(v.department_id),
+  //             engine_capacity: v.engine_capacity,
+  //             emission_standard: v.emission_standard,
+  //             isActive: v.isActive === 1 || v.isActive === true
+  //           }))
+  //         );
+
+  //         const totalRecords = res.totalRecords ?? data.length;
+  //         const pageSize = this.pageSize();
+  //         this.totalRecords.set(totalRecords);
+  //         this.totalPages.set(Math.ceil(totalRecords / pageSize));
+  //         this.pageNumber.set(res.currentPage ?? 1);
+  //       },
+  //       error: (err) => {
+  //         console.error('Vehicle load error', err);
+  //         this.vehicles.set([]);
+  //         this.totalRecords.set(0);
+  //         this.totalPages.set(1);
+  //       }
+  //     });
+  // }
+
+  // Load vehicles
   loadVehicles() {
     const filterData = this.vehicleFilter();
-
     const isActiveFilter: boolean | null = this.activeFilter() ? true : null;
 
     this.vehicleService
@@ -165,27 +223,9 @@ export class Vehicles implements OnInit {
       )
       .subscribe({
         next: (res: any) => {
-          const data = res.data || [];
-          this.vehicles.set(
-            data.map((v: any) => ({
-              vehicle_id: v.vehicle_id,
-              vehicle_number: v.vehicle_number,
-              vehicle_type_id: v.vehicle_type_id,
-              vehicle_type_name: v.vehicle_type_name ?? this.getVehicleTypeName(v.vehicle_type_id),
-              fuel_id: v.fuel_id,
-              fuel_name: v.fuel_name ?? this.getFuelName(v.fuel_id),
-              department_id: v.department_id,
-              department_name: v.department_name ?? this.getDepartmentName(v.department_id),
-              engine_capacity: v.engine_capacity,
-              emission_standard: v.emission_standard,
-              isActive: v.isActive === 1 || v.isActive === true
-            }))
-          );
-
-          const totalRecords = res.totalRecords ?? data.length;
-          const pageSize = this.pageSize();
-          this.totalRecords.set(totalRecords);
-          this.totalPages.set(Math.ceil(totalRecords / pageSize));
+          this.vehicles.set(res.data || []);
+          this.totalRecords.set(res.totalRecords ?? res.data.length);
+          this.totalPages.set(Math.ceil((res.totalRecords ?? res.data.length) / this.pageSize()));
           this.pageNumber.set(res.currentPage ?? 1);
         },
         error: (err) => {
@@ -260,18 +300,18 @@ export class Vehicles implements OnInit {
       ? {
         vehicle_id: raw.vehicle_id!,
         vehicle_number: raw.vehicle_number.trim(),
-        vehicle_type_id: raw.vehicle_type_id!,
-        fuel_id: raw.fuel_id!,
-        department_id: raw.department_id!,
+        vehicle_type_id: Number(raw.vehicle_type_id), // convert to number here
+        fuel_id: Number(raw.fuel_id),
+        department_id: Number(raw.department_id),
         engine_capacity: raw.engine_capacity != null ? Number(raw.engine_capacity) : null,
         emission_standard: raw.emission_standard!.trim(),
         IsActive: raw.isActive ?? true
       }
       : {
         vehicle_number: raw.vehicle_number.trim(),
-        vehicle_type_id: raw.vehicle_type_id!,
-        fuel_id: raw.fuel_id!,
-        department_id: raw.department_id!,
+        vehicle_type_id: Number(raw.vehicle_type_id), // convert to number here
+        fuel_id: Number(raw.fuel_id),
+        department_id: Number(raw.department_id),
         engine_capacity: raw.engine_capacity != null ? Number(raw.engine_capacity) : null,
         emission_standard: raw.emission_standard!.trim(),
         IsActive: raw.isActive ?? true
@@ -300,9 +340,9 @@ export class Vehicles implements OnInit {
     this.isEditMode.set(true);
     this.newVehicle.set({
       ...vehicle,
-      vehicle_type_id: String(vehicle.vehicle_type_id),
-      fuel_id: String(vehicle.fuel_id),
-      department_id: String(vehicle.department_id)
+      vehicle_type_id: vehicle.vehicle_type_id?.toString() || null,
+      fuel_id: vehicle.fuel_id?.toString() || null,
+      department_id: vehicle.department_id?.toString() || null
     });
   }
 
@@ -402,20 +442,20 @@ export class Vehicles implements OnInit {
   }
 
   toggleFuel(id: string) {
-    this.selectedFuelIds.includes(id)
-      ? this.selectedFuelIds = this.selectedFuelIds.filter(x => x !== id)
-      : this.selectedFuelIds.push(id);
-
-    this.vehicleFilter.update((f: any) => ({ ...f, fuel_id: this.selectedFuelIds }));
+  if (this.selectedFuelIds.includes(id)) {
+    this.selectedFuelIds = this.selectedFuelIds.filter(x => x !== id);
+  } else {
+    this.selectedFuelIds.push(id);
   }
+}
 
-  toggleVehicleType(id: string) {
-    this.selectedVehicleTypeIds.includes(id)
-      ? this.selectedVehicleTypeIds = this.selectedVehicleTypeIds.filter(x => x !== id)
-      : this.selectedVehicleTypeIds.push(id);
-
-    this.vehicleFilter.update((f: any) => ({ ...f, vehicle_type_id: this.selectedVehicleTypeIds }));
+toggleVehicleType(id: string) {
+  if (this.selectedVehicleTypeIds.includes(id)) {
+    this.selectedVehicleTypeIds = this.selectedVehicleTypeIds.filter(x => x !== id);
+  } else {
+    this.selectedVehicleTypeIds.push(id);
   }
+}
 
   toggleSite(id: string) {
     this.selectedSiteIds.includes(id)
@@ -428,29 +468,27 @@ export class Vehicles implements OnInit {
   applyFilter() {
     this.pageNumber.set(1);
     this.loadVehicles();
-   // this.closeFilterModal();
+    // this.closeFilterModal();
   }
 
   resetFilterModal() {
-    this.selectedVehicleTypeIds = [];
-    this.selectedFuelIds = [];
-    this.vehicleFilter.set({ vehicle_type_id: [], fuel_id: [], department_id: [] });
-  }
+  this.selectedVehicleTypeIds = [];
+  this.selectedFuelIds = [];
+  this.vehicleFilter.set({ vehicle_type_id: [], fuel_id: [], department_id: [] });
+}
 
   showToast(title: string, text: string, icon: 'success' | 'error' = 'success') {
     Swal.fire({ icon, title, text, toast: true, position: 'top-end', timer: 2000, showConfirmButton: false });
   }
 
   // ----------------- MODAL -----------------
+  openVehicleFilter() {
+    this.vehicleFilterModalOpen.set(true);
+  }
 
-  // ----------------- MODAL -----------------
-openVehicleFilter() {
-  this.vehicleFilterModalOpen.set(true);
-}
-
-closeVehicleFilter() {
-  this.vehicleFilterModalOpen.set(false);
-}
+  closeVehicleFilter() {
+    this.vehicleFilterModalOpen.set(false);
+  }
 
   isVehicleTypeSelected(id: string) {
     return this.vehicleFilter().vehicle_type_id.includes(id);
@@ -460,23 +498,29 @@ closeVehicleFilter() {
     return this.vehicleFilter().fuel_id.includes(id);
   }
 
+  // Apply filter
   applyVehicleFilter() {
-  this.vehicleFilterModalOpen.set(false);  // ✅ correct
-  this.appliedFuelIds = [...this.selectedFuelIds];
-  this.appliedVehicleTypeIds = [...this.selectedVehicleTypeIds];
+  this.vehicleFilter.set({
+    fuel_id: this.selectedFuelIds,
+    vehicle_type_id: this.selectedVehicleTypeIds,
+    department_id: this.vehicleFilter().department_id
+  });
+
   this.pageNumber.set(1);
   this.loadVehicles();
 }
 
-  resetVehicleFilter() {
-    this.selectedFuelIds = [];
-    this.selectedVehicleTypeIds = [];
-  }
+ resetVehicleFilter() {
+  this.selectedFuelIds = [];
+  this.selectedVehicleTypeIds = [];
+  this.vehicleFilter.set({ vehicle_type_id: [], fuel_id: [], department_id: [] });
+}
 
   get vehicleTypesList() { return this.vehicleTypes(); }
   get fuelTypesList() { return this.fuelTypes(); }
 
   toggleVehicleFuel(fuelId: string) {
+
   if (this.selectedFuelIds.includes(fuelId)) {
     this.selectedFuelIds = this.selectedFuelIds.filter(id => id !== fuelId);
   } else {
@@ -489,4 +533,17 @@ closeVehicleFilter() {
   }));
 }
 
+  ttoggleVehicleType(typeId: string) {
+
+  if (this.selectedVehicleTypeIds.includes(typeId)) {
+    this.selectedVehicleTypeIds = this.selectedVehicleTypeIds.filter(id => id !== typeId);
+  } else {
+    this.selectedVehicleTypeIds.push(typeId);
+  }
+
+  this.vehicleFilter.update(f => ({
+    ...f,
+    vehicle_type_id: this.selectedVehicleTypeIds
+  }));
+}
 }

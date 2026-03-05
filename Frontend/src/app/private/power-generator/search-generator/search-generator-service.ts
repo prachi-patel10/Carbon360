@@ -4,12 +4,12 @@ import { map, Observable } from 'rxjs';
 import { environment } from '../../../enviorments/environment';
 
 export interface GeneratorOperation {
-  operationId: number;
-  generatorId: number;
-  generatorName: string;
+  operationId: string;
+  generatorId: string;
+  generatorName: string | null;
   operationDate: string;
-  startTime: string;
-  endTime: string;
+  startTime: Date;
+  endTime: Date;
   runHours?: number;
   loadFactor?: number;
   powerOutputKWH?: number;

@@ -136,7 +136,7 @@
 
       <ul class="submenu" *ngIf="isMainMenuOpen('fleet')">
         <li *ngIf="isAdmin() || isReporter()" (click)="goTo('vehicle')" [class.active-link]="isActive('/vehicle')">
-          <i class="fas fa-file-alt"></i> <span> EntryForm</span>
+          <i class="fas fa-file-alt"></i> <span> Report</span>
         </li>
         <li *ngIf="isAdmin() || isReporter()" (click)="goTo('MyActionVehicle')" routerLink="/MyActionVehicle" routerLinkActive="active-link">
           <i class="fas fa-search"></i> <span>MyAction Vehicle Search</span>
