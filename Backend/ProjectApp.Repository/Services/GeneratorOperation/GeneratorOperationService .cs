@@ -59,9 +59,7 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
                 PowerOutputKWH = x.PowerOutputKWH ?? 0,
                 FuelConsumedLiters = x.FuelConsumedLiters ?? 0,
 
-                CO2 = x.co2_kg ?? 0,
-                NO2 = x.no2_kg ?? 0,
-                CH4 = x.ch4_kg ?? 0,
+         
 
                 TotalCO2 = x.total_co2_kg ?? 0,
                 TotalNO2 = x.total_no2_kg ?? 0,
@@ -142,9 +140,6 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
                 PowerOutputKWH = entity.PowerOutputKWH ?? 0,
                 FuelConsumedLiters = entity.FuelConsumedLiters ?? 0,
 
-                CO2 = entity.co2_kg ?? 0,
-                NO2 = entity.no2_kg ?? 0,
-                CH4 = entity.ch4_kg ?? 0,
 
                 TotalCO2 = entity.total_co2_kg ?? 0,
                 TotalNO2 = entity.total_no2_kg ?? 0,
@@ -197,9 +192,7 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
                 LoadFactor = updatedEntity.LoadFactor ?? 0,
                 PowerOutputKWH = updatedEntity.PowerOutputKWH ?? 0,
                 FuelConsumedLiters = updatedEntity.FuelConsumedLiters ?? 0,
-                CO2 = updatedEntity.co2_kg ?? 0,
-                NO2 = updatedEntity.no2_kg ?? 0,
-                CH4 = updatedEntity.ch4_kg ?? 0,
+              
                 TotalEmission = updatedEntity.total_co2e_kg ?? 0,
                 StatusId = updatedEntity.StatusId, // ✅ include
                 EntryBy = updatedEntity.EntryBy,

@@ -78,9 +78,9 @@
     <!-- EMISSION FACTORS USED -->
     <h3 class="section-title">Emission Factors Used</h3>
 
-    <div><strong>CO₂ Factor:</strong> {{ calculatedResult.cO2Factor }} kg/L</div>
-    <div><strong>NO₂ Factor:</strong> {{ calculatedResult.nO2Factor }} kg/Km</div>
-    <div><strong>CH₄ Factor:</strong> {{ calculatedResult.cH4Factor }} kg/Km</div>
+<div><strong>CO₂:</strong> {{ calculatedResult.cO2 }} kg</div>
+<div><strong>NO₂:</strong> {{ calculatedResult.nO2 }} kg</div>
+<div><strong>CH₄:</strong> {{ calculatedResult.cH4 }} kg</div>
 
     <div><strong>GWP (CH₄):</strong> {{ calculatedResult.gwP_CH4 }}</div>
     <div><strong>GWP (NO₂):</strong> {{ calculatedResult.gwP_NO2 }}</div>
@@ -91,30 +91,30 @@
     <h3 class="section-title">Calculation Formula</h3>
 
     <div class="formula full-width">
-      CO₂ = Fuel × CO₂ Factor <br>
-      = {{ calculatedResult.fuelConsumedLiters }} × {{ calculatedResult.cO2Factor }} <br>
-      = {{ calculatedResult.cO2 }} kg
-    </div>
+  CO₂ = Fuel × CO₂ Factor <br>
+  = {{ calculatedResult.fuelConsumedLiters }} × 2.68 <br>
+  = {{ calculatedResult.cO2 }} kg
+</div>
 
-    <div class="formula full-width">
-      NO₂ = Fuel × NO₂ Factor <br>
-      = {{ calculatedResult.fuelConsumedLiters }} × {{ calculatedResult.nO2Factor }} <br>
-      = {{ calculatedResult.nO2 }} kg
-    </div>
+<div class="formula full-width">
+  NO₂ = Fuel × NO₂ Factor <br>
+  = {{ calculatedResult.fuelConsumedLiters }} × 0.00007 <br>
+  = {{ calculatedResult.nO2 }} kg
+</div>
 
-    <div class="formula full-width">
-      CH₄ = Fuel × CH₄ Factor <br>
-      = {{ calculatedResult.fuelConsumedLiters }} × {{ calculatedResult.cH4Factor }} <br>
-      = {{ calculatedResult.cH4 }} kg
-    </div>
+<div class="formula full-width">
+  CH₄ = Fuel × CH₄ Factor <br>
+  = {{ calculatedResult.fuelConsumedLiters }} × 0.00001 <br>
+  = {{ calculatedResult.cH4 }} kg
+</div>
 
-    <div class="formula full-width">
-      Total CO₂e = CO₂ + (CH₄ × GWP) + (NO₂ × GWP) <br>
-      = {{ calculatedResult.cO2 }}
-      + ({{ calculatedResult.cH4 }} × {{ calculatedResult.gwP_CH4 }})
-      + ({{ calculatedResult.nO2 }} × {{ calculatedResult.gwP_NO2 }}) <br>
-      = {{ calculatedResult.totalEmission }} kg CO₂e
-    </div>
+<div class="formula full-width">
+  Total CO₂e = CO₂ + (CH₄ × GWP) + (NO₂ × GWP) <br>
+  = {{ calculatedResult.cO2 }}
+  + ({{ calculatedResult.cH4 }} × {{ calculatedResult.gwP_CH4 }})
+  + ({{ calculatedResult.nO2 }} × {{ calculatedResult.gwP_NO2 }}) <br>
+  = {{ calculatedResult.totalEmission }} kg CO₂e
+</div>
 
     <hr class="full-width">
 
