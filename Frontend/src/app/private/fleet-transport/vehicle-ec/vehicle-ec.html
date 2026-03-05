@@ -114,7 +114,25 @@
 
   <!-- ================= RESULT SECTION ================= -->
   <div class="card result-card" *ngIf="showResult">
+<div class="status-badge">
 
+  <span *ngIf="currentStatusId == 1" class="badge reported">
+    Reported
+  </span>
+
+  <span *ngIf="currentStatusId == 2" class="badge reviewed">
+    Reviewed
+  </span>
+
+  <span *ngIf="currentStatusId == 3" class="badge approved">
+    Approved
+  </span>
+
+  <span *ngIf="currentStatusId == 4" class="badge rejected">
+    Rejected
+  </span>
+
+</div>
     <h2 class="card-title">Vehicle Emission Calculation</h2>
 
     <div class="result-grid">
@@ -165,5 +183,15 @@
 
     </div>
   </div>
+
+
+  <div class="review-actions" *ngIf="currentStatusId == 1">
+  <button (click)="updateStatus(2)" class="btn-info">Review</button>
+</div>
+
+<div class="review-actions" *ngIf="currentStatusId == 2">
+  <button (click)="updateStatus(3)" class="btn-success">Approve</button>
+  <button (click)="updateStatus(4)" class="btn-danger">Reject</button>
+</div>
 
 </div>

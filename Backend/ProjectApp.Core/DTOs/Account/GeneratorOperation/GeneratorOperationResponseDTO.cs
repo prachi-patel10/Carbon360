@@ -20,18 +20,19 @@ namespace ProjectApp.Core.DTOs.Account.GeneratorOperation
         public decimal CO2 { get; set; }
         public decimal NO2 { get; set; }
         public decimal CH4 { get; set; }
+        public decimal TotalCO2 { get; set; }
+        public decimal TotalNO2 { get; set; }
+        public decimal TotalCH4 { get; set; }
+
         public decimal TotalEmission { get; set; }
 
-        // NEW 🔥
-        public decimal CO2Factor { get; set; }
-        public decimal NO2Factor { get; set; }
-        public decimal CH4Factor { get; set; }
+        public decimal GWP_CH4 { get; set; } = 28; // Standard GWP
+        public decimal GWP_NO2 { get; set; } = 265; // Standard GWP
 
-        public decimal GWP_CH4 { get; set; }
-        public decimal GWP_NO2 { get; set; }
+        //public decimal RatedCapacityKW { get; set; }
+        //public string GeneratorName { get; set; }
 
-        public decimal RatedCapacityKW { get; set; }
-        public string GeneratorName { get; set; }
+        public int StatusId { get; set; }
 
         public int EntryBy { get; set; }
         public DateTime EntryDate { get; set; }

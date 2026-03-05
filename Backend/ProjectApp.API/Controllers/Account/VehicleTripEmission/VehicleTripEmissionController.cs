@@ -78,5 +78,20 @@ namespace ProjectApp.API.Controllers.Account.VehicleTripEmission
                 data = result
             });
         }
+
+        [HttpPut("status")]
+        public async Task<IActionResult> UpdateStatus([FromBody] VehicleTripStatusUpdateDTO dto)
+        {
+            var result = await _service.UpdateStatusAsync(dto);
+
+            if (!result)
+                return NotFound();
+
+            return Ok(new
+            {
+                success = true,
+                message = "Status updated successfully."
+            });
+        }
     }
 }

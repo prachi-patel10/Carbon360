@@ -18,6 +18,7 @@ import { GeneratorOperationComponent } from './private/power-generator/generator
 import { Citymaster } from './private/fleet-transport/citymaster/citymaster';
 import { Sitelocationmaster } from './private/power-generator/sitelocationmaster/sitelocationmaster';
 import { VehicleReport } from './private/fleet-transport/vehicle-report/vehicle-report';
+import { SearchGenerator } from './private/power-generator/search-generator/search-generator';
 
 export const routes: Routes = [
 
@@ -52,7 +53,8 @@ export const routes: Routes = [
             // { path: 'waste', component: WasteComponent },           // create/import WasteComponent
             { path: 'generator-ec', component:GeneratorOperationComponent  },   // create/import GeneratorComponent
             { path: 'citymaster',component:Citymaster},
-            {path: 'sitelocation', component:Sitelocationmaster}
+            {path: 'sitelocation', component:Sitelocationmaster},
+            {path: 'searchGenerator', component:SearchGenerator}
         ]
     },
 
