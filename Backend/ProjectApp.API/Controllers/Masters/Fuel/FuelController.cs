@@ -2,7 +2,11 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using ProjectApp.Core.DTOs.Masters.Fuel;
+using ProjectApp.Core.Entities;
+using ProjectApp.Repository.Interfaces.Masters.City;
 using ProjectApp.Repository.Interfaces.Masters.Fuel;
+using ProjectApp.Repository.Utilities.SP;
+using System.Net;
 
 namespace ProjectApp.API.Controllers.Masters.Fuel
 {
@@ -12,10 +16,12 @@ namespace ProjectApp.API.Controllers.Masters.Fuel
     public class FuelController : ControllerBase
     {
         private readonly IFuelService _fuelService;
+        private APIResponse _apiResponse;
 
         public FuelController(IFuelService fuelService)
         {
             _fuelService = fuelService;
+            _apiResponse = new();
         }
 
         [HttpPost("Create")]
@@ -88,9 +94,39 @@ namespace ProjectApp.API.Controllers.Masters.Fuel
             return Ok("Generator flag updated successfully");
         }
 
-        [HttpPost("search")]
-        public async Task<IActionResult> Search(FuelTypeSearchDTO dto)
-            => Ok(await _fuelService.SearchAsync(dto));
+        [HttpGet("Search")]
+        public async Task<IActionResult> Search(
+        [FromQuery] string? searchText,
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 10,
+        [FromQuery] string? sortColumn = null,
+        [FromQuery] string? sortDirection = "asc",
+        [FromQuery] bool? isActive = null
+)
+        {
+            var request = new SearchRequest
+            {
+                Search = searchText,
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                SortColumn = sortColumn ?? "fuel_name",
+                SortDirection = sortDirection ?? "ASC",
+                IsActive = isActive
+            };
+
+            var result = await _fuelService.SearchFuelAsync(request);
+
+            _apiResponse.data = result;
+            _apiResponse.status = true;
+            _apiResponse.StatusCode = HttpStatusCode.OK;
+            _apiResponse.Message = "Fuel types retrieved successfully.";
+
+            return Ok(_apiResponse);
+        }
     }
-}
+        //    [HttpPost("search")]
+        //    public async Task<IActionResult> Search(FuelTypeSearchDTO dto)
+        //        => Ok(await _fuelService.SearchAsync(dto));
+        //}
+    }
 

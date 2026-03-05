@@ -60,7 +60,8 @@
         </label>
       </div>
 
-      <button type="button" class="filter-btn">
+      <button type="button" class="filter-btn"
+          (click)="openFilterModal()">
         Filter
       </button>
 
@@ -144,6 +145,110 @@
 
   </div>
 
+</div>
+
+<!-- ================= FILTER MODAL ================= -->
+<div class="filter-overlay" *ngIf="filterModalOpen()">
+  <div class="filter-modal">
+
+    <!-- Header -->
+    <div class="filter-header">
+      <h3>Filter Vehicle Types</h3>
+      <button type="button"
+              class="close-btn"
+              (click)="closeFilterModal()">✖</button>
+    </div>
+
+    <!-- Body -->
+    <div class="filter-body">
+
+      <!-- Category Multi Select -->
+      <div class="form-group">
+
+  <label>Vehicle Type</label>
+
+  <div class="multi-select-box">
+
+    <div class="checkbox-item">
+      <label>
+        <input type="checkbox"
+               [checked]="isVehicleSelected('Bike')"
+               (change)="toggleVehicle('Bike')" />
+        <span>Bike</span>
+      </label>
+    </div>
+
+    <div class="checkbox-item">
+      <label>
+        <input type="checkbox"
+               [checked]="isVehicleSelected('Car')"
+               (change)="toggleVehicle('Car')" />
+        <span>Car</span>
+      </label>
+    </div>
+
+    <div class="checkbox-item">
+      <label>
+        <input type="checkbox"
+               [checked]="isVehicleSelected('Bus')"
+               (change)="toggleVehicle('Bus')" />
+        <span>Bus</span>
+      </label>
+    </div>
+
+  </div>
+
+        <label>Vehicle Category</label>
+
+        <div class="multi-select-box">
+
+          <div class="checkbox-item">
+            <label>
+              <input type="checkbox"
+                     [checked]="isCategorySelected('1')"
+                     (change)="toggleCategory('1')" />
+              <span>LDV</span>
+            </label>
+          </div>
+
+          <div class="checkbox-item">
+            <label>
+              <input type="checkbox"
+                     [checked]="isCategorySelected('2')"
+                     (change)="toggleCategory('2')" />
+              <span>MDV</span>
+            </label>
+          </div>
+
+          <div class="checkbox-item">
+            <label>
+              <input type="checkbox"
+                     [checked]="isCategorySelected('3')"
+                     (change)="toggleCategory('3')" />
+              <span>HDV</span>
+            </label>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="filter-footer">
+        <button type="button"
+                class="reset-btn"
+                (click)="resetFilter()">
+          Reset
+        </button>
+
+        <button type="button"
+                class="apply-btn"
+                (click)="applyFilter()">
+          Apply Filter
+        </button>
+      </div>
+
+    </div>
+  </div>
 </div>
     <!-- <div class="pagination-info">
       <span>Total Records: {{ totalRecords() }}</span>

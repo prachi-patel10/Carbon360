@@ -15,5 +15,7 @@ namespace ProjectApp.Repository.Interfaces.VehicleTripEmission
         Task<bool> DeleteAsync(string hashId);
         Task<ResponseVehicleTripEmissionDTO> UpdateAsync(UpdateVehicleTripEmissionDTO dto);
 
+        Task<bool> UpdateStatusAsync(VehicleTripStatusUpdateDTO dto);
+
     }
 }

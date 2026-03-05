@@ -27,6 +27,7 @@ export class Citymaster implements OnInit {
   searchForm!: FormGroup;
 
   cities = signal<City[]>([]);
+  allCities = signal<string[]>([]);
   totalRecords = signal(0);
   totalPages = signal(1);
   currentPage = signal(1);
@@ -35,8 +36,16 @@ export class Citymaster implements OnInit {
   onlyActive = signal(false);
   searchText = signal('');
   refreshTrigger = signal(0);
-  pageSizeOptions = [5, 10, 20];
-pageSize = signal(5); // default 5
+  pageSizeOptions = [5, 10, 20];  
+  pageSize = signal(5); // default 5
+  filterModalOpen = signal(false);
+
+  filter = signal({
+    stateNames: [] as string[],
+    cityNames: [] as string[]
+  });
+
+  allStates = signal<string[]>([]);
 
   constructor(
     private fb: FormBuilder,
@@ -45,6 +54,7 @@ pageSize = signal(5); // default 5
   ) {
 
     effect(() => {
+      this.refreshTrigger();
       this.loadCities(
         this.currentPage(),
         this.pageSize(),
@@ -62,7 +72,28 @@ pageSize = signal(5); // default 5
 
   ngOnInit(): void {
     this.initForms();
+    this.loadAllStates();
+     this.loadAllFilterData();
   }
+
+  toggleCity(city: string) {
+  const selected = [...this.filter().cityNames];
+  const index = selected.indexOf(city);
+
+  if (index > -1) {
+    selected.splice(index, 1);
+  } else {
+    selected.push(city);
+  }
+
+  this.filter.update(f => ({ ...f, cityNames: selected }));
+}
+
+isCitySelected(city: string): boolean {
+  return this.filter().cityNames.includes(city);
+}
+
+  
 
   // ================= FORM =================
 
@@ -85,30 +116,125 @@ pageSize = signal(5); // default 5
     });
   }
 
-  // ================= LOAD =================
+loadCities(page:number,size:number,search:string,active:boolean) {
 
-  loadCities(page:number,size:number,search:string,active:boolean) {
+  this.service.getPaged(page,size,search,active).subscribe({
+    next:(res:any)=>{
 
-    this.service.getPaged(page,size,search,active).subscribe({
-      next:(res:any)=>{
+      const result = res.data;
 
-        const result = res.data;
+      const mapped: City[] = result.data.map((c:any)=>({
+        cityId:c.cityId,
+        cityName:c.cityName,
+        stateName:c.stateName,
+        pincode:c.pincode,
+        isActive:c.isActive
+      }));
 
-        const mapped = result.data.map((c:any)=>({
-          cityId:c.cityId,
-          cityName:c.cityName,
-          stateName:c.stateName,
-          pincode:c.pincode,
-          isActive:c.isActive
-        }));
+      let filtered = mapped;
 
-        this.cities.set(mapped);
-        this.totalRecords.set(result.totalRecords);
-        this.totalPages.set(result.totalPages);
-      },
-      error:()=>this.toastr.error('Failed to load cities')
-    });
+      const selectedStates = this.filter().stateNames;
+      const selectedCities = this.filter().cityNames;
+
+      if (selectedStates.length > 0) {
+        filtered = filtered.filter(c =>
+          selectedStates.includes(c.stateName)
+        );
+      }
+
+      if (selectedCities.length > 0) {
+        filtered = filtered.filter(c =>
+          selectedCities.includes(c.cityName)
+        );
+      }
+
+      //this.cities.set(filtered);
+      this.cities.set(mapped);
+      // this.totalRecords.set(filtered.length);
+      // this.totalPages.set(Math.ceil(filtered.length / size) || 1);
+
+      this.totalRecords.set(result.totalRecords);
+      this.totalPages.set(result.totalPages);
+
+      // // ✅ SET DATA
+      // this.cities.set(mapped);
+
+      // this.totalRecords.set(result.totalRecords);
+      // this.totalPages.set(result.totalPages);
+
+      // ✅ FIXED UNIQUE STATE EXTRACTION
+      // const uniqueStates: string[] = Array.from(
+      //   new Set(mapped.map((c: City) => c.stateName))
+      // );
+
+      // this.allStates.set(uniqueStates);
+    },
+    error:()=>this.toastr.error('Failed to load cities')
+  });
+}
+
+openFilterModal() {
+  this.filterModalOpen.set(true);
+}
+
+closeFilterModal() {
+  this.filterModalOpen.set(false);
+}
+
+toggleState(state: string) {
+  const selected = [...this.filter().stateNames];
+  const index = selected.indexOf(state);
+
+  if (index > -1) {
+    selected.splice(index, 1);
+  } else {
+    selected.push(state);
   }
+
+  this.filter.update(f => ({ ...f, stateNames: selected }));
+}
+
+isStateSelected(state: string): boolean {
+  return this.filter().stateNames.includes(state);
+}
+
+applyFilter() {
+  this.currentPage.set(1);
+  this.refreshTrigger.update(x => x + 1);
+  this.closeFilterModal();
+}
+
+resetFilter() {
+  this.filter.set({
+    stateNames: [],
+    cityNames: []
+  });
+
+  this.refreshTrigger.update(x => x + 1);
+}
+
+loadAllFilterData() {
+  this.service.getAll().subscribe({
+    next: (res: any) => {
+
+      const cities = res.data || res;
+
+      const uniqueStates: string[] = Array.from(
+        new Set(cities.map((c: any) => c.stateName))
+      );
+
+      const uniqueCities: string[] = Array.from(
+        new Set(cities.map((c: any) => c.cityName))
+      );
+
+      this.allStates.set(uniqueStates);
+      this.allCities.set(uniqueCities);
+    },
+    error: () => {
+      this.toastr.error('Failed to load filter data');
+    }
+  });
+}
 
   // ================= CREATE / UPDATE =================
 
@@ -203,6 +329,24 @@ pageSize = signal(5); // default 5
 get endRecord(){
   const end=this.currentPage()*this.pageSize();
   return end>this.totalRecords()?this.totalRecords():end;
+}
+
+loadAllStates() {
+  this.service.getAll().subscribe({
+    next: (res: any) => {
+
+      const cities = res.data || res;  // depends on your API structure
+
+      const uniqueStates: string[] = Array.from(
+        new Set(cities.map((c: any) => c.stateName))
+      );
+
+      this.allStates.set(uniqueStates);
+    },
+    error: () => {
+      this.toastr.error('Failed to load states');
+    }
+  });
 }
 
 }

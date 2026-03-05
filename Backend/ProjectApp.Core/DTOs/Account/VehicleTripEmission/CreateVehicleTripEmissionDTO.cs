@@ -16,5 +16,7 @@ namespace ProjectApp.Core.DTOs.Account.VehicleTripEmission
         public decimal DistanceKm { get; set; }
         public string FuelType { get; set; }
         public decimal FuelConsumedLtr { get; set; }
+        public int StatusId { get; set; }        // ✅ NEW
+
     }
 }

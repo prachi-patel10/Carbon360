@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
 import Swal from 'sweetalert2';
+import { ChangeDetectorRef } from '@angular/core';
 
 @Component({
   selector: 'app-fueltype',
@@ -22,56 +23,66 @@ onlyActive: boolean = false;
 currentPage: number = 1;
 pageSize: number = 5;
 
-get filteredFuels() {
-  let data = this.fuels;
+totalRecords: number = 0;
+totalPages: number = 0;
+sortColumn: string = 'fuel_name';
+sortDirection: string = 'ASC';
 
-  // Search filter
-  if (this.searchText) {
-    data = data.filter(f =>
-      f.fuel_name.toLowerCase().includes(this.searchText.toLowerCase()) ||
-      f.fuel_Desc.toLowerCase().includes(this.searchText.toLowerCase())
-    );
-  }
+// get filteredFuels() {
+//   let data = this.fuels;
 
-  // Active filter
-  if (this.onlyActive) {
-    data = data.filter(f => f.isActive);
-  }
+//   // Search filter
+//   if (this.searchText) {
+//     data = data.filter(f =>
+//       f.fuel_name.toLowerCase().includes(this.searchText.toLowerCase()) ||
+//       f.fuel_Desc.toLowerCase().includes(this.searchText.toLowerCase())
+//     );
+//   }
 
-  return data;
-}
+//   // Active filter
+//   if (this.onlyActive) {
+//     data = data.filter(f => f.isActive);
+//   }
 
-get totalPages() {
-  return Math.ceil(this.filteredFuels.length / this.pageSize) || 1;
-}
+//   return data;
+// }
 
-get paginatedFuels() {
-  const start = (this.currentPage - 1) * this.pageSize;
-  return this.filteredFuels.slice(start, start + this.pageSize);
-}
+// get totalPages() {
+//   return Math.ceil(this.filteredFuels.length / this.pageSize) || 1;
+// }
+
+// get paginatedFuels() {
+//   const start = (this.currentPage - 1) * this.pageSize;
+//   return this.filteredFuels.slice(start, start + this.pageSize);
+// }
 
 previousPage() {
   if (this.currentPage > 1) {
     this.currentPage--;
+    this.loadFuels();
   }
 }
 
 nextPage() {
   if (this.currentPage < this.totalPages) {
     this.currentPage++;
+    this.loadFuels();
   }
 }
 
 updatePagination() {
   this.currentPage = 1;
+  this.loadFuels();
 }
 
 onSearchChange() {
   this.currentPage = 1;
+  this.loadFuels();
 }
 
 onFilterChange() {
   this.currentPage = 1;
+  this.loadFuels();
 }
 
 clearSearch() {
@@ -88,7 +99,8 @@ clearSearch() {
 
   constructor(
     private fuelService: FueltypeService,
-    private toastr: ToastrService
+    private toastr: ToastrService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
@@ -96,10 +108,46 @@ clearSearch() {
   }
 
   loadFuels() {
-    this.fuelService.getAll().subscribe((res: any) => {
-      this.fuels = res.data ?? res;
-    });
+
+  let params: any = {
+    pageNumber: this.currentPage,
+    pageSize: this.pageSize,
+    sortColumn: this.sortColumn,
+    sortDirection: this.sortDirection
+  };
+
+  // Only add searchText if it exists
+  if (this.searchText && this.searchText.trim() !== '') {
+    params.searchText = this.searchText;
   }
+
+  // Only add isActive if filter is ON
+  if (this.onlyActive) {
+    params.isActive = this.onlyActive;
+  }
+
+  this.fuelService.search(params).subscribe({
+
+   next: (res: any) => {
+
+  const result = res.data;
+
+  this.fuels = result.data.map((f: any) => ({
+    ...f,
+    isapplicable: f.isapplicable === 1 || f.isapplicable === true,
+    isActive: f.isActive === 1 || f.isActive === true
+  }));
+
+  this.totalRecords = result.totalRecords;
+  this.totalPages = result.totalPages;
+  this.currentPage = result.currentPage;
+
+},
+    error: (err) => {
+      console.error(err);
+    }
+  });
+}
 
   createFuel() {
 
@@ -158,11 +206,7 @@ clearSearch() {
     });
   }
 
- confirmApplicableChange(event: any, fuel: any) {
-
-  event.preventDefault();
-
-  const newValue = !fuel.isapplicable;
+    confirmApplicableChange(newValue: boolean, fuel: any) {
 
   Swal.fire({
     title: 'Are you sure?',
@@ -180,15 +224,18 @@ clearSearch() {
 
       this.fuelService.updateGenerator(payload).subscribe({
         next: () => {
-          fuel.isapplicable = newValue;
           Swal.fire('Updated!', 'Generator updated.', 'success');
         },
         error: () => {
+          fuel.isapplicable = !newValue; // revert if failed
           Swal.fire('Error!', 'Update failed.', 'error');
         }
       });
 
+    } else {
+      fuel.isapplicable = !newValue; // revert if cancelled
     }
+
   });
 }
 

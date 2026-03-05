@@ -14,11 +14,13 @@ namespace ProjectApp.Core.DTOs.Account.GeneratorOperation
         //public DateTime OperationDate { get; set; }
 
         public DateTime StartTime { get; set; }
-            
+
         public DateTime EndTime { get; set; }
 
         public decimal LoadFactor { get; set; }
 
         public decimal FuelConsumedLiters { get; set; }
+
+        //public int? StatusId { get; set; }
     }
 }

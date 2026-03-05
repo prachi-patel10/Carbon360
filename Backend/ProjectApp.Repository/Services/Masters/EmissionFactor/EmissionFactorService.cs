@@ -65,144 +65,145 @@ namespace ProjectApp.Repository.Services.Masters.EmissionFactor
 
         public async Task<ApiResponse<EmissionFactorResponseDTO>> GetByIdAsync(string encryptedId)
             {
-                int id = _encoder.Decode(encryptedId);
+            int id = _encoder.Decode(encryptedId);
 
-                using var con = GetConnection();
-                using var cmd = new SqlCommand("USP_CB_EmissionFactor_GetById", con);
-                cmd.CommandType = CommandType.StoredProcedure;
-                cmd.Parameters.AddWithValue("@EmissionFactorId", id);
+            using var con = GetConnection();
+            using var cmd = new SqlCommand("USP_CB_EmissionFactor_GetById", con);
+            cmd.CommandType = CommandType.StoredProcedure;
+            cmd.Parameters.AddWithValue("@EmissionFactorId", id);
 
-                await con.OpenAsync();
-                using var reader = await cmd.ExecuteReaderAsync();
+            await con.OpenAsync();
+            using var reader = await cmd.ExecuteReaderAsync();
 
-                if (await reader.ReadAsync())
-                {
+            if (await reader.ReadAsync())
+            {
                 var dto = new EmissionFactorResponseDTO
                 {
                     Id = encryptedId,
                     FuelId = Convert.ToInt32(reader["FuelId"]),
                     FuelName = reader["fuel_name"]?.ToString(),
                     CO2_Factor_KgPerL = Convert.ToDecimal(reader["CO2_Factor_KgPerL"]),
-                    NO2_Factor_KgPerL = Convert.ToDecimal(reader["NO2_Factor_KgPerKm"]),
-                    CH4_Factor_KgPerL = Convert.ToDecimal(reader["CH4_Factor_KgPerKm"]),
+                    NO2_Factor_KgPerL = Convert.ToDecimal(reader["NO2_Factor_KgPerL"]),
+                    CH4_Factor_KgPerL = Convert.ToDecimal(reader["CH4_Factor_KgPerL"]),
                     IsActive = Convert.ToBoolean(reader["IsActive"])
                 };
 
                 return new ApiResponse<EmissionFactorResponseDTO>
-                    {
-                        Status = true,
-                        StatusCode = 200,
-                        Message = "Record found",
-                        Data = dto
-                    };
-                }
-
-                return new ApiResponse<EmissionFactorResponseDTO>
                 {
-                    Status = false,
-                    StatusCode = 404,
-                    Message = "Record not found",
-                    Data = null
+                    Status = true,
+                    StatusCode = 200,
+                    Message = "Record found",
+                    Data = dto
                 };
             }
+
+            return new ApiResponse<EmissionFactorResponseDTO>
+            {
+                Status = false,
+                StatusCode = 404,
+                Message = "Record not found",
+                Data = null
+            };
+        }
 
             public async Task<ApiResponse<string>> CreateAsync(EmissionFactorRequestDTO dto, int userId)
             {
-                using var con = GetConnection();
-                using var cmd = new SqlCommand("USP_CB_EmissionFactor_Insert", con);
-                cmd.CommandType = CommandType.StoredProcedure;
+            using var con = GetConnection();
+            using var cmd = new SqlCommand("USP_CB_EmissionFactor_Insert", con);
+            cmd.CommandType = CommandType.StoredProcedure;
 
             cmd.Parameters.AddWithValue("@FuelId", dto.FuelId);
             cmd.Parameters.AddWithValue("@CO2_Factor_KgPerL", dto.CO2_Factor_KgPerL);
-            cmd.Parameters.AddWithValue("@NO2_Factor_KgPerKm", dto.NO2_Factor_KgPerKm);
-            cmd.Parameters.AddWithValue("@CH4_Factor_KgPerKm", dto.CH4_Factor_KgPerKm);
+            cmd.Parameters.AddWithValue("@NO2_Factor_KgPerL", dto.NO2_Factor_KgPerL);  // updated
+            cmd.Parameters.AddWithValue("@CH4_Factor_KgPerL", dto.CH4_Factor_KgPerL);  // updated
             cmd.Parameters.AddWithValue("@EntryBy", userId);
 
             await con.OpenAsync();
-                int newId = Convert.ToInt32(await cmd.ExecuteScalarAsync());
+            int newId = Convert.ToInt32(await cmd.ExecuteScalarAsync());
 
-                return new ApiResponse<string>
-                {
-                    Status = true,
-                    StatusCode = 201,
-                    Message = "Created successfully",
-                    Data = _encoder.Encode(newId)
-                };
-            }
+            return new ApiResponse<string>
+            {
+                Status = true,
+                StatusCode = 201,
+                Message = "Created successfully",
+                Data = _encoder.Encode(newId)
+            };
+        }
 
             public async Task<ApiResponse<string>> UpdateAsync(string encryptedId, EmissionFactorRequestDTO dto, int userId)
             {
-                int id = _encoder.Decode(encryptedId);
+            int id = _encoder.Decode(encryptedId);
 
-                using var con = GetConnection();
-                using var cmd = new SqlCommand("USP_CB_EmissionFactor_Update", con);
-                cmd.CommandType = CommandType.StoredProcedure;
+            using var con = GetConnection();
+            using var cmd = new SqlCommand("USP_CB_EmissionFactor_Update", con);
+            cmd.CommandType = CommandType.StoredProcedure;
 
             cmd.Parameters.AddWithValue("@EmissionFactorId", id);
             cmd.Parameters.AddWithValue("@FuelId", dto.FuelId);
             cmd.Parameters.AddWithValue("@CO2_Factor_KgPerL", dto.CO2_Factor_KgPerL);
-            cmd.Parameters.AddWithValue("@NO2_Factor_KgPerKm", dto.NO2_Factor_KgPerKm);
-            cmd.Parameters.AddWithValue("@CH4_Factor_KgPerKm", dto.CH4_Factor_KgPerKm);
+            cmd.Parameters.AddWithValue("@NO2_Factor_KgPerL", dto.NO2_Factor_KgPerL);  // updated
+            cmd.Parameters.AddWithValue("@CH4_Factor_KgPerL", dto.CH4_Factor_KgPerL);  // updated
             cmd.Parameters.AddWithValue("@UpdatedBy", userId);
 
             await con.OpenAsync();
-                await cmd.ExecuteNonQueryAsync();
+            await cmd.ExecuteNonQueryAsync();
 
-                return new ApiResponse<string>
-                {
-                    Status = true,
-                    StatusCode = 200,
-                    Message = "Updated successfully",
-                    Data = encryptedId
-                };
-            }
+            return new ApiResponse<string>
+            {
+                Status = true,
+                StatusCode = 200,
+                Message = "Updated successfully",
+                Data = encryptedId
+            };
+        }
 
             public async Task<ApiResponse<string>> DeleteAsync(string encryptedId, int userId)
             {
-                int id = _encoder.Decode(encryptedId);
+            int id = _encoder.Decode(encryptedId);
 
-                using var con = GetConnection();
-                using var cmd = new SqlCommand("USP_CB_EmissionFactor_Delete", con);
-                cmd.CommandType = CommandType.StoredProcedure;
+            using var con = GetConnection();
+            using var cmd = new SqlCommand("USP_CB_EmissionFactor_UpdateStatus", con); // Use UpdateStatus for soft delete
+            cmd.CommandType = CommandType.StoredProcedure;
 
-                cmd.Parameters.AddWithValue("@EmissionFactorId", id);
-                cmd.Parameters.AddWithValue("@UpdatedBy", userId);
+            cmd.Parameters.AddWithValue("@EmissionFactorId", id);
+            cmd.Parameters.AddWithValue("@IsActive", false);
+            cmd.Parameters.AddWithValue("@UpdatedBy", userId);
 
-                await con.OpenAsync();
-                await cmd.ExecuteNonQueryAsync();
+            await con.OpenAsync();
+            await cmd.ExecuteNonQueryAsync();
 
-                return new ApiResponse<string>
-                {
-                    Status = true,
-                    StatusCode = 200,
-                    Message = "Deleted successfully",
-                    Data = encryptedId
-                };
-            }
+            return new ApiResponse<string>
+            {
+                Status = true,
+                StatusCode = 200,
+                Message = "Deleted successfully",
+                Data = encryptedId
+            };
+        }
 
             public async Task<ApiResponse<string>> UpdateStatusAsync(string encryptedId, bool isActive, int userId)
             {
-                int id = _encoder.Decode(encryptedId);
+            int id = _encoder.Decode(encryptedId);
 
-                using var con = GetConnection();
-                using var cmd = new SqlCommand("USP_CB_EmissionFactor_UpdateStatus", con);
-                cmd.CommandType = CommandType.StoredProcedure;
+            using var con = GetConnection();
+            using var cmd = new SqlCommand("USP_CB_EmissionFactor_UpdateStatus", con);
+            cmd.CommandType = CommandType.StoredProcedure;
 
-                cmd.Parameters.AddWithValue("@EmissionFactorId", id);
-                cmd.Parameters.AddWithValue("@IsActive", isActive);
-                cmd.Parameters.AddWithValue("@UpdatedBy", userId);
+            cmd.Parameters.AddWithValue("@EmissionFactorId", id);
+            cmd.Parameters.AddWithValue("@IsActive", isActive);
+            cmd.Parameters.AddWithValue("@UpdatedBy", userId);
 
-                await con.OpenAsync();
-                await cmd.ExecuteNonQueryAsync();
+            await con.OpenAsync();
+            await cmd.ExecuteNonQueryAsync();
 
-                return new ApiResponse<string>
-                {
-                    Status = true,
-                    StatusCode = 200,
-                    Message = "Status updated successfully",
-                    Data = encryptedId
-                };
-            }
+            return new ApiResponse<string>
+            {
+                Status = true,
+                StatusCode = 200,
+                Message = "Status updated successfully",
+                Data = encryptedId
+            };
+        }
         }
     
 }
