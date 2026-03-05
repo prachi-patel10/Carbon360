@@ -26,7 +26,7 @@ export class VehicleService {
       IsActive: status        // correct casing
     };
 
-    return this.http.patch(`${this.baseUrl}/status`, payload);
+    return this.http.patch(`${this.baseUrl}/status`, payload,  { responseType: 'text' } );
   }
 
   searchVehicles(

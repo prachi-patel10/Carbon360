@@ -22,6 +22,10 @@ export class TripComponent implements OnInit {
   fuels: any[] = [];
   emissionFactors: any[] = [];
   result: any;
+currentStatusId: number = 0;   // ✅ NEW
+
+
+
   todayDateTime: string = '';
   tripDuration: string = '';
 showResult: boolean = false;
@@ -42,8 +46,8 @@ summaryData: any;
       vehicle_id: ['', Validators.required],
 
      
-      // fuelType: ['', Validators.required],
-      fuelType: [''],
+       fuelType: [''],   // for display (name)
+  fuelId: [''],  
       fromCityId: ['', Validators.required],
       toCityId: ['', Validators.required],
 
@@ -110,49 +114,34 @@ summaryData: any;
     });
 
   }
-
- setupVehicleChangeListener() {
-
+setupVehicleChangeListener() {
   this.tripForm.get('vehicle_id')?.valueChanges.subscribe(selectedVehicleId => {
-
     if (!selectedVehicleId) return;
 
-    console.log("Selected Vehicle ID:", selectedVehicleId);
-
-    // 🔹 Find selected vehicle
-    const vehicle = this.vehicles.find(v =>
-      v.vehicle_id == selectedVehicleId
-    );
-
-    console.log("Matched Vehicle:", vehicle);
-
+    const vehicle = this.vehicles.find(v => v.vehicle_id == selectedVehicleId);
     if (!vehicle) return;
 
-    // ✅ Set Fuel Type directly from vehicle
-    this.tripForm.patchValue({
-      fuelType: vehicle.fuel_name
-    });
+    // Find fuel from master
+    const fuel = this.fuels.find(f =>
+      f.fuel_name?.toLowerCase() === vehicle.fuel_name?.toLowerCase()
+    );
 
-    // 🔹 Find emission factor using fuel_name
+    // Find emission factor
     const factor = this.emissionFactors.find(e =>
       e.fuelName?.toLowerCase() === vehicle.fuel_name?.toLowerCase()
     );
 
-    console.log("Matched Factor:", factor);
-
-    if (!factor) return;
-
-    // ✅ Set emission factors
     this.tripForm.patchValue({
-      co2Factor: factor.cO2_Factor_KgPerL,
-      no2Factor: factor.nO2_Factor_KgPerKm,
-      ch4Factor: factor.cH4_Factor_KgPerKm
+      fuelType: fuel ? Number(fuel.fuel_id) : null, // 🔹 numeric fuel ID for backend
+      fuelId: fuel?.fuel_id || '',                  // optional, display only
+      co2Factor: factor?.cO2_Factor_KgPerL,
+      no2Factor: factor?.nO2_Factor_KgPerL,
+      ch4Factor: factor?.cH4_Factor_KgPerL
     });
 
+    console.log("Patched FuelType (numeric):", this.tripForm.get('fuelType')?.value);
   });
-
 }
-
   loadVehicles() {
     this.tripService.getVehicles().subscribe(res => this.vehicles = res);
   }
@@ -177,29 +166,15 @@ summaryData: any;
       }
     });
   }
-  setEmissionFactors(fuelId: number) {
+  setEmissionFactors(fuelId: string) {
+  const factor = this.emissionFactors.find(f => f.fuelId === fuelId);
+  if (!factor) return;
 
-    if (!this.emissionFactors || this.emissionFactors.length === 0) {
-      console.log("Emission factors not loaded yet");
-      return;
-    }
-
-    const factor = this.emissionFactors.find(
-      f => Number(f.fuelId) === Number(fuelId)
-    );
-
-    if (!factor) {
-      console.warn("No emission factor found for fuel:", fuelId);
-      return;
-    }
-
-    console.log("Matched Factor:", factor);
-
-    this.tripForm.patchValue({
-      co2Factor: factor.cO2_Factor_KgPerL,
-      no2Factor: factor.nO2_Factor_KgPerKm,
-      ch4Factor: factor.cH4_Factor_KgPerKm
-    });
+  this.tripForm.patchValue({
+    co2Factor: factor.cO2_Factor_KgPerL,
+    no2Factor: factor.nO2_Factor_KgPerL,
+    ch4Factor: factor.cH4_Factor_KgPerL
+  });
   }
 
   setupDurationListener() {
@@ -208,77 +183,109 @@ summaryData: any;
   }
 
 submitTrip() {
-
   if (this.tripForm.invalid) {
     this.tripForm.markAllAsTouched();
-
     Swal.fire({
       icon: 'warning',
       title: 'Validation Error',
       text: 'Please fill all required fields'
     });
-
     return;
   }
 
   const formValue = this.tripForm.getRawValue();
 
+  // ✅ FuelType must be numeric ID
   const payload = {
-    VehicleId: formValue.vehicle_id,
-    FromCityId: formValue.fromCityId,
-    ToCityId: formValue.toCityId,
+    VehicleId: formValue.vehicle_id,   // hashed string
+    FromCityId: formValue.fromCityId,  // hashed string
+    ToCityId: formValue.toCityId,      // hashed string
     DistanceKm: Number(formValue.distanceKm),
     FuelConsumedLtr: Number(formValue.fuelConsumedLtr),
     TripStartDateTime: formValue.tripStartDateTime,
     TripEndDateTime: formValue.tripEndDateTime,
-    FuelType: formValue.fuelType
+    FuelType: Number(formValue.fuelType), // 🔹 IMPORTANT: numeric ID
+    StatusId: 1
   };
 
+  console.log("Submitting payload:", payload); // ✅ DEBUG: FuelType must be numeric
+
   this.tripService.addTrip(payload).subscribe({
-
     next: (res: any) => {
-
       if (!res) {
         Swal.fire('Error', 'Something went wrong', 'error');
         return;
       }
 
-      // ✅ SET RESULT FIRST (IMPORTANT)
+      this.currentStatusId = res.statusId;
+      this.lockFormIfNeeded();
+
       this.result = {
         distance: payload.DistanceKm,
         fuel: payload.FuelConsumedLtr,
         co2Factor: this.tripForm.get('co2Factor')?.value,
         no2Factor: this.tripForm.get('no2Factor')?.value,
         ch4Factor: this.tripForm.get('ch4Factor')?.value,
-        totalCo2: Number(res.cO2),
-        totalNo2: Number(res.nO2),
-        totalCh4: Number(res.cH4),
-        totalEmission: Number(res.totalEmission)
+        totalCo2: Number(res.co2),
+        totalNo2: Number(res.no2),
+        totalCh4: Number(res.ch4),
+        totalEmission: Number(res.totalEmission),
+        statusId: res.statusId
       };
 
-      this.showResult = true;  // ✅ SHOW TABLE IMMEDIATELY
+      this.showResult = true;
 
-      // ✅ THEN SHOW SWEET ALERT
       Swal.fire({
         icon: 'success',
         title: 'Trip Submitted Successfully!',
         confirmButtonColor: '#16a34a'
       }).then(() => {
-
-        // Optional: scroll after user clicks OK
         const element = document.querySelector('.result-card');
         element?.scrollIntoView({ behavior: 'smooth' });
-
       });
-
     },
-
-    error: () => {
+    error: (err) => {
+      console.error(err);
       Swal.fire('Error', 'Failed to submit record', 'error');
     }
-
   });
 }
+lockFormIfNeeded() {
+
+  // Example:
+  // 1 = Draft
+  // 2 = Submitted
+  // 3 = Approved
+  // 4 = Rejected
+
+  if (this.currentStatusId == 2 || this.currentStatusId == 3) {
+    this.tripForm.disable();
+  } else {
+    this.tripForm.enable();
+  }
+}
+
+updateStatus(statusId: number) {
+
+  const payload = {
+    tripId: this.result.tripId,
+    statusId: statusId
+  };
+
+  this.tripService.updateTripStatus(payload).subscribe({
+    next: () => {
+      this.currentStatusId = statusId;
+
+      this.lockFormIfNeeded();   // ✅ CALL HERE
+
+      Swal.fire('Success', 'Status Updated', 'success');
+    },
+    error: () => {
+      Swal.fire('Error', 'Status update failed', 'error');
+    }
+  });
+}
+
 
   dateValidator(group: FormGroup) {
     const start = group.get('tripStartDateTime')?.value;
@@ -323,6 +330,8 @@ submitTrip() {
 resetForm() {
   this.tripForm.reset();
   this.result = null;
+    this.tripForm.enable();     // ✅ re-enable
+
   this.tripDuration = '';
   this.showResult = false;
 }

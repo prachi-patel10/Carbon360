@@ -142,6 +142,22 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
      .AsNoTracking()
      .FirstOrDefaultAsync(x => x.OperationId == insertedId);
 
+            // 🔥 FETCH GENERATOR
+            var generator = await _context.CB_MasterGenerators
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x => x.GeneratorId == insertedEntity.GeneratorId);
+
+            if (generator == null)
+                throw new Exception("Generator not found");
+
+            // 🔥 FETCH EMISSION FACTOR
+            var factor = await _context.CB_EmissionFactors
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x => x.FuelId == generator.FuelId && x.IsActive == true);
+
+            if (factor == null)
+                throw new Exception("Emission factor not found");
+
             if (insertedEntity == null)
                 throw new Exception("Inserted record not found");
 
@@ -158,6 +174,14 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
                 NO2 = insertedEntity.no2_kg ?? 0,
                 CH4 = insertedEntity.ch4_kg ?? 0,
                 TotalEmission = insertedEntity.total_co2e_kg ?? 0,
+
+                // 🔥 ADD THESE LINES
+                CO2Factor = factor.CO2_Factor_KgPerL,
+                //NO2Factor = factor.NO2_Factor_KgPerL,
+                //CH4Factor = factor.CH4_Factor_KgPerL,
+                GWP_CH4 = 28m,
+                GWP_NO2 = 265m,
+
                 EntryBy = insertedEntity.EntryBy,
                 EntryDate = insertedEntity.EntryDate
             };

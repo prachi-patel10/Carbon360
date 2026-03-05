@@ -3,6 +3,7 @@ using HashidsNet;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using ProjectApp.Core.DTOs.Account.VehicleTripEmission;
+using ProjectApp.Core.DTOs.Masters.VehicleType;
 using ProjectApp.Core.Models;
 using ProjectApp.Repository.Interfaces.Common;
 using ProjectApp.Repository.Interfaces.User;
@@ -54,43 +55,43 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
         {
             int userId = GetCurrentUserId();
 
-            // 🔐 Decode all HashIds
             int tripId = _idEncoder.Decode(dto.TripId);
             int vehicleId = _idEncoder.Decode(dto.VehicleId);
             int fromCityId = _idEncoder.Decode(dto.FromCityId);
             int toCityId = _idEncoder.Decode(dto.ToCityId);
 
-            if (tripId == 0)
-                throw new Exception("Invalid TripId.");
-
-            var parameters = new[]
-            {
-        new SqlParameter("@TripId", tripId),
-        new SqlParameter("@VehicleId", vehicleId),
-        new SqlParameter("@FromCityId", fromCityId),
-        new SqlParameter("@ToCityId", toCityId),
-        new SqlParameter("@TripStartDateTime", dto.TripStartDateTime),
-        new SqlParameter("@TripEndDateTime", dto.TripEndDateTime ?? (object)DBNull.Value),
-        new SqlParameter("@DistanceKm", dto.DistanceKm),
-        new SqlParameter("@FuelType", dto.FuelType ?? (object)DBNull.Value),
-        new SqlParameter("@FuelConsumedLtr", dto.FuelConsumedLtr),
-        new SqlParameter("@UserId", userId)
-    };
-
-            await _context.Database.ExecuteSqlRawAsync(
-                "EXEC USP_CB_VehicleTripEmissionUpdate " +
-                "@TripId,@VehicleId,@FromCityId,@ToCityId," +
-                "@TripStartDateTime,@TripEndDateTime," +
-                "@DistanceKm,@FuelType,@FuelConsumedLtr,@UserId",
-                parameters);
-
-            // 🔁 Fetch Updated Record
             var entity = await _context.CB_VehicleTripEmissions
-                .AsNoTracking()
                 .FirstOrDefaultAsync(x => x.tripid == tripId && x.isactive);
 
             if (entity == null)
                 return null;
+
+            // 🚫 Block Approved
+            if (entity.StatusId == 3)
+                throw new Exception("Approved trip cannot be modified.");
+
+            // 🚫 Block Reviewed
+            if (entity.StatusId == 2)
+                throw new Exception("Trip under review cannot be modified.");
+
+            // Update values
+            entity.vehicleid = vehicleId;
+            entity.fromcityid = fromCityId;
+            entity.tocityid = toCityId;
+            entity.tripstartdatetime = dto.TripStartDateTime;
+            entity.tripenddatetime = dto.TripEndDateTime;
+            entity.distancekm = dto.DistanceKm;
+            entity.fueltype = dto.FuelType;
+            entity.fuelconsumedltr = dto.FuelConsumedLtr;
+
+            // 🔁 If rejected → reset to reported
+            if (entity.StatusId == 4)
+                entity.StatusId = 1;
+
+            entity.updateby = userId;
+            entity.updatedate = DateTime.Now;
+
+            await _context.SaveChangesAsync();
 
             return new ResponseVehicleTripEmissionDTO
             {
@@ -108,15 +109,44 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
                 CO2 = entity.co2,
                 NO2 = entity.no2,
                 CH4 = entity.ch4,
-                TotalEmission = entity.totalemission
+                TotalEmission = entity.totalemission,
+
+                StatusId = entity.StatusId
             };
         }
 
+        public async Task<bool> UpdateStatusAsync(VehicleTripStatusUpdateDTO dto)
+        {
+            int tripId = _idEncoder.Decode(dto.TripId);
+            int userId = GetCurrentUserId();
+
+            var entity = await _context.CB_VehicleTripEmissions
+                .FirstOrDefaultAsync(x => x.tripid == tripId && x.isactive);
+
+            if (entity == null)
+                return false;
+
+            // Strict Workflow
+            if (entity.StatusId == 1 && dto.StatusId != 2)
+                throw new Exception("Reported trip can only move to Reviewed.");
+
+            if (entity.StatusId == 2 && dto.StatusId != 3 && dto.StatusId != 4)
+                throw new Exception("Reviewed trip can only move to Approved or Rejected.");
+
+            if (entity.StatusId == 3)
+                throw new Exception("Approved trip is final.");
+
+            entity.StatusId = dto.StatusId;
+            entity.updateby = userId;
+            entity.updatedate = DateTime.Now;
+
+            await _context.SaveChangesAsync();
+            return true;
+        }
         async Task<ResponseVehicleTripEmissionDTO> IVehicleTripEmissionService.CreateAsync(CreateVehicleTripEmissionDTO dto)
         {
             var userId = GetCurrentUserId();
 
-            // ✅ Decode hash ids
             int vehicleId = _idEncoder.Decode(dto.VehicleId);
             int fromCityId = _idEncoder.Decode(dto.FromCityId);
             int toCityId = _idEncoder.Decode(dto.ToCityId);
@@ -137,6 +167,10 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
         new SqlParameter("@fueltype", dto.FuelType ?? (object)DBNull.Value),
         new SqlParameter("@fuelconsumedltr", dto.FuelConsumedLtr),
         new SqlParameter("@entryby", userId),
+
+        // ✅ ADD THIS LINE
+        new SqlParameter("@statusid", dto.StatusId),
+
         outputId
     };
 
@@ -144,7 +178,7 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
                 "EXEC USP_CB_InsertVehicleTripEmission " +
                 "@vehicleid,@fromcityid,@tocityid,@tripstartdatetime," +
                 "@tripenddatetime,@distancekm,@fueltype,@fuelconsumedltr," +
-                "@entryby,@newTripId OUTPUT",
+                "@entryby,@statusid,@newTripId OUTPUT",
                 parameters);
 
             int newId = (int)outputId.Value;
@@ -171,7 +205,10 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
                 CO2 = entity.co2,
                 NO2 = entity.no2,
                 CH4 = entity.ch4,
-                TotalEmission = entity.totalemission
+                TotalEmission = entity.totalemission,
+
+                // ✅ ADD THIS
+                StatusId = entity.StatusId
             };
         }
 
@@ -193,7 +230,8 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
                 CO2 = x.co2,
                 NO2 = x.no2,
                 CH4 = x.ch4,
-                TotalEmission = x.totalemission
+                TotalEmission = x.totalemission,
+                StatusId = x.StatusId
             }).ToList();
         }
 
