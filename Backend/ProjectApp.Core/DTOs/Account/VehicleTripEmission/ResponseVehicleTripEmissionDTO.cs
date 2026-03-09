@@ -20,6 +20,9 @@ namespace ProjectApp.Core.DTOs.Account.VehicleTripEmission
         public decimal? CO2 { get; set; }
         public decimal? NO2 { get; set; }
         public decimal? CH4 { get; set; }
+        public decimal? TotalCO2 { get; set; }
+        public decimal? TotalNO2 { get; set; }
+        public decimal? TotalCH4 { get; set; }
         public decimal? TotalEmission { get; set; }
         public int StatusId { get; set; }
 

@@ -222,18 +222,21 @@ submitTrip() {
       this.lockFormIfNeeded();
 
       this.result = {
-        tripId: res.tripId,
-        distance: payload.DistanceKm,
-        fuel: payload.FuelConsumedLtr,
-        co2Factor: this.tripForm.get('co2Factor')?.value,
-        no2Factor: this.tripForm.get('no2Factor')?.value,
-        ch4Factor: this.tripForm.get('ch4Factor')?.value,
-         totalCo2: Number(res.cO2),   // ✅ FIXED
-  totalNo2: Number(res.nO2),   // ✅ FIXED
-  totalCh4: Number(res.cH4),   // 
-        totalEmission: Number(res.totalEmission),
-        statusId: res.statusId
-      };
+  tripId: res.tripId,
+  distance: payload.DistanceKm,
+  fuel: payload.FuelConsumedLtr,
+
+  co2Factor: this.tripForm.get('co2Factor')?.value,
+  no2Factor: this.tripForm.get('no2Factor')?.value,
+  ch4Factor: this.tripForm.get('ch4Factor')?.value,
+
+  totalCo2: Number(res.totalCO2),
+  totalNo2: Number(res.totalNO2),
+  totalCh4: Number(res.totalCH4),
+
+  totalEmission: Number(res.totalEmission),
+  statusId: res.statusId
+};
 
       this.showResult = true;
 

@@ -153,28 +153,30 @@
       <h3 class="section-title">Calculation Formula</h3>
 
       <div class="formula full-width">
-        CO₂ = Fuel × CO₂ Factor <br>
-        = {{ result.fuel }} × {{ result.co2Factor }} <br>
-        = {{ result.totalCo2 | number:'1.3-3' }} L
-      </div>
+CO₂ = Fuel × CO₂ Factor <br>
+= {{ result.fuel }} × {{ result.co2Factor }} <br>
+= {{ result.totalCo2 | number:'1.3-3' }} kg
+</div>
+
+<div class="formula full-width">
+NO₂ = Fuel × NO₂ Factor <br>
+= {{ result.fuel }} × {{ result.no2Factor }} <br>
+= {{ result.totalNo2 | number:'1.6-6' }} kg
+</div>
+
+<div class="formula full-width">
+CH₄ = Fuel × CH₄ Factor <br>
+= {{ result.fuel }} × {{ result.ch4Factor }} <br>
+= {{ result.totalCh4 | number:'1.6-6' }} kg
+</div>
 
       <div class="formula full-width">
-        NO₂ = Fuel × NO₂ Factor <br>
-        = {{ result.fuel }} × {{ result.no2Factor }} <br>
-        = {{ result.totalNo2 | number:'1.3-3' }} L
-      </div>
-
-      <div class="formula full-width">
-        CH₄ = Fuel × CH₄ Factor <br>
-        = {{ result.fuel }} × {{ result.ch4Factor }} <br>
-        = {{ result.totalCh4 | number:'1.3-3' }} L
-      </div>
-
-      <div class="formula full-width">
-        Total Emission = CO₂ + NO₂ + CH₄ <br>
-        = {{ result.co2Factor }} + {{ result.no2Factor }} + {{ result.ch4Factor }} <br>
-        = {{ result.totalEmission | number:'1.3-3' }} L
-      </div>
+  Total Emission = CO₂ + NO₂ + CH₄ <br>
+  = {{ result.totalCo2 | number:'1.3-3' }}
+  + {{ result.totalNo2 | number:'1.3-3' }}
+  + {{ result.totalCh4 | number:'1.3-3' }} <br>
+  = {{ result.totalEmission | number:'1.3-3' }} kg
+</div>
 
      
 
