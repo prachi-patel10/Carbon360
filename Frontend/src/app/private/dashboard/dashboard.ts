@@ -116,19 +116,24 @@ export class DashboardComponent {
   }
 
   // Menu toggles
-  toggleConfigMenu(menu: string) {
-    this.openedConfigMenu = this.openedConfigMenu === menu ? null : menu;
-    this.openedSubMenu = null;
-  }
+toggleConfigMenu(menu: string) {
+  this.openedConfigMenu = this.openedConfigMenu === menu ? null : menu;
 
+  // close other menus
+  this.openedMainMenu = null;
+
+  this.openedSubMenu = null;
+}
   toggleSubMenu(submenu: string) {
     this.openedSubMenu = this.openedSubMenu === submenu ? null : submenu;
   }
+toggleMainMenu(menu: string) {
+  this.openedMainMenu = this.openedMainMenu === menu ? null : menu;
 
-  toggleMainMenu(menu: string) {
-    this.openedMainMenu = this.openedMainMenu === menu ? null : menu;
-  }
-
+  // close configuration menu
+  this.openedConfigMenu = null;
+  this.openedSubMenu = null;
+}
   isConfigMenuOpen(menu: string): boolean {
     return this.openedConfigMenu === menu;
   }

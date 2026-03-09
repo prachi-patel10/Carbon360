@@ -17,61 +17,53 @@ import Swal from 'sweetalert2';
 export class TripComponent implements OnInit {
 
   tripForm!: FormGroup;
+  formOpenTime!: Date;
   vehicles: any[] = [];
   cities: any[] = [];
   fuels: any[] = [];
   emissionFactors: any[] = [];
-  result: any;
-currentStatusId: number = 0;   // ✅ NEW
-
+  // result: any;
+  currentStatusId: number = 0;
 
 
   todayDateTime: string = '';
   tripDuration: string = '';
-showResult: boolean = false;
+  // showResult: boolean = false;
   showSummary: boolean = false;
-summaryData: any;
+  summaryData: any;
 
   constructor(
     private fb: FormBuilder,
     private tripService: TripService,
     private toastr: ToastService,
-    private router: Router   
+    private router: Router
   ) { }
 
   ngOnInit(): void {
-
+        this.formOpenTime = new Date();  
     this.tripForm = this.fb.group({
-
       vehicle_id: ['', Validators.required],
-
-     
-       fuelType: [''],   // for display (name)
-  fuelId: [''],  
+      fuelType: [''],   // for display (name)
+      fuelId: [''],
       fromCityId: ['', Validators.required],
       toCityId: ['', Validators.required],
-
-      distanceKm: ['', Validators.required],
-      fuelConsumedLtr: ['', Validators.required],
-
-      // ✅ ADD THESE BACK
+      distanceKm: ['', [Validators.required, Validators.min(1)]],
+      fuelConsumedLtr: ['', [Validators.required, Validators.min(0.1)]],
       tripStartDateTime: ['', Validators.required],
       tripEndDateTime: ['', Validators.required],
-
       co2Factor: [{ value: '', disabled: true }],
       no2Factor: [{ value: '', disabled: true }],
       ch4Factor: [{ value: '', disabled: true }],
-
       totalCO2: [{ value: '', disabled: true }],
       totalNO2: [{ value: '', disabled: true }],
       totalCH4: [{ value: '', disabled: true }],
       finalTotalEmission: [{ value: '', disabled: true }]
 
-    }, { validators: this.dateValidator }); // ✅ attach validator properly
-
+    }, { validators: this.dateValidator });
     this.loadAllMasterData();
     // this.setupVehicleChangeListener();
     this.setupDurationListener();
+    this.updateCurrentDateTime();
     // this.setupAutoCalculation();
   }
 
@@ -85,9 +77,9 @@ summaryData: any;
 
       this.tripService.getFuels().subscribe(fuelRes => {
 
-       
+
         this.fuels = fuelRes.data || fuelRes;
-         console.log("Fuels:", this.fuels);
+        console.log("Fuels:", this.fuels);
 
         this.tripService.getCities().subscribe(cityRes => {
 
@@ -99,7 +91,7 @@ summaryData: any;
 
             this.emissionFactors = emissionRes.data || [];
             console.log("Emission Factors:", this.emissionFactors);
-            
+
 
             console.log("All master data loaded successfully");
 
@@ -115,34 +107,34 @@ summaryData: any;
     });
 
   }
-setupVehicleChangeListener() {
-  this.tripForm.get('vehicle_id')?.valueChanges.subscribe(selectedVehicleId => {
-    if (!selectedVehicleId) return;
+  setupVehicleChangeListener() {
+    this.tripForm.get('vehicle_id')?.valueChanges.subscribe(selectedVehicleId => {
+      if (!selectedVehicleId) return;
 
-    const vehicle = this.vehicles.find(v => v.vehicle_id == selectedVehicleId);
-    if (!vehicle) return;
+      const vehicle = this.vehicles.find(v => v.vehicle_id == selectedVehicleId);
+      if (!vehicle) return;
 
-    // Find fuel from master
-    const fuel = this.fuels.find(f =>
-      f.fuel_name?.toLowerCase() === vehicle.fuel_name?.toLowerCase()
-    );
+      // Find fuel from master
+      const fuel = this.fuels.find(f =>
+        f.fuel_name?.toLowerCase() === vehicle.fuel_name?.toLowerCase()
+      );
 
-    // Find emission factor
-    const factor = this.emissionFactors.find(e =>
-      e.fuelName?.toLowerCase() === vehicle.fuel_name?.toLowerCase()
-    );
+      // Find emission factor
+      const factor = this.emissionFactors.find(e =>
+        e.fuelName?.toLowerCase() === vehicle.fuel_name?.toLowerCase()
+      );
 
-    this.tripForm.patchValue({
-       fuelType: fuel?.fuel_name || '',   
-  fuelId: fuel?.fuel_id || '',  
-  co2Factor: factor?.cO2_Factor_KgPerL,
-  no2Factor: factor?.nO2_Factor_KgPerL,
-  ch4Factor: factor?.cH4_Factor_KgPerL
+      this.tripForm.patchValue({
+        fuelType: fuel?.fuel_name || '',
+        fuelId: fuel?.fuel_id || '',
+        co2Factor: factor?.cO2_Factor_KgPerL,
+        no2Factor: factor?.nO2_Factor_KgPerL,
+        ch4Factor: factor?.cH4_Factor_KgPerL
+      });
+
+      console.log("Patched FuelType (numeric):", this.tripForm.get('fuelType')?.value);
     });
-
-    console.log("Patched FuelType (numeric):", this.tripForm.get('fuelType')?.value);
-  });
-}
+  }
   loadVehicles() {
     this.tripService.getVehicles().subscribe(res => this.vehicles = res);
   }
@@ -168,14 +160,14 @@ setupVehicleChangeListener() {
     });
   }
   setEmissionFactors(fuelId: string) {
-  const factor = this.emissionFactors.find(f => f.fuelId === fuelId);
-  if (!factor) return;
+    const factor = this.emissionFactors.find(f => f.fuelId === fuelId);
+    if (!factor) return;
 
-  this.tripForm.patchValue({
-    co2Factor: factor.cO2_Factor_KgPerL,
-    no2Factor: factor.nO2_Factor_KgPerL,
-    ch4Factor: factor.cH4_Factor_KgPerL
-  });
+    this.tripForm.patchValue({
+      co2Factor: factor.cO2_Factor_KgPerL,
+      no2Factor: factor.nO2_Factor_KgPerL,
+      ch4Factor: factor.cH4_Factor_KgPerL
+    });
   }
 
   setupDurationListener() {
@@ -183,129 +175,155 @@ setupVehicleChangeListener() {
     this.tripForm.get('tripEndDateTime')?.valueChanges.subscribe(() => this.calculateDuration());
   }
 
-submitTrip() {
-  if (this.tripForm.invalid) {
-    this.tripForm.markAllAsTouched();
-    Swal.fire({
-      icon: 'warning',
-      title: 'Validation Error',
-      text: 'Please fill all required fields'
-    });
-    return;
-  }
+  submitTrip() {
 
-  const formValue = this.tripForm.getRawValue();
-
-  // ✅ FuelType must be numeric ID
-  const payload = {
-    VehicleId: formValue.vehicle_id,   // hashed string
-    FromCityId: formValue.fromCityId,  // hashed string
-    ToCityId: formValue.toCityId,      // hashed string
-    DistanceKm: Number(formValue.distanceKm),
-    FuelConsumedLtr: Number(formValue.fuelConsumedLtr),
-    TripStartDateTime: formValue.tripStartDateTime,
-    TripEndDateTime: formValue.tripEndDateTime,
-   FuelType: formValue.fuelId, // 🔹 IMPORTANT: numeric ID
-    StatusId: 1
-  };
-
-  console.log("Submitting payload:", payload); // ✅ DEBUG: FuelType must be numeric
-
-  this.tripService.addTrip(payload).subscribe({
-    next: (res: any) => {
-      if (!res) {
-        Swal.fire('Error', 'Something went wrong', 'error');
-        return;
-      }
-
-      this.currentStatusId = res.statusId;
-      this.lockFormIfNeeded();
-
-      this.result = {
-  tripId: res.tripId,
-  distance: payload.DistanceKm,
-  fuel: payload.FuelConsumedLtr,
-
-  co2Factor: this.tripForm.get('co2Factor')?.value,
-  no2Factor: this.tripForm.get('no2Factor')?.value,
-  ch4Factor: this.tripForm.get('ch4Factor')?.value,
-
-  totalCo2: Number(res.totalCO2),
-  totalNo2: Number(res.totalNO2),
-  totalCh4: Number(res.totalCH4),
-
-  totalEmission: Number(res.totalEmission),
-  statusId: res.statusId
-};
-
-      this.showResult = true;
+    if (this.tripForm.invalid) {
+      this.tripForm.markAllAsTouched();
 
       Swal.fire({
-        icon: 'success',
-        title: 'Trip Submitted Successfully!',
-        confirmButtonColor: '#16a34a'
-      }).then(() => {
-        const element = document.querySelector('.result-card');
-        element?.scrollIntoView({ behavior: 'smooth' });
+        icon: 'warning',
+        title: 'Validation Error',
+        text: 'Please fill all required fields'
       });
-    },
-    error: (err) => {
-      console.error(err);
-      Swal.fire('Error', 'Failed to submit record', 'error');
+
+      return;
     }
-  });
-}
-lockFormIfNeeded() {
 
-  // Example:
-  // 1 = Draft
-  // 2 = Submitted
-  // 3 = Approved
-  // 4 = Rejected
+    const formValue = this.tripForm.getRawValue();
 
-  if (this.currentStatusId == 2 || this.currentStatusId == 3) {
-    this.tripForm.disable();
-  } else {
-    this.tripForm.enable();
+    const payload = {
+      VehicleId: formValue.vehicle_id,
+      FromCityId: formValue.fromCityId,
+      ToCityId: formValue.toCityId,
+      DistanceKm: Number(formValue.distanceKm),
+      FuelConsumedLtr: Number(formValue.fuelConsumedLtr),
+      TripStartDateTime: formValue.tripStartDateTime,
+      TripEndDateTime: formValue.tripEndDateTime,
+      FuelType: formValue.fuelId,
+      StatusId: 1
+    };
+
+    console.log("Submitting payload:", payload);
+
+    this.tripService.addTrip(payload).subscribe({
+      next: (res: any) => {
+
+        if (!res) {
+          Swal.fire('Error', 'Something went wrong', 'error');
+          return;
+        }
+
+        this.currentStatusId = res.statusId;
+        this.lockFormIfNeeded();
+
+        Swal.fire({
+          icon: 'success',
+          title: 'Trip Submitted Successfully!',
+          confirmButtonColor: '#16a34a'
+        });
+
+      },
+
+      error: (err: any) => {
+        console.error(err);
+        Swal.fire('Error', 'Failed to submit record', 'error');
+      }
+
+    });
+
   }
-}
+  lockFormIfNeeded() {
 
-updateStatus(statusId: number) {
+    // Example:
+    // 1 = Draft
+    // 2 = Submitted
+    // 3 = Approved
+    // 4 = Rejected
 
-  const payload = {
-    tripId: this.result.tripId,
-    statusId: statusId
-  };
-
-  this.tripService.updateTripStatus(payload).subscribe({
-    next: () => {
-      this.currentStatusId = statusId;
-
-      this.lockFormIfNeeded();   // ✅ CALL HERE
-
-      Swal.fire('Success', 'Status Updated', 'success');
-    },
-    error: () => {
-      Swal.fire('Error', 'Status update failed', 'error');
+    if (this.currentStatusId == 2 || this.currentStatusId == 3) {
+      this.tripForm.disable();
+    } else {
+      this.tripForm.enable();
     }
-  });
+  }
+
+  updateStatus(statusId: number) {
+
+    const payload = {
+      tripId: null,
+      statusId: statusId
+    };
+
+    this.tripService.updateTripStatus(payload).subscribe({
+      next: () => {
+        this.currentStatusId = statusId;
+
+        this.lockFormIfNeeded();   // ✅ CALL HERE
+
+        Swal.fire('Success', 'Status Updated', 'success');
+      },
+      error: () => {
+        Swal.fire('Error', 'Status update failed', 'error');
+      }
+    });
+  }
+
+  //validation
+  cityValidator(group: FormGroup) {
+
+  const fromCity = group.get('fromCityId')?.value;
+  const toCity = group.get('toCityId')?.value;
+
+  if (fromCity && toCity && fromCity === toCity) {
+    return { sameCity: true };
+  }
+
+  return null;
 }
 
+ dateValidator(group: FormGroup) {
 
-  dateValidator(group: FormGroup) {
-    const start = group.get('tripStartDateTime')?.value;
-    const end = group.get('tripEndDateTime')?.value;
-    const now = new Date();
+  const start = group.get('tripStartDateTime')?.value;
+  const end = group.get('tripEndDateTime')?.value;
 
-    if (start && new Date(start) > now) return { futureStart: true };
-    if (end && new Date(end) > now) return { futureEnd: true };
-    if (start && end && new Date(end) < new Date(start)) return { endBeforeStart: true };
-    return null;
+  if (!start || !end) return null;
+
+  const startDate = new Date(start);
+  const endDate = new Date(end);
+
+  const now = new Date();
+  const formOpen = this.formOpenTime;
+
+  // ❌ future start date
+  if (startDate > now) {
+    return { futureStart: true };
   }
+
+  // ❌ future end date
+  if (endDate > now) {
+    return { futureEnd: true };
+  }
+
+  // ❌ today's date but before form open time
+  const startDateOnly = startDate.toDateString();
+  const todayDateOnly = formOpen.toDateString();
+
+  if (startDateOnly === todayDateOnly && startDate < formOpen) {
+    return { beforeFormOpenTime: true };
+  }
+
+  // ❌ end date before start
+  if (endDate <= startDate) {
+    return { endBeforeStart: true };
+  }
+
+  return null;
+}
 
   updateCurrentDateTime() {
-    this.todayDateTime = new Date().toISOString().slice(0, 16);
-  }
+  const now = new Date();
+  this.todayDateTime = now.toISOString().slice(0,16);
+}
 
   calculateDuration() {
     const start = this.tripForm.get('tripStartDateTime')?.value;
@@ -332,12 +350,10 @@ updateStatus(statusId: number) {
   //       }
   //     });
   // }
-resetForm() {
-  this.tripForm.reset();
-  this.result = null;
-    this.tripForm.enable();     // ✅ re-enable
+  resetForm() {
+    this.tripForm.reset();
+    this.tripForm.enable();
+    this.tripDuration = '';
+  }
 
-  this.tripDuration = '';
-  this.showResult = false;
-}
 }
