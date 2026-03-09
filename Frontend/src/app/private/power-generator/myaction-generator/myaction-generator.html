@@ -1,61 +1,98 @@
-<div class="container">
+<div class="container generator-page">
 
-  <!-- ================= TABLE ================= -->
+  <h3 class="page-title">
+     <i class="fas fa-industry generator-icon"></i>
+    Pending Generator Operations
+  </h3>
+
   <div class="table-responsive">
 
-    <div class="container mt-4">
-      <h3>Generator Operations</h3>
+    <table class="generator-table">
 
-      <table class="table table-bordered table-striped">
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Date</th>
-            <th>Fuel Type</th>
-            <th>Run Hours</th>
-            <th>Load Factor</th>
-            <!-- <th>Fuel Consumed</th> -->
-            <th>Total Emission</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let item of data()">
-            <td>{{ item.name }}</td>
-            <td>{{ item.opDate | date:'shortDate' }}</td>
-            <td>{{ item.fuelType }}</td>
-            <td>{{ item.runHours }}</td>
-            <td>{{ item.loadFactor }}</td>
-            <!-- <td>{{ item.fuelConsumed }}</td> -->
-            <td>{{ item.totalEmission }}</td>
-            <td>
-              <button class="btn btn-sm btn-primary" (click)="edit(item)">
-                <i class="fas fa-edit"></i>
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Date</th>
+          <th>Fuel</th>
+          <th>Run Hours</th>
+          <th>Load Factor</th>
+          <th>Fuel Consumed</th>
+          <th>Emission</th>
+          <th class="text-center">Action</th>
+        </tr>
+      </thead>
+
+      <tbody>
+
+        <tr *ngFor="let item of data()">
+
+          <td>{{ item.generatorName }}</td>
+          <td>{{ item.opDate | date:'shortDate' }}</td>
+          <td>{{ item.fuelType }}</td>
+          <td>{{ item.runHours }}</td>
+          <td>{{ item.loadFactor }}</td>
+          <td>{{ item.fuelConsumed }}</td>
+          <td>{{ item.totalEmission }}</td>
+
+          <td class="action-buttons">
+            <button class="btn-edit" (click)="edit(item)">
+              <i class="fas fa-edit"></i>
+            </button>
+          </td>
+
+        </tr>
+
+        <tr *ngIf="data().length === 0">
+          <td colspan="8" class="text-center no-data">
+            No records found
+          </td>
+        </tr>
+
+      </tbody>
+
+    </table>
+
   </div>
 
-  <!-- ================= PAGINATION ================= -->
-  <div class="pagination-container">
+  <!-- Pagination Footer -->
+
+  <div class="table-footer">
+
+    <div class="total-records">
+      Total Records : <b>{{ totalRecords() }}</b>
+    </div>
 
     <div class="page-size">
-      <label>Rows per page:</label>
+      Show
       <select (change)="changePageSize($event)">
-        <option value="5">5</option>
-        <option value="10" selected>10</option>
-        <option value="20">20</option>
-        <option value="50">50</option>
+        <option>5</option>
+        <option selected>10</option>
+        <option>20</option>
+        <option>50</option>
       </select>
+      entries
     </div>
 
     <div class="pagination">
-      <button (click)="goToPage(currentPage()-1)" [disabled]="currentPage()===1">Prev</button>
-      <span>Page {{currentPage()}} of {{totalPages()}}</span>
-      <button (click)="goToPage(currentPage()+1)" [disabled]="currentPage()===totalPages()">Next</button>
+
+      <button
+        (click)="goToPage(currentPage()-1)"
+        [disabled]="currentPage() === 1">
+
+        Prev
+      </button>
+
+      <span class="page-info">
+        Page {{ currentPage() }} of {{ totalPages() }}
+      </span>
+
+      <button
+        (click)="goToPage(currentPage()+1)"
+        [disabled]="currentPage() === totalPages()">
+
+        Next
+      </button>
+
     </div>
 
   </div>

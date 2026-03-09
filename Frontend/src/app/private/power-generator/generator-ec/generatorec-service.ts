@@ -10,7 +10,7 @@ export class GeneratorecService {
 
   private apiUrl = `${environment.apiBaseUrl}/GeneratorOperation`;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   // ================= GET ALL =================
   getAll(): Observable<any> {
@@ -27,7 +27,7 @@ export class GeneratorecService {
     return this.http.post(`${this.apiUrl}`, data);
   }
 
-   // ================= UPDATE =================
+  // ================= UPDATE =================
   update(id: string, data: any): Observable<any> {
     return this.http.put(`${this.apiUrl}/${id}`, data);
   }
@@ -38,10 +38,15 @@ export class GeneratorecService {
   }
 
   getGenerators(): Observable<any> {
-  return this.http.get(`${environment.apiBaseUrl}/generator`);
-}
+    return this.http.get(`${environment.apiBaseUrl}/generator`);
+  }
 
-getFuels(): Observable<any> {
-  return this.http.get(`${environment.apiBaseUrl}/Fuel/All`);
-}
+  getFuels(): Observable<any> {
+    return this.http.get(`${environment.apiBaseUrl}/Fuel/All`);
+  }
+
+  updateStatus(id: string, statusId: number) {
+    return this.http.patch(`${this.apiUrl}/status/${id}`, { statusId });
+  }
+
 }
