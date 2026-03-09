@@ -56,6 +56,10 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
                 PowerOutputKWH = x.PowerOutputKWH ?? 0,
                 FuelConsumedLiters = x.FuelConsumedLiters ?? 0,
 
+                CO2 = x.co2_kg,
+                NO2 = x.no2_kg,
+                CH4 = x.ch4_kg,
+
                 TotalCO2 = x.total_co2_kg ?? 0,
                 TotalNO2 = x.total_no2_kg ?? 0,
                 TotalCH4 = x.total_ch4_kg ?? 0,
@@ -72,37 +76,59 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
 
 
         public async Task<GeneratorOperationResponseDTO> CreateAsync(
-     GeneratorOperationCreateDTO dto)
+ GeneratorOperationCreateDTO dto)
         {
-            if (dto == null)
-                throw new ArgumentNullException(nameof(dto));
-
+            var userId = GetCurrentUserId();
             int generatorId = _idEncoder.Decode(dto.GeneratorId);
-            int userId = GetCurrentUserId();
 
-            await using var connection = _context.Database.GetDbConnection();
-            await using var command = connection.CreateCommand();
+            var parameters = new[]
+            {
+        new SqlParameter("@GeneratorId", generatorId),
+        new SqlParameter("@StartTime", dto.StartTime),
+        new SqlParameter("@EndTime", dto.EndTime),
+        new SqlParameter("@LoadFactor", dto.LoadFactor),
+        new SqlParameter("@FuelConsumedLiters", dto.FuelConsumedLiters),
+        new SqlParameter("@UserId", userId)
+    };
 
-            command.CommandText = "USP_CB_GeneratorOperationInsert";
-            command.CommandType = CommandType.StoredProcedure;
+            var result = await _context.CB_GeneratorOperations
+                .FromSqlRaw(
+                    "EXEC USP_CB_GeneratorOperationInsert " +
+                    "@GeneratorId,@StartTime,@EndTime,@LoadFactor,@FuelConsumedLiters,@UserId",
+                    parameters)
+                .ToListAsync();
 
-            command.Parameters.Add(new SqlParameter("@GeneratorId", generatorId));
-            command.Parameters.Add(new SqlParameter("@StartTime", dto.StartTime));
-            command.Parameters.Add(new SqlParameter("@EndTime", dto.EndTime));
-            command.Parameters.Add(new SqlParameter("@LoadFactor", dto.LoadFactor));
-            command.Parameters.Add(new SqlParameter("@FuelConsumedLiters", dto.FuelConsumedLiters));
-            command.Parameters.Add(new SqlParameter("@UserId", userId));
+            var entity = result.FirstOrDefault();
 
-            if (connection.State != ConnectionState.Open)
-                await connection.OpenAsync();
+            if (entity == null)
+                throw new Exception("Generator operation record not created.");
 
-            var result = await command.ExecuteScalarAsync();
-            int insertedId = Convert.ToInt32(result);
+            return new GeneratorOperationResponseDTO
+            {
+                OperationId = _idEncoder.Encode(entity.OperationId),
+                GeneratorId = _idEncoder.Encode(entity.GeneratorId),
 
-            return await GetByIdAsync(_idEncoder.Encode(insertedId));
+                OperationDate = entity.OperationDate,
+                RunHours = entity.RunHours ?? 0,
+                LoadFactor = entity.LoadFactor ?? 0,
+                PowerOutputKWH = entity.PowerOutputKWH ?? 0,
+                FuelConsumedLiters = entity.FuelConsumedLiters ?? 0,
 
+                CO2 = entity.co2_kg,
+                NO2 = entity.no2_kg,
+                CH4 = entity.ch4_kg,
+
+                TotalCO2 = entity.total_co2_kg ?? 0,
+                TotalNO2 = entity.total_no2_kg ?? 0,
+                TotalCH4 = entity.total_ch4_kg ?? 0,
+
+                TotalEmission = entity.total_co2e_kg ?? 0,
+
+                StatusId = entity.StatusId,
+                EntryBy = entity.EntryBy,
+                EntryDate = entity.EntryDate
+            };
         }
-
 
         public async Task<GeneratorOperationResponseDTO> GetByIdAsync(string encryptedId)
         {
@@ -184,6 +210,7 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
                 LoadFactor = updatedEntity.LoadFactor ?? 0,
                 PowerOutputKWH = updatedEntity.PowerOutputKWH ?? 0,
                 FuelConsumedLiters = updatedEntity.FuelConsumedLiters ?? 0,
+
 
                 TotalCO2 = updatedEntity.total_co2_kg ?? 0,
                 TotalNO2 = updatedEntity.total_no2_kg ?? 0,
