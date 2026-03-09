@@ -4,21 +4,6 @@ import Swal from 'sweetalert2';
 import { CommonModule } from '@angular/common';
 import { GeneratorOp, GeneratorOperationService, GeneratorOpResponse } from './myaction-generator-service';
 
-
-
-export interface GeneratorData {
-  name: string;
-  opDate: string;
-  runHours: number;
-  loadFactor: number;
-  fuelConsumed: number;
-  totalCO2: number;
-  totalNO2: number;
-  totalCH4: number;
-  totalEmission: number;
-  status: string;
-}
-
 @Component({
   selector: 'app-myaction-generator',
   standalone: true,
@@ -32,10 +17,8 @@ export class MyactionGenerator implements OnInit {
   totalRecords = signal(0);
   currentPage = signal(1);
   pageSize = 10;
-
   isLoading: WritableSignal<boolean> = signal(false);
 
-  // Filters
   filterName = new FormControl('');
   filterFuelType = new FormControl('');
   filterStatus = new FormControl('');
@@ -43,9 +26,9 @@ export class MyactionGenerator implements OnInit {
   constructor(private generatorService: GeneratorOperationService) {}
 
   ngOnInit(): void {
-    this.fetchData(this.currentPage(), this.pageSize);
+    this.fetchData(); // fetch all records on load
 
-    // Re-fetch on filter changes
+    // Refetch on filter change
     this.filterName.valueChanges.subscribe(() => this.resetAndFetch());
     this.filterFuelType.valueChanges.subscribe(() => this.resetAndFetch());
     this.filterStatus.valueChanges.subscribe(() => this.resetAndFetch());
@@ -53,23 +36,22 @@ export class MyactionGenerator implements OnInit {
 
   resetAndFetch() {
     this.currentPage.set(1);
-    this.fetchData(this.currentPage(), this.pageSize);
+    this.fetchData();
   }
 
-  fetchData(page: number, pageSize: number) {
+  fetchData() {
     this.isLoading.set(true);
 
-    // **Use fetchOperations() instead of getGenerators()**
     this.generatorService.fetchOperations(
-      page,
-      pageSize,
-      this.filterName.value || '',
-      this.filterFuelType.value || '',
-      this.filterStatus.value || ''
+      this.currentPage(),
+      this.pageSize,
+      this.filterName.value || undefined,
+      this.filterFuelType.value || undefined,
+      this.filterStatus.value || undefined
     ).subscribe({
-      next: (res: GeneratorOpResponse) => {  // <-- Add explicit type
-        this.data.set(res.data);
-        this.totalRecords.set(res.total);
+      next: (res: GeneratorOpResponse) => {
+        this.data.set(res.records);
+        this.totalRecords.set(res.totalRecords);
         this.isLoading.set(false);
       },
       error: () => {
@@ -79,13 +61,20 @@ export class MyactionGenerator implements OnInit {
     });
   }
 
+  getStatusText(statusId: number): string {
+    return statusId === 1 ? 'Reported' : statusId === 2 ? 'Approved' : statusId === 3 ? 'Rejected' : 'Unknown';
+  }
+
+  getStatusClass(statusId: number): string {
+    return statusId === 1 ? 'reported' : statusId === 2 ? 'approved' : statusId === 3 ? 'rejected' : '';
+  }
+
   approve(item: GeneratorOp) {
-    const statusId = 2; // Approved
-    this.generatorService.updateStatus(item.id, statusId).subscribe({
-      next: (success) => {
+    this.generatorService.updateStatus(item.id, 2).subscribe({
+      next: success => {
         if (success) {
           Swal.fire('Approved', `${item.name} approved successfully!`, 'success');
-          this.fetchData(this.currentPage(), this.pageSize); // Refresh table
+          this.fetchData();
         }
       },
       error: () => Swal.fire('Error', 'Failed to update status', 'error')
@@ -93,12 +82,11 @@ export class MyactionGenerator implements OnInit {
   }
 
   reject(item: GeneratorOp) {
-    const statusId = 3; // Rejected
-    this.generatorService.updateStatus(item.id, statusId).subscribe({
-      next: (success) => {
+    this.generatorService.updateStatus(item.id, 3).subscribe({
+      next: success => {
         if (success) {
           Swal.fire('Rejected', `${item.name} rejected successfully!`, 'error');
-          this.fetchData(this.currentPage(), this.pageSize); // Refresh table
+          this.fetchData();
         }
       },
       error: () => Swal.fire('Error', 'Failed to update status', 'error')
@@ -112,6 +100,38 @@ export class MyactionGenerator implements OnInit {
   goToPage(page: number) {
     if (page < 1 || page > this.totalPages()) return;
     this.currentPage.set(page);
-    this.fetchData(page, this.pageSize);
+    this.fetchData();
   }
+
+  changePageSize(event: any) {
+    this.pageSize = Number(event.target.value);
+    this.currentPage.set(1);
+    this.fetchData();
+  }
+
+  edit(item: GeneratorOp) {
+  Swal.fire({
+    title: 'Edit Generator',
+    html: `
+      <input id="swal-name" class="swal2-input" placeholder="Name" value="${item.name}">
+      <input id="swal-runHours" type="number" class="swal2-input" placeholder="Run Hours" value="${item.runHours}">
+      <input id="swal-loadFactor" type="number" class="swal2-input" placeholder="Load Factor" value="${item.loadFactor}">
+    `,
+    confirmButtonText: 'Save',
+    showCancelButton: true,
+    preConfirm: () => {
+      const name = (document.getElementById('swal-name') as HTMLInputElement).value;
+      const runHours = +(document.getElementById('swal-runHours') as HTMLInputElement).value;
+      const loadFactor = +(document.getElementById('swal-loadFactor') as HTMLInputElement).value;
+      return { name, runHours, loadFactor };
+    }
+  }).then((result) => {
+    if (result.isConfirmed) {
+      // Call your API to update the generator record
+      Swal.fire('Saved!', 'Generator updated successfully', 'success');
+      // Optionally refresh the table
+      this.fetchData();
+    }
+  });
+}
 }

@@ -1,64 +1,63 @@
-<div class="filter-container">
-  <input type="text" placeholder="Generator Name" [formControl]="filterName" />
-  
-  <select [formControl]="filterFuelType">
-    <option value="">All Fuel Types</option>
-    <option value="Diesel">Diesel</option>
-    <option value="Gas">Gas</option>
-  </select>
+<div class="container">
 
-  <select [formControl]="filterStatus">
-    <option value="">All Status</option>
-    <option value="Reported">Reported</option>
-    <option value="Approved">Approved</option>
-    <option value="Rejected">Rejected</option>
-  </select>
-</div>
+  <!-- ================= TABLE ================= -->
+  <div class="table-responsive">
 
-<div *ngIf="isLoading()" class="loading">Loading...</div>
+    <div class="container mt-4">
+      <h3>Generator Operations</h3>
 
-<table *ngIf="!isLoading() && data().length > 0" class="generator-table">
-  <thead>
-    <tr>
-      <th>Generator</th>
-      <th>Operation Date</th>
-      <th>Run Hours</th>
-      <th>Load Factor</th>
-      <th>Fuel (L)</th>
-      <th>CO2</th>
-      <th>NO2</th>
-      <th>CH4</th>
-      <th>Total Emission</th>
-      <th>Status</th>
-      <th>Actions</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr *ngFor="let item of data()">
-      <td>{{item.name}}</td>
-      <td>{{item.opDate}}</td>
-      <td>{{item.runHours}}</td>
-      <td>{{item.loadFactor}}</td>
-      <td>{{item.fuelConsumed}}</td>
-      <td>{{item.totalCO2}}</td>
-      <td>{{item.totalNO2}}</td>
-      <td>{{item.totalCH4}}</td>
-      <td>{{item.totalEmission}}</td>
-      <td>{{item.status}}</td>
-      <td>
-        <button *ngIf="item.status==='Reported'" (click)="approve(item)">Approve</button>
-        <button *ngIf="item.status==='Reported'" (click)="reject(item)">Reject</button>
-      </td>
-    </tr>
-  </tbody>
-</table>
+      <table class="table table-bordered table-striped">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Date</th>
+            <th>Fuel Type</th>
+            <th>Run Hours</th>
+            <th>Load Factor</th>
+            <!-- <th>Fuel Consumed</th> -->
+            <th>Total Emission</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of data()">
+            <td>{{ item.name }}</td>
+            <td>{{ item.opDate | date:'shortDate' }}</td>
+            <td>{{ item.fuelType }}</td>
+            <td>{{ item.runHours }}</td>
+            <td>{{ item.loadFactor }}</td>
+            <!-- <td>{{ item.fuelConsumed }}</td> -->
+            <td>{{ item.totalEmission }}</td>
+            <td>
+              <button class="btn btn-sm btn-primary" (click)="edit(item)">
+                <i class="fas fa-edit"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
 
-<div *ngIf="!isLoading() && data().length === 0" class="no-data">
-  No records found.
-</div>
+  <!-- ================= PAGINATION ================= -->
+  <div class="pagination-container">
 
-<div class="pagination">
-  <button (click)="goToPage(currentPage()-1)" [disabled]="currentPage()===1">Prev</button>
-  <span>Page {{currentPage()}} of {{totalPages()}}</span>
-  <button (click)="goToPage(currentPage()+1)" [disabled]="currentPage()===totalPages()">Next</button>
+    <div class="page-size">
+      <label>Rows per page:</label>
+      <select (change)="changePageSize($event)">
+        <option value="5">5</option>
+        <option value="10" selected>10</option>
+        <option value="20">20</option>
+        <option value="50">50</option>
+      </select>
+    </div>
+
+    <div class="pagination">
+      <button (click)="goToPage(currentPage()-1)" [disabled]="currentPage()===1">Prev</button>
+      <span>Page {{currentPage()}} of {{totalPages()}}</span>
+      <button (click)="goToPage(currentPage()+1)" [disabled]="currentPage()===totalPages()">Next</button>
+    </div>
+
+  </div>
+
 </div>

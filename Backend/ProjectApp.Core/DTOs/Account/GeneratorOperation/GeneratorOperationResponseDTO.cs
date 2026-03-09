@@ -25,8 +25,8 @@ namespace ProjectApp.Core.DTOs.Account.GeneratorOperation
 
         public decimal TotalEmission { get; set; }
 
-        public decimal GWP_CH4 { get; set; } = 28; // Standard GWP
-        public decimal GWP_NO2 { get; set; } = 265; // Standard GWP
+        public decimal GWP_CH4 { get; set; } = 28; 
+        public decimal GWP_NO2 { get; set; } = 265;
 
         public decimal? CO2 { get; set; }
         public decimal? NO2 { get; set; }
@@ -36,7 +36,7 @@ namespace ProjectApp.Core.DTOs.Account.GeneratorOperation
         public int EntryBy { get; set; }
         public DateTime EntryDate { get; set; }
 
-        public string GeneratorName { get; set; }   // ADD
+        public string GeneratorName { get; set; }   
         public string FuelType { get; set; }
     }
 }

@@ -1,11 +1,11 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { map, Observable } from 'rxjs';
 
 export interface GeneratorOp {
-  id: number;
-  name: string;
-  opDate: string;
+  id: string;          // operationId
+  name: string;        // generatorName
+  opDate: string;      // operationDate
   runHours: number;
   loadFactor: number;
   fuelConsumed: number;
@@ -13,24 +13,24 @@ export interface GeneratorOp {
   totalNO2: number;
   totalCH4: number;
   totalEmission: number;
-  status: 'Reported' | 'Approved' | 'Rejected';
+  status: number;      // statusId from backend
   fuelType: string;
 }
 
 export interface GeneratorOpResponse {
-  data: GeneratorOp[];
-  total: number;
+  records: GeneratorOp[];
+  totalRecords: number;
+  pageNumber: number;
+  pageSize: number;
 }
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class GeneratorOperationService {
-  private baseUrl = '/api/GeneratorOperation';
+  // private baseUrl = '/api/GeneratorOperation';
+  private baseUrl = 'http://localhost:5236/api/GeneratorOperation';
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
-  // Fetch data with filters, pagination
   fetchOperations(
     page: number = 1,
     limit: number = 10,
@@ -38,18 +38,44 @@ export class GeneratorOperationService {
     fuelType: string = '',
     status: string = ''
   ): Observable<GeneratorOpResponse> {
-    let params = new HttpParams()
+
+    let statusId = '';
+    if (status === 'Reported') statusId = '1';
+    if (status === 'Approved') statusId = '2';
+    if (status === 'Rejected') statusId = '3';
+
+    const params = new HttpParams()
       .set('pageNumber', page.toString())
       .set('pageSize', limit.toString())
       .set('search', name)
       .set('fuelType', fuelType)
-      .set('statusId', status); // Map to your backend (Reported=1, Approved=2, Rejected=3)
+      .set('statusId', statusId);
 
-    return this.http.get<GeneratorOpResponse>(`${this.baseUrl}/search`, { params });
+    return this.http.get<any>(`${this.baseUrl}/search`, { params }).pipe(
+      map(res => ({
+        // Notice the capital "Records" from backend
+        records: res.data.records.map((r: any) => ({
+          id: r.operationId,
+          name: r.generatorName,
+          opDate: r.operationDate,
+          runHours: r.runHours,
+          loadFactor: r.loadFactor,
+          fuelConsumed: r.fuelConsumedLiters,
+          totalCO2: r.totalCO2,
+          totalNO2: r.totalNO2,
+          totalCH4: r.totalCH4,
+          totalEmission: r.totalEmission,
+          status: r.statusId,
+          fuelType: r.fuelType
+        })),
+        totalRecords: res.data.TotalRecords,
+        pageNumber: res.data.PageNumber,
+        pageSize: res.data.PageSize
+      }))
+    );
   }
 
-  // Update status
-  updateStatus(id: number, statusId: number): Observable<boolean> {
+  updateStatus(id: string, statusId: number): Observable<boolean> {
     return this.http.patch<boolean>(`${this.baseUrl}/status/${id}`, { statusId });
   }
 }
