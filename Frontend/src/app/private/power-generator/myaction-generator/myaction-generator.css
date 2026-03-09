@@ -1,109 +1,141 @@
-.container {
-  padding: 20px;
+.generator-page{
+  padding:20px;
+  background:#f8fafc;
 }
 
-/* TABLE */
-
-.table-responsive {
-  width: 100%;
-  overflow-x: auto;
+/* Generator Icon */
+.generator-icon {
+  color: #1b5e20;   /* Dark green color as requested */
+  margin-right: 8px;
+  font-size: 22px;
+  vertical-align: middle;
 }
 
-.generator-table {
-  width: 100%;
-  border-collapse: collapse;
+/* Title */
+
+.page-title {
+  color:#1b5e20;
+  font-weight:600;
+  margin-bottom:20px;
 }
 
-.generator-table th {
-  background: #f5f5f5;
-  padding: 10px;
-  border: 1px solid #ddd;
+/* Table */
+
+.generator-table{
+  width:100%;
+  border-collapse:collapse;
+  background:white;
+  border-radius:8px;
+  overflow:hidden;
+  box-shadow:0 2px 8px rgba(0,0,0,0.05);
 }
 
-.generator-table td {
-  padding: 10px;
-  border: 1px solid #ddd;
-  text-align: center;
+/* Header */
+
+.generator-table thead{
+  background:#1b5e20;
+  color:white;
 }
 
-/* STATUS */
-
-.status-badge {
-  padding: 4px 10px;
-  border-radius: 12px;
-  font-size: 12px;
-  font-weight: bold;
+.generator-table th{
+  padding:12px;
+  font-weight:600;
+  text-align:left;
 }
 
-.reported {
-  background: #fff3cd;
-  color: #856404;
+/* Cells */
+
+.generator-table td{
+  padding:10px;
+  border-bottom:1px solid #eee;
+  vertical-align:middle;
 }
 
-.approved {
-  background: #d4edda;
-  color: #155724;
+/* Hover */
+
+.generator-table tbody tr:hover{
+  background:#f0fdf4;
 }
 
-.rejected {
-  background: #f8d7da;
-  color: #721c24;
+/* No data row */
+
+.no-data{
+  padding:20px;
+  color:#777;
 }
 
-/* ACTION BUTTON */
+/* Action column */
 
-.edit-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 18px;
-  color: #007bff;
+.action-buttons{
+  text-align:center;
 }
 
-.edit-btn:hover {
-  color: #0056b3;
+/* Edit Button */
+
+.btn-edit{
+  background:#1b5e20;
+  border:none;
+  color:white;
+  padding:6px 10px;
+  border-radius:6px;
+  cursor:pointer;
+  transition:0.2s;
 }
 
-/* PAGINATION */
-
-.pagination-container {
-  margin-top: 20px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.btn-edit:hover{
+  background:#166534;
 }
 
-.pagination button {
-  padding: 6px 12px;
-  border: none;
-  background: #007bff;
-  color: white;
-  border-radius: 5px;
+/* Footer */
+
+.table-footer{
+  margin-top:15px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  flex-wrap:wrap;
+  font-size:14px;
+  gap:10px;
 }
 
-.pagination button:disabled {
-  background: #ccc;
+/* Pagination */
+
+.pagination{
+  display:flex;
+  align-items:center;
+  gap:8px;
 }
 
-.page-size select {
-  padding: 5px;
+.pagination button{
+  border:none;
+  padding:6px 14px;
+  background:#1b5e20;
+  color:white;
+  border-radius:6px;
+  cursor:pointer;
+  transition:0.2s;
 }
 
-/* NO DATA */
-
-.no-data {
-  text-align: center;
-  padding: 20px;
+.pagination button:hover{
+  background:#166534;
 }
 
-.status-badge {
-  padding: 2px 8px;
-  border-radius: 4px;
-  color: white;
-  font-weight: bold;
-  font-size: 0.9rem;
+.pagination button:disabled{
+  background:#cbd5e1;
+  cursor:not-allowed;
 }
 
-.reported { background-color: orange; }
-.approved { background-color: green; }
-.rejected { background-color: red; }
+/* Page info */
+
+.page-info{
+  font-weight:500;
+}
+
+/* Page size */
+
+.page-size select{
+  margin:0 5px;
+  padding:4px 6px;
+  border:1px solid #ddd;
+  border-radius:4px;
+}
