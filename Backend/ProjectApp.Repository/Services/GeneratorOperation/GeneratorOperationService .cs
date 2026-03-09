@@ -289,20 +289,18 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
             return _userContext.Role; // assuming Role property exists
         }
 
-        public async Task<List<GeneratorOperationResponseDTO>> SearchAsync(
-    string search = null,
-    string fuelType = null,
-    string generatorName = null,
+        public async Task<GeneratorOperationPagedResponseDTO> SearchAsync(
+    string? search = null,
+    string? fuelType = null,
+    string? generatorName = null,
     DateTime? startDate = null,
     DateTime? endDate = null,
     int? statusId = null,
     int pageNumber = 1,
-    int pageSize = 10,
-    string sortColumn = "OperationDate",
-    string sortDirection = "DESC")
+    int pageSize = 10)
         {
             int userId = GetCurrentUserId();
-            string role = _userContext.Role; // FIXED (instead of GetCurrentUserRole)
+            string role = _userContext.Role;
 
             await using var connection = _context.Database.GetDbConnection();
             await using var command = connection.CreateCommand();
@@ -320,45 +318,67 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
             command.Parameters.Add(new SqlParameter("@UserRole", role));
             command.Parameters.Add(new SqlParameter("@PageNumber", pageNumber));
             command.Parameters.Add(new SqlParameter("@PageSize", pageSize));
-            command.Parameters.Add(new SqlParameter("@SortColumn", sortColumn));
-            command.Parameters.Add(new SqlParameter("@SortDirection", sortDirection));
+
+            var totalParam = new SqlParameter("@TotalRecords", SqlDbType.Int)
+            {
+                Direction = ParameterDirection.Output
+            };
+            command.Parameters.Add(totalParam);
 
             if (connection.State != ConnectionState.Open)
                 await connection.OpenAsync();
 
-            var reader = await command.ExecuteReaderAsync();
-
             var result = new List<GeneratorOperationResponseDTO>();
+
+            await using var reader = await command.ExecuteReaderAsync();
 
             while (await reader.ReadAsync())
             {
-                result.Add(new GeneratorOperationResponseDTO
+                var dto = new GeneratorOperationResponseDTO
                 {
                     OperationId = _idEncoder.Encode(reader.GetInt32(reader.GetOrdinal("OperationId"))),
                     GeneratorId = _idEncoder.Encode(reader.GetInt32(reader.GetOrdinal("GeneratorId"))),
 
+                    GeneratorName = reader["GeneratorName"]?.ToString() ?? "",
+                    FuelType = reader["FuelType"]?.ToString() ?? "",
+
                     OperationDate = DateOnly.FromDateTime(reader.GetDateTime(reader.GetOrdinal("OperationDate"))),
-                    RunHours = reader.GetDecimal(reader.GetOrdinal("RunHours")),
-                    LoadFactor = reader.GetDecimal(reader.GetOrdinal("LoadFactor")),
-                    PowerOutputKWH = reader.GetDecimal(reader.GetOrdinal("PowerOutputKWH")),
-                    FuelConsumedLiters = reader.GetDecimal(reader.GetOrdinal("FuelConsumedLiters")),
+                    StartTime = reader.GetDateTime(reader.GetOrdinal("StartTime")),
+                    EndTime = reader.GetDateTime(reader.GetOrdinal("EndTime")),
 
-                    TotalCO2 = reader.GetDecimal(reader.GetOrdinal("total_co2_kg")),
-                    TotalNO2 = reader.GetDecimal(reader.GetOrdinal("total_no2_kg")),
-                    TotalCH4 = reader.GetDecimal(reader.GetOrdinal("total_ch4_kg")),
-                    TotalEmission = reader.GetDecimal(reader.GetOrdinal("total_co2e_kg")),
+                    RunHours = reader.IsDBNull(reader.GetOrdinal("RunHours")) ? 0 : reader.GetDecimal(reader.GetOrdinal("RunHours")),
+                    LoadFactor = reader.IsDBNull(reader.GetOrdinal("LoadFactor")) ? 0 : reader.GetDecimal(reader.GetOrdinal("LoadFactor")),
+                    PowerOutputKWH = reader.IsDBNull(reader.GetOrdinal("PowerOutputKWH")) ? 0 : reader.GetDecimal(reader.GetOrdinal("PowerOutputKWH")),
+                    FuelConsumedLiters = reader.IsDBNull(reader.GetOrdinal("FuelConsumedLiters")) ? 0 : reader.GetDecimal(reader.GetOrdinal("FuelConsumedLiters")),
 
-                    StatusId = reader.GetInt32(reader.GetOrdinal("StatusId")),
+                    CO2 = reader.IsDBNull(reader.GetOrdinal("CO2")) ? 0 : reader.GetDecimal(reader.GetOrdinal("CO2")),
+                    NO2 = reader.IsDBNull(reader.GetOrdinal("NO2")) ? 0 : reader.GetDecimal(reader.GetOrdinal("NO2")),
+                    CH4 = reader.IsDBNull(reader.GetOrdinal("CH4")) ? 0 : reader.GetDecimal(reader.GetOrdinal("CH4")),
 
-                    EntryBy = reader.GetInt32(reader.GetOrdinal("EntryBy")),
-                    EntryDate = reader.GetDateTime(reader.GetOrdinal("EntryDate")),
+                    TotalCO2 = reader.IsDBNull(reader.GetOrdinal("TotalCO2")) ? 0 : reader.GetDecimal(reader.GetOrdinal("TotalCO2")),
+                    TotalNO2 = reader.IsDBNull(reader.GetOrdinal("TotalNO2")) ? 0 : reader.GetDecimal(reader.GetOrdinal("TotalNO2")),
+                    TotalCH4 = reader.IsDBNull(reader.GetOrdinal("TotalCH4")) ? 0 : reader.GetDecimal(reader.GetOrdinal("TotalCH4")),
+                    TotalEmission = reader.IsDBNull(reader.GetOrdinal("TotalEmission")) ? 0 : reader.GetDecimal(reader.GetOrdinal("TotalEmission")),
 
-                    GeneratorName = reader["GeneratorName"]?.ToString(),
-                    FuelType = reader["FuelType"]?.ToString()
-                });
+                    StatusId = reader.IsDBNull(reader.GetOrdinal("StatusId")) ? 0 : reader.GetInt32(reader.GetOrdinal("StatusId")),
+                    EntryBy = reader.IsDBNull(reader.GetOrdinal("EntryBy")) ? 0 : reader.GetInt32(reader.GetOrdinal("EntryBy")),
+                    EntryDate = reader.IsDBNull(reader.GetOrdinal("EntryDate")) ? DateTime.MinValue : reader.GetDateTime(reader.GetOrdinal("EntryDate"))
+                };
+
+                result.Add(dto);
             }
 
-            return result;
+            await reader.CloseAsync();
+
+            int totalRecords = totalParam.Value != DBNull.Value ? (int)totalParam.Value : result.Count;
+
+            return new GeneratorOperationPagedResponseDTO
+            {
+                Records = result,
+                TotalRecords = totalRecords,
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
         }
     }
 }

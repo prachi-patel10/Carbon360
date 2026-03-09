@@ -24,7 +24,7 @@ namespace ProjectApp.Repository.Interfaces.GenerationOperation
 
         Task<bool> UpdateStatusAsync(string encryptedId, int statusId);
 
-        Task<List<GeneratorOperationResponseDTO>> SearchAsync(
+        Task<GeneratorOperationPagedResponseDTO> SearchAsync(
     string search = null,
     string fuelType = null,
     string generatorName = null,
@@ -32,10 +32,7 @@ namespace ProjectApp.Repository.Interfaces.GenerationOperation
     DateTime? endDate = null,
     int? statusId = null,
     int pageNumber = 1,
-    int pageSize = 10,
-    string sortColumn = "OperationDate",
-    string sortDirection = "DESC"
+    int pageSize = 10
 );
-
     }
 }

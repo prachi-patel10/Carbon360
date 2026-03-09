@@ -12,6 +12,8 @@ namespace ProjectApp.Core.DTOs.Account.GeneratorOperation
         public string GeneratorId { get; set; }
 
         public DateOnly OperationDate { get; set; }
+        public DateTime StartTime { get; set; }       // NEW
+        public DateTime EndTime { get; set; }
         public decimal RunHours { get; set; }
         public decimal LoadFactor { get; set; }
         public decimal PowerOutputKWH { get; set; }

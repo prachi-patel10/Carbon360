@@ -146,21 +146,30 @@ namespace ProjectApp.API.Controllers.Account.GeneratorOperation
     DateTime? startDate,
     DateTime? endDate,
     int? statusId,
-        int pageNumber = 1,
+    int pageNumber = 1,
     int pageSize = 10)
         {
-            var result = await _service.SearchAsync(
-                search,
-                fuelType,
-                generatorName,
-                startDate,
-                endDate,
-                statusId,
-                pageNumber,
-                pageSize
-            );
+            // Call your service
+            var pagedResult = await _service.SearchAsync(
+                search, fuelType, generatorName, startDate, endDate, statusId, pageNumber, pageSize);
 
-            return Ok(result);
+            // Build response
+            var response = new
+            {
+                status = true,
+                statusCode = 200,
+                data = new
+                {
+                    records = pagedResult.Records,
+                    totalRecords = pagedResult.TotalRecords,
+                    pageNumber = pagedResult.PageNumber,
+                    pageSize = pagedResult.PageSize
+                },
+                errors = Array.Empty<string>(),
+                message = ""
+            };
+
+            return Ok(response);
         }
     }
 }
