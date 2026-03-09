@@ -59,8 +59,8 @@
             <tr>
               <th>Generator</th>
               <th>Date</th>
-              <th>Start Time</th>
-              <th>End Time</th>
+              <!-- <th>Start Time</th>
+              <th>End Time</th> -->
               <th>Load Factor (%)</th>
               <th>Fuel (L)</th>
               <!-- <th>Emission (kg CO₂e)</th> -->
@@ -71,8 +71,8 @@
             <tr *ngFor="let e of filteredEmissions()">
               <td>{{ e.generatorName }}</td>
               <td>{{ e.operationDate | date:'shortDate' }}</td>
-              <td>{{ e.startTime | date:'short' }}</td>
-              <td>{{ e.endTime | date:'short' }}</td>
+              <!-- <td>{{ e.startTime | date:'short' }}</td>
+              <td>{{ e.endTime | date:'short' }}</td> -->
               <td>{{ e.loadFactor }}%</td>
               <td>{{ e.fuelConsumedLiters }}</td>
               <!-- <td>{{ e.totalEmission }}</td> -->

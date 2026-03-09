@@ -50,9 +50,9 @@ export class SearchGeneratorService {
     return this.http.delete(`${this.apiUrl}/${id}`);
   }
 
-  getEmissions(): Observable<GeneratorOperation[]> {
-  return this.http.get<any>(`${this.apiUrl}/All`).pipe(
-    map(res => res.data)  // <- unwrap the data array
+getEmissions(): Observable<GeneratorOperation[]> {
+  return this.http.get<any>(`${this.apiUrl}/search?pageNumber=1&pageSize=1000`).pipe(
+    map(res => res.data.records)
   );
 }
 
