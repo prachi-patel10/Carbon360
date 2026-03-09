@@ -1,8 +1,8 @@
 /* ================= PAGE LAYOUT ================= */
 
 .generator-ecpage {
-  padding: 5px 15px 15px 15px;  /* top right bottom left */
-  margin-top: 0;               /* remove extra top gap */
+  padding: 5px 15px 15px 15px;
+  margin-top: 0;
 }
 
 .card {
@@ -32,28 +32,92 @@
   flex: 1;
   display: flex;
   flex-direction: column;
+  position: relative;
 }
 
 .form-group label {
-  margin-bottom: 6px;
-  font-weight: 600;
+  margin-bottom: 8px;
+  font-weight: 700;
+  font-size: 14px;
+  color: #1b5e20;
+  position: relative;
+  padding-left: 10px;
+  transition: color 0.3s ease;
 }
 
-.form-group input {
-  height: 42px;
-  padding: 10px;
-  border-radius: 8px;
+
+
+.form-group label:hover {
+  color: #388e3c;
+  cursor: pointer;
+}
+
+/* ================= INPUT ================= */
+
+.form-group input,
+.form-group select {
+  height: 45px;
+  padding: 10px 12px;
+  border-radius: 10px;
   border: 1px solid #ccc;
+  transition: all 0.25s ease;
+  background: #fdfdfd;
 }
 
-.form-group input:focus {
-  border-color: #1b5e20;
+/* Focus state */
+
+.form-group input:focus,
+.form-group select:focus {
+  border-color: #4caf50;
+  box-shadow: 0 0 5px rgba(76,175,80,0.3);
   outline: none;
+  background: #f0fff0;
 }
 
-.status-group {
-  max-width: 220px;
+/* ================= VALIDATION ================= */
+
+/* Invalid field */
+
+input.ng-invalid.ng-touched,
+select.ng-invalid.ng-touched {
+  border-color: #e53935;
+  background: #fff6f6;
+  box-shadow: 0 0 4px rgba(229,57,53,0.3);
 }
+
+/* Valid field */
+
+input.ng-valid.ng-touched,
+select.ng-valid.ng-touched {
+  border-color: #4caf50;
+}
+
+/* Error message */
+
+.error {
+  color: #e53935;
+  font-size: 12px;
+  margin-top: 4px;
+  font-weight: 500;
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+/* Required star */
+
+.required-star::after {
+  content: " *";
+  color: #e53935;
+}
+
+/* Disabled future date style */
+
+input[type="date"]:disabled,
+input[type="datetime-local"]:disabled {
+  background: #f3f3f3;
+  cursor: not-allowed;
+}
+
+/* ================= BUTTONS ================= */
 
 .form-buttons {
   margin-top: 20px;
@@ -67,6 +131,11 @@
   padding: 10px 20px;
   border-radius: 8px;
   border: none;
+  transition: 0.2s;
+}
+
+.btn-primary:hover {
+  background: #2e7d32;
 }
 
 .btn-secondary {
@@ -76,133 +145,30 @@
   border: none;
 }
 
-/* ================= SEARCH ================= */
 
-.search-row {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  flex-wrap: wrap;
+/* ================= ANIMATION ================= */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-.search-row input {
-  width: 250px;
-  height: 40px;
-  padding: 8px;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-}
+/* ================= RESPONSIVE ================= */
 
-.btn-clear {
-  background: #fee2e2;
-  color: #991b1b;
-  padding: 8px 15px;
-  border-radius: 8px;
-  border: none;
-}
+@media (max-width:768px) {
 
-.record-select {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-
-.total-emission {
-  grid-column: span 2;
-  font-size: 18px;
-  color: #d32f2f;
-  font-weight: bold;
-}
-
-/* ================= RESULT SECTION ================= */
-
-.result-card {
-  margin-top: 20px;
-  background: #f4f9ff;
-  border-left: 5px solid #1976d2;
-}
-
-.result-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-  font-size: 14px;
-}
-
-.full-width {
-  grid-column: span 2;
-}
-
-.section-title {
-  grid-column: span 2;
-  margin-top: 10px;
-  font-size: 15px;
-  font-weight: 600;
-  color: #1b5e20;
-}
-
-.formula {
-  background: #eef5ff;
-  padding: 10px;
-  border-radius: 6px;
-  font-family: monospace;
-  font-size: 13px;
-}
-
-/* ================= FORM LABEL ENHANCEMENT ================= */
-
-.form-group label {
-  margin-bottom: 8px;
-  font-weight: 700;
-  font-size: 14px;
-  color: #1b5e20; /* deep green for emphasis */
-  position: relative;
-  padding-left: 10px;
-  transition: color 0.3s ease;
-}
-
-
-
-/* Label hover effect */
-.form-group label:hover {
-  color: #388e3c;
-  cursor: pointer;
-}
-
-/* Input styling */
-.form-group input,
-.form-group select {
-  height: 45px;
-  padding: 10px 12px;
-  border-radius: 10px;
-  border: 1px solid #ccc;
-  transition: all 0.3s ease;
-  background: #fdfdfd;
-}
-
-.form-group input:focus,
-.form-group select:focus {
-  border-color: #4caf50;
-  /* box-shadow: 0 0 5px rgba(76, 175, 80, 0.3); */
-  outline: none;
-  /* background: #f0fff0; */
-}
-
-/* Placeholder color */
-.form-group input::placeholder {
-  color: #999;
-  font-style: italic;
-}
-
-
-
-/* Responsive tweaks */
-@media (max-width: 768px) {
   .form-row {
     gap: 20px;
   }
+
   .form-group label {
     font-size: 13px;
   }
+
 }

@@ -1,126 +1,126 @@
 <div class="generator-ecpage">
+
   <!-- ================= INPUT FORM ================= -->
   <div class="card form-card">
     <form [formGroup]="operationForm" (ngSubmit)="submitOperation()">
+
       <div class="form-row">
+
         <!-- Generator -->
-        <div class="form-group">
-          <label>Generator</label>
-      <select formControlName="GeneratorId">
-  <option [ngValue]="null">-- Select Generator --</option>
+      <div class="form-group">
+<label>Generator</label>
 
-  <option *ngFor="let g of generators" [ngValue]="g.generatorId">
-    {{ g.generatorName }}
-  </option>
+<select formControlName="GeneratorId">
+<option [ngValue]="null">-- Select Generator --</option>
+
+<option *ngFor="let g of generators" [ngValue]="g.generatorId">
+{{ g.generatorName }}
+</option>
 </select>
-        </div>
 
-    
-
-        <!-- Operation Date -->
-        <!-- <div class="form-group">
-          <label>Date</label>
-          <input type="date" formControlName="OperationDate" />
-        </div> -->
-
-       <!-- Start Date & Time -->
-<div class="form-group">
-  <label>Start Date & Time</label>
-  <input type="datetime-local" formControlName="StartTime" class="form-control" />
+<div class="error" *ngIf="isInvalid('GeneratorId')">
+Generator is required
 </div>
 
-<!-- End Date & Time -->
-<div class="form-group">
-  <label>End Date & Time</label>
-  <input type="datetime-local" formControlName="EndTime" class="form-control" />
 </div>
 
-      
+      <div class="form-group">
+<label>Start Date & Time</label>
+
+<input type="datetime-local"
+formControlName="StartTime"
+class="form-control" />
+
+<div class="error" *ngIf="isInvalid('StartTime')">
+
+<span *ngIf="operationForm.get('StartTime')?.errors?.['required']">
+Start time is required
+</span>
+
+<span *ngIf="operationForm.get('StartTime')?.errors?.['futureDate']">
+Future date/time not allowed
+</span>
+
+</div>
+
+</div>
+
+        <!-- End Time -->
+       <div class="form-group">
+<label>End Date & Time</label>
+
+<input type="datetime-local"
+formControlName="EndTime"
+class="form-control" />
+
+<div class="error" *ngIf="isInvalid('EndTime')">
+
+<span *ngIf="operationForm.get('EndTime')?.errors?.['required']">
+End time is required
+</span>
+
+<span *ngIf="operationForm.get('EndTime')?.errors?.['futureDate']">
+Future date/time not allowed
+</span>
+
+</div>
+
+</div>
+
         <!-- Load Factor -->
-        <div class="form-group">
-          <label>Load Factor</label>
-          <input type="number" formControlName="LoadFactor" />
-        </div>
+       <div class="form-group">
+<label>Load Factor</label>
 
+<input type="number" formControlName="LoadFactor" placeholder="0"/>
+
+<div class="error" *ngIf="isInvalid('LoadFactor')">
+
+<span *ngIf="operationForm.get('LoadFactor')?.errors?.['required']">
+Load Factor is required
+</span>
+
+<span *ngIf="operationForm.get('LoadFactor')?.errors?.['min']">
+Load Factor cannot be negative
+</span>
+
+</div>
+
+</div>
 
         <!-- Fuel Consumed -->
         <div class="form-group">
-          <label>Fuel Consumed (Liters)</label>
-          <input type="number" formControlName="FuelConsumedLiters" />
-        </div>
+<label>Fuel Consumed (Liters)</label>
+
+<input type="number" formControlName="FuelConsumedLiters" placeholder="0"/>
+
+<div class="error" *ngIf="isInvalid('FuelConsumedLiters')">
+
+<span *ngIf="operationForm.get('FuelConsumedLiters')?.errors?.['required']">
+Fuel Consumed is required
+</span>
+
+<span *ngIf="operationForm.get('FuelConsumedLiters')?.errors?.['min']">
+Fuel cannot be negative
+</span>
+
+</div>
+
+</div>
       </div>
 
       <div class="form-buttons">
         <button type="submit" class="btn-primary">
           {{ !operationForm.value.OperationId ? 'Save' : 'Update' }}
         </button>
-        <button type="button" class="btn-secondary" (click)="resetForm()">Reset</button>
+
+        <button type="button"
+                class="btn-secondary"
+                (click)="resetForm()">
+          Reset
+        </button>
       </div>
+
     </form>
   </div>
 
-<!-- ================= CALCULATION RESULT ================= -->
-<div class="card result-card" *ngIf="calculatedResult">
-
-  <h2 class="card-title">Emission Calculation Result</h2>
-
-  <div class="result-grid">
-
-    <!-- BASIC DATA -->
-    <div><strong>Run Hours:</strong> {{ calculatedResult.runHours }} hrs</div>
-    <div><strong>Load Factor:</strong> {{ calculatedResult.loadFactor }} %</div>
-
-    <div><strong>Power Output:</strong> {{ calculatedResult.powerOutputKWH }} kWh</div>
-    <div><strong>Fuel Consumed:</strong> {{ calculatedResult.fuelConsumedLiters }} L</div>
-
-    <hr class="full-width">
-
-    <!-- EMISSION FACTORS USED -->
-    <h3 class="section-title">Emission Factors Used</h3>
-
-<div><strong>CO₂ Factor:</strong> {{ calculatedResult.cO2 }} kg/L</div>
-<div><strong>NO₂ Factor:</strong> {{ calculatedResult.nO2 }} kg/L</div>
-<div><strong>CH₄ Factor:</strong> {{ calculatedResult.cH4 }} kg/L</div>
-
-<div><strong>GWP (CH₄):</strong> {{ calculatedResult.gwP_CH4 }}</div>
-<div><strong>GWP (NO₂):</strong> {{ calculatedResult.gwP_NO2 }}</div>
-    <hr class="full-width">
-
-    <!-- FORMULA SECTION -->
-  <h3 class="section-title">Calculation Formula</h3>
-
-    <div class="formula full-width">
-      CO₂ = Fuel × CO₂ Factor <br>
-      = {{ calculatedResult.fuelConsumedLiters }} × {{ calculatedResult.cO2 }} <br>
-      = {{ calculatedResult.cO2 }} kg
-    </div>
-
-    <div class="formula full-width">
-      NO₂ = Fuel × NO₂ Factor <br>
-      = {{ calculatedResult.fuelConsumedLiters }} × {{ calculatedResult.nO2 }} <br>
-      = {{ calculatedResult.nO2 }} kg
-    </div>
-
-    <div class="formula full-width">
-      CH₄ = Fuel × CH₄ Factor <br>
-      = {{ calculatedResult.fuelConsumedLiters }} × {{ calculatedResult.cH4 }} <br>
-      = {{ calculatedResult.cH4 }} kg
-    </div>
-
-
-    <div class="formula full-width">
-      Total CO₂e = CO₂ + (CH₄ × GWP) + (NO₂ × GWP) <br>
-      = {{ calculatedResult.cO2 }}
-      + ({{ calculatedResult.cH4 }} × {{ calculatedResult.gwP_CH4 }})
-      + ({{ calculatedResult.nO2 }} × {{ calculatedResult.gwP_NO2 }}) <br>
-      = {{ calculatedResult.totalEmission }} kg CO₂e
-    </div>
-
-    <hr class="full-width">
-
-    <div class="total-emission full-width">
-      ✅ Final Emission: {{ calculatedResult.totalEmission }} kg CO₂e
-    </div>
-
-  </div>
 </div>
