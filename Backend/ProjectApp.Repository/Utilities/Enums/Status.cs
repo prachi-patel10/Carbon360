@@ -6,10 +6,11 @@ using System.Threading.Tasks;
 
 namespace ProjectApp.Repository.Utilities.Enums
 {
-    public enum GeneratorStatus
+    public enum Status
     {
         Reported = 1,
         Approved = 2,
         Rejected = 3
     }
 }
+
