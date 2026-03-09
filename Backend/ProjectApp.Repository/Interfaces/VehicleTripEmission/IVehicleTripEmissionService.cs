@@ -17,5 +17,15 @@ namespace ProjectApp.Repository.Interfaces.VehicleTripEmission
 
         Task<bool> UpdateStatusAsync(VehicleTripStatusUpdateDTO dto);
 
+        Task<(IEnumerable<SearchVehicleTripEmissionDTO>, int)> SearchVehicleTrips(
+        string search,string vehicleNumber,string fuelType,string vehicleType,
+        DateTime? startDate,
+        DateTime? endDate,
+        int? statusId,
+        string userRole,
+       int pageNumber = 1,
+    int pageSize = 10);
     }
+
+
 }

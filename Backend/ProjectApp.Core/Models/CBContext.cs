@@ -200,6 +200,11 @@ public partial class CBContext : DbContext
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
             entity.Property(e => e.IsActive).HasDefaultValue(true);
+            entity.Property(e => e.ShortCode)
+                .IsRequired()
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasDefaultValue("");
             entity.Property(e => e.SiteName)
                 .IsRequired()
                 .HasMaxLength(100)

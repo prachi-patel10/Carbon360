@@ -300,5 +300,102 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
                 StatusId = entity.StatusId
             };
         }
+
+        private string GetCurrentUserRole()
+        {
+            if (_userContext == null)
+                throw new Exception("User context is not initialized");
+
+            return _userContext.Role; // assuming Role property exists
+        }
+
+        public async Task<(IEnumerable<SearchVehicleTripEmissionDTO>, int)> SearchVehicleTrips(string? search, string? vehicleNumber, string? fuelType, string? vehicleType, DateTime? startDate, DateTime? endDate, int? statusId, string? userRole, int pageNumber = 1, int pageSize = 10)
+        {
+            int userId = GetCurrentUserId();
+            string role = _userContext.Role;
+
+            await using var connection = _context.Database.GetDbConnection();
+            await using var command = connection.CreateCommand();
+
+            command.CommandText = "USP_CB_SearchVehicleTripEmission";
+            command.CommandType = CommandType.StoredProcedure;
+
+            command.Parameters.Add(new SqlParameter("@Search", (object?)search ?? DBNull.Value));
+            command.Parameters.Add(new SqlParameter("@VehicleNumber", (object?)vehicleNumber ?? DBNull.Value));
+            command.Parameters.Add(new SqlParameter("@FuelType", (object?)fuelType ?? DBNull.Value));
+            command.Parameters.Add(new SqlParameter("@VehicleType", (object?)vehicleType ?? DBNull.Value));
+            command.Parameters.Add(new SqlParameter("@StartDate", (object?)startDate ?? DBNull.Value));
+            command.Parameters.Add(new SqlParameter("@EndDate", (object?)endDate ?? DBNull.Value));
+            command.Parameters.Add(new SqlParameter("@StatusId", (object?)statusId ?? DBNull.Value));
+            command.Parameters.Add(new SqlParameter("@UserId", userId));
+            command.Parameters.Add(new SqlParameter("@UserRole", role));
+            command.Parameters.Add(new SqlParameter("@PageNumber", pageNumber));
+            command.Parameters.Add(new SqlParameter("@PageSize", pageSize));
+
+            var totalParam = new SqlParameter("@TotalRecords", SqlDbType.Int)
+            {
+                Direction = ParameterDirection.Output
+            };
+
+            command.Parameters.Add(totalParam);
+
+            if (connection.State != ConnectionState.Open)
+                await connection.OpenAsync();
+
+            var result = new List<SearchVehicleTripEmissionDTO>();
+
+            await using var reader = await command.ExecuteReaderAsync();
+
+            while (await reader.ReadAsync())
+            {
+                var dto = new SearchVehicleTripEmissionDTO
+                {
+                    TripId = _idEncoder.Encode(reader.GetInt32(reader.GetOrdinal("TripId"))),
+
+                    VehicleNumber = reader["VehicleNumber"]?.ToString() ?? "",
+                    VehicleType = reader["VehicleType"]?.ToString() ?? "",
+                    FuelType = reader["FuelType"]?.ToString() ?? "",
+
+                    DistanceKm = reader.IsDBNull(reader.GetOrdinal("DistanceKm")) ? 0 :
+                                 reader.GetDecimal(reader.GetOrdinal("DistanceKm")),
+
+                    FuelConsumedLtr = reader.IsDBNull(reader.GetOrdinal("FuelConsumedLtr")) ? 0 :
+                                      reader.GetDecimal(reader.GetOrdinal("FuelConsumedLtr")),
+
+                    TripStartDateTime = reader.GetDateTime(reader.GetOrdinal("TripStartDateTime")),
+
+                    TripEndDateTime = reader.IsDBNull(reader.GetOrdinal("TripEndDateTime"))
+                        ? DateTime.MinValue
+                        : reader.GetDateTime(reader.GetOrdinal("TripEndDateTime")),
+
+                    TotalCO2 = reader.IsDBNull(reader.GetOrdinal("TotalCO2")) ? 0 :
+                               reader.GetDecimal(reader.GetOrdinal("TotalCO2")),
+
+                    TotalNO2 = reader.IsDBNull(reader.GetOrdinal("TotalNO2")) ? 0 :
+                               reader.GetDecimal(reader.GetOrdinal("TotalNO2")),
+
+                    TotalCH4 = reader.IsDBNull(reader.GetOrdinal("TotalCH4")) ? 0 :
+                               reader.GetDecimal(reader.GetOrdinal("TotalCH4")),
+
+                    TotalEmission = reader.IsDBNull(reader.GetOrdinal("TotalEmission")) ? 0 :
+                                         reader.GetDecimal(reader.GetOrdinal("TotalEmission")),
+
+                    StatusId = reader.IsDBNull(reader.GetOrdinal("StatusId")) ? 0 :
+                               reader.GetInt32(reader.GetOrdinal("StatusId"))
+                };
+
+                result.Add(dto);
+            }
+
+            await reader.CloseAsync();
+
+            int totalRecords = totalParam.Value != DBNull.Value
+                ? (int)totalParam.Value
+                : result.Count;
+
+            return (result, totalRecords);
+        }
     }
 }
+    
+

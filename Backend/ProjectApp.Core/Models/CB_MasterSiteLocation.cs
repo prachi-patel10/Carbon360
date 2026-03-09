@@ -31,6 +31,8 @@ public partial class CB_MasterSiteLocation
 
     public bool IsDeleted { get; set; }
 
+    public string ShortCode { get; set; }
+
     public virtual ICollection<CB_MasterGenerator> CB_MasterGenerators { get; set; } = new List<CB_MasterGenerator>();
 
     public virtual CB_Department Department { get; set; }
