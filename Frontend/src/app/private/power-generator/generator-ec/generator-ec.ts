@@ -32,16 +32,15 @@ export class GeneratorOperationComponent implements OnInit {
 
  initForm() {
   this.operationForm = this.fb.group({
-    OperationId: [''],
-    GeneratorId: [null, Validators.required],
-    OperationDate: ['', Validators.required],
-     StartTime: ['', Validators.required],
+  OperationId: [''],
+  GeneratorId: [null, Validators.required],
+  StartTime: ['', Validators.required],
   EndTime: ['', Validators.required],
-    RunHours: [{ value: 0, disabled: true }],
-    LoadFactor: [0],
-    PowerOutputKWH: [{ value: 0, disabled: true }],
-    FuelConsumedLiters: [0]
-  });
+  RunHours: [{ value: 0, disabled: true }],
+  LoadFactor: [0],
+  PowerOutputKWH: [{ value: 0, disabled: true }],
+  FuelConsumedLiters: [0]
+});
 }
 
   // Load generators, fuels, then operations
@@ -114,53 +113,67 @@ submitOperation() {
 
   if (operationId) {
     // ===== UPDATE =====
-    this.service.update(operationId, payload).subscribe({
-      next: (res: any) => {
-        if (res.status) {
-          this.calculatedResult = res.data;
-          this.operationForm.patchValue({
-            RunHours: res.data.runHours,
-            PowerOutputKWH: res.data.powerOutputKWH
-          });
-          Swal.fire('Success', 'Operation updated successfully', 'success');
-          this.loadOperations();
-          this.resetForm();
-        }
-      },
-      error: () => Swal.fire('Error', 'Failed to update operation', 'error')
-    });
+  this.service.update(operationId, payload).subscribe({
+  next: (res: any) => {
+
+    console.log("Update API Response:", res);
+
+    if (res && res.data) {
+
+      this.calculatedResult = res.data;
+
+      this.operationForm.patchValue({
+        RunHours: res.data.runHours,
+        PowerOutputKWH: res.data.powerOutputKWH
+      });
+
+      Swal.fire('Success', 'Operation updated successfully', 'success');
+
+      this.loadOperations();
+    }
+  },
+  error: () => Swal.fire('Error', 'Failed to update operation', 'error')
+});
   } else {
     // ===== CREATE =====
-    this.service.create(payload).subscribe({
-      next: (res: any) => {
-        if (res.status) {
-          this.calculatedResult = res.data;
-          this.operationForm.patchValue({
-            RunHours: res.data.runHours,
-            PowerOutputKWH: res.data.powerOutputKWH
-          });
-          Swal.fire('Success', 'Operation saved successfully', 'success');
-          this.loadOperations();
-          this.resetForm();
-        }
-      },
-      error: () => Swal.fire('Error', 'Failed to save operation', 'error')
-    });
+   this.service.create(payload).subscribe({
+  next: (res: any) => {
+
+    console.log("Create API Response:", res);
+
+    if (res && res.data) {
+
+      this.calculatedResult = res.data;
+
+      this.operationForm.patchValue({
+        RunHours: res.data.runHours,
+        PowerOutputKWH: res.data.powerOutputKWH
+      });
+
+      Swal.fire('Success', 'Operation saved successfully', 'success');
+
+      this.loadOperations();
+    }
+  },
+  error: () => Swal.fire('Error', 'Failed to save operation', 'error')
+});
   }
 }
 
 edit(op: any) {
+
   this.operationForm.patchValue({
     OperationId: op.operationId,
     GeneratorId: op.generatorId,
-    StartTime: op.startTime?.substring(0,16),
-    EndTime: op.endTime?.substring(0,16),
+    StartTime: op.startTime ? op.startTime.substring(0,16) : '',
+    EndTime: op.endTime ? op.endTime.substring(0,16) : '',
     LoadFactor: op.loadFactor,
     FuelConsumedLiters: op.fuelConsumedLiters
   });
 
   this.operationForm.get('RunHours')?.setValue(op.runHours);
   this.operationForm.get('PowerOutputKWH')?.setValue(op.powerOutputKWH);
+
 }
 
 
@@ -197,9 +210,18 @@ formatTime(time: string): string {
 
   
 
-  resetForm() {
-    this.operationForm.reset();
-    this.operationForm.get('RunHours')?.setValue(0);
-    this.operationForm.get('PowerOutputKWH')?.setValue(0);
-  }
+ resetForm() {
+  this.operationForm.reset({
+    GeneratorId: null,
+    StartTime: '',
+    EndTime: '',
+    LoadFactor: 0,
+    FuelConsumedLiters: 0
+  });
+
+  this.operationForm.get('RunHours')?.setValue(0);
+  this.operationForm.get('PowerOutputKWH')?.setValue(0);
+
+  this.calculatedResult = null;
+}
 }
