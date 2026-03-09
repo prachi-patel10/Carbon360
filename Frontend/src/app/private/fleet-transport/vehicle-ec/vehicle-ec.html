@@ -11,60 +11,61 @@
 
         <div class="form-group">
           <label>Vehicle</label>
-          <select formControlName="vehicle_id">
+          <select formControlName="vehicle_id"
+            [ngClass]="{'invalid': tripForm.get('vehicle_id')?.touched && tripForm.get('vehicle_id')?.invalid}">
             <option value="">Select Vehicle</option>
             <option *ngFor="let v of vehicles" [value]="v.vehicle_id">
               {{ v.vehicle_number }}
             </option>
-            <small class="error" *ngIf="tripForm.get('vehicle_id')?.touched && tripForm.get('vehicle_id')?.invalid">
-              Vehicle is required
-            </small>
           </select>
+          <small class="error" *ngIf="tripForm.get('vehicle_id')?.touched && tripForm.get('vehicle_id')?.invalid">
+            Vehicle is required
+          </small>
         </div>
 
         <div class="form-group">
           <label>From City</label>
-          <select formControlName="fromCityId">
+          <select formControlName="fromCityId"
+            [ngClass]="{'invalid': tripForm.get('fromCityId')?.touched && tripForm.get('fromCityId')?.invalid}">
             <option value="">Select From City</option>
             <option *ngFor="let city of cities" [value]="city.cityId">
               {{ city.cityName }}
             </option>
-            <small class="error" *ngIf="tripForm.get('fromCityId')?.touched && tripForm.get('fromCityId')?.invalid">
-              From City is required
-            </small>
           </select>
+          <small class="error" *ngIf="tripForm.get('fromCityId')?.touched && tripForm.get('fromCityId')?.invalid">
+            From city is required
+          </small>
         </div>
 
         <div class="form-group">
           <label>To City</label>
-          <select formControlName="toCityId">
+          <select formControlName="toCityId"
+            [ngClass]="{'invalid': tripForm.get('toCityId')?.touched && tripForm.get('toCityId')?.invalid}">
             <option value="">Select To City</option>
             <option *ngFor="let city of cities" [value]="city.cityId">
               {{ city.cityName }}
             </option>
-            <small class="error" *ngIf="tripForm.get('toCityId')?.touched && tripForm.get('toCityId')?.invalid">
-              To City is required
-            </small>
-
-            <small class="error" *ngIf="tripForm.errors?.['sameCity']">
-              From and To city cannot be same
-            </small>
           </select>
+          <small class="error" *ngIf="tripForm.get('toCityId')?.touched && tripForm.get('toCityId')?.invalid">
+            To city is required
+          </small>
+          <small class="error" *ngIf="tripForm.errors?.['sameCity']">
+            From city and To city cannot be same
+          </small>
         </div>
-
       </div>
 
       <!-- ROW 2 -->
       <div class="form-row">
-
         <div class="form-group">
           <label>Fuel Type</label>
           <input type="text" formControlName="fuelType" readonly />
         </div>
-
         <div class="form-group">
           <label>Distance (KM)</label>
-          <input type="number" formControlName="distanceKm" />
+          <input type="number" formControlName="distanceKm"
+            [ngClass]="{'invalid': tripForm.get('distanceKm')?.touched && tripForm.get('distanceKm')?.invalid}" />
+
           <small class="error"
             *ngIf="tripForm.get('distanceKm')?.touched && tripForm.get('distanceKm')?.errors?.['required']">
             Distance is required
@@ -77,7 +78,9 @@
 
         <div class="form-group">
           <label>Fuel Consumed (Liters)</label>
-          <input type="number" formControlName="fuelConsumedLtr" />
+          <input type="number" formControlName="fuelConsumedLtr"
+            [ngClass]="{'invalid': tripForm.get('fuelConsumedLtr')?.touched && tripForm.get('fuelConsumedLtr')?.invalid}" />
+
           <small class="error"
             *ngIf="tripForm.get('fuelConsumedLtr')?.touched && tripForm.get('fuelConsumedLtr')?.errors?.['required']">
             Fuel consumed is required
@@ -96,33 +99,52 @@
         <div class="form-group">
           <label>Trip Start Date</label>
           <!-- <input type="datetime-local" formControlName="tripStartDateTime" /> -->
-          <input type="datetime-local" formControlName="tripStartDateTime" [max]="todayDateTime">
-          <small class="error" *ngIf="tripForm.errors?.['futureStart']">
-            Start date cannot be in future
+          <input type="datetime-local" formControlName="tripStartDateTime" [max]="todayDateTime"
+            [ngClass]="{'invalid': tripForm.get('tripStartDateTime')?.touched && tripForm.get('tripStartDateTime')?.invalid}"
+            (change)="calculateDuration()" />
+
+          <small class="error"
+            *ngIf="tripForm.get('tripStartDateTime')?.touched && tripForm.get('tripStartDateTime')?.errors?.['required']">
+            Start date is required
           </small>
 
-          <small class="error" *ngIf="tripForm.errors?.['beforeFormOpenTime']">
-            Start time cannot be earlier than form open time
+          <small class="error" *ngIf="tripForm.get('tripStartDateTime')?.errors?.['futureDate']">
+            Future date/time not allowed
           </small>
         </div>
 
         <div class="form-group">
           <label>Trip End Date</label>
           <!-- <input type="datetime-local" formControlName="tripEndDateTime" /> -->
-          <input type="datetime-local" formControlName="tripStartDateTime" [max]="todayDateTime">
-          <small class="error" *ngIf="tripForm.errors?.['futureEnd']">
-            End date cannot be in future
+          <input type="datetime-local" formControlName="tripEndDateTime" [max]="todayDateTime"
+            [ngClass]="{'invalid': tripForm.get('tripEndDateTime')?.touched && tripForm.get('tripEndDateTime')?.invalid}"
+            (change)="calculateDuration()" />
+
+          <small class="error"
+            *ngIf="tripForm.get('tripEndDateTime')?.touched && tripForm.get('tripEndDateTime')?.errors?.['required']">
+            End date is required
           </small>
 
-          <small class="error" *ngIf="tripForm.errors?.['endBeforeStart']">
+          <small class="error" *ngIf="tripForm.get('tripEndDateTime')?.errors?.['endBeforeStart']">
             End date must be after start date
           </small>
+          <small class="error" *ngIf="tripForm.get('tripEndDateTime')?.errors?.['futureDate']">
+            Future date/time not allowed
+          </small>
         </div>
 
-        <div class="form-group">
-          <label>Trip Duration</label>
-          <input type="text" [value]="tripDuration" readonly />
-        </div>
+       <div class="form-group">
+  <label>Trip Duration</label>
+
+  <input type="text" [value]="tripDuration" readonly />
+
+  <small class="error"
+    *ngIf="tripForm.get('tripEndDateTime')?.errors?.['endBeforeStart']">
+
+    Trip duration cannot be calculated because end date is before start date
+
+  </small>
+</div>
 
       </div>
 
@@ -149,7 +171,10 @@
       </div>
 
       <div class="form-buttons">
-        <button type="submit" class="btn-primary">Submit Trip</button>
+        <!-- <button type="submit" class="btn-primary">Submit Trip</button> -->
+        <button type="submit" class="btn-primary" [disabled]="tripForm.invalid">
+          Submit Trip
+        </button>
         <button type="button" class="btn-secondary" (click)="resetForm()">Reset</button>
       </div>
 

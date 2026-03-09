@@ -76,18 +76,20 @@ namespace ProjectApp.Repository.Services.Masters.Fuel
         public async Task<IEnumerable<FuelResponseDTO>> GetAllAsync()
         {
             var data = await _context.CB_MasterFuelTypes
-                 .FromSqlRaw("EXEC USP_CB_FuelGetAll")
-                 .AsNoTracking()
-                 .ToListAsync();
+       .FromSqlRaw("EXEC USP_CB_FuelGetAll")
+       .AsNoTracking()
+       .ToListAsync();
 
-            return data.Select(x => new FuelResponseDTO
-            {
-                fuel_id = _idEncoder.Encode(x.fuel_id),
-                fuel_name = x.fuel_name,
-                fuel_Desc = x.fuel_Desc,
-                IsActive = x.IsActive,
-                isapplicable = x.isapplicable
-            });
+            return data
+                .Where(x => x.IsActive == true && x.IsDeleted == false)   // ✅ Filter here
+                .Select(x => new FuelResponseDTO
+                {
+                    fuel_id = _idEncoder.Encode(x.fuel_id),
+                    fuel_name = x.fuel_name,
+                    fuel_Desc = x.fuel_Desc,
+                    IsActive = x.IsActive,
+                    isapplicable = x.isapplicable
+                });
         }
 
         public async Task<bool> UpdateAsync(FuelResponseDTO dto)

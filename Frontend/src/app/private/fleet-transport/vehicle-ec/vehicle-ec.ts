@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { TripService } from '../vehicle-ec/vehicle-service-ec';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, ValidationErrors, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ToastService } from '../../../core/toast/toastservice';
@@ -24,10 +24,9 @@ export class TripComponent implements OnInit {
   emissionFactors: any[] = [];
   // result: any;
   currentStatusId: number = 0;
-
-
+ tripDuration: string = '';
+  invalidDuration: boolean = false;
   todayDateTime: string = '';
-  tripDuration: string = '';
   // showResult: boolean = false;
   showSummary: boolean = false;
   summaryData: any;
@@ -40,26 +39,51 @@ export class TripComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-        this.formOpenTime = new Date();  
+    this.formOpenTime = new Date();
     this.tripForm = this.fb.group({
-      vehicle_id: ['', Validators.required],
-      fuelType: [''],   // for display (name)
-      fuelId: [''],
-      fromCityId: ['', Validators.required],
-      toCityId: ['', Validators.required],
-      distanceKm: ['', [Validators.required, Validators.min(1)]],
-      fuelConsumedLtr: ['', [Validators.required, Validators.min(0.1)]],
-      tripStartDateTime: ['', Validators.required],
-      tripEndDateTime: ['', Validators.required],
-      co2Factor: [{ value: '', disabled: true }],
-      no2Factor: [{ value: '', disabled: true }],
-      ch4Factor: [{ value: '', disabled: true }],
-      totalCO2: [{ value: '', disabled: true }],
-      totalNO2: [{ value: '', disabled: true }],
-      totalCH4: [{ value: '', disabled: true }],
-      finalTotalEmission: [{ value: '', disabled: true }]
+  vehicle_id: ['', Validators.required],
 
-    }, { validators: this.dateValidator });
+  fuelType: [''],
+  fuelId: [''],
+
+  fromCityId: ['', Validators.required],
+  toCityId: ['', Validators.required],
+
+  distanceKm: [
+    '',
+    [Validators.required, Validators.min(1), Validators.pattern('^[0-9]+(\\.[0-9]+)?$')]
+  ],
+
+  fuelConsumedLtr: [
+    '',
+    [Validators.required, Validators.min(0.1), Validators.pattern('^[0-9]+(\\.[0-9]+)?$')]
+  ],
+
+ tripStartDateTime: [
+  '',
+  [Validators.required, this.noFutureDateValidator.bind(this)]
+],
+
+tripEndDateTime: [
+  '',
+  [Validators.required, this.noFutureDateValidator.bind(this)]
+],
+
+  co2Factor: [{ value: '', disabled: true }],
+  no2Factor: [{ value: '', disabled: true }],
+  ch4Factor: [{ value: '', disabled: true }],
+
+  totalCO2: [{ value: '', disabled: true }],
+  totalNO2: [{ value: '', disabled: true }],
+  totalCH4: [{ value: '', disabled: true }],
+  finalTotalEmission: [{ value: '', disabled: true }]
+
+}, {
+  validators: [
+    this.cityValidator,
+    this.dateValidator.bind(this)
+  ]
+});
     this.loadAllMasterData();
     // this.setupVehicleChangeListener();
     this.setupDurationListener();
@@ -271,17 +295,27 @@ export class TripComponent implements OnInit {
   //validation
   cityValidator(group: FormGroup) {
 
-  const fromCity = group.get('fromCityId')?.value;
-  const toCity = group.get('toCityId')?.value;
+    const fromCity = group.get('fromCityId')?.value;
+    const toCity = group.get('toCityId')?.value;
 
-  if (fromCity && toCity && fromCity === toCity) {
-    return { sameCity: true };
+    if (fromCity && toCity && fromCity === toCity) {
+      return { sameCity: true };
+    }
+
+    return null;
   }
 
+  noFutureDateValidator(control: any) {
+  if (!control.value) return null;
+  const inputDate = new Date(control.value);
+  const now = new Date();
+  if (inputDate.getTime() > now.getTime()) {
+    return { futureDate: true };
+  }
   return null;
 }
 
- dateValidator(group: FormGroup) {
+ dateValidator(group: FormGroup): ValidationErrors | null {
 
   const start = group.get('tripStartDateTime')?.value;
   const end = group.get('tripEndDateTime')?.value;
@@ -291,53 +325,46 @@ export class TripComponent implements OnInit {
   const startDate = new Date(start);
   const endDate = new Date(end);
 
-  const now = new Date();
-  const formOpen = this.formOpenTime;
-
-  // ❌ future start date
-  if (startDate > now) {
-    return { futureStart: true };
-  }
-
-  // ❌ future end date
-  if (endDate > now) {
-    return { futureEnd: true };
-  }
-
-  // ❌ today's date but before form open time
-  const startDateOnly = startDate.toDateString();
-  const todayDateOnly = formOpen.toDateString();
-
-  if (startDateOnly === todayDateOnly && startDate < formOpen) {
-    return { beforeFormOpenTime: true };
-  }
-
-  // ❌ end date before start
   if (endDate <= startDate) {
     return { endBeforeStart: true };
   }
 
   return null;
 }
-
   updateCurrentDateTime() {
-  const now = new Date();
-  this.todayDateTime = now.toISOString().slice(0,16);
-}
-
-  calculateDuration() {
-    const start = this.tripForm.get('tripStartDateTime')?.value;
-    const end = this.tripForm.get('tripEndDateTime')?.value;
-    if (!start || !end) { this.tripDuration = ''; return; }
-
-    const diffMs = new Date(end).getTime() - new Date(start).getTime();
-    if (diffMs <= 0) { this.tripDuration = ''; return; }
-
-    const hours = Math.floor(diffMs / (1000 * 60 * 60));
-    const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-    this.tripDuration = `${hours} hrs ${minutes} mins`;
+    const now = new Date();
+    this.todayDateTime = now.toISOString().slice(0, 16);
   }
 
+calculateDuration() {
+
+  const start = this.tripForm.get('tripStartDateTime')?.value;
+  const end = this.tripForm.get('tripEndDateTime')?.value;
+
+  // reset duration first
+  this.tripDuration = '';
+
+  if (!start || !end) {
+    return;
+  }
+
+  const startDate = new Date(start);
+  const endDate = new Date(end);
+
+  // ❌ STOP calculation if end <= start
+  if (endDate <= startDate) {
+    this.tripDuration = '';
+    return;
+  }
+
+  // ✅ calculate only when valid
+  const diffMs = endDate.getTime() - startDate.getTime();
+
+  const hours = Math.floor(diffMs / (1000 * 60 * 60));
+  const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+
+  this.tripDuration = `${hours} hrs ${minutes} mins`;
+}
   //   updateTrip() {
   //   this.tripService.updateTrip(this.tripId, this.tripForm.value)
   //     .subscribe({
