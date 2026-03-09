@@ -64,6 +64,8 @@ export class DashboardComponent {
          else if (url.includes('citymaster')) this.pageTitle = ' Citis ';
          else if (url.includes('sitelocation')) this.pageTitle = ' Site location ';
          else if (url.includes('generator')) this.pageTitle = ' Generator Master ';
+        else if (url.includes('searchGenerator')) this.pageTitle = ' Search Power Generator';
+        else if (url.includes('MyActionGenerator')) this.pageTitle = ' Actions Power Generator';
 
         else this.pageTitle = 'Dashboard';
       });

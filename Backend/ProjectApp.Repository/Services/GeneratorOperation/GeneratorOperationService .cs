@@ -264,21 +264,19 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
             await using var connection = _context.Database.GetDbConnection();
             await using var command = connection.CreateCommand();
 
-            command.CommandText = "USP_CB_GeneratorOperationUpdateStatus";
+            command.CommandText = "USP_CB_GeneratorUpdateStatus";
             command.CommandType = CommandType.StoredProcedure;
 
             command.Parameters.Add(new SqlParameter("@OperationId", id));
             command.Parameters.Add(new SqlParameter("@StatusId", statusId));
-            command.Parameters.Add(new SqlParameter("@UpdatedBy", userId));
+            command.Parameters.Add(new SqlParameter("@UserId", userId));  // ✅ FIXED
 
             if (connection.State != ConnectionState.Open)
                 await connection.OpenAsync();
 
-            var result = await command.ExecuteScalarAsync();
+            await command.ExecuteNonQueryAsync();
 
-            int rows = result != null ? Convert.ToInt32(result) : 0;
-
-            return rows > 0;
+            return true;
         }
 
         private string GetCurrentUserRole()

@@ -12,7 +12,7 @@ namespace ProjectApp.API.Controllers.Account.GeneratorOperation
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
+    [Authorize(Roles = "Admin,Corporate,Reporter")]
     public class GeneratorOperationController : ControllerBase
     {
         private readonly IGeneratorOperationService _service;
