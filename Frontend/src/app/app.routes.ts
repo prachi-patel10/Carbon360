@@ -20,7 +20,7 @@ import { Sitelocationmaster } from './private/power-generator/sitelocationmaster
 import { VehicleReport } from './private/fleet-transport/vehicle-report/vehicle-report';
 import { SearchGenerator } from './private/power-generator/search-generator/search-generator';
 import { MyActionVehicle } from './private/fleet-transport/my-action-vehicle/my-action-vehicle';
-import { MyActionGenerator } from './private/power-generator/my-action-generator/my-action-generator';
+import { MyactionGenerator } from './private/power-generator/myaction-generator/myaction-generator';
 
 export const routes: Routes = [
 
@@ -58,7 +58,7 @@ export const routes: Routes = [
             {path: 'sitelocation', component:Sitelocationmaster},
             {path: 'searchGenerator', component:SearchGenerator},
             {path: 'MyActionVehicle', component:MyActionVehicle},
-            {path: 'MyActionGenerator', component:MyActionGenerator}
+            {path: 'MyActionGenerator', component:MyactionGenerator}
         ]
     },
 

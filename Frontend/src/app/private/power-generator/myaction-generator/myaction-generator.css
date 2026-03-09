@@ -1,0 +1,52 @@
+.container {
+  padding: 20px;
+  max-width: 100%;
+}
+
+.filter-row {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+  align-items: center;
+}
+
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  position: relative;
+  min-height: 400px;
+}
+
+.spinner-container {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10;
+}
+
+/* Status Badges */
+.status-badge {
+  padding: 5px 10px;
+  border-radius: 15px;
+  font-size: 12px;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.reported { background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
+.approved { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+.rejected { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+
+.action-btns {
+  display: flex;
+  gap: 5px;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  .mat-column-totalCO2, .mat-column-totalNO2, .mat-column-totalCH4 {
+    display: none; /* Hide detailed gases on small mobile screens */
+  }
+}

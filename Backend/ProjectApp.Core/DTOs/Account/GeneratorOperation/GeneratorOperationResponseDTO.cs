@@ -31,8 +31,7 @@ namespace ProjectApp.Core.DTOs.Account.GeneratorOperation
         public int EntryBy { get; set; }
         public DateTime EntryDate { get; set; }
 
-        // ================= NEW PROPERTIES =================
-        public string GeneratorName { get; set; } // optional, helps show in search
-        public string FuelType { get; set; }      // important for your filter/search
+        public string GeneratorName { get; set; }   // ADD
+        public string FuelType { get; set; }
     }
 }

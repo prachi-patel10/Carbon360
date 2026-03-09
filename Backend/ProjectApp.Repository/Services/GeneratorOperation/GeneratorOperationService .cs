@@ -41,12 +41,9 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
         public async Task<List<GeneratorOperationResponseDTO>> GetAllAsync()
         {
             var list = await _context.CB_GeneratorOperations
-                 .FromSqlRaw("EXEC USP_CB_GeneratorOperationGetAllList")
-                 .AsNoTracking()
-                 .ToListAsync();
-
-            if (list == null || !list.Any())
-                return new List<GeneratorOperationResponseDTO>();
+                .Where(x => !x.IsDeleted)
+                .OrderByDescending(x => x.OperationDate)
+                .ToListAsync();
 
             return list.Select(x => new GeneratorOperationResponseDTO
             {
@@ -59,24 +56,19 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
                 PowerOutputKWH = x.PowerOutputKWH ?? 0,
                 FuelConsumedLiters = x.FuelConsumedLiters ?? 0,
 
-
-
                 TotalCO2 = x.total_co2_kg ?? 0,
                 TotalNO2 = x.total_no2_kg ?? 0,
                 TotalCH4 = x.total_ch4_kg ?? 0,
                 TotalEmission = x.total_co2e_kg ?? 0,
 
-                //GeneratorName = x.GeneratorName,
-                //RatedCapacityKW = x.RatedCapacityKW ?? 0,
-
+                StatusId = x.StatusId,
                 EntryBy = x.EntryBy,
-                EntryDate = x.EntryDate,
-                StatusId = x.StatusId
-            })
-            .OrderByDescending(x => x.OperationDate)
-            .ToList();
-
+                EntryDate = x.EntryDate
+            }).ToList();
         }
+
+
+
 
 
         public async Task<GeneratorOperationResponseDTO> CreateAsync(
@@ -262,6 +254,14 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
             return rows > 0;
         }
 
+        private string GetCurrentUserRole()
+        {
+            if (_userContext == null)
+                throw new Exception("User context is not initialized");
+
+            return _userContext.Role; // assuming Role property exists
+        }
+
         public async Task<List<GeneratorOperationResponseDTO>> SearchAsync(
     string search = null,
     string fuelType = null,
@@ -272,21 +272,25 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
     int pageNumber = 1,
     int pageSize = 10,
     string sortColumn = "OperationDate",
-    string sortDirection = "DESC"
-)
+    string sortDirection = "DESC")
         {
+            int userId = GetCurrentUserId();
+            string role = _userContext.Role; // FIXED (instead of GetCurrentUserRole)
+
             await using var connection = _context.Database.GetDbConnection();
             await using var command = connection.CreateCommand();
 
-            command.CommandText = "USP_CB_SearchGeneratorOperation"; // Your SP name
+            command.CommandText = "USP_CB_SearchGeneratorOperation";
             command.CommandType = CommandType.StoredProcedure;
 
-            command.Parameters.Add(new SqlParameter("@Search", search ?? (object)DBNull.Value));
-            command.Parameters.Add(new SqlParameter("@FuelType", fuelType ?? (object)DBNull.Value));
-            command.Parameters.Add(new SqlParameter("@GeneratorName", generatorName ?? (object)DBNull.Value));
-            command.Parameters.Add(new SqlParameter("@StartDate", startDate ?? (object)DBNull.Value));
-            command.Parameters.Add(new SqlParameter("@EndDate", endDate ?? (object)DBNull.Value));
-            command.Parameters.Add(new SqlParameter("@StatusId", statusId ?? (object)DBNull.Value));
+            command.Parameters.Add(new SqlParameter("@Search", (object?)search ?? DBNull.Value));
+            command.Parameters.Add(new SqlParameter("@GeneratorName", (object?)generatorName ?? DBNull.Value));
+            command.Parameters.Add(new SqlParameter("@FuelType", (object?)fuelType ?? DBNull.Value));
+            command.Parameters.Add(new SqlParameter("@StartDate", (object?)startDate ?? DBNull.Value));
+            command.Parameters.Add(new SqlParameter("@EndDate", (object?)endDate ?? DBNull.Value));
+            command.Parameters.Add(new SqlParameter("@StatusId", (object?)statusId ?? DBNull.Value));
+            command.Parameters.Add(new SqlParameter("@UserId", userId));
+            command.Parameters.Add(new SqlParameter("@UserRole", role));
             command.Parameters.Add(new SqlParameter("@PageNumber", pageNumber));
             command.Parameters.Add(new SqlParameter("@PageSize", pageSize));
             command.Parameters.Add(new SqlParameter("@SortColumn", sortColumn));
@@ -296,6 +300,7 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
                 await connection.OpenAsync();
 
             var reader = await command.ExecuteReaderAsync();
+
             var result = new List<GeneratorOperationResponseDTO>();
 
             while (await reader.ReadAsync())
@@ -304,20 +309,25 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
                 {
                     OperationId = _idEncoder.Encode(reader.GetInt32(reader.GetOrdinal("OperationId"))),
                     GeneratorId = _idEncoder.Encode(reader.GetInt32(reader.GetOrdinal("GeneratorId"))),
+
                     OperationDate = DateOnly.FromDateTime(reader.GetDateTime(reader.GetOrdinal("OperationDate"))),
                     RunHours = reader.GetDecimal(reader.GetOrdinal("RunHours")),
                     LoadFactor = reader.GetDecimal(reader.GetOrdinal("LoadFactor")),
                     PowerOutputKWH = reader.GetDecimal(reader.GetOrdinal("PowerOutputKWH")),
                     FuelConsumedLiters = reader.GetDecimal(reader.GetOrdinal("FuelConsumedLiters")),
+
                     TotalCO2 = reader.GetDecimal(reader.GetOrdinal("total_co2_kg")),
                     TotalNO2 = reader.GetDecimal(reader.GetOrdinal("total_no2_kg")),
                     TotalCH4 = reader.GetDecimal(reader.GetOrdinal("total_ch4_kg")),
                     TotalEmission = reader.GetDecimal(reader.GetOrdinal("total_co2e_kg")),
+
                     StatusId = reader.GetInt32(reader.GetOrdinal("StatusId")),
+
                     EntryBy = reader.GetInt32(reader.GetOrdinal("EntryBy")),
                     EntryDate = reader.GetDateTime(reader.GetOrdinal("EntryDate")),
-                    GeneratorName = reader["GeneratorName"].ToString(),
-                    FuelType = reader["FuelType"].ToString() // Make sure your SP returns this
+
+                    GeneratorName = reader["GeneratorName"]?.ToString(),
+                    FuelType = reader["FuelType"]?.ToString()
                 });
             }
 

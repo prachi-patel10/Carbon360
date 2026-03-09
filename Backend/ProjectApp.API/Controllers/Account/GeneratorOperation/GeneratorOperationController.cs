@@ -5,6 +5,7 @@ using ProjectApp.Core.DTOs.Account.GeneratorOperation;
 using ProjectApp.Core.DTOs.Masters.Generator;
 using ProjectApp.Core.Entities;
 using ProjectApp.Repository.Interfaces.GenerationOperation;
+using ProjectApp.Repository.Services.GeneratorOperation;
 using System.Net;
 
 namespace ProjectApp.API.Controllers.Account.GeneratorOperation
@@ -135,32 +136,31 @@ namespace ProjectApp.API.Controllers.Account.GeneratorOperation
             return StatusCode((int)_apiResponse.StatusCode, _apiResponse);
         }
 
-            [HttpGet("Search")]
-            public async Task<IActionResult> Search(
-                string search = null,
-                string fuelType = null,
-                string generatorName = null,
-                DateTime? startDate = null,
-                DateTime? endDate = null,
-                int? statusId = null,
-                int pageNumber = 1,
-                int pageSize = 10,
-                string sortColumn = "OperationDate",
-                string sortDirection = "DESC"
-            )
-            {
-                var result = await _service.SearchAsync(
-                    search, fuelType, generatorName,
-                    startDate, endDate, statusId,
-                    pageNumber, pageSize, sortColumn, sortDirection
-                );
 
-                return Ok(new
-                {
-                    status = true,
-                    statusCode = 200,
-                    data = result
-                });
-            }
+
+        [HttpGet("search")]
+        public async Task<IActionResult> Search(
+    string? search,
+    string? fuelType,
+    string? generatorName,
+    DateTime? startDate,
+    DateTime? endDate,
+    int? statusId,
+        int pageNumber = 1,
+    int pageSize = 10)
+        {
+            var result = await _service.SearchAsync(
+                search,
+                fuelType,
+                generatorName,
+                startDate,
+                endDate,
+                statusId,
+                pageNumber,
+                pageSize
+            );
+
+            return Ok(result);
+        }
     }
 }
