@@ -69,9 +69,10 @@
               <td>{{ e.fuelConsumedLiters }}</td>
               <!-- <td>{{ e.totalEmission }}</td> -->
               <td>
-                <button class="btn btn-sm btn-open" (click)="openOperation(e.operationId)">
-                  <i class="fas fa-eye"></i>
-                </button>
+       <button class="btn btn-sm btn-open"
+        (click)="goTo('generator-emission', e.operationId)">
+  <i class="fas fa-eye"></i>
+</button>
               </td>
             </tr>
           </tbody>
@@ -79,105 +80,6 @@
       </div>
     </div>
 
-    <!-- Modal -->
-    <div class="modal-overlay" *ngIf="calculatedResult">
-      <div class="modal-container">
-
-        <div class="modal-header">
-          <div>
-            <h2 class="modal-title">Emission Calculation Result</h2>
-            <p class="modal-subtitle">Detailed breakdown of environmental impact</p>
-          </div>
-          <button class="close-btn" (click)="closeModal()">&times;</button>
-        </div>
-
-        <div class="modal-body">
-          <div class="metrics-grid">
-            <div class="metric-card">
-              <span class="label">Run Hours</span>
-              <span class="value">{{ calculatedResult.runHours }} <small>hrs</small></span>
-            </div>
-            <div class="metric-card">
-              <span class="label">Load Factor</span>
-              <span class="value">{{ calculatedResult.loadFactor }}<small>%</small></span>
-            </div>
-            <div class="metric-card">
-              <span class="label">Power Output</span>
-              <span class="value">{{ calculatedResult.powerOutputKWH }} <small>kWh</small></span>
-            </div>
-            <div class="metric-card highlight">
-              <span class="label">Fuel Consumed</span>
-              <span class="value">{{ calculatedResult.fuelConsumedLiters }} <small>L</small></span>
-            </div>
-          </div>
-
-          <div class="section-container">
-            <h3 class="section-title">Emission Factors & GWP</h3>
-            <div class="factors-table">
-              <div class="factor-item"><strong>CO₂:</strong> {{ calculatedResult.cO2 }} kg</div>
-              <div class="factor-item"><strong>NO₂:</strong> {{ calculatedResult.nO2 }} kg</div>
-              <div class="factor-item"><strong>CH₄:</strong> {{ calculatedResult.cH4 }} kg</div>
-              <div class="factor-item"><strong>GWP (CH₄):</strong> {{ calculatedResult.gwP_CH4 }}</div>
-              <div class="factor-item"><strong>GWP (NO₂):</strong> {{ calculatedResult.gwP_NO2 }}</div>
-            </div>
-          </div>
-
-          <div class="section-container formula-bg">
-            <h3 class="section-title">Calculation Methodology</h3>
-            <div class="formula-stack">
-
-              <div class="formula-line">
-                <span class="formula-label">CO₂</span>
-                <code>{{ calculatedResult.fuelConsumedLiters }} L × 2.68 = <strong>{{ calculatedResult.cO2 }} kg</strong></code>
-              </div>
-
-              <div class="formula-line">
-                <span class="formula-label">CH₄</span>
-                <code>{{ calculatedResult.fuelConsumedLiters }} L × (CH₄ factor) = <strong>{{ calculatedResult.cH4 }} kg</strong></code>
-                <small>
-                  × GWP {{ calculatedResult.gwP_CH4 ?? 0 }} = {{ (calculatedResult.cH4 ?? 0) * (calculatedResult.gwP_CH4
-                  ?? 0) }}
-                </small>
-              </div>
-
-              <div class="formula-line">
-                <span class="formula-label">NO₂</span>
-                <code>{{ calculatedResult.fuelConsumedLiters }} L × (NO₂ factor) = <strong>{{ calculatedResult.nO2 }} kg</strong></code>
-                <small>
-                  × GWP {{ calculatedResult.gwP_NO2 ?? 0 }} = {{ (calculatedResult.nO2 ?? 0) * (calculatedResult.gwP_NO2
-                  ?? 0) }}
-                </small>
-              </div>
-
-              <div class="formula-line">
-                <span class="formula-label">Total CO₂e</span>
-                <p class="formula-math">
-                  {{ calculatedResult.cO2 }} + ({{ calculatedResult.cH4 }} × {{ calculatedResult.gwP_CH4 }}) +
-                  ({{ calculatedResult.nO2 }} × {{ calculatedResult.gwP_NO2 }}) =
-                  <strong>
-                    {{ (calculatedResult.cO2 ?? 0) + ((calculatedResult.cH4 ?? 0) * (calculatedResult.gwP_CH4 ?? 0)) +
-                    ((calculatedResult.nO2 ?? 0) * (calculatedResult.gwP_NO2 ?? 0)) }}
-                    kg CO₂e
-                  </strong>
-                </p>
-              </div>
-
-            </div>
-          </div>
-
-          <div class="modal-footer">
-            <div class="final-result">
-              <span class="check-icon">✓</span>
-              <div>
-                <span class="final-label">Final Emission</span>
-                <h1 class="final-value">{{ calculatedResult.totalEmission }} <span>kg CO₂e</span></h1>
-              </div>
-            </div>
-            <button class="action-btn" (click)="closeModal()">Dismiss</button>
-          </div>
-
-        </div>
-      </div>
-
+  
     </div>
   </div>

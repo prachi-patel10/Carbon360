@@ -2,7 +2,7 @@ import { Component, OnInit, signal } from '@angular/core';
 import Swal from 'sweetalert2';
 import { CommonModule } from '@angular/common';
 import { GeneratorOp, GeneratorOperationService } from './myaction-generator-service';
-
+import { Router } from '@angular/router';
 @Component({
   selector: 'app-myaction-generator',
   standalone: true,
@@ -17,7 +17,7 @@ export class MyactionGenerator implements OnInit {
   currentPage = signal(1);
   pageSize = 10;
 
-  constructor(private service: GeneratorOperationService) {}
+  constructor(private service: GeneratorOperationService,private router : Router) {}
 
   ngOnInit(): void {
     this.fetchData();
@@ -86,8 +86,8 @@ export class MyactionGenerator implements OnInit {
     return 'Unknown';
   }
 
-  edit(item: any) {
-  console.log('Edit record', item);
-}
+  edit(operationId: string) {
+    this.router.navigate(['/dashboard/generator-ec',operationId])
+  }
 
 }

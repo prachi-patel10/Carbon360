@@ -1,7 +1,7 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { GeneratorOperation, SearchGeneratorService } from './search-generator-service';
 import { FueltypeService } from '../../masters/fueltype/fueltype-service';
-import { Router } from '@angular/router';
+import { Router,ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
@@ -48,7 +48,8 @@ export class SearchGenerator implements OnInit {
   constructor(
     private service: SearchGeneratorService,
     private fuelService: FueltypeService,
-    private router: Router
+    private router: Router,
+      private route: ActivatedRoute,
   ) {}
 
   ngOnInit(): void {
@@ -159,36 +160,56 @@ export class SearchGenerator implements OnInit {
 
   /* ================= OPEN MODAL ================= */
 
-  openOperation(operationId: string) {
+  // openOperation(operationId: string) {
 
-    const selected = this.emissions().find(e => e.operationId === operationId);
-    if (!selected) return;
+  //   const selected = this.emissions().find(e => e.operationId === operationId);
+  //   if (!selected) return;
 
-    const gwP_CH4 = 28;
-    const gwP_NO2 = 265;
+  //   const gwP_CH4 = 28;
+  //   const gwP_NO2 = 265;
 
-    const co2 = selected.co2_kg ?? 0;
-    const ch4 = selected.ch4_kg ?? 0;
-    const no2 = selected.no2_kg ?? 0;
+  //   const co2 = selected.co2_kg ?? 0;
+  //   const ch4 = selected.ch4_kg ?? 0;
+  //   const no2 = selected.no2_kg ?? 0;
 
-    const totalEmission = co2 + (ch4 * gwP_CH4) + (no2 * gwP_NO2);
+  //   const totalEmission = co2 + (ch4 * gwP_CH4) + (no2 * gwP_NO2);
 
-    this.calculatedResult = {
-      runHours: selected.runHours,
-      loadFactor: selected.loadFactor,
-      powerOutputKWH: selected.powerOutputKWH,
-      fuelConsumedLiters: selected.fuelConsumedLiters,
+  //   this.calculatedResult = {
+  //     runHours: selected.runHours,
+  //     loadFactor: selected.loadFactor,
+  //     powerOutputKWH: selected.powerOutputKWH,
+  //     fuelConsumedLiters: selected.fuelConsumedLiters,
 
-      cO2: co2,
-      nO2: no2,
-      cH4: ch4,
+  //     cO2: co2,
+  //     nO2: no2,
+  //     cH4: ch4,
 
-      gwP_CH4,
-      gwP_NO2,
+  //     gwP_CH4,
+  //     gwP_NO2,
 
-      totalEmission
-    };
+  //     totalEmission
+  //   };
+  // }
+
+//   openOperation(operationId: string) {
+
+//   this.router.navigate([
+//     '/dashboard/generator-emission',
+//     operationId
+//   ]);
+
+// }
+
+goTo(path: string, id?: string) {
+
+  if (id) {
+    this.router.navigate([path, id], { relativeTo: this.route });
+  } else {
+    this.router.navigate([path], { relativeTo: this.route });
   }
+
+
+}
 
   /* ================= CLOSE MODAL ================= */
 

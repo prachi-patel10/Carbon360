@@ -22,6 +22,12 @@ export class GeneratorecService {
     return this.http.get(`${this.apiUrl}/${id}`);
   }
 
+//    getOperationById(hashId: string): Observable<any> {
+//     return this.http.get(
+//       `${this.apiUrl}/VehicleTripEmission/${hashId}`
+//     );
+//   }
+
   // ================= CREATE =================
   create(data: any): Observable<any> {
     return this.http.post(`${this.apiUrl}`, data);

@@ -1,0 +1,98 @@
+  <!-- Modal -->
+    <div class="modal-container" *ngIf="operation">
+
+        <div class="modal-header">
+          <div>
+            <h2 class="modal-title">Emission Calculation Result</h2>
+            <p class="modal-subtitle">Detailed breakdown of environmental impact</p>
+          </div>
+          <button class="close-btn" (click)="closeModal()">&times;</button>
+        </div>
+
+        <div class="modal-body">
+          <div class="metrics-grid">
+            <div class="metric-card">
+              <span class="label">Run Hours</span>
+              <span class="value">{{ operation.runHours }} <small>hrs</small></span>
+            </div>
+            <div class="metric-card">
+              <span class="label">Load Factor</span>
+              <span class="value">{{ operation.loadFactor }}<small>%</small></span>
+            </div>
+            <div class="metric-card">
+              <span class="label">Power Output</span>
+              <span class="value">{{ operation.powerOutputKWH }} <small>kWh</small></span>
+            </div>
+            <div class="metric-card highlight">
+              <span class="label">Fuel Consumed</span>
+              <span class="value">{{ operation.fuelConsumedLiters }} <small>L</small></span>
+            </div>
+          </div>
+
+          <div class="section-container">
+            <h3 class="section-title">Emission Factors & GWP</h3>
+            <div class="factors-table">
+              <div class="factor-item"><strong>CO₂:</strong> {{ operation.cO2 }} kg</div>
+              <div class="factor-item"><strong>NO₂:</strong> {{ operation.nO2 }} kg</div>
+              <div class="factor-item"><strong>CH₄:</strong> {{ operation.cH4 }} kg</div>
+              <div class="factor-item"><strong>GWP (CH₄):</strong> {{ operation.gwP_CH4 }}</div>
+              <div class="factor-item"><strong>GWP (NO₂):</strong> {{ operation.gwP_NO2 }}</div>
+            </div>
+          </div>
+
+          <div class="section-container formula-bg">
+            <h3 class="section-title">Calculation Methodology</h3>
+            <div class="formula-stack">
+
+              <div class="formula-line">
+                <span class="formula-label">CO₂</span>
+                <code>{{ operation.fuelConsumedLiters }} L × 2.68 = <strong>{{ operation.cO2 }} kg</strong></code>
+              </div>
+
+              <div class="formula-line">
+                <span class="formula-label">CH₄</span>
+                <code>{{ operation.fuelConsumedLiters }} L × (CH₄ factor) = <strong>{{ operation.cH4 }} kg</strong></code>
+                <small>
+                  × GWP {{ operation.gwP_CH4 ?? 0 }} = {{ (operation.cH4 ?? 0) * (operation.gwP_CH4
+                  ?? 0) }}
+                </small>
+              </div>
+
+              <div class="formula-line">
+                <span class="formula-label">NO₂</span>
+                <code>{{ operation.fuelConsumedLiters }} L × (NO₂ factor) = <strong>{{ operation.nO2 }} kg</strong></code>
+                <small>
+                  × GWP {{ operation.gwP_NO2 ?? 0 }} = {{ (operation.nO2 ?? 0) * (operation.gwP_NO2
+                  ?? 0) }}
+                </small>
+              </div>
+
+              <div class="formula-line">
+                <span class="formula-label">Total CO₂e</span>
+                <p class="formula-math">
+                  {{ operation.cO2 }} + ({{ operation.cH4 }} × {{ operation.gwP_CH4 }}) +
+                  ({{ operation.nO2 }} × {{ operation.gwP_NO2 }}) =
+                  <strong>
+                    {{ (operation.cO2 ?? 0) + ((operation.cH4 ?? 0) * (operation.gwP_CH4 ?? 0)) +
+                    ((operation.nO2 ?? 0) * (operation.gwP_NO2 ?? 0)) }}
+                    kg CO₂e
+                  </strong>
+                </p>
+              </div>
+
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <div class="final-result">
+              <span class="check-icon">✓</span>
+              <div>
+                <span class="final-label">Final Emission</span>
+                <h1 class="final-value">{{ operation.totalEmission }} <span>kg CO₂e</span></h1>
+              </div>
+            </div>
+            <button class="action-btn" (click)="goBack()">Back</button>
+          </div>
+
+        </div>
+      </div>

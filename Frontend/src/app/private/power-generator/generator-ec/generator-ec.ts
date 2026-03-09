@@ -3,6 +3,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
 import { GeneratorecService } from './generatorec-service';
+import { ActivatedRoute } from '@angular/router';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -21,12 +22,23 @@ export class GeneratorOperationComponent implements OnInit {
 
   constructor(
     private fb: FormBuilder,
-    private service: GeneratorecService
+    private service: GeneratorecService,
+      private route: ActivatedRoute
   ) {}
 
   ngOnInit(): void {
     this.initForm();
     this.loadAllData();
+
+     this.route.paramMap.subscribe(params => {
+
+    const id = params.get('id');
+
+    if (id) {
+      this.loadOperationById(id);
+    }
+
+  });
   }
 
  initForm() {
@@ -207,6 +219,35 @@ isInvalid(controlName: string) {
     });
 
   }
+
+
+loadOperationById(id: string) {
+
+  this.service.getById(id).subscribe({
+
+    next: (res: any) => {
+
+      const op = res.data || res;
+
+      this.operationForm.patchValue({
+        OperationId: op.operationId,
+        GeneratorId: op.generatorId,
+        StartTime: op.startTime ? op.startTime.substring(0,16) : '',
+        EndTime: op.endTime ? op.endTime.substring(0,16) : '',
+        LoadFactor: op.loadFactor,
+        FuelConsumedLiters: op.fuelConsumedLiters
+      });
+
+    },
+
+    error: () => {
+      Swal.fire('Error', 'Failed to load operation', 'error');
+    }
+
+  });
+
+}
+ 
 
   // Delete
   deleteUI(op: any) {

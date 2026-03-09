@@ -21,6 +21,7 @@ import { VehicleReport } from './private/fleet-transport/vehicle-report/vehicle-
 import { SearchGenerator } from './private/power-generator/search-generator/search-generator';
 import { MyActionVehicle } from './private/fleet-transport/my-action-vehicle/my-action-vehicle';
 import { MyactionGenerator } from './private/power-generator/myaction-generator/myaction-generator';
+import { GeneratorEmissionDetailComponent } from './private/power-generator/generator-emission-detail-page/generator-emission-detail-page';
 
 export const routes: Routes = [
 
@@ -58,7 +59,8 @@ export const routes: Routes = [
             {path: 'sitelocation', component:Sitelocationmaster},
             {path: 'searchGenerator', component:SearchGenerator},
             {path: 'MyActionVehicle', component:MyActionVehicle},
-            {path: 'MyActionGenerator', component:MyactionGenerator}
+            {path: 'MyActionGenerator', component:MyactionGenerator},
+{ path: 'generator-ec/:id', component:  GeneratorOperationComponent}
         ]
     },
 
