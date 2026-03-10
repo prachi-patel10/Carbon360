@@ -36,7 +36,7 @@ export class GeneratorEmissionDetailComponent implements OnInit {
   this.operation = null;
 }
   goBack() {
-  this.router.navigate(['search-generator']);
+  this.router.navigate(['/dashboard/search-generator']);
 }
 
   loadOperation(id: string) {

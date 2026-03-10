@@ -22,6 +22,7 @@ import { SearchGenerator } from './private/power-generator/search-generator/sear
 import { MyActionVehicle } from './private/fleet-transport/my-action-vehicle/my-action-vehicle';
 import { MyactionGenerator } from './private/power-generator/myaction-generator/myaction-generator';
 import { GeneratorEmissionDetailComponent } from './private/power-generator/generator-emission-detail-page/generator-emission-detail-page';
+import { authGuard } from './core/guards/auth-guard';
 
 export const routes: Routes = [
 
@@ -41,6 +42,7 @@ export const routes: Routes = [
     {
         path: 'dashboard',
         component: DashboardComponent,
+        canActivate: [authGuard],
         children: [
             // { path: '', redirectTo: 'login', pathMatch: 'full' },
             { path: 'user', component: MasterUserComponent },
@@ -60,7 +62,9 @@ export const routes: Routes = [
             {path: 'searchGenerator', component:SearchGenerator},
             {path: 'MyActionVehicle', component:MyActionVehicle},
             {path: 'MyActionGenerator', component:MyactionGenerator},
-{ path: 'generator-ec/:id', component:  GeneratorOperationComponent}
+            { path: 'generator-ec/:id', component:  GeneratorOperationComponent},
+    { path: 'generatordetaillist/:id', component: GeneratorEmissionDetailComponent }
+
         ]
     },
 

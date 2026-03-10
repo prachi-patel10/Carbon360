@@ -200,16 +200,14 @@ export class SearchGenerator implements OnInit {
 
 // }
 
-goTo(path: string, id?: string) {
-
-  if (id) {
-    this.router.navigate([path, id], { relativeTo: this.route });
-  } else {
-    this.router.navigate([path], { relativeTo: this.route });
-  }
 
 
+goToDetail(operationId: string) {
+  if (!operationId) return;
+  // Absolute navigation ensures Angular goes to the correct child route
+  this.router.navigate(['/dashboard/generatordetaillist', operationId]);
 }
+
 
   /* ================= CLOSE MODAL ================= */
 
