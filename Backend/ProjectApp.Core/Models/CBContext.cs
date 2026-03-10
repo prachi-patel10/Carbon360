@@ -126,7 +126,9 @@ public partial class CBContext : DbContext
             entity.Property(e => e.IsDeleted)
                 .HasDefaultValue(false)
                 .HasAnnotation("Relational:DefaultConstraintName", "DF__CB_Master__IsDel__5827EFFE");
-            entity.Property(e => e.Pincode).HasMaxLength(10);
+            entity.Property(e => e.ShortCode)
+                .HasMaxLength(50)
+                .IsUnicode(false);
             entity.Property(e => e.StateName)
                 .IsRequired()
                 .HasMaxLength(100);
@@ -213,11 +215,6 @@ public partial class CBContext : DbContext
                 .HasMaxLength(100)
                 .IsUnicode(false);
             entity.Property(e => e.UpdateDate).HasColumnType("datetime");
-
-            entity.HasOne(d => d.Department).WithMany(p => p.CB_MasterSiteLocations)
-                .HasForeignKey(d => d.DepartmentId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_site_department");
         });
 
         modelBuilder.Entity<CB_MasterVehicle>(entity =>

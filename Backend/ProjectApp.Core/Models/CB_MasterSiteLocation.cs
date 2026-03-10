@@ -17,8 +17,6 @@ public partial class CB_MasterSiteLocation
 
     public string State { get; set; }
 
-    public int DepartmentId { get; set; }
-
     public bool IsActive { get; set; }
 
     public int EntryBy { get; set; }
@@ -34,6 +32,4 @@ public partial class CB_MasterSiteLocation
     public string ShortCode { get; set; }
 
     public virtual ICollection<CB_MasterGenerator> CB_MasterGenerators { get; set; } = new List<CB_MasterGenerator>();
-
-    public virtual CB_Department Department { get; set; }
 }

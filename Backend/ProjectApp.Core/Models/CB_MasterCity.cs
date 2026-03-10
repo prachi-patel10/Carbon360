@@ -13,8 +13,6 @@ public partial class CB_MasterCity
 
     public string StateName { get; set; }
 
-    public string Pincode { get; set; }
-
     public bool? IsActive { get; set; }
 
     public bool? IsDeleted { get; set; }
@@ -26,6 +24,8 @@ public partial class CB_MasterCity
     public int? UpdatedBy { get; set; }
 
     public DateTime? UpdateDate { get; set; }
+
+    public string ShortCode { get; set; }
 
     public virtual ICollection<CB_VehicleTripEmission> CB_VehicleTripEmissionfromcities { get; set; } = new List<CB_VehicleTripEmission>();
 
