@@ -40,38 +40,81 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
 
         public async Task<List<GeneratorOperationResponseDTO>> GetAllAsync()
         {
-            var list = await _context.CB_GeneratorOperations
-                .Where(x => !x.IsDeleted)
-                .OrderByDescending(x => x.OperationDate)
-                .ToListAsync();
+            await using var connection = _context.Database.GetDbConnection();
+            await using var command = connection.CreateCommand();
 
-            return list.Select(x => new GeneratorOperationResponseDTO
+            command.CommandText = @"
+        SELECT 
+            go.OperationId,
+            go.GeneratorId,
+            g.GeneratorName,
+            f.fuel_name  AS FuelType,
+            go.OperationDate,
+            go.StartTime,
+            go.EndTime,
+            go.RunHours,
+            go.LoadFactor,
+            go.PowerOutputKWH,
+            go.FuelConsumedLiters,
+            go.co2_kg AS CO2,
+            go.no2_kg AS NO2,
+            go.ch4_kg AS CH4,
+            go.total_co2_kg AS TotalCO2,
+            go.total_no2_kg AS TotalNO2,
+            go.total_ch4_kg AS TotalCH4,
+            go.total_co2e_kg AS TotalEmission,
+            go.StatusId,
+            go.EntryBy,
+            go.EntryDate
+        FROM CB_GeneratorOperation go
+        INNER JOIN CB_MasterGenerator g ON go.GeneratorId = g.GeneratorId
+        LEFT JOIN CB_MasterFuelType f ON g.FuelId = f.fuel_id
+        WHERE go.IsDeleted = 0
+        ORDER BY go.OperationDate DESC";
+
+            if (connection.State != ConnectionState.Open)
+                await connection.OpenAsync();
+
+            var list = new List<GeneratorOperationResponseDTO>();
+
+            await using var reader = await command.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
             {
-                OperationId = _idEncoder.Encode(x.OperationId),
-                GeneratorId = _idEncoder.Encode(x.GeneratorId),
+                var dto = new GeneratorOperationResponseDTO
+                {
+                    OperationId = _idEncoder.Encode(reader.GetInt32(reader.GetOrdinal("OperationId"))),
+                    GeneratorId = _idEncoder.Encode(reader.GetInt32(reader.GetOrdinal("GeneratorId"))),
+                    GeneratorName = reader["GeneratorName"]?.ToString(),
+                    FuelType = reader["FuelType"]?.ToString(),
 
-                OperationDate = x.OperationDate,
-                RunHours = x.RunHours ?? 0,
-                LoadFactor = x.LoadFactor ?? 0,
-                PowerOutputKWH = x.PowerOutputKWH ?? 0,
-                FuelConsumedLiters = x.FuelConsumedLiters ?? 0,
+                    OperationDate = DateOnly.FromDateTime(reader.GetDateTime(reader.GetOrdinal("OperationDate"))),
+                    StartTime = reader.GetDateTime(reader.GetOrdinal("StartTime")),
+                    EndTime = reader.GetDateTime(reader.GetOrdinal("EndTime")),
+                    RunHours = reader.IsDBNull(reader.GetOrdinal("RunHours")) ? 0 : reader.GetDecimal(reader.GetOrdinal("RunHours")),
+                    LoadFactor = reader.IsDBNull(reader.GetOrdinal("LoadFactor")) ? 0 : reader.GetDecimal(reader.GetOrdinal("LoadFactor")),
+                    PowerOutputKWH = reader.IsDBNull(reader.GetOrdinal("PowerOutputKWH")) ? 0 : reader.GetDecimal(reader.GetOrdinal("PowerOutputKWH")),
+                    FuelConsumedLiters = reader.IsDBNull(reader.GetOrdinal("FuelConsumedLiters")) ? 0 : reader.GetDecimal(reader.GetOrdinal("FuelConsumedLiters")),
 
-                CO2 = x.co2_kg,
-                NO2 = x.no2_kg,
-                CH4 = x.ch4_kg,
+                    CO2 = reader.IsDBNull(reader.GetOrdinal("CO2")) ? 0 : reader.GetDecimal(reader.GetOrdinal("CO2")),
+                    NO2 = reader.IsDBNull(reader.GetOrdinal("NO2")) ? 0 : reader.GetDecimal(reader.GetOrdinal("NO2")),
+                    CH4 = reader.IsDBNull(reader.GetOrdinal("CH4")) ? 0 : reader.GetDecimal(reader.GetOrdinal("CH4")),
 
-                TotalCO2 = x.total_co2_kg ?? 0,
-                TotalNO2 = x.total_no2_kg ?? 0,
-                TotalCH4 = x.total_ch4_kg ?? 0,
-                TotalEmission = x.total_co2e_kg ?? 0,
+                    TotalCO2 = reader.IsDBNull(reader.GetOrdinal("TotalCO2")) ? 0 : reader.GetDecimal(reader.GetOrdinal("TotalCO2")),
+                    TotalNO2 = reader.IsDBNull(reader.GetOrdinal("TotalNO2")) ? 0 : reader.GetDecimal(reader.GetOrdinal("TotalNO2")),
+                    TotalCH4 = reader.IsDBNull(reader.GetOrdinal("TotalCH4")) ? 0 : reader.GetDecimal(reader.GetOrdinal("TotalCH4")),
+                    TotalEmission = reader.IsDBNull(reader.GetOrdinal("TotalEmission")) ? 0 : reader.GetDecimal(reader.GetOrdinal("TotalEmission")),
 
-                StatusId = x.StatusId,
-                EntryBy = x.EntryBy,
-                EntryDate = x.EntryDate
-            }).ToList();
+                    StatusId = reader.IsDBNull(reader.GetOrdinal("StatusId")) ? 0 : reader.GetInt32(reader.GetOrdinal("StatusId")),
+                    EntryBy = reader.IsDBNull(reader.GetOrdinal("EntryBy")) ? 0 : reader.GetInt32(reader.GetOrdinal("EntryBy")),
+                    EntryDate = reader.IsDBNull(reader.GetOrdinal("EntryDate")) ? DateTime.MinValue : reader.GetDateTime(reader.GetOrdinal("EntryDate"))
+                };
+
+                list.Add(dto);
+            }
+
+            await reader.CloseAsync();
+            return list;
         }
-
-
 
 
 
@@ -137,39 +180,79 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
 
             int id = _idEncoder.Decode(encryptedId);
 
-            var list = await _context.CB_GeneratorOperations
-                .FromSqlRaw("EXEC USP_CB_GeneratorOperationGetById @OperationId={0}", id)
-                .AsNoTracking()
-                .ToListAsync();
+            await using var connection = _context.Database.GetDbConnection();
+            await using var command = connection.CreateCommand();
 
-            var entity = list.FirstOrDefault();
+            command.CommandText = @"
+        SELECT 
+            go.OperationId,
+            go.GeneratorId,
+            g.GeneratorName,
+            f.fuel_name  AS FuelType,
+            go.OperationDate,
+            go.StartTime,
+            go.EndTime,
+            go.RunHours,
+            go.LoadFactor,
+            go.PowerOutputKWH,
+            go.FuelConsumedLiters,
+            go.co2_kg AS CO2,
+            go.no2_kg AS NO2,
+            go.ch4_kg AS CH4,
+            go.total_co2_kg AS TotalCO2,
+            go.total_no2_kg AS TotalNO2,
+            go.total_ch4_kg AS TotalCH4,
+            go.total_co2e_kg AS TotalEmission,
+            go.StatusId,
+            go.EntryBy,
+            go.EntryDate
+        FROM CB_GeneratorOperation go
+        INNER JOIN CB_MasterGenerator g ON go.GeneratorId = g.GeneratorId
+        LEFT JOIN CB_MasterFuelType f ON g.FuelId = f.fuel_id
+        WHERE go.OperationId = @OperationId AND go.IsDeleted = 0";
 
-            if (entity == null)
-                return null;
+            command.Parameters.Add(new SqlParameter("@OperationId", id));
 
-            return new GeneratorOperationResponseDTO
+            if (connection.State != ConnectionState.Open)
+                await connection.OpenAsync();
+
+            GeneratorOperationResponseDTO dto = null;
+
+            await using var reader = await command.ExecuteReaderAsync();
+            if (await reader.ReadAsync())
             {
-                OperationId = _idEncoder.Encode(entity.OperationId),
-                GeneratorId = _idEncoder.Encode(entity.GeneratorId),
+                dto = new GeneratorOperationResponseDTO
+                {
+                    OperationId = _idEncoder.Encode(reader.GetInt32(reader.GetOrdinal("OperationId"))),
+                    GeneratorId = _idEncoder.Encode(reader.GetInt32(reader.GetOrdinal("GeneratorId"))),
+                    GeneratorName = reader["GeneratorName"]?.ToString(),
+                    FuelType = reader["FuelType"]?.ToString(),
 
-                OperationDate = entity.OperationDate,
-                RunHours = entity.RunHours ?? 0,
-                LoadFactor = entity.LoadFactor ?? 0,
-                PowerOutputKWH = entity.PowerOutputKWH ?? 0,
-                FuelConsumedLiters = entity.FuelConsumedLiters ?? 0,
+                    OperationDate = DateOnly.FromDateTime(reader.GetDateTime(reader.GetOrdinal("OperationDate"))),
+                    StartTime = reader.GetDateTime(reader.GetOrdinal("StartTime")),
+                    EndTime = reader.GetDateTime(reader.GetOrdinal("EndTime")),
+                    RunHours = reader.IsDBNull(reader.GetOrdinal("RunHours")) ? 0 : reader.GetDecimal(reader.GetOrdinal("RunHours")),
+                    LoadFactor = reader.IsDBNull(reader.GetOrdinal("LoadFactor")) ? 0 : reader.GetDecimal(reader.GetOrdinal("LoadFactor")),
+                    PowerOutputKWH = reader.IsDBNull(reader.GetOrdinal("PowerOutputKWH")) ? 0 : reader.GetDecimal(reader.GetOrdinal("PowerOutputKWH")),
+                    FuelConsumedLiters = reader.IsDBNull(reader.GetOrdinal("FuelConsumedLiters")) ? 0 : reader.GetDecimal(reader.GetOrdinal("FuelConsumedLiters")),
 
+                    CO2 = reader.IsDBNull(reader.GetOrdinal("CO2")) ? 0 : reader.GetDecimal(reader.GetOrdinal("CO2")),
+                    NO2 = reader.IsDBNull(reader.GetOrdinal("NO2")) ? 0 : reader.GetDecimal(reader.GetOrdinal("NO2")),
+                    CH4 = reader.IsDBNull(reader.GetOrdinal("CH4")) ? 0 : reader.GetDecimal(reader.GetOrdinal("CH4")),
 
-                TotalCO2 = entity.total_co2_kg ?? 0,
-                TotalNO2 = entity.total_no2_kg ?? 0,
-                TotalCH4 = entity.total_ch4_kg ?? 0,
-                TotalEmission = entity.total_co2e_kg ?? 0,
+                    TotalCO2 = reader.IsDBNull(reader.GetOrdinal("TotalCO2")) ? 0 : reader.GetDecimal(reader.GetOrdinal("TotalCO2")),
+                    TotalNO2 = reader.IsDBNull(reader.GetOrdinal("TotalNO2")) ? 0 : reader.GetDecimal(reader.GetOrdinal("TotalNO2")),
+                    TotalCH4 = reader.IsDBNull(reader.GetOrdinal("TotalCH4")) ? 0 : reader.GetDecimal(reader.GetOrdinal("TotalCH4")),
+                    TotalEmission = reader.IsDBNull(reader.GetOrdinal("TotalEmission")) ? 0 : reader.GetDecimal(reader.GetOrdinal("TotalEmission")),
 
-                StatusId = entity.StatusId,
+                    StatusId = reader.IsDBNull(reader.GetOrdinal("StatusId")) ? 0 : reader.GetInt32(reader.GetOrdinal("StatusId")),
+                    EntryBy = reader.IsDBNull(reader.GetOrdinal("EntryBy")) ? 0 : reader.GetInt32(reader.GetOrdinal("EntryBy")),
+                    EntryDate = reader.IsDBNull(reader.GetOrdinal("EntryDate")) ? DateTime.MinValue : reader.GetDateTime(reader.GetOrdinal("EntryDate"))
+                };
+            }
 
-                EntryBy = entity.EntryBy,
-                EntryDate = entity.EntryDate
-            };
-
+            await reader.CloseAsync();
+            return dto;
         }
 
         public async Task<GeneratorOperationResponseDTO> UpdateAsync(string encryptedId, GeneratorOperationCreateDTO dto)

@@ -28,14 +28,24 @@ namespace ProjectApp.Repository.Services.SiteLocation
         // ================= CREATE =================
         public async Task<string> Create(SiteLocationCreateUpdateDTO dto, int userId)
         {
+            int departmentId = int.Parse(dto.DepartmentId);
+
+            // Check if ShortCode is unique
+            var existing = await _spService.ExecuteSpAsync("SELECT COUNT(*) AS Count FROM CB_MasterSiteLocation WHERE ShortCode = @ShortCode AND IsDeleted = 0",
+                new SqlParameter("@ShortCode", dto.ShortCode));
+
+            if (Convert.ToInt32(((IEnumerable<Dictionary<string, object>>)existing["Data"]).First()["Count"]) > 0)
+                throw new Exception("ShortCode already exists. Please use a different one.");
+
             var parameters = new[]
             {
                 new SqlParameter("@SiteName", dto.SiteName),
-                new SqlParameter("@BuildingName", dto.BuildingName),
-                new SqlParameter("@City", dto.City),
-                new SqlParameter("@State", dto.State),
-                new SqlParameter("@DepartmentId", dto.DepartmentId),
-                new SqlParameter("@EntryBy", userId)
+                new SqlParameter("@BuildingName", dto.BuildingName ?? (object)DBNull.Value),
+                new SqlParameter("@City", dto.City ?? (object)DBNull.Value),
+                new SqlParameter("@State", dto.State ?? (object)DBNull.Value),
+                new SqlParameter("@DepartmentId", departmentId),
+                new SqlParameter("@EntryBy", userId),
+                new SqlParameter("@ShortCode", dto.ShortCode)
             };
 
             var result = await _spService.ExecuteSpAsync("USP_CB_CreateSiteLocation", parameters);
@@ -50,20 +60,32 @@ namespace ProjectApp.Repository.Services.SiteLocation
             return _idEncoder.Encode(newId);
         }
 
+
         // ================= UPDATE =================
         public async Task Update(string encryptedId, SiteLocationCreateUpdateDTO dto, int userId)
         {
             int id = _idEncoder.Decode(encryptedId);
+            int departmentId = int.Parse(dto.DepartmentId);
+
+            // Check if ShortCode is unique for other records
+            var existing = await _spService.ExecuteSpAsync(
+                "SELECT COUNT(*) AS Count FROM CB_MasterSiteLocation WHERE ShortCode = @ShortCode AND SiteId != @SiteId AND IsDeleted = 0",
+                new SqlParameter("@ShortCode", dto.ShortCode),
+                new SqlParameter("@SiteId", id));
+
+            if (Convert.ToInt32(((IEnumerable<Dictionary<string, object>>)existing["Data"]).First()["Count"]) > 0)
+                throw new Exception("ShortCode already exists. Please use a different one.");
 
             var parameters = new[]
             {
                 new SqlParameter("@SiteId", id),
                 new SqlParameter("@SiteName", dto.SiteName),
-                new SqlParameter("@BuildingName", dto.BuildingName),
-                new SqlParameter("@City", dto.City),
-                new SqlParameter("@State", dto.State),
-                new SqlParameter("@DepartmentId", dto.DepartmentId),
-                new SqlParameter("@UpdatedBy", userId)
+                new SqlParameter("@BuildingName", dto.BuildingName ?? (object)DBNull.Value),
+                new SqlParameter("@City", dto.City ?? (object)DBNull.Value),
+                new SqlParameter("@State", dto.State ?? (object)DBNull.Value),
+                new SqlParameter("@DepartmentId", departmentId),
+                new SqlParameter("@UpdatedBy", userId),
+                new SqlParameter("@ShortCode", dto.ShortCode)
             };
 
             await _spService.ExecuteSpAsync("USP_CB_UpdateSiteLocation", parameters);
@@ -120,15 +142,15 @@ namespace ProjectApp.Repository.Services.SiteLocation
         {
             var parameters = new[]
             {
-                new SqlParameter("@Search", request.Search ?? (object)DBNull.Value),
-                new SqlParameter("@FilterColumn", request.FilterColumn ?? (object)DBNull.Value),
-                new SqlParameter("@FilterValue", request.FilterValue ?? (object)DBNull.Value),
-                new SqlParameter("@IsActive", request.IsActive ?? (object)DBNull.Value),
-                new SqlParameter("@PageNumber", request.PageNumber),
-                new SqlParameter("@PageSize", request.PageSize),
-                new SqlParameter("@SortColumn", request.SortColumn),
-                new SqlParameter("@SortDirection", request.SortDirection)
-            };
+        new SqlParameter("@Search", request.Search ?? (object)DBNull.Value),
+        new SqlParameter("@FilterColumn", request.FilterColumn ?? (object)DBNull.Value),
+        new SqlParameter("@FilterValue", request.FilterValue ?? (object)DBNull.Value),
+        new SqlParameter("@IsActive", request.IsActive ?? (object)DBNull.Value),
+        new SqlParameter("@PageNumber", request.PageNumber),
+        new SqlParameter("@PageSize", request.PageSize),
+        new SqlParameter("@SortColumn", request.SortColumn),
+        new SqlParameter("@SortDirection", request.SortDirection)
+    };
 
             var result = await _spService.ExecuteSpAsync("USP_CB_SearchSiteLocation", parameters);
 
@@ -178,12 +200,10 @@ namespace ProjectApp.Repository.Services.SiteLocation
                 BuildingName = GetString("BuildingName"),
                 City = GetString("City"),
                 State = GetString("State"),
-
-              
+                ShortCode = GetString("ShortCode"),  // Added
                 DepartmentId = departmentId > 0
                                 ? _idEncoder.Encode(departmentId)
                                 : null,
-
                 DepartmentName = GetString("DepartmentName"),
                 IsActive = GetBool("IsActive")
             };

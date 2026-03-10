@@ -72,5 +72,4 @@ export class GeneratorOperationService {
       { statusId }
     );
   }
-
 }

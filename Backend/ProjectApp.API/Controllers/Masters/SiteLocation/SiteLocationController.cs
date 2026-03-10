@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using ProjectApp.Core.DTOs.Masters.Generator;
 using ProjectApp.Core.DTOs.Masters.SiteLocation;
 using ProjectApp.Repository.Interfaces.SiteLocation;
+using ProjectApp.Repository.Utilities.Auth;
 
 namespace ProjectApp.API.Controllers.Masters.SiteLocation
 {
@@ -13,28 +14,46 @@ namespace ProjectApp.API.Controllers.Masters.SiteLocation
     public class SiteLocationController : ControllerBase
     {
         private readonly ISiteLocationService _service;
+        private readonly IdEncoder _idEncoder;
 
-        public SiteLocationController(ISiteLocationService service)
+        public SiteLocationController(ISiteLocationService service, IdEncoder idEncoder)
         {
             _service = service;
-        }
+            _idEncoder = idEncoder;
+    }
 
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] SiteLocationCreateUpdateDTO dto)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
             int userId = Convert.ToInt32(User.FindFirst("UserId")?.Value);
+
+            // Decode DepartmentId before sending to service
+            int deptId = _idEncoder.Decode(dto.DepartmentId);
+            dto.DepartmentId = deptId.ToString();
 
             var encryptedId = await _service.Create(dto, userId);
 
             return Ok(new { SiteId = encryptedId });
         }
 
+
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(string id, [FromBody] SiteLocationCreateUpdateDTO dto)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
             int userId = Convert.ToInt32(User.FindFirst("UserId")?.Value);
 
+            // Decode DepartmentId before sending to service
+            int deptId = _idEncoder.Decode(dto.DepartmentId);
+            dto.DepartmentId = deptId.ToString();
+
             await _service.Update(id, dto, userId);
+
             return Ok();
         }
 
