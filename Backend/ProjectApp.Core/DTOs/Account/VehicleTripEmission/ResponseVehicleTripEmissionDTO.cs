@@ -34,11 +34,11 @@ namespace ProjectApp.Core.DTOs.Account.VehicleTripEmission
 
         public string FuelType { get; set; }
 
-        public decimal? CO2Factor { get; set; }
+        //public decimal? CO2Factor { get; set; }
 
-        public decimal? NO2Factor { get; set; }
+        //public decimal? NO2Factor { get; set; }
 
-        public decimal? CH4Factor { get; set; }
+        //public decimal? CH4Factor { get; set; }
 
 
     }

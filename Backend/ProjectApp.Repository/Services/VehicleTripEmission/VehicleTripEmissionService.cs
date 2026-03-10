@@ -295,11 +295,11 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
 
                 FuelType = entity.fueltype,
 
-                CO2Factor = entity.co2,
+                //CO2Factor = entity.co2,
 
-                NO2Factor = entity.no2,
+                //NO2Factor = entity.no2,
 
-                CH4Factor = entity.ch4,
+                //CH4Factor = entity.ch4,
 
                 TotalCO2 = entity.totalco2,
                 TotalNO2 = entity.totalno2,

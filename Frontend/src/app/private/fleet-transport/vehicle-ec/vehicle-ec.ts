@@ -116,9 +116,9 @@ tripEndDateTime: [
 
        fuelType: res.fuelType,
 
-  co2Factor: res.co2Factor,
-  no2Factor: res.no2Factor,
-  ch4Factor: res.ch4Factor
+      co2Factor: res.cO2,
+      no2Factor: res.nO2,
+      ch4Factor: res.cH4
 
     })
 
