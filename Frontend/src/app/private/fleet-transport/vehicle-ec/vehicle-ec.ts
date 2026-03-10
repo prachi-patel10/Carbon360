@@ -106,34 +106,45 @@ export class TripComponent implements OnInit {
 
   loadTrip(id: string) {
 
-    this.tripService.getTripById(id).subscribe(res => {
+  this.tripService.getTripById(id).subscribe(res => {
 
-      this.tripForm.patchValue({
+    this.tripForm.patchValue({
 
-        vehicle_id: res.vehicleId,
-        fromCityId: res.fromCityId,
-        toCityId: res.toCityId,
-        distanceKm: res.distanceKm,
-        fuelConsumedLtr: res.fuelConsumedLtr,
-        tripStartDateTime: res.tripStartDateTime,
-        tripEndDateTime: res.tripEndDateTime
+      vehicle_id: res.vehicleId,
+      fromCityId: res.fromCityId,
+      toCityId: res.toCityId,
 
-      });
-      setTimeout(() => {
-  this.calculateTotals(res);
-}, 300);
+      distanceKm: res.distanceKm,
+      fuelConsumedLtr: res.fuelConsumedLtr,
 
-    // disable form in view mode
+      tripStartDateTime: res.tripStartDateTime,
+      tripEndDateTime: res.tripEndDateTime,
+
+      fuelType: res.fuelType,
+
+      co2Factor: res.cO2,
+      no2Factor: res.nO2,
+      ch4Factor: res.cH4,
+
+      totalCO2: res.totalCO2,
+      totalNO2: res.totalNO2,
+      totalCH4: res.totalCH4,
+      finalTotalEmission: res.totalEmission
+
+    });
+
+    // store in variables if UI uses them
+    this.totalCO2 = res.totalCO2;
+    this.totalNO2 = res.totalNO2;
+    this.totalCH4 = res.totalCH4;
+
     if (this.mode === 'view') {
       this.tripForm.disable();
     }
 
-    // calculate emission totals
-    // this.calculateTotals(res);
-
   });
 
-  }
+}
 
 
   loadAllMasterData() {
@@ -413,15 +424,19 @@ export class TripComponent implements OnInit {
 
   calculateTotals(data: any) {
 
-  const fuel = data.fuelConsumedLtr || 0;
+  // const fuel = data.fuelConsumedLtr || 0;
 
-  const co2Factor = Number(this.tripForm.get('co2Factor')?.value) || 0;
-  const no2Factor = Number(this.tripForm.get('no2Factor')?.value) || 0;
-  const ch4Factor = Number(this.tripForm.get('ch4Factor')?.value) || 0;
+  // const co2Factor = Number(this.tripForm.get('co2Factor')?.value) || 0;
+  // const no2Factor = Number(this.tripForm.get('no2Factor')?.value) || 0;
+  // const ch4Factor = Number(this.tripForm.get('ch4Factor')?.value) || 0;
 
-  this.totalCO2 = fuel * co2Factor;
-  this.totalNO2 = fuel * no2Factor;
-  this.totalCH4 = fuel * ch4Factor;
+  // this.totalCO2 = fuel * co2Factor;
+  // this.totalNO2 = fuel * no2Factor;
+  // this.totalCH4 = fuel * ch4Factor;
+
+   this.totalCO2 = data.totalCO2 || 0;
+  this.totalNO2 = data.totalNO2 || 0;
+  this.totalCH4 = data.totalCH4 || 0;
 
 }
 
