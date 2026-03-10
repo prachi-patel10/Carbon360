@@ -25,6 +25,7 @@ import { GeneratorEmissionDetailComponent } from './private/power-generator/gene
 import { authGuard } from './core/guards/auth-guard';
 import { SearchVehicle } from './private/fleet-transport/search-vehicle/search-vehicle';
 import { VehicleTripDetail } from './private/fleet-transport/vehicle-trip-detail/vehicle-trip-detail';
+import { GeneratorReviewComponent } from './private/power-generator/generatorrecordlist/generatorrecordlist';
 
 export const routes: Routes = [
 
@@ -65,8 +66,9 @@ export const routes: Routes = [
             {path: 'searchVehicle', component:SearchVehicle},
             {path: 'MyActionVehicle', component:MyActionVehicle},
             {path: 'MyActionGenerator', component:MyactionGenerator},
-            { path: 'generator-ec/:id', component:  GeneratorOperationComponent},
-    { path: 'generatordetaillist/:id', component: GeneratorEmissionDetailComponent },
+           { path: 'generator-ec/:id', component:  GeneratorOperationComponent},
+    { path: 'generatordetailpage/:id', component: GeneratorEmissionDetailComponent },
+{ path: 'generator-review/:id', component: GeneratorReviewComponent },
      { path: 'vehicledetaillist/:id', component: VehicleTripDetail },
      { path: 'vehicle-ec/:id', component:  TripComponent},
 
