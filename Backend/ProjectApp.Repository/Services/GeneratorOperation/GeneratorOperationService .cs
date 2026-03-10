@@ -268,7 +268,6 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
             command.CommandType = CommandType.StoredProcedure;
 
             command.Parameters.Add(new SqlParameter("@OperationId", SqlDbType.Int) { Value = operationId });
-            command.Parameters.Add(new SqlParameter("@GeneratorId", SqlDbType.Int) { Value = generatorId });
             command.Parameters.Add(new SqlParameter("@StartTime", SqlDbType.DateTime) { Value = dto.StartTime });
             command.Parameters.Add(new SqlParameter("@EndTime", SqlDbType.DateTime) { Value = dto.EndTime });
             command.Parameters.Add(new SqlParameter("@LoadFactor", SqlDbType.Decimal) { Precision = 5, Scale = 2, Value = dto.LoadFactor });

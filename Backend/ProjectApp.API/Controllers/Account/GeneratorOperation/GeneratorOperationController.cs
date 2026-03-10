@@ -121,9 +121,8 @@ namespace ProjectApp.API.Controllers.Account.GeneratorOperation
             return StatusCode((int)_apiResponse.StatusCode, _apiResponse);
         }
 
-
         [HttpPatch("status/{id}")]
-        public async Task<IActionResult> UpdateStatus(string id, int statusId)
+        public async Task<IActionResult> UpdateStatus(string id, [FromQuery] int statusId)
         {
             var result = await _service.UpdateStatusAsync(id, statusId);
 
@@ -135,7 +134,6 @@ namespace ProjectApp.API.Controllers.Account.GeneratorOperation
 
             return StatusCode((int)_apiResponse.StatusCode, _apiResponse);
         }
-
 
 
         [HttpGet("search")]

@@ -30,12 +30,16 @@
           <td>{{ item.fuelConsumed }}</td>
           <td>{{ item.totalEmission }}</td>
 
-          <td class="action-buttons">
-            <button class="btn-edit" (click)="edit(item.operationId)">
-              <i class="fas fa-edit"></i>
-            </button>
-          </td>
+      <td class="action-buttons">
 
+<button
+(click)="handleAction(item)"
+[disabled]="userRole === 'Corporate' && item.status !== 1">
+
+{{ getActionText(item) }}
+
+</button>
+</td>
         </tr>
 
         <tr *ngIf="data().length === 0">
