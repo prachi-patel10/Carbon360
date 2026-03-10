@@ -1,0 +1,39 @@
+import { Injectable } from '@angular/core';
+import { environment } from '../../../enviorments/environment';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+
+@Injectable({
+  providedIn: 'root',
+})
+export class SearchVehcileService {
+  private apiUrl = `${environment.apiBaseUrl}/VehicleTripEmission`;
+
+  constructor(private http: HttpClient) {}
+
+  /*GET ALL TRIPS (WITH PAGING LIKE GENERATOR SEARCH)*/
+  searchTrips(): Observable<any> {
+  return this.http.get<any>(`${this.apiUrl}/Search?pageNumber=1&pageSize=10`);
+}
+
+  /*GET SINGLE TRIP BY ID*/
+  getTripById(id: string): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/${id}`);
+  }
+
+  /*CREATE TRIP*/
+  createTrip(data: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}`, data);
+  }
+
+  /*UPDATE TRIP*/
+  updateTrip(id: string, data: any): Observable<any> {
+    return this.http.put(`${this.apiUrl}/${id}`, data);
+  }
+
+  /*DELETE TRIP*/
+  deleteTrip(id: string): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/${id}`);
+  }
+ 
+}

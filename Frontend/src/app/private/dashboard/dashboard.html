@@ -137,9 +137,10 @@
         <li *ngIf="isAdmin() || isReporter() || isCorporate()" (click)="goTo('vehicle')" [class.active-link]="isActive('/vehicle')">
           <i class="fas fa-file-alt"></i> <span> Report</span>
         </li>
-        <li *ngIf="isAdmin() || isReporter() || isCorporate()" routerLink="/waste" routerLinkActive="active-link">
+ <li *ngIf="isAdmin() || isReporter() || isCorporate()"(click)="goTo('searchVehicle')" [class.active-link]="isActive('/searchVehicle')">
           <i class="fas fa-search"></i> <span> Search</span>
         </li>
+
          <li *ngIf="isAdmin() || isReporter() || isCorporate()" (click)="goTo('MyActionVehicle')" routerLink="/MyActionVehicle" routerLinkActive="active-link">
            <i class="fas fa-tasks"></i>  <span>MyAction</span>
         </li>

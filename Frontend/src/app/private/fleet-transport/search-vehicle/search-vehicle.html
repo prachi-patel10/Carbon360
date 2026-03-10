@@ -1,1 +1,277 @@
-<p>search-vehicle works!</p>
+<div class="container generator-report-container mt-4">
+
+  <!-- Page Title -->
+  <!-- <h2 class="page-title mb-4">Vehicle Trip Emission Records</h2> -->
+
+  <!-- FILTER CARD -->
+  <div class="card filter-card p-4 mb-4">
+
+    <div class="row">
+      <!-- Fuel Type -->
+      <div class="col-md-3">
+       <label class="form-label">
+  <i class="bi bi-fuel-pump icon-green"></i> Fuel Type
+</label>
+        <select class="form-select" (change)="onFuelTypeChange($event)">
+          <option value="All">All</option>
+          <option>Petrol</option>
+          <option>Diesel</option>
+          <option>CNG</option>
+        </select>
+      </div>
+
+      <!-- Start Date -->
+      <div class="col-md-3">
+       <label class="form-label">
+  <i class="bi bi-calendar-event icon-green"></i> Start Date
+</label>
+        <input type="date" class="form-control" (change)="onStartDateChange($event)">
+      </div>
+
+      <!-- End Date -->
+      <div class="col-md-3">
+       <label class="form-label">
+  <i class="bi bi-calendar-check icon-green"></i> End Date
+</label>
+        <input type="date" class="form-control" (change)="onEndDateChange($event)">
+      </div>
+      <!-- <input type="text" (input)="searchText.set($any($event.target).value)" placeholder="Search vehicle"> -->
+
+     
+      <div class="col-md-2 d-flex align-items-end">
+        <button class="search-btn w-100" (click)="onSearchClick()"><i class="bi bi-search"></i> Search
+          
+        </button>
+      </div>
+       <!-- Vehicle Search -->
+      <div class="col-md-3">
+        <br>
+<div class="input-group">
+              <span class="input-group-text bg-white border-end-0"><i class="fas fa-search text-muted"></i></span>
+              <input type="text" class="form-control border-start-0"
+                placeholder="Quick Search by Vehicle number or vehcile Name" (input)="onSearch($event)" />
+            </div>      
+              <!-- <input type="text" class="form-control" placeholder="Quick Search by Vehicle number or vehcile Name "
+          (input)="searchText.set($any($event.target).value)"> -->
+      </div>
+      
+
+    </div>
+
+  </div>
+
+
+  <!-- TABLE CARD -->
+  <div class="card table-card p-3">
+    <div class="table-controls">
+
+      <div class="entries-dropdown">
+
+        <label>
+  <i class="bi bi-list-ul icon-green"></i> Show Entries
+</label>
+
+        <select class="form-select" (change)="onPageSizeChange($event)">
+          <option *ngFor="let size of pageSizeOptions" [value]="size">
+            {{size}}
+          </option>
+        </select>
+
+      </div>
+
+    </div>
+
+    <table class="table">
+
+      <thead>
+        <tr>
+          <th>Vehicle</th>
+          <th>Type</th>
+          <th>Fuel</th>
+          <th>Distance</th>
+          <th>Fuel Used</th>
+          <th>Total Emission</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+
+      <tbody>
+
+        <tr *ngFor="let e of filteredTrips()">
+
+          <td>{{ e.vehicleNumber }}</td>
+          <td>{{ e.vehicleType }}</td>
+          <td>{{ e.fuelType }}</td>
+
+          <td>{{ e.distanceKm }} km</td>
+          <td>{{ e.fuelConsumedLtr }} L</td>
+
+          <td class="emission-value">
+            {{ e.totalEmission }} kg
+          </td>
+
+          <td>
+            <button class="btn-open" (click)="openTrip(e.tripId)">
+  <i class="bi bi-eye"></i> 
+</button>
+          </td>
+
+        </tr>
+
+      </tbody>
+
+    </table>
+   <div class="pagination">
+
+  <button (click)="previousPage()" [disabled]="currentPage() === 1">
+    <i class="bi bi-arrow-left"></i> Previous
+  </button>
+
+  <span>
+    <i class="bi bi-file-earmark-text"></i>
+    Page {{currentPage()}} of {{totalPages()}}
+  </span>
+
+  <button (click)="nextPage()" [disabled]="currentPage() === totalPages()">
+    Next <i class="bi bi-arrow-right"></i>
+  </button>
+
+</div>
+  </div>
+
+
+  
+  <!-- <div *ngIf="selectedRecord" class="modal-overlay">
+
+    <div class="modal-container">
+
+      Header 
+      <div class="modal-header">
+
+        <div>
+          <h4 class="modal-title">Trip Emission Details</h4>
+          <p class="modal-subtitle">
+            {{ selectedRecord.vehicleNumber }}
+          </p>
+        </div>
+
+        <button class="close-btn" (click)="closeModal()">×</button>
+
+      </div>
+
+
+      Body
+       <div class="modal-body">
+
+         Metrics 
+        <div class="metrics-grid">
+
+          <div class="metric-card">
+            <span class="label">Distance</span>
+            <span class="value">
+              {{ selectedRecord.distanceKm }}
+              <small>km</small>
+            </span>
+          </div>
+
+          <div class="metric-card">
+            <span class="label">Fuel Consumed</span>
+            <span class="value">
+              {{ selectedRecord.fuelConsumedLtr }}
+              <small>L</small>
+            </span>
+          </div>
+
+          <div class="metric-card">
+            <span class="label">CO₂ Emission</span>
+            <span class="value">
+              {{ selectedRecord.totalCO2 }}
+              <small>kg</small>
+            </span>
+          </div>
+
+          <div class="metric-card">
+            <span class="label">NO₂ Emission</span>
+            <span class="value">
+              {{ selectedRecord.totalNO2 }}
+              <small>kg</small>
+            </span>
+          </div>
+
+          <div class="metric-card">
+            <span class="label">CH₄ Emission</span>
+            <span class="value">
+              {{ selectedRecord.totalCH4 }}
+              <small>kg</small>
+            </span>
+          </div>
+
+        </div>
+
+
+         Formula Section 
+        <div class="section-container">
+
+          <div class="section-title">
+            Calculation Formula
+          </div>
+
+          <div class="formula-bg">
+
+            <div class="formula-line">
+              <span class="formula-label">CO2</span>
+              <span class="formula-math">
+                Fuel Consumed × CO2 Factor
+              </span>
+            </div>
+
+            <div class="formula-line">
+              <span class="formula-label">NO2</span>
+              <span class="formula-math">
+                Fuel Consumed × NO2 Factor
+              </span>
+            </div>
+
+            <div class="formula-line">
+              <span class="formula-label">CH4</span>
+              <span class="formula-math">
+                Fuel Consumed × CH4 Factor
+              </span>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div> 
+
+
+       Footer 
+      <div class="modal-footer">
+
+        <div class="final-result">
+
+          <div class="check-icon">✓</div>
+
+          <div>
+            <span class="final-label">Total Emission</span>
+
+            <h3 class="final-value">
+              {{ selectedRecord.totalEmission }}
+              <span>kg CO₂e</span>
+            </h3>
+          </div>
+
+        </div>
+
+        <button class="action-btn" (click)="closeModal()">
+          Close
+        </button>
+
+      </div>
+
+    </div>
+
+  </div> 
+
+</div>-->

@@ -22,16 +22,19 @@ export class TripComponent implements OnInit {
   vehicles: any[] = [];
   cities: any[] = [];
   fuels: any[] = [];
+  totalCO2: number = 0;
+  totalNO2: number = 0;
+  totalCH4: number = 0;
   emissionFactors: any[] = [];
   // result: any;
   currentStatusId: number = 0;
- tripDuration: string = '';
+  tripDuration: string = '';
   invalidDuration: boolean = false;
   todayDateTime: string = '';
   // showResult: boolean = false;
   showSummary: boolean = false;
   summaryData: any;
-  isEditMode: boolean = false;
+  mode: 'add' | 'edit' | 'view' = 'add';
 
   constructor(
     private fb: FormBuilder,
@@ -44,49 +47,49 @@ export class TripComponent implements OnInit {
   ngOnInit(): void {
     this.formOpenTime = new Date();
     this.tripForm = this.fb.group({
-  vehicle_id: ['', Validators.required],
+      vehicle_id: ['', Validators.required],
 
-  fuelType: [''],
-  fuelId: [''],
+      fuelType: [''],
+      fuelId: [''],
 
-  fromCityId: ['', Validators.required],
-  toCityId: ['', Validators.required],
+      fromCityId: ['', Validators.required],
+      toCityId: ['', Validators.required],
 
-  distanceKm: [
-    '',
-    [Validators.required, Validators.min(1), Validators.pattern('^[0-9]+(\\.[0-9]+)?$')]
-  ],
+      distanceKm: [
+        '',
+        [Validators.required, Validators.min(1), Validators.pattern('^[0-9]+(\\.[0-9]+)?$')]
+      ],
 
-  fuelConsumedLtr: [
-    '',
-    [Validators.required, Validators.min(0.1), Validators.pattern('^[0-9]+(\\.[0-9]+)?$')]
-  ],
+      fuelConsumedLtr: [
+        '',
+        [Validators.required, Validators.min(0.1), Validators.pattern('^[0-9]+(\\.[0-9]+)?$')]
+      ],
 
- tripStartDateTime: [
-  '',
-  [Validators.required, this.noFutureDateValidator.bind(this)]
-],
+      tripStartDateTime: [
+        '',
+        [Validators.required, this.noFutureDateValidator.bind(this)]
+      ],
 
-tripEndDateTime: [
-  '',
-  [Validators.required, this.noFutureDateValidator.bind(this)]
-],
+      tripEndDateTime: [
+        '',
+        [Validators.required, this.noFutureDateValidator.bind(this)]
+      ],
 
-  co2Factor: [{ value: '', disabled: true }],
-  no2Factor: [{ value: '', disabled: true }],
-  ch4Factor: [{ value: '', disabled: true }],
+      co2Factor: [{ value: '', disabled: true }],
+      no2Factor: [{ value: '', disabled: true }],
+      ch4Factor: [{ value: '', disabled: true }],
 
-  totalCO2: [{ value: '', disabled: true }],
-  totalNO2: [{ value: '', disabled: true }],
-  totalCH4: [{ value: '', disabled: true }],
-  finalTotalEmission: [{ value: '', disabled: true }]
+      totalCO2: [{ value: '', disabled: true }],
+      totalNO2: [{ value: '', disabled: true }],
+      totalCH4: [{ value: '', disabled: true }],
+      finalTotalEmission: [{ value: '', disabled: true }]
 
-}, {
-  validators: [
-    this.cityValidator,
-    this.dateValidator.bind(this)
-  ]
-});
+    }, {
+      validators: [
+        this.cityValidator,
+        this.dateValidator.bind(this)
+      ]
+    });
     this.loadAllMasterData();
     // this.setupVehicleChangeListener();
     this.setupDurationListener();
@@ -94,37 +97,43 @@ tripEndDateTime: [
 
     const tripId = this.route.snapshot.paramMap.get('id');
 
-  if(tripId){
-    this.loadTrip(tripId)
-  }
+    if (tripId) {
+       this.mode = 'view';  
+      this.loadTrip(tripId)
+    }
     // this.setupAutoCalculation();
   }
 
-  loadTrip(id: string){
+  loadTrip(id: string) {
 
-  this.tripService.getTripById(id).subscribe(res => {
+    this.tripService.getTripById(id).subscribe(res => {
 
-    this.tripForm.patchValue({
+      this.tripForm.patchValue({
 
-      vehicle_id: res.vehicleId,
-      fromCityId: res.fromCityId,
-      toCityId: res.toCityId,
-      distanceKm: res.distanceKm,
-      fuelConsumedLtr: res.fuelConsumedLtr,
-      tripStartDateTime: res.tripStartDateTime,
-      tripEndDateTime: res.tripEndDateTime,
+        vehicle_id: res.vehicleId,
+        fromCityId: res.fromCityId,
+        toCityId: res.toCityId,
+        distanceKm: res.distanceKm,
+        fuelConsumedLtr: res.fuelConsumedLtr,
+        tripStartDateTime: res.tripStartDateTime,
+        tripEndDateTime: res.tripEndDateTime
 
-       fuelType: res.fuelType,
+      });
+      setTimeout(() => {
+  this.calculateTotals(res);
+}, 300);
 
-      co2Factor: res.cO2,
-      no2Factor: res.nO2,
-      ch4Factor: res.cH4
+    // disable form in view mode
+    if (this.mode === 'view') {
+      this.tripForm.disable();
+    }
 
-    })
+    // calculate emission totals
+    // this.calculateTotals(res);
 
-  })
+  });
 
-}
+  }
 
 
   loadAllMasterData() {
@@ -341,65 +350,82 @@ tripEndDateTime: [
   }
 
   noFutureDateValidator(control: any) {
-  if (!control.value) return null;
-  const inputDate = new Date(control.value);
-  const now = new Date();
-  if (inputDate.getTime() > now.getTime()) {
-    return { futureDate: true };
-  }
-  return null;
-}
-
- dateValidator(group: FormGroup): ValidationErrors | null {
-
-  const start = group.get('tripStartDateTime')?.value;
-  const end = group.get('tripEndDateTime')?.value;
-
-  if (!start || !end) return null;
-
-  const startDate = new Date(start);
-  const endDate = new Date(end);
-
-  if (endDate <= startDate) {
-    return { endBeforeStart: true };
+    if (!control.value) return null;
+    const inputDate = new Date(control.value);
+    const now = new Date();
+    if (inputDate.getTime() > now.getTime()) {
+      return { futureDate: true };
+    }
+    return null;
   }
 
-  return null;
-}
+  dateValidator(group: FormGroup): ValidationErrors | null {
+
+    const start = group.get('tripStartDateTime')?.value;
+    const end = group.get('tripEndDateTime')?.value;
+
+    if (!start || !end) return null;
+
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+
+    if (endDate <= startDate) {
+      return { endBeforeStart: true };
+    }
+
+    return null;
+  }
   updateCurrentDateTime() {
     const now = new Date();
     this.todayDateTime = now.toISOString().slice(0, 16);
   }
 
-calculateDuration() {
+  calculateDuration() {
 
-  const start = this.tripForm.get('tripStartDateTime')?.value;
-  const end = this.tripForm.get('tripEndDateTime')?.value;
+    const start = this.tripForm.get('tripStartDateTime')?.value;
+    const end = this.tripForm.get('tripEndDateTime')?.value;
 
-  // reset duration first
-  this.tripDuration = '';
-
-  if (!start || !end) {
-    return;
-  }
-
-  const startDate = new Date(start);
-  const endDate = new Date(end);
-
-  // ❌ STOP calculation if end <= start
-  if (endDate <= startDate) {
+    // reset duration first
     this.tripDuration = '';
-    return;
+
+    if (!start || !end) {
+      return;
+    }
+
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+
+    //STOP calculation if end <= start
+    if (endDate <= startDate) {
+      this.tripDuration = '';
+      return;
+    }
+
+    //calculate only when valid
+    const diffMs = endDate.getTime() - startDate.getTime();
+
+    const hours = Math.floor(diffMs / (1000 * 60 * 60));
+    const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+
+    this.tripDuration = `${hours} hrs ${minutes} mins`;
   }
 
-  // ✅ calculate only when valid
-  const diffMs = endDate.getTime() - startDate.getTime();
 
-  const hours = Math.floor(diffMs / (1000 * 60 * 60));
-  const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+  calculateTotals(data: any) {
 
-  this.tripDuration = `${hours} hrs ${minutes} mins`;
+  const fuel = data.fuelConsumedLtr || 0;
+
+  const co2Factor = Number(this.tripForm.get('co2Factor')?.value) || 0;
+  const no2Factor = Number(this.tripForm.get('no2Factor')?.value) || 0;
+  const ch4Factor = Number(this.tripForm.get('ch4Factor')?.value) || 0;
+
+  this.totalCO2 = fuel * co2Factor;
+  this.totalNO2 = fuel * no2Factor;
+  this.totalCH4 = fuel * ch4Factor;
+
 }
+
+
   //   updateTrip() {
   //   this.tripService.updateTrip(this.tripId, this.tripForm.value)
   //     .subscribe({
@@ -412,6 +438,7 @@ calculateDuration() {
   //       }
   //     });
   // }
+
   resetForm() {
     this.tripForm.reset();
     this.tripForm.enable();

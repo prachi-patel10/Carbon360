@@ -1,0 +1,96 @@
+<div class="emission-page" *ngIf="trip">
+
+  <!-- Page Header -->
+  <header class="page-header">
+    <h1>Vehicle Trip Emission Result</h1>
+    <p>Environmental impact of this vehicle trip</p>
+  </header>
+
+  <!-- Metrics -->
+  <section class="metrics-grid">
+
+    <div class="metric-card">
+      <span class="label">Distance</span>
+      <span class="value">{{ trip.distanceKm }} <small>km</small></span>
+    </div>
+
+    <div class="metric-card highlight">
+      <span class="label">Fuel Consumed</span>
+      <span class="value">{{ trip.fuelConsumedLtr }} <small>L</small></span>
+    </div>
+
+  </section>
+
+  <!-- Emission Values -->
+  <section class="factors-section">
+    <h2>Emission Values</h2>
+
+    <div class="factors-list">
+      <div><strong>CO₂:</strong> {{ trip.cO2 }} kg</div>
+      <div><strong>NO₂:</strong> {{ trip.nO2 }} kg</div>
+      <div><strong>CH₄:</strong> {{ trip.cH4 }} kg</div>
+      <div><strong>GWP (CH₄):</strong> {{ trip.gwP_CH4 }}</div>
+      <div><strong>GWP (NO₂):</strong> {{ trip.gwP_NO2 }}</div>
+    </div>
+  </section>
+
+  <!-- Calculation Section -->
+  <section class="calculation-section">
+
+    <h2>Calculation Methodology</h2>
+
+    <div class="formula-line">
+      <span>CO₂:</span>
+      {{ trip.fuelConsumedLtr }} × CO₂ Factor =
+      <strong>{{ trip.cO2 }} kg</strong>
+    </div>
+
+    <div class="formula-line">
+      <span>CH₄:</span>
+      {{ trip.fuelConsumedLtr }} × CH₄ Factor =
+      <strong>{{ trip.cH4 }} kg</strong>
+      × {{ trip.gwP_CH4 }} =
+      {{ (trip.cH4 ?? 0) * (trip.gwP_CH4 ?? 0) }}
+    </div>
+
+    <div class="formula-line">
+      <span>NO₂:</span>
+      {{ trip.fuelConsumedLtr }} × NO₂ Factor =
+      <strong>{{ trip.nO2 }} kg</strong>
+      × {{ trip.gwP_NO2 }} =
+      {{ (trip.nO2 ?? 0) * (trip.gwP_NO2 ?? 0) }}
+    </div>
+
+    <div class="formula-line total">
+
+      <span>Total CO₂e:</span>
+
+      {{ trip.cO2 }} +
+      ({{ trip.cH4 }} × {{ trip.gwP_CH4 }}) +
+      ({{ trip.nO2 }} × {{ trip.gwP_NO2 }})
+
+      =
+
+      <strong>
+        {{ (trip.cO2 ?? 0) + ((trip.cH4 ?? 0) * (trip.gwP_CH4 ?? 0)) + ((trip.nO2 ?? 0) * (trip.gwP_NO2 ?? 0)) }}
+        kg CO₂e
+      </strong>
+
+    </div>
+
+  </section>
+
+  <!-- Final Result -->
+  <section class="final-result">
+
+    <h2>Total Emission</h2>
+
+    <p class="emission-value">
+      {{ trip.totalEmission }} kg CO₂e
+    </p>
+
+    <button class="back-btn" (click)="goBack()">Back</button>
+
+  </section>
+
+</div>

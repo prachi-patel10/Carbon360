@@ -23,6 +23,8 @@ import { MyActionVehicle } from './private/fleet-transport/my-action-vehicle/my-
 import { MyactionGenerator } from './private/power-generator/myaction-generator/myaction-generator';
 import { GeneratorEmissionDetailComponent } from './private/power-generator/generator-emission-detail-page/generator-emission-detail-page';
 import { authGuard } from './core/guards/auth-guard';
+import { SearchVehicle } from './private/fleet-transport/search-vehicle/search-vehicle';
+import { VehicleTripDetail } from './private/fleet-transport/vehicle-trip-detail/vehicle-trip-detail';
 
 export const routes: Routes = [
 
@@ -60,10 +62,12 @@ export const routes: Routes = [
             { path: 'citymaster',component:Citymaster},
             {path: 'sitelocation', component:Sitelocationmaster},
             {path: 'searchGenerator', component:SearchGenerator},
+            {path: 'searchVehicle', component:SearchVehicle},
             {path: 'MyActionVehicle', component:MyActionVehicle},
             {path: 'MyActionGenerator', component:MyactionGenerator},
             { path: 'generator-ec/:id', component:  GeneratorOperationComponent},
     { path: 'generatordetaillist/:id', component: GeneratorEmissionDetailComponent },
+     { path: 'vehicledetaillist/:id', component: VehicleTripDetail },
      { path: 'vehicle-ec/:id', component:  TripComponent},
 
         ]
