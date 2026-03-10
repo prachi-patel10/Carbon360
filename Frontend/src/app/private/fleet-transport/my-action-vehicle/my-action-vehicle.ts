@@ -29,6 +29,8 @@ export class MyActionVehicle implements OnInit{
   totalRecords = signal(0)
   currentPage = signal(1)
   pageSize = 10
+  sortColumn = 'fromCity'
+sortDirection = 'ASC'
 
   constructor(private service: MyActionVehicleService,private router : Router) {}
 
@@ -36,15 +38,38 @@ export class MyActionVehicle implements OnInit{
     this.loadTrips()
   }
 
+  sort(column: string) {
+
+  if (this.sortColumn === column) {
+
+    this.sortDirection = this.sortDirection === 'ASC' ? 'DESC' : 'ASC'
+
+  } else {
+
+    this.sortColumn = column
+    this.sortDirection = 'ASC'
+
+  }
+
+  this.loadTrips()
+
+}
+
   editTrip(tripId: string) {
 
   this.router.navigate(['/dashboard/vehicle-ec', tripId])
 
 }
 
-  loadTrips() {
 
-  this.service.getTrips(this.currentPage(), this.pageSize)
+loadTrips() {
+
+  this.service.getTrips(
+    this.currentPage(),
+    this.pageSize,
+    this.sortColumn,
+    this.sortDirection
+  )
   .subscribe(res => {
 
     const mapped = res.data.map((t: VehicleTrip) => ({
@@ -69,6 +94,34 @@ export class MyActionVehicle implements OnInit{
   })
 
 }
+
+//   loadTrips() {
+
+//   this.service.getTrips(this.currentPage(), this.pageSize)
+//   .subscribe(res => {
+
+//     const mapped = res.data.map((t: VehicleTrip) => ({
+
+//       ...t,
+
+//       vehicleName: `${t.vehicleName}`,
+//       fromCity: `${t.fromCity}`,
+//       toCity: `${t.toCity}`,
+
+//       status:
+//       t.statusId === 1 ? 'Reported' :
+//       t.statusId === 2 ? 'Approved' :
+//       'Rejected'
+
+//     }))
+
+//     this.trips.set(mapped)
+
+//     this.totalRecords.set(res.totalRecords)
+
+//   })
+
+// }
 
 
 totalPages(): number {

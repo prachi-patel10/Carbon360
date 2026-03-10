@@ -10,7 +10,7 @@ interface City {
   cityId: string;
   cityName: string;
   stateName: string;
-  pincode?: string;
+  shortCode?: string;
   isActive: boolean;
 }
 
@@ -28,6 +28,7 @@ export class Citymaster implements OnInit {
 
   cities = signal<City[]>([]);
   allCities = signal<string[]>([]);
+  allShortCodes = signal<string[]>([]);
   totalRecords = signal(0);
   totalPages = signal(1);
   currentPage = signal(1);
@@ -42,7 +43,8 @@ export class Citymaster implements OnInit {
 
   filter = signal({
     stateNames: [] as string[],
-    cityNames: [] as string[]
+    cityNames: [] as string[],
+    shortCodes:[] as string[]
   });
 
   allStates = signal<string[]>([]);
@@ -89,9 +91,28 @@ export class Citymaster implements OnInit {
   this.filter.update(f => ({ ...f, cityNames: selected }));
 }
 
+toggleShortCode(city: string) {
+  const selected = [...this.filter().shortCodes];
+  const index = selected.indexOf(city);
+
+  if (index > -1) {
+    selected.splice(index, 1);
+  } else {
+    selected.push(city);
+  }
+
+  this.filter.update(f => ({ ...f, shortCodes: selected }));
+}
+
 isCitySelected(city: string): boolean {
   return this.filter().cityNames.includes(city);
 }
+
+isShortCodeSelected(city:string):boolean{
+  return this.filter().shortCodes.includes(city);
+}
+
+
 
   
 
@@ -103,7 +124,7 @@ isCitySelected(city: string): boolean {
       cityId: [''],
       cityName: ['', Validators.required],
       stateName: ['', Validators.required],
-      pincode: ['']
+      shortCode: ['',Validators.required]
     });
 
     this.searchForm = this.fb.group({
@@ -127,7 +148,7 @@ loadCities(page:number,size:number,search:string,active:boolean) {
         cityId:c.cityId,
         cityName:c.cityName,
         stateName:c.stateName,
-        pincode:c.pincode,
+        shortCode:c.shortCode,
         isActive:c.isActive
       }));
 
@@ -207,7 +228,8 @@ applyFilter() {
 resetFilter() {
   this.filter.set({
     stateNames: [],
-    cityNames: []
+    cityNames: [],
+    shortCodes:[]
   });
 
   this.refreshTrigger.update(x => x + 1);
@@ -227,8 +249,13 @@ loadAllFilterData() {
         new Set(cities.map((c: any) => c.cityName))
       );
 
+      const uniqueShortCodes:string[] = Array.from(
+        new Set(cities.map((c:any) => c.shortCode))
+      )
+
       this.allStates.set(uniqueStates);
       this.allCities.set(uniqueCities);
+      this.allShortCodes.set(uniqueShortCodes);
     },
     error: () => {
       this.toastr.error('Failed to load filter data');

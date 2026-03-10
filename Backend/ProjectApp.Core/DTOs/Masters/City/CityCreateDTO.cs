@@ -10,6 +10,8 @@ namespace ProjectApp.Core.DTOs.Masters.City
     {
         public string CityName { get; set; }
         public string StateName { get; set; }
+
+        public string ShortCode { get; set; }
         //public string Pincode { get; set; }
     }
 }

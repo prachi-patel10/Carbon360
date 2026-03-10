@@ -130,10 +130,27 @@ namespace ProjectApp.API.Controllers.Account.VehicleTripEmission
             });
         }
 
+        //        [HttpGet("my-actions")]
+        //        public async Task<IActionResult> GetMyActions(int pageNumber = 1, int pageSize = 10, string sortColumn = "fromCity",
+        //string sortDirection = "ASC")
+        //        {
+        //            var result = await _service.GetMyActionTripsAsync(pageNumber, pageSize);
+        //            return Ok(result);
+        //        }
         [HttpGet("my-actions")]
-        public async Task<IActionResult> GetMyActions(int pageNumber = 1, int pageSize = 10)
+        public async Task<IActionResult> GetMyActions(
+          int pageNumber = 1,
+          int pageSize = 10,
+          string sortColumn = "fromCity",
+          string sortDirection = "ASC")
         {
-            var result = await _service.GetMyActionTripsAsync(pageNumber, pageSize);
+            var result = await _service.GetMyActionTripsAsync(
+                pageNumber,
+                pageSize,
+                sortColumn,
+                sortDirection
+            );
+
             return Ok(result);
         }
     }

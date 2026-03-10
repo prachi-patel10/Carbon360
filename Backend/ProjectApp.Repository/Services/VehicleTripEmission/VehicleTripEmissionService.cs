@@ -405,7 +405,7 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
             return (result, totalRecords);
         }
 
-        public async Task<PageResult> GetMyActionTripsAsync(int pageNumber, int pageSize)
+        public async Task<PageResult> GetMyActionTripsAsync(int pageNumber, int pageSize, string sortColumn = "fromCity", string sortDirection = "ASC")
         {
             int userId = GetCurrentUserId();
 
@@ -429,6 +429,8 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
                     cmd.Parameters.Add(new SqlParameter("@UserRole", role));
                     cmd.Parameters.Add(new SqlParameter("@PageNumber", pageNumber));
                     cmd.Parameters.Add(new SqlParameter("@PageSize", pageSize));
+                    cmd.Parameters.Add(new SqlParameter("@SortColumn", sortColumn));
+                    cmd.Parameters.Add(new SqlParameter("@SortDirection", sortDirection));
 
                     var totalParam = new SqlParameter("@TotalRecords", SqlDbType.Int)
                     {

@@ -37,13 +37,21 @@ export class MyActionVehicleService {
   //   );
 
   // }
-  getTrips(page: number, limit: number): Observable<any> {
+
+  getTrips(page: number, limit: number, sortColumn: string, sortDirection: string): Observable<any> {
 
   return this.http.get<any>(
-    `${this.apiUrl}/VehicleTripEmission/my-actions?pageNumber=${page}&pageSize=${limit}`
-  );
+    `${this.apiUrl}/VehicleTripEmission/my-actions?pageNumber=${page}&pageSize=${limit}&sortColumn=${sortColumn}&sortDirection=${sortDirection}`
+  )
 
 }
+//   getTrips(page: number, limit: number): Observable<any> {
+
+//   return this.http.get<any>(
+//     `${this.apiUrl}/VehicleTripEmission/my-actions?pageNumber=${page}&pageSize=${limit}`
+//   );
+
+// }
 
   
   // private apiUrl = environment.apiBaseUrl;

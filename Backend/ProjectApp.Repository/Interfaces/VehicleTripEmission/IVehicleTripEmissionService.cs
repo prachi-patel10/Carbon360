@@ -27,7 +27,8 @@ namespace ProjectApp.Repository.Interfaces.VehicleTripEmission
        int pageNumber = 1,
     int pageSize = 10);
 
-        Task<PageResult> GetMyActionTripsAsync(int pageNumber, int pageSize);
+        //Task<PageResult> GetMyActionTripsAsync(int pageNumber, int pageSize);
+        Task<PageResult> GetMyActionTripsAsync(int pageNumber, int pageSize, string sortColumn = "fromCity", string sortDirection = "ASC");
     }
 
 

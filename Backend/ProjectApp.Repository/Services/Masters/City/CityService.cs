@@ -41,8 +41,8 @@ namespace ProjectApp.Repository.Services.Masters.City
 
             var result = await _context.Database
                 .SqlQueryRaw<int>(
-                    "EXEC USP_CB_CityMasterInsert @CityName={0}, @StateName={1}, @EntryBy={2}",
-                    dto.CityName, dto.StateName, userId)
+                    "EXEC USP_CB_CityMasterInsert @CityName={0}, @StateName={1},@ShortCode={2}, @EntryBy={3}",
+                    dto.CityName, dto.StateName,dto.ShortCode, userId)
                 .ToListAsync();
 
             int newId = result.FirstOrDefault();
@@ -88,11 +88,11 @@ namespace ProjectApp.Repository.Services.Masters.City
             int userId = GetCurrentUserId();
 
             var rowsAffected = await _context.Database.ExecuteSqlRawAsync(
-                "EXEC USP_CB_CityMasterUpdate @CityId={0}, @CityName={1}, @StateName={2}, @Pincode={3}, @UpdatedBy={4}",
+                "EXEC USP_CB_CityMasterUpdate @CityId={0}, @CityName={1}, @StateName={2}, @ShortCode={3}, @UpdatedBy={4}",
                 id,
                 dto.CityName,
                 dto.StateName,
-                dto.Pincode,
+                dto.ShortCode,
                 userId);
 
             return rowsAffected > 0;
@@ -130,6 +130,7 @@ namespace ProjectApp.Repository.Services.Masters.City
                     CityId = reader.GetInt32(reader.GetOrdinal("CityId")),
                     CityName = reader["CityName"].ToString(),
                     StateName = reader["StateName"].ToString(),
+                    ShortCode = reader["ShortCode"].ToString(),
                     //Pincode = reader["Pincode"].ToString(),
                     IsActive = (bool)reader["IsActive"],
                     EntryDate = (DateTime)reader["EntryDate"],

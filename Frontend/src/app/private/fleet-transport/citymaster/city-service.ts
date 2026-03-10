@@ -20,7 +20,8 @@ export class CityService {
   create(data: any) {
     const payload = {
       cityName: data.cityName,
-      stateName: data.stateName
+      stateName: data.stateName,
+      shortCode:data.shortCode
     };
 
     return this.http.post(`${this.apiUrl}`, payload);
@@ -32,7 +33,7 @@ export class CityService {
       cityId: data.cityId,
       cityName: data.cityName,
       stateName: data.stateName,
-      pincode: data.pincode
+      shortCode:data.shortCode
     };
 
     return this.http.put(`${this.apiUrl}/UpdateCity`, payload);

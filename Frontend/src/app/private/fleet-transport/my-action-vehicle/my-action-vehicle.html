@@ -1,12 +1,12 @@
 <div class="generator-report-container py-4">
   <div class="container">
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <!-- <div class="d-flex justify-content-between align-items-center mb-4">
       <h2 class="page-title">
         <i class="fas fa-truck text-primary me-2"></i>
         Vehicle Trip Emission Records
       </h2>
-    </div>
+    </div> -->
 
     <div class="container generator-page">
 
@@ -16,10 +16,22 @@
 
       <thead>
         <tr>
-          <th>Vehicle</th>
-          <th>Route</th>
-          <th>Start Time</th>
-          <th>End Time</th>
+          <th (click)="sort('vehicleName')" style="cursor:pointer">
+  Vehicle
+</th>
+
+<th (click)="sort('fromCity')" style="cursor:pointer">
+  Route
+</th>
+       
+<th (click)="sort('tripStartDateTime')" style="cursor:pointer">
+  Start Time
+</th>
+          <!-- <th>Start Time</th> -->
+<th (click)="sort('tripEndDateTime')" style="cursor:pointer">
+  End Time
+</th>
+          <!-- <th>End Time</th> -->
           <th>Emission</th>
           <th class="text-center">Action</th>
         </tr>

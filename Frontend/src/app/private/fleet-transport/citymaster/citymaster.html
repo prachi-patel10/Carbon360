@@ -16,6 +16,11 @@
         <input type="text" formControlName="stateName">
       </div>
 
+      <div class="form-group">
+        <label>Short Code</label>
+        <input type="text" formControlName="shortCode">
+      </div>
+
       <div class="form-actions">
         <button class="save-btn" type="submit">
           {{ !cityForm.value.cityId ? 'Save' : 'Update' }}
@@ -69,6 +74,7 @@
           <tr>
             <th>City</th>
             <th>State</th>
+            <th>Short Code</th>
             <th>Status</th>
             <th>Actions</th>
           </tr>
@@ -78,6 +84,7 @@
           <tr *ngFor="let c of cities()">
             <td>{{c.cityName}}</td>
             <td>{{c.stateName}}</td>
+            <td>{{c.shortCode}}</td>
 
             <td>
               <label class="switch">
@@ -183,6 +190,25 @@
         <input type="checkbox"
                [checked]="isCitySelected(city)"
                (change)="toggleCity(city)" />
+        <span>{{ city }}</span>
+      </label>
+
+    </div>
+  </div>
+</div>
+
+
+          <div class="filter-group">
+  <label>Short Code</label>
+
+  <div class="multi-select-box">
+    <div class="checkbox-item"
+         *ngFor="let city of allShortCodes()">
+
+      <label>
+        <input type="checkbox"
+               [checked]="isShortCodeSelected(city)"
+               (change)="toggleShortCode(city)" />
         <span>{{ city }}</span>
       </label>
 
