@@ -130,7 +130,7 @@ namespace ProjectApp.Repository.Services.Masters.City
                     CityId = reader.GetInt32(reader.GetOrdinal("CityId")),
                     CityName = reader["CityName"].ToString(),
                     StateName = reader["StateName"].ToString(),
-                    Pincode = reader["Pincode"].ToString(),
+                    //Pincode = reader["Pincode"].ToString(),
                     IsActive = (bool)reader["IsActive"],
                     EntryDate = (DateTime)reader["EntryDate"],
                     UpdateDate = reader["UpdateDate"] as DateTime?
