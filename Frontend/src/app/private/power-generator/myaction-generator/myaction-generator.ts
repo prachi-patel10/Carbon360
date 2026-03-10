@@ -73,7 +73,7 @@ if (this.userRole === 'Reporter') {
   if (status === 1 || status === 0) return 'Reported';  // <-- include 0
   if (status === 2) return 'Approved';
 }
-  return 'Unknown';
+  return 'unKnown';
 }
 
 handleAction(item: GeneratorOp) {
