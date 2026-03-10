@@ -12,69 +12,128 @@
       <div class="table-responsive">
 
         <table class="table table-hover align-middle mb-0">
+        <thead>
+          <tr>
+            <!-- <th>ID</th> -->
+            <th>Vehicle</th>
+            <th>Route</th>
+            <th>Start Time</th>
+            <th>End Time</th>
+            <!-- <th>Distance (KM)</th> -->
+            <!-- <th>Fuel Consumed Litre</th> -->
+            <th>Emission</th>
+            <th>Status</th>
+            <!-- <th>Action</th> -->
+          </tr>
+        </thead>
 
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Vehicle</th>
-              <th>From City</th>
-              <th>To City</th>
-              <th>Start Time</th>
-              <th>End Time</th>
-              <th>Distance (KM)</th>
-              <th>Fuel Consumed Litre</th>
-              <th>Emission</th>
-              <th>Status</th>
-            </tr>
-          </thead>
+        <tbody>
 
-          <tbody>
+          <tr *ngFor="let e of trips()">
 
-            <tr *ngFor="let e of trips()">
-
-             <td class="text-muted fw-bold">{{ e.tripId }}</td>
+            <!-- <td class="text-muted fw-bold">{{ e.tripId }}</td> -->
 
             <td>{{ e.vehicleName }}</td>
 
-            <td>{{ e.fromCity }}</td>
-
-            <td>{{ e.toCity }}</td>
+            <!-- MERGED COLUMN -->
+            <td>
+              {{ e.fromCity }} - {{ e.toCity }}
+            </td>
 
             <td>{{ e.tripStartDateTime | date:'short' }}</td>
 
             <td>{{ e.tripEndDateTime | date:'short' }}</td>
 
-            <td>{{ e.distanceKm }}</td>
+            <!-- <td>{{ e.distanceKm }}</td>
 
-            <td>{{ e.fuelConsumedLtr }}</td>
+            <td>{{ e.fuelConsumedLtr }}</td> -->
 
             <td>{{ e.totalEmission }}</td>
 
-              <td>
+            <td>
 
-                <span [ngClass]="{
-                  'badge-status-completed': e.status === 'Completed',
-                  'badge-status-pending': e.status === 'Pending'
-                }">
+              <!-- <span [ngClass]="{
+              'badge bg-success': e.status === 'Completed',
+              'badge bg-warning': e.status === 'Pending',
+              'badge bg-danger': e.status === 'Rejected'
+            }">
+            {{ e.status }}
 
-                  <i class="fas fa-circle font-xs me-1"></i>
-                  {{ e.status }}
+            </span> -->
+              <button class="btn btn-sm btn-outline-primary"  (click)="editTrip(e.tripId)">
+                <i class="fas fa-pencil-alt"></i>
+              </button>
+              <!-- <span [ngClass]="{
+                'badge-status-completed': e.status === 'Completed',
+                'badge-status-pending': e.status === 'Pending'
+              }">
 
-                </span>
+                <i class="fas fa-circle font-xs me-1"></i>
+                {{ e.status }}
 
-              </td>
+              </span> -->
 
-            </tr>
+            </td>
 
-            <tr *ngIf="trips().length === 0">
-              <td colspan="10" class="text-center py-5 text-muted">
-                No records found
-              </td>
-            </tr>
+            <!-- ACTION COLUMN -->
+            <!-- <td>
+              <button class="btn btn-sm btn-outline-primary">
+                <i class="fas fa-pencil-alt"></i>
+              </button>
+            </td> -->
 
-          </tbody>
+          </tr>
 
-        </table>
+          <tr *ngIf="trips().length === 0">
+            <td colspan="10" class="text-center py-5 text-muted">
+              No records found
+            </td>
+          </tr>
+
+        </tbody>
+
+      </table>
+      
+  <div class="table-footer">
+
+    <div class="total-records">
+      Total Records : <b>{{ totalRecords() }}</b>
+    </div>
+
+    <div class="page-size">
+      Show
+      <select (change)="changePageSize($event)">
+        <option>5</option>
+        <option selected>10</option>
+        <option>20</option>
+        <option>50</option>
+      </select>
+      entries
+    </div>
+
+    <div class="pagination">
+
+      <button
+        (click)="goToPage(currentPage()-1)"
+        [disabled]="currentPage() === 1">
+
+        Prev
+      </button>
+
+      <span class="page-info">
+        Page {{ currentPage() }} of {{ totalPages() }}
+      </span>
+
+      <button
+        (click)="goToPage(currentPage()+1)"
+        [disabled]="currentPage() === totalPages()">
+
+        Next
+      </button>
+
+    </div>
+
+  </div>
 
       </div>
     </div>

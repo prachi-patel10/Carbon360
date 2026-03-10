@@ -39,6 +39,12 @@ export class TripService {
   );
 }
 
+ getTripById(hashId: string): Observable<any> {
+    return this.http.get(
+      `${this.apiUrl}/VehicleTripEmission/${hashId}`
+    );
+  }
+
 // updateTrip(hashId: string, data: any): Observable<any> {
 //   return this.http.put(
 //     `${this.apiUrl}/VehicleTripEmission/${hashId}`,

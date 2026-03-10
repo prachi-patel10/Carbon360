@@ -63,7 +63,8 @@ export const routes: Routes = [
             {path: 'MyActionVehicle', component:MyActionVehicle},
             {path: 'MyActionGenerator', component:MyactionGenerator},
             { path: 'generator-ec/:id', component:  GeneratorOperationComponent},
-    { path: 'generatordetaillist/:id', component: GeneratorEmissionDetailComponent }
+    { path: 'generatordetaillist/:id', component: GeneratorEmissionDetailComponent },
+     { path: 'vehicle-ec/:id', component:  TripComponent},
 
         ]
     },

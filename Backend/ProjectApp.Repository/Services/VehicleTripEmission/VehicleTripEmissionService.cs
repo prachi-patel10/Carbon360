@@ -10,6 +10,7 @@ using ProjectApp.Repository.Interfaces.User;
 using ProjectApp.Repository.Interfaces.VehicleTripEmission;
 using ProjectApp.Repository.Services.Common;
 using ProjectApp.Repository.Utilities.Auth;
+using ProjectApp.Repository.Utilities.SP;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -395,6 +396,82 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
 
             return (result, totalRecords);
         }
+
+        public async Task<PageResult> GetMyActionTripsAsync(int pageNumber, int pageSize)
+        {
+            int userId = GetCurrentUserId();
+
+            string role = _userContext.Role.Contains("Corporate")
+                ? "Corporate"
+                : "Reporter";
+
+            var result = new List<ResponseVehicleTripEmissionDTO>();
+            int totalRecords = 0;
+
+            using (var conn = _context.Database.GetDbConnection())
+            {
+                await conn.OpenAsync();
+
+                using (var cmd = conn.CreateCommand())
+                {
+                    cmd.CommandText = "USP_CB_GetVehicleTripEmission";
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.Add(new SqlParameter("@UserId", userId));
+                    cmd.Parameters.Add(new SqlParameter("@UserRole", role));
+                    cmd.Parameters.Add(new SqlParameter("@PageNumber", pageNumber));
+                    cmd.Parameters.Add(new SqlParameter("@PageSize", pageSize));
+
+                    var totalParam = new SqlParameter("@TotalRecords", SqlDbType.Int)
+                    {
+                        Direction = ParameterDirection.Output
+                    };
+
+                    cmd.Parameters.Add(totalParam);
+
+                    using (var reader = await cmd.ExecuteReaderAsync())
+                    {
+                        while (await reader.ReadAsync())
+                        {
+                            result.Add(new ResponseVehicleTripEmissionDTO
+                            {
+                                TripId = _idEncoder.Encode(Convert.ToInt32(reader["TripId"])),
+
+                                VehicleId = _idEncoder.Encode(Convert.ToInt32(reader["VehicleId"])),
+
+                                FromCityId = _idEncoder.Encode(Convert.ToInt32(reader["FromCityId"])),
+
+                                ToCityId = _idEncoder.Encode(Convert.ToInt32(reader["ToCityId"])),
+
+                                TripStartDateTime = Convert.ToDateTime(reader["TripStartDateTime"]),
+
+                                TripEndDateTime = reader["TripEndDateTime"] == DBNull.Value
+                                    ? null
+                                    : Convert.ToDateTime(reader["TripEndDateTime"]),
+
+                                TotalEmission = Convert.ToDecimal(reader["TotalEmission"]),
+
+                                StatusId = Convert.ToInt32(reader["StatusId"])
+                            });
+                        }
+                    }
+
+                    totalRecords = totalParam.Value != DBNull.Value
+                        ? Convert.ToInt32(totalParam.Value)
+                        : result.Count;
+                }
+            }
+
+            return new PageResult
+            {
+                Data = result,
+                TotalRecords = totalRecords,
+                TotalPages = (int)Math.Ceiling((double)totalRecords / pageSize),
+                CurrentPage = pageNumber
+            };
+        }
+
+
     }
 }
     

@@ -1,0 +1,36 @@
+/* Footer Container */
+.table-footer {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 14px;
+}
+
+/* Dropdown styling */
+.page-size select {
+    padding: 2px 8px;
+    border-radius: 4px;
+    border: 1px solid #ced4da;
+    cursor: pointer;
+}
+
+/* Pagination Buttons */
+.pagination-controls .btn-success {
+    background-color: #1b5e20 !important; /* Dark Green */
+    border-color: #1b5e20 !important;
+    padding: 4px 15px;
+}
+
+.pagination-controls .btn-light {
+    background-color: #d1d5db !important; /* Grey color from image */
+    color: #4b5563;
+    border: none;
+    padding: 4px 15px;
+}
+
+.pagination-controls .btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.page-info {
+    color: #374151;
+}

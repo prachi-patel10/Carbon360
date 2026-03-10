@@ -6,6 +6,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ToastService } from '../../../core/toast/toastservice';
 import { Router } from '@angular/router';
 import Swal from 'sweetalert2';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-trip',
@@ -35,7 +36,8 @@ export class TripComponent implements OnInit {
     private fb: FormBuilder,
     private tripService: TripService,
     private toastr: ToastService,
-    private router: Router
+    private router: Router,
+    private route: ActivatedRoute
   ) { }
 
   ngOnInit(): void {
@@ -88,8 +90,34 @@ tripEndDateTime: [
     // this.setupVehicleChangeListener();
     this.setupDurationListener();
     this.updateCurrentDateTime();
+
+    const tripId = this.route.snapshot.paramMap.get('id');
+
+  if(tripId){
+    this.loadTrip(tripId)
+  }
     // this.setupAutoCalculation();
   }
+
+  loadTrip(id: string){
+
+  this.tripService.getTripById(id).subscribe(res => {
+
+    this.tripForm.patchValue({
+
+      vehicle_id: res.vehicleId,
+      fromCityId: res.fromCityId,
+      toCityId: res.toCityId,
+      distanceKm: res.distanceKm,
+      fuelConsumedLtr: res.fuelConsumedLtr,
+      tripStartDateTime: res.tripStartDateTime,
+      tripEndDateTime: res.tripEndDateTime
+
+    })
+
+  })
+
+}
 
 
   loadAllMasterData() {

@@ -2,7 +2,7 @@ import { Component,OnInit,signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MyActionVehicleService,VehicleTrip } from './my-action-vehicle-service';
-
+import { Router } from '@angular/router';
 
 interface VehicleTripDisplay extends VehicleTrip {
 
@@ -25,17 +25,29 @@ export class MyActionVehicle implements OnInit{
 
   trips = signal<VehicleTripDisplay[]>([])
 
-  constructor(private service: MyActionVehicleService) {}
+  //trips = signal<VehicleTripDisplay[]>([])
+  totalRecords = signal(0)
+  currentPage = signal(1)
+  pageSize = 10
+
+  constructor(private service: MyActionVehicleService,private router : Router) {}
 
   ngOnInit(): void {
     this.loadTrips()
   }
 
+  editTrip(tripId: string) {
+
+  this.router.navigate(['/dashboard/vehicle-ec', tripId])
+
+}
+
   loadTrips() {
 
-  this.service.getTrips().subscribe(data => {
+  this.service.getTrips(this.currentPage(), this.pageSize)
+  .subscribe(res => {
 
-    const mapped = data.map((t: VehicleTrip) => ({
+    const mapped = res.data.map((t: VehicleTrip) => ({
 
       ...t,
 
@@ -43,15 +55,69 @@ export class MyActionVehicle implements OnInit{
       fromCity: `${t.fromCityId}`,
       toCity: `${t.toCityId}`,
 
-      status: t.statusId === 1 ? 'Completed' : 'Pending'
+      status:
+      t.statusId === 1 ? 'Reported' :
+      t.statusId === 2 ? 'Approved' :
+      'Rejected'
 
     }))
 
     this.trips.set(mapped)
 
+    this.totalRecords.set(res.totalRecords)
+
   })
 
 }
+
+
+totalPages(): number {
+  return Math.ceil(this.totalRecords() / this.pageSize)
+}
+
+goToPage(page: number) {
+
+  if (page < 1 || page > this.totalPages()) return
+
+  this.currentPage.set(page)
+  this.loadTrips()
+
+}
+
+changePageSize(event: any) {
+
+  this.pageSize = Number(event.target.value)
+  this.currentPage.set(1)
+
+  this.loadTrips()
+
+}
+
+//   loadTrips() {
+
+//   this.service.getTrips().subscribe(data => {
+
+//     const mapped = data.map((t: VehicleTrip) => ({
+
+//       ...t,
+
+//       vehicleName: `${t.vehicleId}`,
+//       fromCity: `${t.fromCityId}`,
+//       toCity: `${t.toCityId}`,
+
+//       //status: t.statusId === 1 ? 'Completed' : 'Pending'
+//       status:
+//       t.statusId === 1 ? 'Reported' :
+//       t.statusId === 2 ? 'Approved' :
+//       'Rejected'
+
+//     }))
+
+//     this.trips.set(mapped)
+
+//   })
+
+// }
 
   // loadTrips() {
 

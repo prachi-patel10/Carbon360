@@ -129,5 +129,12 @@ namespace ProjectApp.API.Controllers.Account.VehicleTripEmission
                 pageSize
             });
         }
+
+        [HttpGet("my-actions")]
+        public async Task<IActionResult> GetMyActions(int pageNumber = 1, int pageSize = 10)
+        {
+            var result = await _service.GetMyActionTripsAsync(pageNumber, pageSize);
+            return Ok(result);
+        }
     }
 }

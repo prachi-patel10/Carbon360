@@ -1,4 +1,5 @@
 ﻿using ProjectApp.Core.DTOs.Account.VehicleTripEmission;
+using ProjectApp.Repository.Utilities.SP;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -25,6 +26,8 @@ namespace ProjectApp.Repository.Interfaces.VehicleTripEmission
         string userRole,
        int pageNumber = 1,
     int pageSize = 10);
+
+        Task<PageResult> GetMyActionTripsAsync(int pageNumber, int pageSize);
     }
 
 

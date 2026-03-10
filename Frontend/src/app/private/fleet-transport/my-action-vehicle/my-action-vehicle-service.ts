@@ -7,6 +7,7 @@ export interface VehicleTrip {
 
   tripId: string
   vehicleId: string
+  vehicleName: string
   fromCityId: string
   toCityId: string
   tripStartDateTime: string
@@ -27,13 +28,20 @@ export class MyActionVehicleService {
 
   constructor(private http: HttpClient) {}
 
-  getTrips(): Observable<VehicleTrip[]> {
+  // getTrips(): Observable<VehicleTrip[]> {
 
-    return this.http.get<VehicleTrip[]>(
-      `${this.apiUrl}/VehicleTripEmission`
-    );
+  //   return this.http.get<VehicleTrip[]>(
+  //     `${this.apiUrl}/VehicleTripEmission/my-actions`
+  //   );
 
-  }
+  // }
+  getTrips(page: number, limit: number): Observable<any> {
+
+  return this.http.get<any>(
+    `${this.apiUrl}/VehicleTripEmission/my-actions?pageNumber=${page}&pageSize=${limit}`
+  );
+
+}
   
   // private apiUrl = environment.apiBaseUrl;
 
