@@ -31,6 +31,7 @@ export class TripComponent implements OnInit {
   // showResult: boolean = false;
   showSummary: boolean = false;
   summaryData: any;
+  isEditMode: boolean = false;
 
   constructor(
     private fb: FormBuilder,
@@ -111,7 +112,13 @@ tripEndDateTime: [
       distanceKm: res.distanceKm,
       fuelConsumedLtr: res.fuelConsumedLtr,
       tripStartDateTime: res.tripStartDateTime,
-      tripEndDateTime: res.tripEndDateTime
+      tripEndDateTime: res.tripEndDateTime,
+
+       fuelType: res.fuelType,
+
+  co2Factor: res.co2Factor,
+  no2Factor: res.no2Factor,
+  ch4Factor: res.ch4Factor
 
     })
 

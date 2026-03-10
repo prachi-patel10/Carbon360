@@ -51,9 +51,9 @@ export class MyActionVehicle implements OnInit{
 
       ...t,
 
-      vehicleName: `${t.vehicleId}`,
-      fromCity: `${t.fromCityId}`,
-      toCity: `${t.toCityId}`,
+      vehicleName: `${t.vehicleName}`,
+      fromCity: `${t.fromCity}`,
+      toCity: `${t.toCity}`,
 
       status:
       t.statusId === 1 ? 'Reported' :

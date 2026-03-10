@@ -9,7 +9,9 @@ export interface VehicleTrip {
   vehicleId: string
   vehicleName: string
   fromCityId: string
+  fromCity:string
   toCityId: string
+  toCity:string
   tripStartDateTime: string
   tripEndDateTime: string
   distanceKm: number
@@ -42,6 +44,7 @@ export class MyActionVehicleService {
   );
 
 }
+
   
   // private apiUrl = environment.apiBaseUrl;
 

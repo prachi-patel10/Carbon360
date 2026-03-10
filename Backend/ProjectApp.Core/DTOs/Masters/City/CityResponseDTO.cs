@@ -11,7 +11,7 @@ namespace ProjectApp.Core.DTOs.Masters.City
         public string CityId { get; set; }   // Encrypted Id
         public string CityName { get; set; }
         public string StateName { get; set; }
-        public string Pincode { get; set; }
+        //public string Pincode { get; set; }
         public bool IsActive { get; set; }
         public int? EntryBy { get; set; }
         public int? UpdateBy { get; set; }

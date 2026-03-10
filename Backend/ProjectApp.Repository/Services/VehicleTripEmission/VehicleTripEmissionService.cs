@@ -293,6 +293,14 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
                 NO2 = entity.no2,
                 CH4 = entity.ch4,
 
+                FuelType = entity.fueltype,
+
+                CO2Factor = entity.co2,
+
+                NO2Factor = entity.no2,
+
+                CH4Factor = entity.ch4,
+
                 TotalCO2 = entity.totalco2,
                 TotalNO2 = entity.totalno2,
                 TotalCH4 = entity.totalch4,
@@ -439,15 +447,21 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
 
                                 VehicleId = _idEncoder.Encode(Convert.ToInt32(reader["VehicleId"])),
 
+                                VehicleName = reader["VehicleName"]?.ToString(),
+
                                 FromCityId = _idEncoder.Encode(Convert.ToInt32(reader["FromCityId"])),
 
+                                FromCity = reader["FromCity"]?.ToString(),
+
                                 ToCityId = _idEncoder.Encode(Convert.ToInt32(reader["ToCityId"])),
+
+                                ToCity = reader["ToCity"]?.ToString(),
 
                                 TripStartDateTime = Convert.ToDateTime(reader["TripStartDateTime"]),
 
                                 TripEndDateTime = reader["TripEndDateTime"] == DBNull.Value
-                                    ? null
-                                    : Convert.ToDateTime(reader["TripEndDateTime"]),
+        ? null
+        : Convert.ToDateTime(reader["TripEndDateTime"]),
 
                                 TotalEmission = Convert.ToDecimal(reader["TotalEmission"]),
 
