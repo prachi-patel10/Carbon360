@@ -59,17 +59,26 @@ export class GeneratorOperationService {
           loadFactor: r.loadFactor,
           fuelConsumed: r.fuelConsumedLiters,
           totalEmission: r.totalEmission,
-          status: r.statusId
+         status: Number(r.statusId)
         })),
         totalRecords: res.data.totalRecords
       }))
     );
   }
 
-  updateStatus(id: string, statusId: number): Observable<boolean> {
-    return this.http.patch<boolean>(
-      `${this.baseUrl}/status/${id}`,
-      { statusId }
-    );
-  }
+  getById(id:string){
+  return this.http.get<any>(`${this.baseUrl}/GetById/${id}`)
+}
+
+ updateStatus(id: string, statusId: number): Observable<any> {
+
+  const params = new HttpParams().set('statusId', statusId);
+
+  return this.http.patch(
+    `${this.baseUrl}/status/${id}`,
+    null,
+    { params }
+  );
+
+}
 }

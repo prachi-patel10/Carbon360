@@ -18,10 +18,9 @@ export class GeneratorecService {
   }
 
   // ================= GET BY ID =================
-  getById(id: string): Observable<any> {
-    return this.http.get(`${this.apiUrl}/${id}`);
-  }
-
+ getById(id: string) {
+  return this.http.get(`${this.apiUrl}/${id}`);
+}
 //    getOperationById(hashId: string): Observable<any> {
 //     return this.http.get(
 //       `${this.apiUrl}/VehicleTripEmission/${hashId}`

@@ -3,7 +3,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
 import { GeneratorecService } from './generatorec-service';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute ,Router} from '@angular/router';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -23,7 +23,8 @@ export class GeneratorOperationComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private service: GeneratorecService,
-      private route: ActivatedRoute
+      private route: ActivatedRoute,
+      private router : Router
   ) {}
 
   ngOnInit(): void {
@@ -179,9 +180,7 @@ isInvalid(controlName: string) {
 
           Swal.fire('Success', 'Operation updated successfully', 'success');
 
-          this.loadOperations();
-          this.resetForm();
-
+         this.router.navigate(['/dashboard/myaction-generator']);
         },
         error: () =>
           Swal.fire('Error', 'Failed to update operation', 'error')

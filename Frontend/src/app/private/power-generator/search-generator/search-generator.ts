@@ -205,7 +205,7 @@ export class SearchGenerator implements OnInit {
 goToDetail(operationId: string) {
   if (!operationId) return;
   // Absolute navigation ensures Angular goes to the correct child route
-  this.router.navigate(['/dashboard/generatordetaillist', operationId]);
+  this.router.navigate(['/dashboard/generatordetailpage', operationId]);
 }
 
 
