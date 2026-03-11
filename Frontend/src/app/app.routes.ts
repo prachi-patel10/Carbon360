@@ -11,7 +11,7 @@ import { DepartmentComponent } from './private/masters/department/department';
 import { TripComponent } from './private/fleet-transport/vehicle-ec/vehicle-ec';
 import { Vehicles } from './private/fleet-transport/vehicles/vehicles';
 import { Fueltype } from './private/masters/fueltype/fueltype';
-import { Vehicletype } from './private/fleet-transport/vehicletype/vehicletype';  
+import { Vehicletype } from './private/fleet-transport/vehicletype/vehicletype';
 import { Generatormaster } from './private/power-generator/generatormaster/generatormaster';
 import { EmissionFactorComponent } from './private/masters/emissionfactor/emissionfactor';
 import { GeneratorOperationComponent } from './private/power-generator/generator-ec/generator-ec';
@@ -56,22 +56,25 @@ export const routes: Routes = [
             { path: 'vehiclemaster', component: Vehicles },// create/import VehicleComponent
             { path: 'fueltype', component: Fueltype },
             { path: 'emissionFactors', component: EmissionFactorComponent },
-              { path: 'vehicletypeservice', component: Vehicletype },
-              {path: 'generator', component: Generatormaster},
+            { path: 'vehicletypeservice', component: Vehicletype },
+            { path: 'generator', component: Generatormaster },
             // { path: 'waste', component: WasteComponent },           // create/import WasteComponent
-            { path: 'generator-ec', component:GeneratorOperationComponent  },   // create/import GeneratorComponent
-            { path: 'citymaster',component:Citymaster},
-            {path: 'sitelocation', component:Sitelocationmaster},
-            {path: 'searchGenerator', component:SearchGenerator},
-            {path: 'searchVehicle', component:SearchVehicle},
-            {path: 'MyActionVehicle', component:MyActionVehicle},
-            {path: 'MyActionGenerator', component:MyactionGenerator},
-           { path: 'generator-ec/:id', component:  GeneratorOperationComponent},
-    { path: 'generatordetailpage/:id', component: GeneratorEmissionDetailComponent },
-{ path: 'generator-review/:id', component: GeneratorReviewComponent },
-     { path: 'vehicledetaillist/:id', component: VehicleTripDetail },
-     { path: 'vehicle-ec/:id', component:  TripComponent},
-
+            { path: 'generator-ec', component: GeneratorOperationComponent },   // create/import GeneratorComponent
+            { path: 'citymaster', component: Citymaster },
+            { path: 'sitelocation', component: Sitelocationmaster },
+            { path: 'searchGenerator', component: SearchGenerator },
+            { path: 'searchVehicle', component: SearchVehicle },
+            { path: 'MyActionVehicle', component: MyActionVehicle },
+            { path: 'MyActionGenerator', component: MyactionGenerator },
+            { path: 'generator-ec/:id', component: GeneratorOperationComponent },
+            { path: 'generatordetailpage/:id', component: GeneratorEmissionDetailComponent },
+            // { path: 'generator-review/:id', component: GeneratorReviewComponent },
+            { path: 'vehicledetaillist/:id', component: VehicleTripDetail },
+            { path: 'vehicle-ec/:id', component: TripComponent },
+            {
+                path: 'dashboard/generator-review/:id',
+                component: GeneratorOperationComponent
+            }
         ]
     },
 

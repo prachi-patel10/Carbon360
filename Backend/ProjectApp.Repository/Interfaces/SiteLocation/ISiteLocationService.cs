@@ -18,6 +18,6 @@ namespace ProjectApp.Repository.Interfaces.SiteLocation
         Task<List<SiteLocationResponseDTO>> GetAll();
         Task<PageResult> SearchAsync(SiteLocationSearchRequest request);
 
-        Task<List<object>> GetDepartments();
+
     }
 }

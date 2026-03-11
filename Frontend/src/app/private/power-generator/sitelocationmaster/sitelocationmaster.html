@@ -2,21 +2,11 @@
 
   <!-- ================= CREATE / EDIT FORM ================= -->
   <div class="card">
-
     <form [formGroup]="form" (ngSubmit)="submit()" class="form-grid">
-      <div class="form-group">
-        <label>Site Name</label>
-        <input type="text" placeholder="Enter Site Name" formControlName="siteName" />
-      </div>
-
-      <div class="form-group">
-        <label>Building Name</label>
-        <input type="text" placeholder="Enter Building Name" formControlName="buildingName" />
-      </div>
 
       <div class="form-group">
         <label>City</label>
-        <select formControlName="city" (change)="onCityChange($event)">
+        <select formControlName="city" (change)="onCityChange($event); ">
           <option [ngValue]="null" disabled selected hidden>Select City</option>
           <option *ngFor="let city of cityList" [value]="city.cityName">
             {{ city.cityName }}
@@ -30,19 +20,18 @@
       </div>
 
       <div class="form-group">
-        <label>Department</label>
-        <!-- <select formControlName="departmentId">
-          <option value="">Select Department</option>
-          <option *ngFor="let dept of departments" [value]="dept.departmentId">
-            {{ dept.departmentName }}
-          </option>
-        </select> -->
-        <select formControlName="departmentId" [compareWith]="compareDepartment">
-  <option [ngValue]="null">Select Department</option>
-  <option *ngFor="let dept of departments" [ngValue]="dept.departmentId">
-    {{ dept.departmentName }}
-  </option>
-</select>
+        <label>Site Name</label>
+        <input type="text" placeholder="Enter Site Name" formControlName="siteName" />
+      </div>
+
+      <div class="form-group">
+        <label>Building Name</label>
+        <input type="text" placeholder="Enter Building Name" formControlName="buildingName" />
+      </div>
+
+      <div class="form-group">
+        <label>ShortCode</label>
+        <input type="text" placeholder="Enter ShortCode" formControlName="shortCode" (blur)="validateShortCode()" />
       </div>
 
       <div class="form-actions">
@@ -56,8 +45,8 @@
         <button type="submit" class="save-btn">
           {{ editingSiteId ? 'Update' : 'Save' }}
         </button>
-        <!-- <button type="button" class="cancel-btn" (click)="form.reset({ isActive: true }); editingSiteId=null;">Clear</button> -->
       </div>
+
     </form>
   </div>
 
@@ -70,7 +59,7 @@
         <div class="status-toggle">
           <span>Active Only</span>
           <label class="switch">
-            <input type="checkbox" [(ngModel)]="isActiveFilter" (change)="applySearch()" />
+            <input type="checkbox" [(ngModel)]="isActiveFilter" (change)="onToggleActive()" [checked]="true" />
             <span class="slider"></span>
           </label>
         </div>
@@ -86,7 +75,7 @@
             <th (click)="sort('buildingName')">Building Name</th>
             <th (click)="sort('city')">City</th>
             <th (click)="sort('state')">State</th>
-            <th (click)="sort('departmentId')">Department</th>
+            <th (click)="sort('shortCode')">ShortCode</th>
             <th (click)="sort('isActive')">Status</th>
             <th>Actions</th>
           </tr>
@@ -97,7 +86,7 @@
             <td>{{ site.buildingName }}</td>
             <td>{{ site.city }}</td>
             <td>{{ site.state }}</td>
-            <td>{{ site.departmentName }}</td>
+            <td>{{ site.shortCode }}</td>
             <td>
               <label class="switch">
                 <input type="checkbox" [checked]="site.isActive" (change)="toggleStatus(site)" />

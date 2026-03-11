@@ -338,9 +338,9 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
 
         }
 
-        public async Task<bool> UpdateStatusAsync(string encryptedId, int statusId)
+        public async Task<bool> UpdateStatusAsync(string encryptedId, int actionId)
         {
-            int id = _idEncoder.Decode(encryptedId);
+            int operationId = _idEncoder.Decode(encryptedId);
             int userId = GetCurrentUserId();
 
             await using var connection = _context.Database.GetDbConnection();
@@ -349,15 +349,14 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
             command.CommandText = "USP_CB_GeneratorUpdateStatus";
             command.CommandType = CommandType.StoredProcedure;
 
-            command.Parameters.Add(new SqlParameter("@OperationId", id));
-            command.Parameters.Add(new SqlParameter("@StatusId", statusId));
-            command.Parameters.Add(new SqlParameter("@UserId", userId));  // ✅ FIXED
+            command.Parameters.Add(new SqlParameter("@OperationId", operationId));
+            command.Parameters.Add(new SqlParameter("@ActionId", actionId));
+            command.Parameters.Add(new SqlParameter("@UpdatedBy", userId));
 
             if (connection.State != ConnectionState.Open)
                 await connection.OpenAsync();
 
             await command.ExecuteNonQueryAsync();
-
             return true;
         }
 

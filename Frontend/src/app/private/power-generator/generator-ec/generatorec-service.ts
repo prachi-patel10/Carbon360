@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../enviorments/environment';
 import { Observable } from 'rxjs';
+import { GeneratorOperation } from '../search-generator/search-generator-service';
 
 @Injectable({
   providedIn: 'root'
@@ -18,14 +19,14 @@ export class GeneratorecService {
   }
 
   // ================= GET BY ID =================
- getById(id: string) {
-  return this.http.get(`${this.apiUrl}/${id}`);
-}
-//    getOperationById(hashId: string): Observable<any> {
-//     return this.http.get(
-//       `${this.apiUrl}/VehicleTripEmission/${hashId}`
-//     );
-//   }
+  // 
+
+
+  //    getOperationById(hashId: string): Observable<any> {
+  //     return this.http.get(
+  //       `${this.apiUrl}/VehicleTripEmission/${hashId}`
+  //     );
+  //   }
 
   // ================= CREATE =================
   create(data: any): Observable<any> {
@@ -50,8 +51,16 @@ export class GeneratorecService {
     return this.http.get(`${environment.apiBaseUrl}/Fuel/All`);
   }
 
-  updateStatus(id: string, statusId: number) {
-    return this.http.patch(`${this.apiUrl}/status/${id}`, { statusId });
+  updateStatus(operationId: string, actionId: number) {
+    return this.http.patch(`${this.apiUrl}/status/${operationId}?actionId=${actionId}`, {});
+  }
+
+  getOperationById(operationId: string): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/${operationId}`);
+  }
+
+  getById(id: string): Observable<GeneratorOperation> {
+    return this.http.get<GeneratorOperation>(`${this.apiUrl}/${id}`);
   }
 
 }

@@ -1,126 +1,55 @@
-<div class="generator-ecpage">
+<div class="container py-4">
+  <form [formGroup]="operationForm" class="row g-3">
 
-  <!-- ================= INPUT FORM ================= -->
-  <div class="card form-card">
-    <form [formGroup]="operationForm" (ngSubmit)="submitOperation()">
-
-      <div class="form-row">
-
-        <!-- Generator -->
-      <div class="form-group">
-<label>Generator</label>
-
-<select formControlName="GeneratorId">
-<option [ngValue]="null">-- Select Generator --</option>
-
-<option *ngFor="let g of generators" [ngValue]="g.generatorId">
-{{ g.generatorName }}
-</option>
-</select>
-
-<div class="error" *ngIf="isInvalid('GeneratorId')">
-Generator is required
+    <!-- Generator -->
+   <div class="mb-3">
+  <label class="form-label">Generator</label>
+  <input type="text" class="form-control" [value]="generatorName" readonly>
 </div>
 
-</div>
+    <!-- Start & End Time -->
+    <div class="col-md-3">
+      <label class="form-label fw-bold">Start Date & Time</label>
+      <input type="datetime-local" class="form-control" formControlName="StartTime">
+    </div>
 
-      <div class="form-group">
-<label>Start Date & Time</label>
+    <div class="col-md-3">
+      <label class="form-label fw-bold">End Date & Time</label>
+      <input type="datetime-local" class="form-control" formControlName="EndTime">
+    </div>
 
-<input type="datetime-local"
-formControlName="StartTime"
-class="form-control" />
+    <!-- Load Factor -->
+    <div class="col-md-3">
+      <label class="form-label fw-bold">Load Factor</label>
+      <input type="number" class="form-control" formControlName="LoadFactor">
+    </div>
 
-<div class="error" *ngIf="isInvalid('StartTime')">
+    <!-- Fuel Consumed -->
+    <div class="col-md-3">
+      <label class="form-label fw-bold">Fuel Consumed (Liters)</label>
+      <input type="number" class="form-control" formControlName="FuelConsumedLiters">
+    </div>
 
-<span *ngIf="operationForm.get('StartTime')?.errors?.['required']">
-Start time is required
-</span>
+  </form>
 
-<span *ngIf="operationForm.get('StartTime')?.errors?.['futureDate']">
-Future date/time not allowed
-</span>
-
-</div>
-
-</div>
-
-        <!-- End Time -->
-       <div class="form-group">
-<label>End Date & Time</label>
-
-<input type="datetime-local"
-formControlName="EndTime"
-class="form-control" />
-
-<div class="error" *ngIf="isInvalid('EndTime')">
-
-<span *ngIf="operationForm.get('EndTime')?.errors?.['required']">
-End time is required
-</span>
-
-<span *ngIf="operationForm.get('EndTime')?.errors?.['futureDate']">
-Future date/time not allowed
-</span>
-
-</div>
-
-</div>
-
-        <!-- Load Factor -->
-       <div class="form-group">
-<label>Load Factor</label>
-
-<input type="number" formControlName="LoadFactor" placeholder="0"/>
-
-<div class="error" *ngIf="isInvalid('LoadFactor')">
-
-<span *ngIf="operationForm.get('LoadFactor')?.errors?.['required']">
-Load Factor is required
-</span>
-
-<span *ngIf="operationForm.get('LoadFactor')?.errors?.['min']">
-Load Factor cannot be negative
-</span>
-
-</div>
-
-</div>
-
-        <!-- Fuel Consumed -->
-        <div class="form-group">
-<label>Fuel Consumed (Liters)</label>
-
-<input type="number" formControlName="FuelConsumedLiters" placeholder="0"/>
-
-<div class="error" *ngIf="isInvalid('FuelConsumedLiters')">
-
-<span *ngIf="operationForm.get('FuelConsumedLiters')?.errors?.['required']">
-Fuel Consumed is required
-</span>
-
-<span *ngIf="operationForm.get('FuelConsumedLiters')?.errors?.['min']">
-Fuel cannot be negative
-</span>
-
-</div>
-
-</div>
-      </div>
-
-      <div class="form-buttons">
-        <button type="submit" class="btn-primary">
-          {{ !operationForm.value.OperationId ? 'Save' : 'Update' }}
-        </button>
-
-        <button type="button"
-                class="btn-secondary"
-                (click)="resetForm()">
-          Reset
-        </button>
-      </div>
-
-    </form>
+  <!-- Calculations Card -->
+  <div class="card mt-4">
+    <div class="card-body">
+      <h5>Total Calculation</h5>
+      <div><strong>Run Hours:</strong> {{ totalCalculations?.runHours || 0 }}</div>
+      <div><strong>Total Fuel (Liters):</strong> {{ totalCalculations?.totalFuel || 0 }}</div>
+      <div><strong>Average Load Factor:</strong> {{ totalCalculations?.avgLoadFactor || 0 }}</div>
+      <div><strong>Total Emission (kg CO2 eq):</strong> {{ totalCalculations?.totalEmission || 0 }}</div>
+    </div>
   </div>
 
+  <!-- Buttons -->
+  <div class="mt-3">
+    <div *ngIf="showApproveReject" class="btn-group">
+      <button type="button" class="btn btn-success" (click)="approve()">Approve</button>
+      <button type="button" class="btn btn-danger" (click)="reject()">Reject</button>
+    </div>
+
+    <button type="button" class="btn btn-warning mt-2" *ngIf="showResubmit" (click)="resubmit()">Resubmit</button>
+  </div>
 </div>

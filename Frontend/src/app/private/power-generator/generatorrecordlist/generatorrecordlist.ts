@@ -19,79 +19,74 @@ export class GeneratorReviewComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private service: GeneratorecService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
-
-    const id = this.route.snapshot.paramMap.get('id');
-    console.log("Operation ID:", id);
-
+    const id = this.route.snapshot.paramMap.get('id'); // always string
     if (id) {
-      this.loadOperation(id);
+      this.loadOperation(id); // pass string directly
     }
   }
 
-loadOperation(id: string) {
+  loadOperation(id: string) {
+    this.service.getById(id).subscribe({
+      next: (res: any) => {
+        if (!res || !res.data) {
+          Swal.fire('Error', 'Operation not found', 'error');
+          return;
+        }
 
-  this.service.getById(id).subscribe({
-    next: (res: any) => {
+        const data = res.data;
 
-      const data = res.data;
+        const gwP_CH4 = 28;
+        const gwP_NO2 = 265;
 
-      const gwP_CH4 = 28;
-      const gwP_NO2 = 265;
+        const co2 = data.totalCO2 ?? 0;
+        const ch4 = data.totalCH4 ?? 0;
+        const no2 = data.totalNO2 ?? 0;
 
-      const co2 = data.totalCO2 ?? 0;
-      const ch4 = data.totalCH4 ?? 0;
-      const no2 = data.totalNO2 ?? 0;
+        const totalEmission = co2 + (ch4 * gwP_CH4) + (no2 * gwP_NO2);
 
-      const totalEmission = co2 + (ch4 * gwP_CH4) + (no2 * gwP_NO2);
+        this.operation = {
+          ...data,
+          cO2: co2,
+          cH4: ch4,
+          nO2: no2,
+          gwP_CH4,
+          gwP_NO2,
+          totalEmission
+        };
 
-      this.operation = {
-        ...data,
-        cO2: co2,
-        cH4: ch4,
-        nO2: no2,
-        gwP_CH4,
-        gwP_NO2,
-        totalEmission
-      };
-
-    },
-    error: () => {
-      Swal.fire('Error', 'Failed to load operation', 'error');
-    }
-  });
-
-}
-approve() {
-  this.service.updateStatus(this.operation.operationId, 2).subscribe(() => {
-
-    Swal.fire({
-      title: 'Approved',
-      text: 'Record Approved Successfully',
-      icon: 'success'
-    }).then(() => {
-      this.router.navigate(['/dashboard/MyActionGenerator']);
+      },
+      error: () => Swal.fire('Error', 'Failed to load operation', 'error')
     });
+  }
 
-  });
-}
+  approve() {
+    if (!this.operation) return;
+
+    this.service.updateStatus(this.operation.operationId, 2).subscribe({
+      next: () => {
+        Swal.fire('Approved', 'Record Approved Successfully', 'success')
+          .then(() => this.router.navigate(['/dashboard/MyActionGenerator']));
+      },
+      error: (err) => {
+        Swal.fire('Error', 'Cannot approve record. ' + err.message, 'error');
+      }
+    });
+  }
 
   reject() {
+    if (!this.operation) return;
 
-    this.service.updateStatus(this.operation.operationId, 3).subscribe(() => {
-
-      Swal.fire({
-        title: 'Rejected',
-        text: 'Record Rejected',
-        icon: 'error'
-      }).then(() => {
-        this.router.navigate(['/dashboard/MyActionGenerator']);
-      });
-
+    this.service.updateStatus(this.operation.operationId, 3).subscribe({
+      next: () => {
+        Swal.fire('Rejected', 'Record Rejected Successfully', 'error')
+          .then(() => this.router.navigate(['/dashboard/MyActionGenerator']));
+      },
+      error: (err) => {
+        Swal.fire('Error', 'Cannot reject record. ' + err.message, 'error');
+      }
     });
-
   }
-
 }

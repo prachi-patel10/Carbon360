@@ -25,7 +25,62 @@ export class GeneratorOperationService {
 
   private baseUrl = 'http://localhost:5236/api/GeneratorOperation';
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
+
+  //   fetchOperations(
+  //     page: number = 1,
+  //     limit: number = 10,
+  //     name: string = '',
+  //     fuelType: string = '',
+  //     status: string = ''
+  //   ): Observable<GeneratorOpResponse> {
+
+  //     let statusId = '';
+  //     if (status === 'Reported') statusId = '1';
+  //     if (status === 'Approved') statusId = '2';
+  //     if (status === 'Rejected') statusId = '3';
+
+  //     const params = new HttpParams()
+  //       .set('pageNumber', page)
+  //       .set('pageSize', limit)
+  //       .set('search', name)
+  //       .set('fuelType', fuelType)
+  //       .set('statusId', statusId);
+
+  //     return this.http.get<any>(`${this.baseUrl}/search`, { params }).pipe(
+  //       map(res => ({
+  //         records: res.data.records.map((r: any) => ({
+  //           operationId: r.operationId,
+  //           generatorId: r.generatorId,
+  //           generatorName: r.generatorName,
+  //           fuelType: r.fuelType,
+  //           opDate: r.operationDate,
+  //           runHours: r.runHours,
+  //           loadFactor: r.loadFactor,
+  //           fuelConsumed: r.fuelConsumedLiters,
+  //           totalEmission: r.totalEmission,
+  //          status: Number(r.statusId)
+  //         })),
+  //         totalRecords: res.data.totalRecords
+  //       }))
+  //     );
+  //   }
+
+  //   getById(id:string){
+  //   return this.http.get<any>(`${this.baseUrl}/GetById/${id}`)
+  // }
+
+  //  updateStatus(id: string, statusId: number): Observable<any> {
+
+  //   const params = new HttpParams().set('statusId', statusId);
+
+  //   return this.http.patch(
+  //     `${this.baseUrl}/status/${id}`,
+  //     null,
+  //     { params }
+  //   );
+
+  // }
 
   fetchOperations(
     page: number = 1,
@@ -36,9 +91,9 @@ export class GeneratorOperationService {
   ): Observable<GeneratorOpResponse> {
 
     let statusId = '';
-    if (status === 'Reported') statusId = '1';
-    if (status === 'Approved') statusId = '2';
-    if (status === 'Rejected') statusId = '3';
+    if (status === 'Reported') statusId = '1';   // DB ID for Reported
+    if (status === 'Approved') statusId = '2';   // DB ID for Approved
+    if (status === 'Rejected') statusId = '3';   // DB ID for Rejected
 
     const params = new HttpParams()
       .set('pageNumber', page)
@@ -59,26 +114,22 @@ export class GeneratorOperationService {
           loadFactor: r.loadFactor,
           fuelConsumed: r.fuelConsumedLiters,
           totalEmission: r.totalEmission,
-         status: Number(r.statusId)
+          status: Number(r.statusId) // Must match backend DB
         })),
         totalRecords: res.data.totalRecords
       }))
     );
   }
 
-  getById(id:string){
-  return this.http.get<any>(`${this.baseUrl}/GetById/${id}`)
-}
+  getById(id: string) {
+    return this.http.get<any>(`${this.baseUrl}/GetById/${id}`);
+  }
 
- updateStatus(id: string, statusId: number): Observable<any> {
-
-  const params = new HttpParams().set('statusId', statusId);
-
-  return this.http.patch(
-    `${this.baseUrl}/status/${id}`,
-    null,
-    { params }
-  );
-
-}
+  updateStatus(id: string, statusId: number): Observable<any> {
+    return this.http.patch(
+      `${this.baseUrl}/status/${id}`,
+      {},
+      { params: new HttpParams().set('statusId', statusId.toString()) }
+    );
+  }
 }

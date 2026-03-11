@@ -122,17 +122,25 @@ namespace ProjectApp.API.Controllers.Account.GeneratorOperation
         }
 
         [HttpPatch("status/{id}")]
-        public async Task<IActionResult> UpdateStatus(string id, [FromQuery] int statusId)
+        public async Task<IActionResult> UpdateStatus(string id, [FromQuery] int actionId)
         {
-            var result = await _service.UpdateStatusAsync(id, statusId);
+            try
+            {
+                var result = await _service.UpdateStatusAsync(id, actionId);
 
-            _apiResponse.data = result;
-            _apiResponse.status = result;
-            _apiResponse.StatusCode = result
-                ? HttpStatusCode.OK
-                : HttpStatusCode.BadRequest;
+                _apiResponse.data = result;
+                _apiResponse.status = result;
+                _apiResponse.StatusCode = result ? HttpStatusCode.OK : HttpStatusCode.BadRequest;
 
-            return StatusCode((int)_apiResponse.StatusCode, _apiResponse);
+                return StatusCode((int)_apiResponse.StatusCode, _apiResponse);
+            }
+            catch (Exception ex)
+            {
+                _apiResponse.status = false;
+                _apiResponse.StatusCode = HttpStatusCode.BadRequest;
+                _apiResponse.Message = ex.Message;
+                return BadRequest(_apiResponse);
+            }
         }
 
 

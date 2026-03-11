@@ -70,9 +70,4 @@ export class SiteLocationMasterService {
 
     return this.http.get(`${this.baseUrl}/advanced-search`, { params });
   }
-
-  // ================= GET DEPARTMENTS =================
-  getDepartments(): Observable<any> {
-    return this.http.get(`${this.baseUrl}/departments`);
-  }
 }

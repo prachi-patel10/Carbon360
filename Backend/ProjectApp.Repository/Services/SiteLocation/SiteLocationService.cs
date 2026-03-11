@@ -1,15 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.Data.SqlClient;
+﻿using Microsoft.Data.SqlClient;
 using ProjectApp.Core.DTOs.Masters.SiteLocation;
 using ProjectApp.Repository.Interfaces.Common;
 using ProjectApp.Repository.Interfaces.SiteLocation;
-using ProjectApp.Repository.Services.Common;
 using ProjectApp.Repository.Utilities.Auth;
 using ProjectApp.Repository.Utilities.SP;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace ProjectApp.Repository.Services.SiteLocation
@@ -28,27 +25,21 @@ namespace ProjectApp.Repository.Services.SiteLocation
         // ================= CREATE =================
         public async Task<string> Create(SiteLocationCreateUpdateDTO dto, int userId)
         {
-            int departmentId = int.Parse(dto.DepartmentId);
-
-            // Check if ShortCode is unique
-            var existing = await _spService.ExecuteSpAsync("SELECT COUNT(*) AS Count FROM CB_MasterSiteLocation WHERE ShortCode = @ShortCode AND IsDeleted = 0",
-                new SqlParameter("@ShortCode", dto.ShortCode));
-
-            if (Convert.ToInt32(((IEnumerable<Dictionary<string, object>>)existing["Data"]).First()["Count"]) > 0)
-                throw new Exception("ShortCode already exists. Please use a different one.");
-
             var parameters = new[]
             {
-                new SqlParameter("@SiteName", dto.SiteName),
-                new SqlParameter("@BuildingName", dto.BuildingName ?? (object)DBNull.Value),
-                new SqlParameter("@City", dto.City ?? (object)DBNull.Value),
-                new SqlParameter("@State", dto.State ?? (object)DBNull.Value),
-                new SqlParameter("@DepartmentId", departmentId),
-                new SqlParameter("@EntryBy", userId),
-                new SqlParameter("@ShortCode", dto.ShortCode)
-            };
+            new SqlParameter("@SiteName", dto.SiteName),
+            new SqlParameter("@BuildingName", dto.BuildingName ?? (object)DBNull.Value),
+            new SqlParameter("@City", dto.City ?? (object)DBNull.Value),
+            new SqlParameter("@State", dto.State ?? (object)DBNull.Value),
+            new SqlParameter("@ShortCode", dto.ShortCode),
+            new SqlParameter("@EntryBy", userId)
+        };
 
-            var result = await _spService.ExecuteSpAsync("USP_CB_CreateSiteLocation", parameters);
+            var result = await _spService.ExecuteSpAsync(
+                "USP_CB_CreateSiteLocation",
+                parameters
+            );
+
             var data = (result["Data"] as IEnumerable<object>)
                         ?.Cast<Dictionary<string, object>>()
                         ?.FirstOrDefault();
@@ -60,49 +51,42 @@ namespace ProjectApp.Repository.Services.SiteLocation
             return _idEncoder.Encode(newId);
         }
 
-
         // ================= UPDATE =================
         public async Task Update(string encryptedId, SiteLocationCreateUpdateDTO dto, int userId)
         {
             int id = _idEncoder.Decode(encryptedId);
-            int departmentId = int.Parse(dto.DepartmentId);
-
-            // Check if ShortCode is unique for other records
-            var existing = await _spService.ExecuteSpAsync(
-                "SELECT COUNT(*) AS Count FROM CB_MasterSiteLocation WHERE ShortCode = @ShortCode AND SiteId != @SiteId AND IsDeleted = 0",
-                new SqlParameter("@ShortCode", dto.ShortCode),
-                new SqlParameter("@SiteId", id));
-
-            if (Convert.ToInt32(((IEnumerable<Dictionary<string, object>>)existing["Data"]).First()["Count"]) > 0)
-                throw new Exception("ShortCode already exists. Please use a different one.");
 
             var parameters = new[]
             {
-                new SqlParameter("@SiteId", id),
-                new SqlParameter("@SiteName", dto.SiteName),
-                new SqlParameter("@BuildingName", dto.BuildingName ?? (object)DBNull.Value),
-                new SqlParameter("@City", dto.City ?? (object)DBNull.Value),
-                new SqlParameter("@State", dto.State ?? (object)DBNull.Value),
-                new SqlParameter("@DepartmentId", departmentId),
-                new SqlParameter("@UpdatedBy", userId),
-                new SqlParameter("@ShortCode", dto.ShortCode)
-            };
+            new SqlParameter("@SiteId", id),
+            new SqlParameter("@SiteName", dto.SiteName),
+            new SqlParameter("@BuildingName", dto.BuildingName ?? (object)DBNull.Value),
+            new SqlParameter("@City", dto.City ?? (object)DBNull.Value),
+            new SqlParameter("@State", dto.State ?? (object)DBNull.Value),
+            new SqlParameter("@ShortCode", dto.ShortCode),
+            new SqlParameter("@UpdatedBy", userId)
+        };
 
-            await _spService.ExecuteSpAsync("USP_CB_UpdateSiteLocation", parameters);
+            await _spService.ExecuteSpAsync(
+                "USP_CB_UpdateSiteLocation",
+                parameters
+            );
         }
 
-        // ================= DELETE (Soft Delete) =================
+        // ================= DELETE =================
         public async Task Delete(string encryptedId)
         {
             int id = _idEncoder.Decode(encryptedId);
-            await _spService.ExecuteSpAsync("USP_CB_DeleteSiteLocation",
-                new SqlParameter("@SiteId", id));
+            await _spService.ExecuteSpAsync(
+                "USP_CB_DeleteSiteLocation",
+                new SqlParameter("@SiteId", id)
+            );
         }
 
-        // ================= PATCH: Active / Inactive =================
-        public async Task ToggleStatus(string siteId, bool isActive)
+        // ================= TOGGLE STATUS =================
+        public async Task ToggleStatus(string encryptedId, bool isActive)
         {
-            int id = _idEncoder.Decode(siteId);
+            int id = _idEncoder.Decode(encryptedId);
             await _spService.ExecuteSpAsync(
                 "USP_CB_SiteLocationUpdateStatus",
                 new SqlParameter("@SiteId", id),
@@ -114,8 +98,10 @@ namespace ProjectApp.Repository.Services.SiteLocation
         public async Task<SiteLocationResponseDTO?> GetById(string encryptedId)
         {
             int id = _idEncoder.Decode(encryptedId);
-            var result = await _spService.ExecuteSpAsync("USP_CB_GetSiteLocationById",
-                new SqlParameter("@SiteId", id));
+            var result = await _spService.ExecuteSpAsync(
+                "USP_CB_GetSiteLocationById",
+                new SqlParameter("@SiteId", id)
+            );
 
             var data = (result["Data"] as IEnumerable<object>)
                         ?.Cast<Dictionary<string, object>>()
@@ -142,15 +128,15 @@ namespace ProjectApp.Repository.Services.SiteLocation
         {
             var parameters = new[]
             {
-        new SqlParameter("@Search", request.Search ?? (object)DBNull.Value),
-        new SqlParameter("@FilterColumn", request.FilterColumn ?? (object)DBNull.Value),
-        new SqlParameter("@FilterValue", request.FilterValue ?? (object)DBNull.Value),
-        new SqlParameter("@IsActive", request.IsActive ?? (object)DBNull.Value),
-        new SqlParameter("@PageNumber", request.PageNumber),
-        new SqlParameter("@PageSize", request.PageSize),
-        new SqlParameter("@SortColumn", request.SortColumn),
-        new SqlParameter("@SortDirection", request.SortDirection)
-    };
+            new SqlParameter("@Search", request.Search ?? (object)DBNull.Value),
+            //new SqlParameter("@FilterColumn", request.FilterColumn ?? (object)DBNull.Value),
+            //new SqlParameter("@FilterValue", request.FilterValue ?? (object)DBNull.Value),
+            new SqlParameter("@IsActive", request.IsActive ?? (object)DBNull.Value),
+            new SqlParameter("@PageNumber", request.PageNumber),
+            new SqlParameter("@PageSize", request.PageSize),
+            new SqlParameter("@SortColumn", request.SortColumn),
+            new SqlParameter("@SortDirection", request.SortDirection)
+        };
 
             var result = await _spService.ExecuteSpAsync("USP_CB_SearchSiteLocation", parameters);
 
@@ -174,7 +160,7 @@ namespace ProjectApp.Repository.Services.SiteLocation
             };
         }
 
-        //Mapping
+        // ================= MAPPING =================
         private SiteLocationResponseDTO MapToResponseDto(Dictionary<string, object> row)
         {
             int GetInt(string key) =>
@@ -182,16 +168,17 @@ namespace ProjectApp.Repository.Services.SiteLocation
                 ? Convert.ToInt32(row[key])
                 : 0;
 
-            string GetString(string key) =>
-                row.ContainsKey(key) && row[key] != DBNull.Value
-                ? row[key].ToString()!
-                : "N/A";
+            string GetString(string key)
+            {
+                var foundKey = row.Keys.FirstOrDefault(k => string.Equals(k, key, StringComparison.OrdinalIgnoreCase));
+                return foundKey != null && row[foundKey] != DBNull.Value
+                       ? row[foundKey].ToString()!
+                       : "N/A";
+            }
 
             bool GetBool(string key) =>
                 row.ContainsKey(key) && row[key] != DBNull.Value
                 && Convert.ToBoolean(row[key]);
-
-            int departmentId = GetInt("DepartmentId");
 
             return new SiteLocationResponseDTO
             {
@@ -200,31 +187,9 @@ namespace ProjectApp.Repository.Services.SiteLocation
                 BuildingName = GetString("BuildingName"),
                 City = GetString("City"),
                 State = GetString("State"),
-                ShortCode = GetString("ShortCode"),  // Added
-                DepartmentId = departmentId > 0
-                                ? _idEncoder.Encode(departmentId)
-                                : null,
-                DepartmentName = GetString("DepartmentName"),
+                ShortCode = GetString("ShortCode"),
                 IsActive = GetBool("IsActive")
             };
         }
-
-        public async Task<List<object>> GetDepartments()
-        {
-            var result = await _spService.ExecuteSpAsync("USP_CB_DepartmentGetAll");
-
-            var dataList = (result["Data"] as IEnumerable<object>)
-                ?.Cast<Dictionary<string, object>>()
-                ?.Select(x => new
-                {
-                    departmentId = Convert.ToInt32(x["DepartmentId"]),
-                    departmentName = x["DepartmentName"].ToString()
-                })
-                .ToList<object>()
-                ?? new List<object>();
-
-            return dataList;
-        }
-
     }
 }

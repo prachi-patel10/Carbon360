@@ -31,8 +31,6 @@ namespace ProjectApp.API.Controllers.Masters.SiteLocation
             int userId = Convert.ToInt32(User.FindFirst("UserId")?.Value);
 
             // Decode DepartmentId before sending to service
-            int deptId = _idEncoder.Decode(dto.DepartmentId);
-            dto.DepartmentId = deptId.ToString();
 
             var encryptedId = await _service.Create(dto, userId);
 
@@ -49,8 +47,6 @@ namespace ProjectApp.API.Controllers.Masters.SiteLocation
             int userId = Convert.ToInt32(User.FindFirst("UserId")?.Value);
 
             // Decode DepartmentId before sending to service
-            int deptId = _idEncoder.Decode(dto.DepartmentId);
-            dto.DepartmentId = deptId.ToString();
 
             await _service.Update(id, dto, userId);
 
@@ -106,13 +102,6 @@ namespace ProjectApp.API.Controllers.Masters.SiteLocation
             };
 
             var result = await _service.SearchAsync(request);
-            return Ok(result);
-        }
-
-        [HttpGet("departments")]
-        public async Task<IActionResult> GetDepartments()
-        {
-            var result = await _service.GetDepartments();
             return Ok(result);
         }
     }

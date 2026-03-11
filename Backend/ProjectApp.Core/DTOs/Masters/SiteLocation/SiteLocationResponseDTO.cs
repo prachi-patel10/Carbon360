@@ -14,8 +14,6 @@ namespace ProjectApp.Core.DTOs.Masters.SiteLocation
         public string City { get; set; }
         public string State { get; set; }
         public string ShortCode { get; set; }
-        public string DepartmentId { get; set; }
-        public string DepartmentName { get; set; }
         public bool IsActive { get; set; }
     }
 }
