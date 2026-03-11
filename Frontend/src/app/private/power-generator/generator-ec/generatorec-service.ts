@@ -42,9 +42,9 @@ export class GeneratorecService {
     return this.http.get(`${environment.apiBaseUrl}/generator`);
   }
 
-getGeneratorsBySite(siteId: string): Observable<any> {
-  return this.http.get(`http://localhost:5236/api/generator/site/${siteId}`);
-}
+  getGeneratorsBySite(siteId: string): Observable<any> {
+    return this.http.get(`http://localhost:5236/api/generator/site/${siteId}`);
+  }
   // ================= GET ALL SITES =================
   getSites(): Observable<any> {
     return this.http.get(`http://localhost:5236/api/SiteLocation/all`);
@@ -54,7 +54,7 @@ getGeneratorsBySite(siteId: string): Observable<any> {
     return this.http.get(`${environment.apiBaseUrl}/Fuel/All`);
   }
 
-  updateStatus(id: string, statusId: number) {
-    return this.http.patch(`${this.apiUrl}/status/${id}`, { statusId });
+  updateStatus(id: string, actionId: number) {
+    return this.http.patch(`${this.apiUrl}/status/${id}?actionId=${actionId}`, {});
   }
 }

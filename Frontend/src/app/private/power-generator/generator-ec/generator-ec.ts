@@ -32,7 +32,7 @@ export class GeneratorOperationComponent implements OnInit {
   pageSource: 'myaction' | 'search' = 'search';
   isReviewMode = false;
   isEditMode = false;
-  isViewMode = true;
+  isViewMode = false;
 
   showApproveReject = false;
   showResubmit = false;
@@ -45,6 +45,8 @@ export class GeneratorOperationComponent implements OnInit {
   };
   generatorName: string = '';
 
+  showCalculation = false;
+
   userRole: 'corporate' | 'reporter' = 'reporter';
 
   constructor(
@@ -52,7 +54,7 @@ export class GeneratorOperationComponent implements OnInit {
     private service: GeneratorecService,
     private route: ActivatedRoute,
     private router: Router
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.initForm();
@@ -71,19 +73,24 @@ export class GeneratorOperationComponent implements OnInit {
 
     const operationId = this.route.snapshot.paramMap.get('id');
     const queryParams = this.route.snapshot.queryParamMap;
-    const mode = queryParams.get('mode') || 'view';
+    const mode = queryParams.get('mode') || 'create';
 
     this.isReviewMode = mode === 'review';
     this.isEditMode = mode === 'edit';
     this.isViewMode = mode === 'view';
+
+    this.showCalculation = !!operationId;
 
     const page = queryParams.get('page');
     this.pageSource = (page === 'myaction' || page === 'search') ? page : 'search';
 
     if (operationId) this.loadOperationById(operationId);
 
-    if (this.isViewMode) this.operationForm.disable();
-    this.loadOperations();
+    if (this.isViewMode || this.isReviewMode) {
+  this.operationForm.disable();
+} else {
+  this.operationForm.enable(); // reporter create/edit mode
+}
   }
 
   initForm() {
@@ -100,9 +107,9 @@ export class GeneratorOperationComponent implements OnInit {
   }
 
   public isInvalid(controlName: string): boolean {
-  const control = this.operationForm.get(controlName);
-  return !!(control && control.invalid && (control.dirty || control.touched));
-}
+    const control = this.operationForm.get(controlName);
+    return !!(control && control.invalid && (control.dirty || control.touched));
+  }
 
   noFutureDateValidator(control: any) {
     if (!control.value) return null;
@@ -162,35 +169,57 @@ export class GeneratorOperationComponent implements OnInit {
 
   setButtonVisibility(res: any) {
     const statusId = res?.statusId;
+
     this.showApproveReject = this.isReviewMode && statusId === 1;
-    this.showResubmit = this.isEditMode && statusId === 3;
+
+    this.showResubmit = this.isEditMode && statusId === 3 && this.userRole === 'reporter';
   }
 
   approve() {
-    const operationId = this.operationForm.get('OperationId')?.value;
-    if (!operationId) return;
-    this.service.updateStatus(operationId, 2).subscribe({
-      next: () => Swal.fire('Success', 'Operation Approved', 'success'),
+    const id = this.operationForm.get('OperationId')?.value;
+    if (!id) return;
+
+    this.service.updateStatus(id, 2).subscribe({
+      next: () => {
+        Swal.fire('Approved', 'Operation approved successfully', 'success');
+        this.goBack();
+      },
       error: () => Swal.fire('Error', 'Failed to approve operation', 'error')
     });
   }
 
   reject() {
-    const operationId = this.operationForm.get('OperationId')?.value;
-    if (!operationId) return;
-    this.service.updateStatus(operationId, 3).subscribe({
-      next: () => Swal.fire('Success', 'Operation Rejected', 'success'),
+    const id = this.operationForm.get('OperationId')?.value;
+    if (!id) return;
+
+    this.service.updateStatus(id, 3).subscribe({
+      next: () => {
+        Swal.fire('Rejected', 'Operation rejected successfully', 'success');
+        this.goBack();
+      },
       error: () => Swal.fire('Error', 'Failed to reject operation', 'error')
     });
   }
 
   resubmit() {
-    const operationId = this.operationForm.get('OperationId')?.value;
-    if (!operationId) return;
-    this.service.updateStatus(operationId, 1).subscribe({
-      next: () => Swal.fire('Resubmitted', 'Record sent for corporate approval', 'success'),
-      error: err => Swal.fire('Error', 'Cannot resubmit: ' + err.message, 'error')
+    const id = this.operationForm.get('OperationId')?.value;
+    if (!id) return;
+
+    this.service.updateStatus(id, 4).subscribe({
+      next: () => {
+        Swal.fire('Resubmitted', 'Sent again for approval', 'success');
+        this.goBack();
+      },
+      error: () => Swal.fire('Error', 'Resubmit failed', 'error')
     });
+  }
+
+  goBack() {
+    if (this.pageSource === 'search') {
+      this.router.navigate(['/dashboard/generator-search']);
+    } else {
+      this.router.navigate(['/dashboard/generator-myaction']);
+    }
   }
 
   submitOperation() {
@@ -248,16 +277,33 @@ export class GeneratorOperationComponent implements OnInit {
   }
 
   goToDetail(item: any, source: 'myaction' | 'search') {
-    if (!item || !item.operationId) return;
 
-    let queryParams: any = {};
-    if (source === 'search') queryParams.mode = 'view';
-    else if (source === 'myaction') {
-      if (this.userRole === 'corporate' && item.statusId === 1) queryParams.mode = 'review';
-      else if (this.userRole === 'reporter' && item.statusId === 3) queryParams.mode = 'edit';
-      else queryParams.mode = 'view';
+    if (!item?.operationId) return;
+
+    let mode = 'view';
+
+    if (source === 'search') {
+      mode = 'view';
     }
 
-    this.router.navigate(['/dashboard/generator-ec', item.operationId], { queryParams });
+    if (source === 'myaction') {
+
+      if (this.userRole === 'corporate' && item.statusId === 1) {
+        mode = 'review';
+      }
+
+      else if (this.userRole === 'reporter' && item.statusId === 3) {
+        mode = 'edit';
+      }
+
+      else {
+        mode = 'view';
+      }
+    }
+
+    this.router.navigate(
+      ['/dashboard/generator-ec', item.operationId],
+      { queryParams: { mode, page: source } }
+    );
   }
 }

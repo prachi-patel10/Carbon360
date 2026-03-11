@@ -64,17 +64,18 @@
     </div>
 
     <!-- ================= FORM BUTTONS ================= -->
-    <div class="col-12 mt-3">
-      <button type="submit" class="btn btn-primary">
-        {{ !operationForm.value.OperationId ? 'Save' : 'Update' }}
-      </button>
-      <button type="button" class="btn btn-secondary ms-2" (click)="resetForm()">Reset</button>
-    </div>
+    <div class="col-12 mt-3" *ngIf="!isViewMode && !isReviewMode">
+  <button type="submit" class="btn btn-primary">
+    {{ !operationForm.value.OperationId ? 'Save' : 'Update' }}
+  </button>
+
+  <button type="button" class="btn btn-secondary ms-2" (click)="resetForm()">Reset</button>
+</div>
 
   </form>
 
   <!-- ================= CALCULATIONS CARD ================= -->
-  <div class="card mt-4">
+  <div class="card mt-4" *ngIf="showCalculation">
     <div class="card-body">
       <h5>Total Calculation</h5>
       <div><strong>Run Hours:</strong> {{ totalCalculations?.runHours || 0 }}</div>
