@@ -51,5 +51,9 @@ public partial class CB_GeneratorOperation
 
     public int StatusId { get; set; }
 
+    public int? SiteId { get; set; }
+
     public virtual CB_MasterGenerator Generator { get; set; }
+
+    public virtual CB_MasterSiteLocation Site { get; set; }
 }

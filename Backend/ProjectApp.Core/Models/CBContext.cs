@@ -27,6 +27,8 @@ public partial class CBContext : DbContext
 
     public virtual DbSet<CB_MasterSiteLocation> CB_MasterSiteLocations { get; set; }
 
+    public virtual DbSet<CB_MasterStatus> CB_MasterStatuses { get; set; }
+
     public virtual DbSet<CB_MasterVehicle> CB_MasterVehicles { get; set; }
 
     public virtual DbSet<CB_MasterVehicleType> CB_MasterVehicleTypes { get; set; }
@@ -105,6 +107,10 @@ public partial class CBContext : DbContext
                 .HasForeignKey(d => d.GeneratorId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_operation_generator");
+
+            entity.HasOne(d => d.Site).WithMany(p => p.CB_GeneratorOperations)
+                .HasForeignKey(d => d.SiteId)
+                .HasConstraintName("FK_GeneratorOperation_Site");
         });
 
         modelBuilder.Entity<CB_MasterCity>(entity =>
@@ -215,6 +221,18 @@ public partial class CBContext : DbContext
                 .HasMaxLength(100)
                 .IsUnicode(false);
             entity.Property(e => e.UpdateDate).HasColumnType("datetime");
+        });
+
+        modelBuilder.Entity<CB_MasterStatus>(entity =>
+        {
+            entity.HasKey(e => e.Statusid);
+
+            entity.ToTable("CB_MasterStatus");
+
+            entity.Property(e => e.Statusid).ValueGeneratedNever();
+            entity.Property(e => e.Status)
+                .HasMaxLength(50)
+                .IsUnicode(false);
         });
 
         modelBuilder.Entity<CB_MasterVehicle>(entity =>

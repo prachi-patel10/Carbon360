@@ -31,5 +31,7 @@ public partial class CB_MasterSiteLocation
 
     public string ShortCode { get; set; }
 
+    public virtual ICollection<CB_GeneratorOperation> CB_GeneratorOperations { get; set; } = new List<CB_GeneratorOperation>();
+
     public virtual ICollection<CB_MasterGenerator> CB_MasterGenerators { get; set; } = new List<CB_MasterGenerator>();
 }
