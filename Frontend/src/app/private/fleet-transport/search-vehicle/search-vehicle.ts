@@ -79,6 +79,8 @@ totalPages = signal<number>(1);
         distanceKm: e.distanceKm ?? 0,
         fuelConsumedLtr: e.fuelConsumedLtr ?? 0,
 
+        statusId: e.statusId,
+
         tripStartDateTime: e.tripStartDateTime,
         tripEndDateTime: e.tripEndDateTime,
 
