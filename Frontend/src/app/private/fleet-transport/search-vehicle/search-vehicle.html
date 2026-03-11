@@ -90,6 +90,8 @@
           <th>Fuel</th>
           <th>Distance</th>
           <th>Fuel Used</th>
+          <th>TripStartDateTime</th>
+          <th>TripEndDateTime</th>
           <th>Total Emission</th>
           <th>Status</th>
           <th>Action</th>
@@ -106,6 +108,8 @@
 
           <td>{{ e.distanceKm }} km</td>
           <td>{{ e.fuelConsumedLtr }} L</td>
+          <td>{{e.tripStartDateTime | date:'shortDate'}}</td>
+          <td>{{e.tripEndDateTime | date:'shortDate'}}</td>
 
           <td class="emission-value">
             {{ e.totalEmission }} kg
