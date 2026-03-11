@@ -34,6 +34,7 @@ export class TripComponent implements OnInit {
   // showResult: boolean = false;
   showSummary: boolean = false;
   summaryData: any;
+  userRole: string = '';
   mode: 'add' | 'edit' | 'view' = 'add';
 
   constructor(
@@ -90,10 +91,14 @@ export class TripComponent implements OnInit {
         this.dateValidator.bind(this)
       ]
     });
-    this.loadAllMasterData();
+    this.userRole = this.getUserRole();
     // this.setupVehicleChangeListener();
-    this.setupDurationListener();
-    this.updateCurrentDateTime();
+  this.formOpenTime = new Date();
+  // this.initializeForm();
+  this.loadAllMasterData();
+  this.setupDurationListener();
+  this.updateCurrentDateTime();
+
 
     const tripId = this.route.snapshot.paramMap.get('id');
 
@@ -107,7 +112,7 @@ export class TripComponent implements OnInit {
   loadTrip(id: string) {
 
   this.tripService.getTripById(id).subscribe(res => {
-
+ this.currentStatusId = res.statusId; 
     this.tripForm.patchValue({
 
       vehicle_id: res.vehicleId,
@@ -137,10 +142,12 @@ export class TripComponent implements OnInit {
     this.totalCO2 = res.totalCO2;
     this.totalNO2 = res.totalNO2;
     this.totalCH4 = res.totalCH4;
+    this.calculateDuration();
+    this.lockFormIfNeeded();//lockform rolewise 
 
-    if (this.mode === 'view') {
-      this.tripForm.disable();
-    }
+    // if (this.mode === 'view') {
+    //   this.tripForm.disable();
+    // }
 
   });
 
@@ -319,33 +326,54 @@ export class TripComponent implements OnInit {
     // 3 = Approved
     // 4 = Rejected
 
-    if (this.currentStatusId == 2 || this.currentStatusId == 3) {
-      this.tripForm.disable();
-    } else {
-      this.tripForm.enable();
-    }
+    // if (this.currentStatusId == 2 || this.currentStatusId == 3) {
+    //   this.tripForm.disable();
+    // } else {
+    //   this.tripForm.enable();
+    // }
+    // Corporate cannot edit trips
+ // Corporate can view but not edit
+  // Corporate can only review
+  if (this.userRole === 'corporate') {
+    this.tripForm.disable();
+    return;
+  }
+
+  // Reporter cannot edit approved trip
+  if (this.currentStatusId === 2) {
+    this.tripForm.disable();
+  }
+
+  // Reporter can edit rejected trip
+  if (this.currentStatusId === 3) {
+    this.tripForm.enable();
+  }
   }
 
   updateStatus(statusId: number) {
 
-    const payload = {
-      tripId: null,
-      statusId: statusId
-    };
+  const payload = {
+    tripId: this.route.snapshot.paramMap.get('id'),
+    statusId: statusId
+  };
 
-    this.tripService.updateTripStatus(payload).subscribe({
-      next: () => {
-        this.currentStatusId = statusId;
+  this.tripService.updateTripStatus(payload).subscribe({
+    next: () => {
 
-        this.lockFormIfNeeded();   // ✅ CALL HERE
+      this.currentStatusId = statusId;
+      this.lockFormIfNeeded();
 
-        Swal.fire('Success', 'Status Updated', 'success');
-      },
-      error: () => {
-        Swal.fire('Error', 'Status update failed', 'error');
-      }
-    });
-  }
+      Swal.fire({
+        icon: 'success',
+        title: 'Status Updated Successfully'
+      });
+
+    },
+    error: () => {
+      Swal.fire('Error', 'Status update failed', 'error');
+    }
+  });
+}
 
   //validation
   cityValidator(group: FormGroup) {
@@ -439,8 +467,47 @@ export class TripComponent implements OnInit {
   this.totalCH4 = data.totalCH4 || 0;
 
 }
+getUserRole(): string {
 
+  const role = localStorage.getItem('role');
 
+  if (!role) return '';
+
+  return role.toLowerCase();   // normalize
+}
+resubmitTrip() {
+
+  const formValue = this.tripForm.getRawValue();
+
+  const payload = {
+    tripId: this.route.snapshot.paramMap.get('id'),
+    vehicleId: formValue.vehicle_id,
+    fromCityId: formValue.fromCityId,
+    toCityId: formValue.toCityId,
+    distanceKm: Number(formValue.distanceKm),
+    fuelConsumedLtr: Number(formValue.fuelConsumedLtr),
+    tripStartDateTime: formValue.tripStartDateTime,
+    tripEndDateTime: formValue.tripEndDateTime,
+    statusId: 1
+  };
+
+  this.tripService.updateTripStatus(payload).subscribe({
+    next: () => {
+
+      this.currentStatusId = 1;
+
+      Swal.fire({
+        icon: 'success',
+        title: 'Trip Resubmitted Successfully'
+      });
+
+    },
+    error: () => {
+      Swal.fire('Error', 'Resubmit failed', 'error');
+    }
+  });
+
+}
   //   updateTrip() {
   //   this.tripService.updateTrip(this.tripId, this.tripForm.value)
   //     .subscribe({
@@ -459,5 +526,21 @@ export class TripComponent implements OnInit {
     this.tripForm.enable();
     this.tripDuration = '';
   }
+
+  canSubmit() {
+  return this.userRole === 'reporter' && this.mode === 'add';
+}
+
+canResubmit() {
+  return this.userRole === 'reporter' && this.currentStatusId === 3;
+}
+
+canApprove() {
+  return this.userRole === 'corporate' && this.currentStatusId === 1;
+}
+
+canReject(): boolean {
+  return this.userRole === 'corporate' && this.currentStatusId === 1;
+}
 
 }

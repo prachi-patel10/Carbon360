@@ -58,7 +58,9 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
         public async Task<ResponseVehicleTripEmissionDTO> UpdateAsync(UpdateVehicleTripEmissionDTO dto)
         {
             int userId = GetCurrentUserId();
-
+            string role = _userContext.Role;
+            if (!_userContext.Role.Split(',').Contains("Reporter"))
+                throw new Exception("Only Reporter can update trip records.");
             int tripId = _idEncoder.Decode(dto.TripId);
             int vehicleId = _idEncoder.Decode(dto.VehicleId);
             int fromCityId = _idEncoder.Decode(dto.FromCityId);
@@ -86,6 +88,9 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
                 .ToListAsync();
 
             var entity = result.FirstOrDefault();
+            if (entity == null)
+                throw new Exception("Trip not found.");
+
 
             return new ResponseVehicleTripEmissionDTO
             {
@@ -107,8 +112,42 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
 
         public async Task<bool> UpdateStatusAsync(VehicleTripStatusUpdateDTO dto)
         {
+            //        int tripId = _idEncoder.Decode(dto.TripId);
+            //        int userId = GetCurrentUserId();
+
+            //        var parameters = new[]
+            //        {
+            //    new SqlParameter("@TripId", tripId),
+            //    new SqlParameter("@StatusId", dto.StatusId),
+            //    new SqlParameter("@UserId", userId)
+            //};
+
+            //        await _context.Database.ExecuteSqlRawAsync(
+            //            "EXEC USP_CB_VehicleTripEmission_UpdateStatus @TripId,@StatusId,@UserId",
+            //            parameters);
+
+            //        return true;
+
             int tripId = _idEncoder.Decode(dto.TripId);
             int userId = GetCurrentUserId();
+            string role = _userContext.Role;
+
+            if (!role.Contains("Corporate"))
+                throw new Exception("Only Corporate users can approve or reject trips.");
+
+            if (dto.StatusId != 2 && dto.StatusId != 3)
+                throw new Exception("Invalid StatusId. Only Approve (2) or Reject (3) allowed.");
+
+            // Get current status
+            var trip = await _context.CB_VehicleTripEmissions
+                .Where(x => x.tripid == tripId && x.isactive)
+                .FirstOrDefaultAsync();
+
+            if (trip == null)
+                throw new Exception("Trip not found.");
+
+            if (trip.StatusId == 2)
+                throw new Exception("Trip already approved.");
 
             var parameters = new[]
             {
@@ -118,12 +157,14 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
     };
 
             await _context.Database.ExecuteSqlRawAsync(
-                "EXEC USP_CB_VehicleTripEmission_UpdateStatus @TripId,@StatusId,@UserId",
+                "EXEC USP_CB_UpdateVehicleTripStatus @TripId,@StatusId,@UserId",
                 parameters);
 
             return true;
         }
-       public  async Task<ResponseVehicleTripEmissionDTO> CreateAsync(CreateVehicleTripEmissionDTO dto)
+
+        
+       public async Task<ResponseVehicleTripEmissionDTO> CreateAsync(CreateVehicleTripEmissionDTO dto)
         {
             //        var userId = GetCurrentUserId();
 
@@ -176,6 +217,10 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
             //            StatusId = entity.StatusId
             //        };
             var userId = GetCurrentUserId();
+            string role = _userContext.Role;
+
+            if (!role.Contains("Reporter"))
+                throw new Exception("Only Reporter can create trip records.");
 
             int vehicleId = _idEncoder.Decode(dto.VehicleId);
             int fromCityId = _idEncoder.Decode(dto.FromCityId);
@@ -210,6 +255,8 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
             if (entity == null)
                 throw new Exception("Trip emission record not created.");
 
+
+     
             return new ResponseVehicleTripEmissionDTO
             {
                 TripId = _idEncoder.Encode(entity.tripid),

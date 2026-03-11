@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using ProjectApp.Core.DTOs.Account.VehicleTripEmission;
 using ProjectApp.Repository.Interfaces.VehicleTripEmission;
@@ -17,6 +18,7 @@ namespace ProjectApp.API.Controllers.Account.VehicleTripEmission
             _service = service;
         }
 
+        [Authorize(Roles = "Reporter")]
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateVehicleTripEmissionDTO dto)
         {
@@ -31,6 +33,7 @@ namespace ProjectApp.API.Controllers.Account.VehicleTripEmission
 
 
         }
+        [Authorize(Roles = "Reporter,Corporate")]
 
         [HttpGet]
         public async Task<IActionResult> GetAll()
@@ -57,6 +60,7 @@ namespace ProjectApp.API.Controllers.Account.VehicleTripEmission
 
             return Ok(new { message = "Deleted Successfully" });
         }
+        [Authorize(Roles = "Reporter")]
 
         [HttpPut("{hashId}")]
         public async Task<IActionResult> Update(string hashId, [FromBody] UpdateVehicleTripEmissionDTO dto)
@@ -78,6 +82,7 @@ namespace ProjectApp.API.Controllers.Account.VehicleTripEmission
                 data = result
             });
         }
+        [Authorize(Roles = "Corporate")]
 
         [HttpPut("status")]
         public async Task<IActionResult> UpdateStatus([FromBody] VehicleTripStatusUpdateDTO dto)
@@ -137,6 +142,9 @@ namespace ProjectApp.API.Controllers.Account.VehicleTripEmission
         //            var result = await _service.GetMyActionTripsAsync(pageNumber, pageSize);
         //            return Ok(result);
         //        }
+
+        [Authorize(Roles = "Reporter,Corporate")]
+
         [HttpGet("my-actions")]
         public async Task<IActionResult> GetMyActions(
           int pageNumber = 1,
