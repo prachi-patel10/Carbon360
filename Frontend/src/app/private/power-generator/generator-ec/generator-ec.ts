@@ -16,12 +16,42 @@ interface GeneratorOperation {
   statusId?: number;
 }
 
+interface Site {
+  id: number;
+  siteId: string;
+  siteName: string;
+  buildingName: string;
+  city: string;
+  state: string;
+  isActive: boolean;
+  entryBy: number;
+  entryDate: string;
+  updatedBy?: number | null;
+  updateDate?: string | null;
+  isDeleted: boolean;
+  shortCode?: string;
+}
+
+interface Generator {
+  generatorId: number;
+  generatorName: string;
+  siteId: number;
+  fuelId?: number;
+  ratedCapacityKW?: number;
+  isActive?: boolean;
+  entryBy?: number;
+  entryDate?: string;
+  updatedBy?: number;
+  updateDate?: string;
+  isDeleted?: boolean;
+}
+
 @Component({
   selector: 'app-generator-operation',
   standalone: true,
   templateUrl: './generator-ec.html',
   styleUrls: ['./generator-ec.css'],
-  imports: [CommonModule, ReactiveFormsModule]
+  imports: [CommonModule, ReactiveFormsModule],
 })
 export class GeneratorOperationComponent implements OnInit {
   operationForm!: FormGroup;
@@ -41,7 +71,7 @@ export class GeneratorOperationComponent implements OnInit {
     runHours: 0,
     totalFuel: 0,
     avgLoadFactor: 0,
-    totalEmission: 0
+    totalEmission: 0,
   };
   generatorName: string = '';
 
@@ -53,23 +83,39 @@ export class GeneratorOperationComponent implements OnInit {
     private fb: FormBuilder,
     private service: GeneratorecService,
     private route: ActivatedRoute,
-    private router: Router
-  ) { }
+    private router: Router,
+  ) {}
 
   ngOnInit() {
     this.initForm();
     this.loadSites();
     this.loadGenerators(); // optional if you want all generators
 
-    this.operationForm.get('SiteId')?.valueChanges.subscribe((siteId: string) => {
-      if (!siteId) {
-        this.generators = [];
-        return;
-      }
-      this.service.getGeneratorsBySite(siteId).subscribe({
-        next: (res: any) => this.generators = res.data || res
-      });
-    });
+ this.operationForm.get('SiteId')?.valueChanges.subscribe((selectedSiteId: string) => {
+  if (!selectedSiteId) {
+    this.generators = [];
+    if (!this.isViewMode && !this.isReviewMode) {
+      this.operationForm.get('GeneratorId')?.setValue(null);
+    }
+    return;
+  }
+
+  this.service.getGeneratorsBySite(selectedSiteId).subscribe({
+    next: (res: any) => {
+      this.generators = res || [];
+
+      // Only reset generator selection if not in view/review mode
+      if (!this.isViewMode && !this.isReviewMode) {
+        this.operationForm.get('GeneratorId')?.setValue(null);
+      }
+
+      if (!this.generators.length) {
+        Swal.fire('Info', 'No generators available for this site', 'info');
+      }
+    },
+    error: () => Swal.fire('Error', 'Failed to load generators', 'error')
+  });
+});
 
     const operationId = this.route.snapshot.paramMap.get('id');
     const queryParams = this.route.snapshot.queryParamMap;
@@ -82,15 +128,15 @@ export class GeneratorOperationComponent implements OnInit {
     this.showCalculation = !!operationId;
 
     const page = queryParams.get('page');
-    this.pageSource = (page === 'myaction' || page === 'search') ? page : 'search';
+    this.pageSource = page === 'myaction' || page === 'search' ? page : 'search';
 
     if (operationId) this.loadOperationById(operationId);
 
     if (this.isViewMode || this.isReviewMode) {
-  this.operationForm.disable();
-} else {
-  this.operationForm.enable(); // reporter create/edit mode
-}
+      this.operationForm.disable();
+    } else {
+      this.operationForm.enable(); // reporter create/edit mode
+    }
   }
 
   initForm() {
@@ -102,7 +148,7 @@ export class GeneratorOperationComponent implements OnInit {
       StartTime: ['', [Validators.required, this.noFutureDateValidator]],
       EndTime: ['', [Validators.required, this.noFutureDateValidator]],
       LoadFactor: [0, [Validators.required, Validators.min(0)]],
-      FuelConsumedLiters: [0, [Validators.required, Validators.min(0)]]
+      FuelConsumedLiters: [0, [Validators.required, Validators.min(0)]],
     });
   }
 
@@ -119,51 +165,78 @@ export class GeneratorOperationComponent implements OnInit {
   }
 
   loadSites() {
-    this.service.getSites().subscribe((res: any) => this.sites = res.data || res);
+    this.service.getSites().subscribe((res: any) => {
+      const allSites: Site[] = res.data || res;
+
+      // Create unique site list by siteName
+      const uniqueSitesMap = new Map<string, Site>();
+      allSites.forEach((site: Site) => {
+        if (!uniqueSitesMap.has(site.siteName)) {
+          uniqueSitesMap.set(site.siteName, site);
+        }
+      });
+
+      this.sites = Array.from(uniqueSitesMap.values());
+    });
   }
 
   loadGenerators() {
     this.service.getGenerators().subscribe({
-      next: res => this.generators = res || [],
-      error: () => console.error('Failed to load generators')
+      next: (res) => (this.generators = res || []),
+      error: () => console.error('Failed to load generators'),
     });
   }
 
   loadOperations() {
     this.service.getAll().subscribe({
-      next: (res: any) => this.operations = res.data || [],
-      error: err => console.error('Failed to load operations:', err)
+      next: (res: any) => (this.operations = res.data || []),
+      error: (err) => console.error('Failed to load operations:', err),
     });
   }
+loadOperationById(id: string) {
+  this.service.getById(id).subscribe({
+    next: (res: any) => {
+      const op = res.data || res;
 
-  loadOperationById(id: string) {
-    this.service.getById(id).subscribe({
-      next: (res: any) => {
-        const op = res.data || res;
-        this.edit(op);
-        this.totalCalculations = this.computeTotals(op);
-        this.setButtonVisibility(op);
-      },
-      error: () => Swal.fire('Error', 'Failed to load operation', 'error')
-    });
-  }
+      // 1️⃣ Load generators for this site first
+      this.service.getGeneratorsBySite(op.siteId).subscribe({
+        next: (genRes: any) => {
+          this.generators = genRes || [];
+
+          // 2️⃣ Now patch the form
+          this.edit(op);
+
+          // 3️⃣ Compute totals & buttons
+          this.totalCalculations = this.computeTotals(op);
+          this.setButtonVisibility(op);
+        },
+        error: () => Swal.fire('Error', 'Failed to load generators', 'error')
+      });
+    },
+    error: () => Swal.fire('Error', 'Failed to load operation', 'error')
+  });
+}
 
   computeTotals(res: any) {
-    if (!res.startTime || !res.endTime) return {
-      runHours: 0,
-      totalFuel: res.fuelConsumedLiters || 0,
-      avgLoadFactor: res.loadFactor || 0,
-      totalEmission: 0
-    };
+    if (!res.startTime || !res.endTime)
+      return {
+        runHours: 0,
+        totalFuel: res.fuelConsumedLiters || 0,
+        avgLoadFactor: res.loadFactor || 0,
+        totalEmission: 0,
+      };
 
-    const runHours = +((new Date(res.endTime).getTime() - new Date(res.startTime).getTime()) / (1000 * 60 * 60)).toFixed(2);
+    const runHours = +(
+      (new Date(res.endTime).getTime() - new Date(res.startTime).getTime()) /
+      (1000 * 60 * 60)
+    ).toFixed(2);
     const totalEmission = +(res.fuelConsumedLiters || 0) * 2.67;
 
     return {
       runHours,
       totalFuel: res.fuelConsumedLiters || 0,
       avgLoadFactor: res.loadFactor || 0,
-      totalEmission
+      totalEmission,
     };
   }
 
@@ -184,7 +257,7 @@ export class GeneratorOperationComponent implements OnInit {
         Swal.fire('Approved', 'Operation approved successfully', 'success');
         this.goBack();
       },
-      error: () => Swal.fire('Error', 'Failed to approve operation', 'error')
+      error: () => Swal.fire('Error', 'Failed to approve operation', 'error'),
     });
   }
 
@@ -197,7 +270,7 @@ export class GeneratorOperationComponent implements OnInit {
         Swal.fire('Rejected', 'Operation rejected successfully', 'success');
         this.goBack();
       },
-      error: () => Swal.fire('Error', 'Failed to reject operation', 'error')
+      error: () => Swal.fire('Error', 'Failed to reject operation', 'error'),
     });
   }
 
@@ -210,15 +283,15 @@ export class GeneratorOperationComponent implements OnInit {
         Swal.fire('Resubmitted', 'Sent again for approval', 'success');
         this.goBack();
       },
-      error: () => Swal.fire('Error', 'Resubmit failed', 'error')
+      error: () => Swal.fire('Error', 'Resubmit failed', 'error'),
     });
   }
 
   goBack() {
     if (this.pageSource === 'search') {
-      this.router.navigate(['/dashboard/generator-search']);
+      this.router.navigate(['/dashboard/MyActionGenerator']);
     } else {
-      this.router.navigate(['/dashboard/generator-myaction']);
+      this.router.navigate(['/dashboard/searchGenerator']);
     }
   }
 
@@ -235,18 +308,18 @@ export class GeneratorOperationComponent implements OnInit {
       startTime: raw.StartTime,
       endTime: raw.EndTime,
       loadFactor: raw.LoadFactor,
-      fuelConsumedLiters: raw.FuelConsumedLiters
+      fuelConsumedLiters: raw.FuelConsumedLiters,
     };
 
     if (raw.OperationId) {
       this.service.update(raw.OperationId, payload).subscribe({
         next: () => Swal.fire('Success', 'Operation updated successfully', 'success'),
-        error: () => Swal.fire('Error', 'Failed to update operation', 'error')
+        error: () => Swal.fire('Error', 'Failed to update operation', 'error'),
       });
     } else {
       this.service.create(payload).subscribe({
         next: () => Swal.fire('Success', 'Operation saved successfully', 'success'),
-        error: () => Swal.fire('Error', 'Failed to save operation', 'error')
+        error: () => Swal.fire('Error', 'Failed to save operation', 'error'),
       });
     }
   }
@@ -260,7 +333,7 @@ export class GeneratorOperationComponent implements OnInit {
       EndTime: op.endTime ? op.endTime.substring(0, 16) : '',
       LoadFactor: op.loadFactor,
       FuelConsumedLiters: op.fuelConsumedLiters,
-      GeneratorName: op.generatorName || ''
+      GeneratorName: op.generatorName || '',
     });
   }
 
@@ -271,13 +344,12 @@ export class GeneratorOperationComponent implements OnInit {
       StartTime: '',
       EndTime: '',
       LoadFactor: 0,
-      FuelConsumedLiters: 0
+      FuelConsumedLiters: 0,
     });
     this.generators = [];
   }
 
   goToDetail(item: any, source: 'myaction' | 'search') {
-
     if (!item?.operationId) return;
 
     let mode = 'view';
@@ -287,23 +359,17 @@ export class GeneratorOperationComponent implements OnInit {
     }
 
     if (source === 'myaction') {
-
       if (this.userRole === 'corporate' && item.statusId === 1) {
         mode = 'review';
-      }
-
-      else if (this.userRole === 'reporter' && item.statusId === 3) {
+      } else if (this.userRole === 'reporter' && item.statusId === 3) {
         mode = 'edit';
-      }
-
-      else {
+      } else {
         mode = 'view';
       }
     }
 
-    this.router.navigate(
-      ['/dashboard/generator-ec', item.operationId],
-      { queryParams: { mode, page: source } }
-    );
+    this.router.navigate(['/dashboard/generator-ec', item.operationId], {
+      queryParams: { mode, page: source },
+    });
   }
 }

@@ -16,7 +16,7 @@
     <!-- ================= GENERATOR ================= -->
     <div class="col-md-3">
       <label class="form-label fw-bold">Generator</label>
-      <select class="form-select" formControlName="GeneratorId">
+      <select class="form-select" formControlName="GeneratorId" >
         <option [ngValue]="null">-- Select Generator --</option>
         <option *ngFor="let g of generators" [ngValue]="g.generatorId">{{ g.generatorName }}</option>
       </select>
