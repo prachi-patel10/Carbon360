@@ -66,6 +66,8 @@ export class DashboardComponent {
          else if (url.includes('generator')) this.pageTitle = ' Generator Master ';
         else if (url.includes('searchGenerator')) this.pageTitle = ' Search Power Generator';
         else if (url.includes('MyActionGenerator')) this.pageTitle = ' Actions Power Generator';
+        else if (url.includes('MyActionVehicle')) this.pageTitle = 'Actions Fleet & Transport';
+        else if (url.includes('searchVehicle')) this.pageTitle = 'Search Fleet & Transport';
 
         else this.pageTitle = 'Dashboard';
       });
