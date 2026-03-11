@@ -24,3 +24,4 @@ namespace ProjectApp.Core.DTOs.Account.GeneratorOperation
         public int? StatusId { get; set; }
     }
 }
+

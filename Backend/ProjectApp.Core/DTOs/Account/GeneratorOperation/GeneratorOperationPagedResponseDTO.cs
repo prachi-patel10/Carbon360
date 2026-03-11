@@ -14,3 +14,4 @@ namespace ProjectApp.Core.DTOs.Account.GeneratorOperation
         public int PageSize { get; set; }
     }
 }
+

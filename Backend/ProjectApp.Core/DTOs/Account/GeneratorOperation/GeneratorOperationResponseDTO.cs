@@ -40,3 +40,4 @@ namespace ProjectApp.Core.DTOs.Account.GeneratorOperation
         public string FuelType { get; set; }
     }
 }
+
