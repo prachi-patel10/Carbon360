@@ -6,6 +6,8 @@ using ProjectApp.Core.DTOs.Masters.Generator;
 using ProjectApp.Core.Entities;
 using ProjectApp.Repository.Interfaces.GenerationOperation;
 using ProjectApp.Repository.Services.GeneratorOperation;
+using ProjectApp.Repository.Interfaces.Masters; // IGeneratorService
+
 using System.Net;
 
 namespace ProjectApp.API.Controllers.Account.GeneratorOperation
@@ -146,27 +148,25 @@ namespace ProjectApp.API.Controllers.Account.GeneratorOperation
 
         [HttpGet("search")]
         public async Task<IActionResult> Search(
-    string? search,
-    string? fuelType,
-    string? generatorName,
-    DateTime? startDate,
-    DateTime? endDate,
-    int? statusId,
-    int pageNumber = 1,
-    int pageSize = 10)
+     string? search,
+     string? fuelType,
+     string? generatorName,
+     DateTime? startDate,
+     DateTime? endDate,
+     int? statusId,
+     int pageNumber = 1,
+     int pageSize = 10)
         {
-            // Call your service
             var pagedResult = await _service.SearchAsync(
                 search, fuelType, generatorName, startDate, endDate, statusId, pageNumber, pageSize);
 
-            // Build response
             var response = new
             {
                 status = true,
                 statusCode = 200,
                 data = new
                 {
-                    records = pagedResult.Records,
+                    records = pagedResult.Data, // ✅ Use Data, not Records
                     totalRecords = pagedResult.TotalRecords,
                     pageNumber = pagedResult.PageNumber,
                     pageSize = pagedResult.PageSize
@@ -177,5 +177,22 @@ namespace ProjectApp.API.Controllers.Account.GeneratorOperation
 
             return Ok(response);
         }
+
+
+        // GET /api/generator
+        [HttpGet("allgenerator")]
+        public async Task<IActionResult> Getallgenerator()
+        {
+            var generators = await _service.GetAllAsync();
+            return Ok(generators);
+        }
+
+        // GET /api/generator/site/{siteId}
+        [HttpGet("site/{siteId}")]
+        public async Task<IActionResult> GetGeneratorsBySite(int siteId)
+        {
+            var generators = await _service.GetBySiteIdAsync(siteId);
+            return Ok(generators);
+        }
     }
-}
+    }

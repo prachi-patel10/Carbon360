@@ -26,6 +26,7 @@ interface GeneratorOperation {
 export class GeneratorOperationComponent implements OnInit {
   operationForm!: FormGroup;
   generators: any[] = [];
+  sites: any[] = []; // All sites
 
   pageSource: 'myaction' | 'search' = 'search';
   isReviewMode = false;
@@ -54,6 +55,7 @@ export class GeneratorOperationComponent implements OnInit {
 
   ngOnInit() {
     this.initForm();
+<<<<<<< Updated upstream
     this.loadGenerators();
 
     const operationId = this.route.snapshot.paramMap.get('id');
@@ -137,10 +139,92 @@ export class GeneratorOperationComponent implements OnInit {
         if (this.isViewMode && !this.isEditMode && !this.isReviewMode) {
           this.operationForm.disable();
         }
+=======
+    this.loadSites(); // Load all sites initially
+    this.loadOperations(); // Load existing operations
+this.operationForm.get('SiteId')?.valueChanges.subscribe((siteId: string) => {
+
+  console.log("Selected SiteId:", siteId);
+
+  if (!siteId) {
+    this.generators = [];
+    return;
+  }
+
+  this.service.getGeneratorsBySite(siteId).subscribe({
+    next: (res: any) => {
+      console.log("Generator API:", res);
+      this.generators = res.data || res;
+    }
+  });
+
+});
+
+    this.route.paramMap.subscribe(params => {
+      const id = params.get('id');
+      if (id) this.loadOperationById(id);
+    });
+  }
+
+  // ================= INIT FORM =================
+  initForm() {
+    this.operationForm = this.fb.group({
+      OperationId: [''],
+      SiteId: [null, Validators.required], // Add SiteId to form
+      GeneratorId: [null, Validators.required],
+      StartTime: ['', [Validators.required, this.noFutureDateValidator]],
+      EndTime: ['', [Validators.required, this.noFutureDateValidator]],
+      LoadFactor: ['', [Validators.required, Validators.min(0)]],
+      FuelConsumedLiters: ['', [Validators.required, Validators.min(0)]]
+    });
+  }
+
+  // ================= CUSTOM VALIDATOR =================
+  noFutureDateValidator(control: any) {
+    if (!control.value) return null;
+    const inputDate = new Date(control.value);
+    const now = new Date();
+    return inputDate > now ? { futureDate: true } : null;
+  }
+
+  isInvalid(controlName: string) {
+    const control = this.operationForm.get(controlName);
+    return control && control.invalid && (control.dirty || control.touched);
+  }
+
+  // ================= LOAD SITES =================
+loadSites() {
+  this.service.getSites().subscribe((res: any) => {
+    console.log("Sites API:", res);
+    this.sites = res.data || res;
+  });
+}
+
+  // ================= LOAD GENERATORS WHEN SITE CHANGES =================
+
+
+  // ================= LOAD OPERATIONS =================
+  loadOperations() {
+    this.service.getAll().subscribe({
+      next: (res: any) => {
+        const genMap = new Map(this.generators.map(g => [String(g.generatorId), g]));
+        this.operations = (res.data || []).map((op: any) => ({
+          operationId: op.operationId,
+          operationDate: op.operationDate,
+          runHours: op.runHours,
+          fuelConsumedLiters: op.fuelConsumedLiters,
+          loadFactor: op.loadFactor,
+          powerOutputKWH: op.powerOutputKWH,
+          generatorId: String(op.generatorId),
+          GeneratorName: genMap.get(String(op.generatorId))?.generatorName || 'N/A',
+          FuelName: genMap.get(String(op.generatorId))?.fuelName || 'N/A'
+        }));
+>>>>>>> Stashed changes
       },
       error: err => console.error('Failed to load operation:', err)
     });
   }
+<<<<<<< Updated upstream
   computeTotals(res: GeneratorOperation) {
     if (!res.startTime || !res.endTime) return {
       runHours: 0,
@@ -209,4 +293,103 @@ export class GeneratorOperationComponent implements OnInit {
 
     this.router.navigate(['/dashboard/generator-ec', item.operationId], { queryParams });
   }
+=======
+
+  // ================= SUBMIT FORM =================
+  submitOperation() {
+    if (this.operationForm.invalid) {
+      Swal.fire('Error', 'Please fill required fields', 'error');
+      return;
+    }
+
+    const raw = this.operationForm.getRawValue();
+const selectedSite = this.sites.find(s => s.siteId == raw.SiteId);
+    const payload = {
+  siteId: raw.SiteId,   // encoded
+      generatorId: raw.GeneratorId,
+      startTime: raw.StartTime,
+      endTime: raw.EndTime,
+      loadFactor: raw.LoadFactor,
+      fuelConsumedLiters: raw.FuelConsumedLiters
+    };
+
+    if (raw.OperationId) {
+      this.service.update(raw.OperationId, payload).subscribe({
+        next: () => {
+          Swal.fire('Success', 'Operation updated successfully', 'success');
+          this.router.navigate(['/dashboard/myaction-generator']);
+        },
+        error: () => Swal.fire('Error', 'Failed to update operation', 'error')
+      });
+    } else {
+      this.service.create(payload).subscribe({
+        next: () => {
+          Swal.fire('Success', 'Operation saved successfully', 'success');
+          this.loadOperations();
+          this.resetForm();
+        },
+        error: () => Swal.fire('Error', 'Failed to save operation', 'error')
+      });
+    }
+  }
+
+  // ================= EDIT OPERATION =================
+  edit(op: any) {
+    this.operationForm.patchValue({
+      OperationId: op.operationId,
+      SiteId: op.siteId || null,
+      GeneratorId: op.generatorId,
+      StartTime: op.startTime ? op.startTime.substring(0, 16) : '',
+      EndTime: op.endTime ? op.endTime.substring(0, 16) : '',
+      LoadFactor: op.loadFactor,
+      FuelConsumedLiters: op.fuelConsumedLiters
+    });
+
+   // if (op.siteId) this.onSiteChange(op.siteId); // load generators for site
+  }
+
+  // ================= LOAD OPERATION BY ID =================
+  loadOperationById(id: string) {
+    this.service.getById(id).subscribe({
+      next: (res: any) => {
+        const op = res.data || res;
+        this.edit(op);
+      },
+      error: () => Swal.fire('Error', 'Failed to load operation', 'error')
+    });
+  }
+
+  // ================= DELETE =================
+  deleteUI(op: any) {
+    Swal.fire({
+      title: 'Are you sure?',
+      icon: 'warning',
+      showCancelButton: true
+    }).then(result => {
+      if (result.isConfirmed) {
+        this.service.delete(op.operationId).subscribe({
+          next: () => {
+            Swal.fire('Deleted!', '', 'success');
+            this.loadOperations();
+          },
+          error: () => Swal.fire('Error', 'Delete failed', 'error')
+        });
+      }
+    });
+  }
+
+  // ================= RESET FORM =================
+  resetForm() {
+    this.operationForm.reset({
+      SiteId: null,
+      GeneratorId: null,
+      StartTime: '',
+      EndTime: '',
+      LoadFactor: 0,
+      FuelConsumedLiters: 0
+    });
+    this.generators = [];
+  }
+
+>>>>>>> Stashed changes
 }

@@ -95,5 +95,27 @@ namespace ProjectApp.API.Controllers.Masters.Generator
 
             return Ok(result);
         }
+
+        [HttpGet("site/{siteId}")]
+        public async Task<IActionResult> GetGeneratorsBySite(string siteId)
+        {
+            if (string.IsNullOrWhiteSpace(siteId))
+                return BadRequest("SiteId is required.");
+
+            try
+            {
+                var result = await _service.GetBySiteIdAsync(siteId);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    message = ex.Message
+                });
+            }
+        }
     }
+
+
 }

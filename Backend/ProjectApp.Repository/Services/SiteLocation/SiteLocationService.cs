@@ -180,16 +180,66 @@ namespace ProjectApp.Repository.Services.SiteLocation
                 row.ContainsKey(key) && row[key] != DBNull.Value
                 && Convert.ToBoolean(row[key]);
 
+<<<<<<< Updated upstream
+=======
+            int siteId = GetInt("SiteId");
+            int departmentId = GetInt("DepartmentId");
+
+>>>>>>> Stashed changes
             return new SiteLocationResponseDTO
             {
-                SiteId = _idEncoder.Encode(GetInt("SiteId")),
+                Id = siteId,   // ADD THIS LINE
+                SiteId = _idEncoder.Encode(siteId),
                 SiteName = GetString("SiteName"),
                 BuildingName = GetString("BuildingName"),
                 City = GetString("City"),
                 State = GetString("State"),
                 ShortCode = GetString("ShortCode"),
+<<<<<<< Updated upstream
                 IsActive = GetBool("IsActive")
             };
         }
+=======
+                DepartmentId = departmentId > 0
+                                ? _idEncoder.Encode(departmentId)
+                                : null,
+                DepartmentName = GetString("DepartmentName"),
+                IsActive = GetBool("IsActive")
+            };
+        }
+        public async Task<string?> GetSiteNameByIdAsync(int siteId)
+        {
+            var result = await _spService.ExecuteSpAsync(
+                "USP_CB_GetSiteNameById",
+                new SqlParameter("@SiteId", siteId)
+            );
+
+            var data = (result["Data"] as IEnumerable<object>)
+                        ?.Cast<Dictionary<string, object>>()
+                        ?.FirstOrDefault();
+
+            if (data != null && data.ContainsKey("SiteName") && data["SiteName"] != DBNull.Value)
+                return data["SiteName"].ToString();
+
+            return null;
+        }
+        public async Task<List<object>> GetDepartments()
+        {
+            var result = await _spService.ExecuteSpAsync("USP_CB_DepartmentGetAll");
+
+            var dataList = (result["Data"] as IEnumerable<object>)
+                ?.Cast<Dictionary<string, object>>()
+                ?.Select(x => new
+                {
+                    departmentId = Convert.ToInt32(x["DepartmentId"]),
+                    departmentName = x["DepartmentName"].ToString()
+                })
+                .ToList<object>()
+                ?? new List<object>();
+
+            return dataList;
+        }
+
+>>>>>>> Stashed changes
     }
 }

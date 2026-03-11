@@ -20,6 +20,8 @@ namespace ProjectApp.Core.DTOs.Account.GeneratorOperation
         public decimal LoadFactor { get; set; }
 
         public decimal FuelConsumedLiters { get; set; }
+        public string SiteId { get; set; }
+
 
         public int? StatusId { get; set; }
     }

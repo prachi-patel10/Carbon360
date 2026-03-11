@@ -13,11 +13,12 @@ export class GeneratorecService {
 
   constructor(private http: HttpClient) { }
 
-  // ================= GET ALL =================
+  // ================= GET ALL OPERATIONS =================
   getAll(): Observable<any> {
     return this.http.get(`${this.apiUrl}/All`);
   }
 
+<<<<<<< Updated upstream
   // ================= GET BY ID =================
   // 
 
@@ -27,6 +28,12 @@ export class GeneratorecService {
   //       `${this.apiUrl}/VehicleTripEmission/${hashId}`
   //     );
   //   }
+=======
+  // ================= GET OPERATION BY ID =================
+  getById(id: string) {
+    return this.http.get(`${this.apiUrl}/${id}`);
+  }
+>>>>>>> Stashed changes
 
   // ================= CREATE =================
   create(data: any): Observable<any> {
@@ -43,8 +50,19 @@ export class GeneratorecService {
     return this.http.delete(`${this.apiUrl}/${id}`);
   }
 
+  // ================= GET ALL GENERATORS =================
   getGenerators(): Observable<any> {
     return this.http.get(`${environment.apiBaseUrl}/generator`);
+  }
+
+getGeneratorsBySite(siteId: string): Observable<any> {
+  
+
+  return this.http.get(`http://localhost:5236/api/generator/site/${siteId}`);
+}
+  // ================= GET ALL SITES =================
+  getSites(): Observable<any> {
+    return this.http.get(`http://localhost:5236/api/SiteLocation/all`);
   }
 
   getFuels(): Observable<any> {
@@ -62,5 +80,4 @@ export class GeneratorecService {
   getById(id: string): Observable<GeneratorOperation> {
     return this.http.get<GeneratorOperation>(`${this.apiUrl}/${id}`);
   }
-
 }

@@ -17,7 +17,12 @@ namespace ProjectApp.Repository.Interfaces.SiteLocation
         Task<SiteLocationResponseDTO?> GetById(string encryptedId);
         Task<List<SiteLocationResponseDTO>> GetAll();
         Task<PageResult> SearchAsync(SiteLocationSearchRequest request);
+<<<<<<< Updated upstream
 
 
+=======
+        Task<string?> GetSiteNameByIdAsync(int siteId);
+        Task<List<object>> GetDepartments();
+>>>>>>> Stashed changes
     }
 }

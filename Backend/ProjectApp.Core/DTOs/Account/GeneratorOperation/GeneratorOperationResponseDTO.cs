@@ -11,8 +11,10 @@ namespace ProjectApp.Core.DTOs.Account.GeneratorOperation
         public string OperationId { get; set; }
         public string GeneratorId { get; set; }
 
+        public string? SiteId { get; set; }
+        public string? SiteName { get; set; }
         public DateOnly OperationDate { get; set; }
-        public DateTime StartTime { get; set; }       // NEW
+        public DateTime StartTime { get; set; }      
         public DateTime EndTime { get; set; }
         public decimal RunHours { get; set; }
         public decimal LoadFactor { get; set; }

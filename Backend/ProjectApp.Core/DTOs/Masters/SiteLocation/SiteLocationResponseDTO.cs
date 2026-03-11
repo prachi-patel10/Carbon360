@@ -8,6 +8,8 @@ namespace ProjectApp.Core.DTOs.Masters.SiteLocation
 {
     public class SiteLocationResponseDTO
     {
+        public int Id { get; set; }           // 🔹 Add this (numeric DB id)
+
         public string SiteId { get; set; } 
         public string SiteName { get; set; }
         public string BuildingName { get; set; }

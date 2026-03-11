@@ -18,6 +18,7 @@ namespace ProjectApp.Repository.Interfaces.Masters.Generator
         Task Delete(string encryptedId);
         Task ToggleStatus(string encryptedId, bool isActive);
         Task<PageResult> SearchAsync(GeneratorSearchRequest request);
+        Task<List<GeneratorResponseDTO>> GetBySiteIdAsync(string encryptedSiteId);
     }
 }
 

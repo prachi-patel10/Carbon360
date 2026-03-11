@@ -1,4 +1,5 @@
 ﻿using ProjectApp.Core.DTOs.Account.GeneratorOperation;
+using ProjectApp.Core.DTOs.Masters.Generator;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,7 +22,7 @@ namespace ProjectApp.Repository.Interfaces.GenerationOperation
 
         Task<GeneratorOperationResponseDTO> UpdateAsync(string encryptedId, GeneratorOperationCreateDTO dto);
 
-
+        Task<List<GeneratorResponseDTO>> GetBySiteIdAsync(int siteId);
         Task<bool> UpdateStatusAsync(string encryptedId, int statusId);
 
         Task<GeneratorOperationPagedResponseDTO> SearchAsync(

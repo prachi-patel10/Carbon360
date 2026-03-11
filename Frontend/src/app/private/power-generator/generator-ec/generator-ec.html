@@ -1,6 +1,7 @@
 <div class="container py-4">
   <form [formGroup]="operationForm" class="row g-3">
 
+<<<<<<< Updated upstream
     <!-- Generator -->
    <div class="mb-3">
   <label class="form-label">Generator</label>
@@ -41,6 +42,90 @@
       <div><strong>Average Load Factor:</strong> {{ totalCalculations?.avgLoadFactor || 0 }}</div>
       <div><strong>Total Emission (kg CO2 eq):</strong> {{ totalCalculations?.totalEmission || 0 }}</div>
     </div>
+=======
+  <div class="card form-card">
+    <form [formGroup]="operationForm" (ngSubmit)="submitOperation()">
+
+      <div class="form-row">
+        <div class="form-group">
+          <label> Site location</label>
+
+        <!-- ================= SITE ================= -->
+<select formControlName="SiteId">
+  <option value="">-- Select Site --</option>
+
+  <option *ngFor="let s of sites" [value]="s.siteId">
+    {{ s.siteName }}
+  </option>
+</select>
+</div>
+
+        <!-- ================= GENERATOR ================= -->
+     <div class="form-group">
+          <label>Generator</label>
+          <select formControlName="GeneratorId">
+            <option [ngValue]="null">-- Select Generator --</option>
+            <option *ngFor="let g of generators" [ngValue]="g.generatorId">
+              {{ g.generatorName }}
+            </option>
+          </select>
+          <div class="error" *ngIf="isInvalid('GeneratorId')">
+            Generator is required
+          </div>
+        </div>
+
+        <!-- ================= START TIME ================= -->
+        <div class="form-group">
+          <label>Start Date & Time</label>
+          <input type="datetime-local" formControlName="StartTime" class="form-control" />
+          <div class="error" *ngIf="isInvalid('StartTime')">
+            <span *ngIf="operationForm.get('StartTime')?.errors?.['required']">Start time is required</span>
+            <span *ngIf="operationForm.get('StartTime')?.errors?.['futureDate']">Future date/time not allowed</span>
+          </div>
+        </div>
+
+        <!-- ================= END TIME ================= -->
+        <div class="form-group">
+          <label>End Date & Time</label>
+          <input type="datetime-local" formControlName="EndTime" class="form-control" />
+          <div class="error" *ngIf="isInvalid('EndTime')">
+            <span *ngIf="operationForm.get('EndTime')?.errors?.['required']">End time is required</span>
+            <span *ngIf="operationForm.get('EndTime')?.errors?.['futureDate']">Future date/time not allowed</span>
+          </div>
+        </div>
+
+        <!-- ================= LOAD FACTOR ================= -->
+        <div class="form-group">
+          <label>Load Factor</label>
+          <input type="number" formControlName="LoadFactor" placeholder="0"/>
+          <div class="error" *ngIf="isInvalid('LoadFactor')">
+            <span *ngIf="operationForm.get('LoadFactor')?.errors?.['required']">Load Factor is required</span>
+            <span *ngIf="operationForm.get('LoadFactor')?.errors?.['min']">Load Factor cannot be negative</span>
+          </div>
+        </div>
+
+        <!-- ================= FUEL CONSUMED ================= -->
+        <div class="form-group">
+          <label>Fuel Consumed (Liters)</label>
+          <input type="number" formControlName="FuelConsumedLiters" placeholder="0"/>
+          <div class="error" *ngIf="isInvalid('FuelConsumedLiters')">
+            <span *ngIf="operationForm.get('FuelConsumedLiters')?.errors?.['required']">Fuel Consumed is required</span>
+            <span *ngIf="operationForm.get('FuelConsumedLiters')?.errors?.['min']">Fuel cannot be negative</span>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="form-buttons">
+        <button type="submit" class="btn-primary">
+          {{ !operationForm.value.OperationId ? 'Save' : 'Update' }}
+        </button>
+
+        <button type="button" class="btn-secondary" (click)="resetForm()">Reset</button>
+      </div>
+
+    </form>
+>>>>>>> Stashed changes
   </div>
 
   <!-- Buttons -->

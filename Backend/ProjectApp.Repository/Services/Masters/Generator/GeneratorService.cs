@@ -211,5 +211,31 @@ namespace ProjectApp.Repository.Services.Masters.Generator
                 IsActive = GetBool("IsActive")
             };
         }
+
+        public async Task<List<GeneratorResponseDTO>> GetBySiteIdAsync(string encryptedSiteId)
+        {
+            if (string.IsNullOrWhiteSpace(encryptedSiteId))
+                throw new Exception("SiteId is required.");
+
+            int siteId = _idEncoder.Decode(encryptedSiteId);
+
+            Console.WriteLine($"Decoded SiteId: {siteId}");
+
+            var result = await _spService.ExecuteSpAsync(
+                "USP_CB_GetGeneratorBySiteId",
+                new SqlParameter("@SiteId", siteId)
+            );
+
+            var dataList = (result["Data"] as IEnumerable<object>)
+                ?.Cast<Dictionary<string, object>>()
+                ?.ToList()
+                ?? new List<Dictionary<string, object>>();
+
+            return dataList.Select(x => new GeneratorResponseDTO
+            {
+                GeneratorId = _idEncoder.Encode(Convert.ToInt32(x["GeneratorId"])),
+                GeneratorName = x["GeneratorName"]?.ToString()
+            }).ToList();
+        }
     }
 }
