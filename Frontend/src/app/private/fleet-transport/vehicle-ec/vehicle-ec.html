@@ -170,7 +170,7 @@
       </div>
 
       <div class="form-buttons">
-        <button type="submit" class="btn-primary">Submit Trip</button> 
+        <button type="submit" class="btn-primary">Submit Trip</button>
         <!-- <button *ngIf="userRole === 'Reporter' && mode === 'add'" type="submit" class="btn-primary"
           [disabled]="tripForm.invalid"> 
 
@@ -178,7 +178,7 @@
 
         </button>-->
         <button type="button" class="btn-secondary" (click)="resetForm()">Reset</button>
-      </div> 
+      </div>
 
     </form>
   </div>
@@ -257,44 +257,40 @@
 
   <div class="review-actions">
 
-  <!-- Reporter Submit -->
-  <button
-    *ngIf="canSubmit()"
-    type="submit"
-    class="btn-primary"
-    [disabled]="tripForm.invalid">
+   <div *ngIf="userRole === 'corporate' && currentStatusId === 1">
 
-    Submit Trip
+  <button class="btn-approve"
+  (click)="updateStatus(2)">
+  Approve
   </button>
 
-  <!-- Reporter Resubmit -->
-  <button
-    *ngIf="canResubmit()"
-    (click)="resubmitTrip()"
-    class="btn-warning">
-
-    Resubmit
-  </button>
-
-  <!-- Corporate Approve -->
-  <button
-    *ngIf="canApprove()"
-    (click)="updateStatus(2)"
-    class="btn-success">
-
-    Approve
-  </button>
-
-  <!-- Corporate Reject -->
-  <button
-    *ngIf="canReject()"
-    (click)="updateStatus(3)"
-    class="btn-danger">
-
-    Reject
+  <button class="btn-reject"
+  (click)="updateStatus(3)">
+  Reject
   </button>
 
 </div>
+<div *ngIf="userRole === 'reporter'">
+
+  <!-- Submit -->
+  <button
+  *ngIf="mode === 'add'"
+  (click)="submitTrip()"
+  class="btn-submit">
+  Submit
+  </button>
+
+  <!-- Resubmit -->
+  <button
+  *ngIf="currentStatusId === 3"
+  (click)="resubmitTrip()"
+  class="btn-resubmit">
+  Resubmit
+  </button>
+
+</div>
+
+  </div>
 
 </div>
 <!-- </div> -->

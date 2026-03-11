@@ -361,31 +361,28 @@ export class TripComponent implements OnInit {
   }
   }
 
-  updateStatus(statusId: number) {
+  updateStatus(statusId:number){
 
-  const payload = {
-    tripId: this.route.snapshot.paramMap.get('id'),
-    statusId: statusId
-  };
+const payload = {
+  tripId: this.route.snapshot.paramMap.get('id'),
+  statusId: statusId
+};
 
-  this.tripService.updateTripStatus(payload).subscribe({
-    next: () => {
+this.tripService.updateTripStatus(payload).subscribe({
 
-      this.currentStatusId = statusId;
-      this.lockFormIfNeeded();
+  next: () => {
 
-      Swal.fire({
-        icon: 'success',
-        title: 'Status Updated Successfully'
-      });
+    this.currentStatusId = statusId;
 
-    },
-    error: () => {
-      Swal.fire('Error', 'Status update failed', 'error');
-    }
-  });
+    Swal.fire({
+      icon:'success',
+      title:'Status Updated'
+    });
+
+  }
+
+});
 }
-
   //validation
   cityValidator(group: FormGroup) {
 
@@ -486,39 +483,23 @@ getUserRole(): string {
 
   return role.toLowerCase();   // normalize
 }
-resubmitTrip() {
+resubmitTrip(){
 
-  const formValue = this.tripForm.getRawValue();
+const payload = {
+  tripId: this.route.snapshot.paramMap.get('id'),
+  statusId: 1
+};
 
-  const payload = {
-    tripId: this.route.snapshot.paramMap.get('id'),
-    vehicleId: formValue.vehicle_id,
-    fromCityId: formValue.fromCityId,
-    toCityId: formValue.toCityId,
-    distanceKm: Number(formValue.distanceKm),
-    fuelConsumedLtr: Number(formValue.fuelConsumedLtr),
-    tripStartDateTime: formValue.tripStartDateTime,
-    tripEndDateTime: formValue.tripEndDateTime,
-    statusId: 1
-  };
+this.tripService.updateTripStatus(payload).subscribe(()=>{
 
-  this.tripService.updateTripStatus(payload).subscribe({
-    next: () => {
-
-      this.currentStatusId = 1;
-
-      Swal.fire({
-        icon: 'success',
-        title: 'Trip Resubmitted Successfully'
-      });
-
-    },
-    error: () => {
-      Swal.fire('Error', 'Resubmit failed', 'error');
-    }
+  Swal.fire({
+    icon:'success',
+    title:'Trip Resubmitted'
   });
 
+});
 }
+
   //   updateTrip() {
   //   this.tripService.updateTrip(this.tripId, this.tripForm.value)
   //     .subscribe({

@@ -9,9 +9,9 @@
     <div class="row">
       <!-- Fuel Type -->
       <div class="col-md-3">
-       <label class="form-label">
-  <i class="bi bi-fuel-pump icon-green"></i> Fuel Type
-</label>
+        <label class="form-label">
+          <i class="bi bi-fuel-pump icon-green"></i> Fuel Type
+        </label>
         <select class="form-select" (change)="onFuelTypeChange($event)">
           <option value="All">All</option>
           <option>Petrol</option>
@@ -22,39 +22,39 @@
 
       <!-- Start Date -->
       <div class="col-md-3">
-       <label class="form-label">
-  <i class="bi bi-calendar-event icon-green"></i> Start Date
-</label>
+        <label class="form-label">
+          <i class="bi bi-calendar-event icon-green"></i> Start Date
+        </label>
         <input type="date" class="form-control" (change)="onStartDateChange($event)">
       </div>
 
       <!-- End Date -->
       <div class="col-md-3">
-       <label class="form-label">
-  <i class="bi bi-calendar-check icon-green"></i> End Date
-</label>
+        <label class="form-label">
+          <i class="bi bi-calendar-check icon-green"></i> End Date
+        </label>
         <input type="date" class="form-control" (change)="onEndDateChange($event)">
       </div>
       <!-- <input type="text" (input)="searchText.set($any($event.target).value)" placeholder="Search vehicle"> -->
 
-     
+
       <div class="col-md-2 d-flex align-items-end">
         <button class="search-btn w-100" (click)="onSearchClick()"><i class="bi bi-search"></i> Search
-          
+
         </button>
       </div>
-       <!-- Vehicle Search -->
+      <!-- Vehicle Search -->
       <div class="col-md-3">
         <br>
-<div class="input-group">
-              <span class="input-group-text bg-white border-end-0"><i class="fas fa-search text-muted"></i></span>
-              <input type="text" class="form-control border-start-0"
-                placeholder="Quick Search by Vehicle number or vehcile Name" (input)="onSearch($event)" />
-            </div>      
-              <!-- <input type="text" class="form-control" placeholder="Quick Search by Vehicle number or vehcile Name "
+        <div class="input-group">
+          <span class="input-group-text bg-white border-end-0"><i class="fas fa-search text-muted"></i></span>
+          <input type="text" class="form-control border-start-0"
+            placeholder="Quick Search by Vehicle number or vehcile Name" (input)="onSearch($event)" />
+        </div>
+        <!-- <input type="text" class="form-control" placeholder="Quick Search by Vehicle number or vehcile Name "
           (input)="searchText.set($any($event.target).value)"> -->
       </div>
-      
+
 
     </div>
 
@@ -68,8 +68,8 @@
       <div class="entries-dropdown">
 
         <label>
-  <i class="bi bi-list-ul icon-green"></i> Show Entries
-</label>
+          <i class="bi bi-list-ul icon-green"></i> Show Entries
+        </label>
 
         <select class="form-select" (change)="onPageSizeChange($event)">
           <option *ngFor="let size of pageSizeOptions" [value]="size">
@@ -91,6 +91,7 @@
           <th>Distance</th>
           <th>Fuel Used</th>
           <th>Total Emission</th>
+          <th>Status</th>
           <th>Action</th>
         </tr>
       </thead>
@@ -111,9 +112,32 @@
           </td>
 
           <td>
+
+            <span class="badge" [ngClass]="{
+    'bg-warning': e.statusId === 1,
+    'bg-success': e.statusId === 2,
+    'bg-danger': e.statusId === 3
+  }">
+              <i *ngIf="e.statusId === 1" class="bi bi-clock"></i>
+              <i *ngIf="e.statusId === 2" class="bi bi-check-circle"></i>
+              <i *ngIf="e.statusId === 3" class="bi bi-x-circle"></i>
+
+              {{
+              e.statusId === 1 ? 'Reported' :
+              e.statusId === 2 ? 'Approved' :
+              e.statusId === 3 ? 'Rejected' :
+              'Unknown'
+              }}
+
+            </span>
+
+          </td>
+
+
+          <td>
             <button class="btn-open" (click)="openTrip(e.tripId)">
-  <i class="bi bi-eye"></i> 
-</button>
+              <i class="bi bi-eye"></i>
+            </button>
           </td>
 
         </tr>
@@ -121,26 +145,26 @@
       </tbody>
 
     </table>
-   <div class="pagination">
+    <div class="pagination">
 
-  <button (click)="previousPage()" [disabled]="currentPage() === 1">
-    <i class="bi bi-arrow-left"></i> Previous
-  </button>
+      <button (click)="previousPage()" [disabled]="currentPage() === 1">
+        <i class="bi bi-arrow-left"></i> Previous
+      </button>
 
-  <span>
-    <i class="bi bi-file-earmark-text"></i>
-    Page {{currentPage()}} of {{totalPages()}}
-  </span>
+      <span>
+        <i class="bi bi-file-earmark-text"></i>
+        Page {{currentPage()}} of {{totalPages()}}
+      </span>
 
-  <button (click)="nextPage()" [disabled]="currentPage() === totalPages()">
-    Next <i class="bi bi-arrow-right"></i>
-  </button>
+      <button (click)="nextPage()" [disabled]="currentPage() === totalPages()">
+        Next <i class="bi bi-arrow-right"></i>
+      </button>
 
-</div>
+    </div>
   </div>
 
 
-  
+
   <!-- <div *ngIf="selectedRecord" class="modal-overlay">
 
     <div class="modal-container">

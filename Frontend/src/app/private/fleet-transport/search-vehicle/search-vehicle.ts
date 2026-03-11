@@ -15,6 +15,7 @@ interface VehicleEmissionDisplay {
   fuelConsumedLtr: number;
   tripStartDateTime: string;
   tripEndDateTime: string;
+  statusId: number; 
 
   totalCO2: number;
   totalNO2: number;
