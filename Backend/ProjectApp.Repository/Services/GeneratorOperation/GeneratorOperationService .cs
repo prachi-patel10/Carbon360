@@ -300,12 +300,7 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
             return rows > 0;
         }
 
-<<<<<<< Updated upstream
         public async Task<bool> UpdateStatusAsync(string encryptedId, int actionId)
-=======
-        // ================= UPDATE STATUS =================
-        public async Task<bool> UpdateStatusAsync(string encryptedId, int statusId)
->>>>>>> Stashed changes
         {
             int operationId = _idEncoder.Decode(encryptedId);
             int userId = GetCurrentUserId();
@@ -316,15 +311,9 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
             command.CommandText = "USP_CB_GeneratorUpdateStatus";
             command.CommandType = CommandType.StoredProcedure;
 
-<<<<<<< Updated upstream
             command.Parameters.Add(new SqlParameter("@OperationId", operationId));
             command.Parameters.Add(new SqlParameter("@ActionId", actionId));
             command.Parameters.Add(new SqlParameter("@UpdatedBy", userId));
-=======
-            command.Parameters.Add(new SqlParameter("@OperationId", id));
-            command.Parameters.Add(new SqlParameter("@StatusId", statusId));
-            command.Parameters.Add(new SqlParameter("@UserId", userId));
->>>>>>> Stashed changes
 
             if (connection.State != ConnectionState.Open)
                 await connection.OpenAsync();

@@ -180,12 +180,9 @@ namespace ProjectApp.Repository.Services.SiteLocation
                 row.ContainsKey(key) && row[key] != DBNull.Value
                 && Convert.ToBoolean(row[key]);
 
-<<<<<<< Updated upstream
-=======
-            int siteId = GetInt("SiteId");
-            int departmentId = GetInt("DepartmentId");
 
->>>>>>> Stashed changes
+            int siteId = GetInt("SiteId");
+
             return new SiteLocationResponseDTO
             {
                 Id = siteId,   // ADD THIS LINE
@@ -195,18 +192,11 @@ namespace ProjectApp.Repository.Services.SiteLocation
                 City = GetString("City"),
                 State = GetString("State"),
                 ShortCode = GetString("ShortCode"),
-<<<<<<< Updated upstream
                 IsActive = GetBool("IsActive")
             };
         }
-=======
-                DepartmentId = departmentId > 0
-                                ? _idEncoder.Encode(departmentId)
-                                : null,
-                DepartmentName = GetString("DepartmentName"),
-                IsActive = GetBool("IsActive")
-            };
-        }
+             
+     
         public async Task<string?> GetSiteNameByIdAsync(int siteId)
         {
             var result = await _spService.ExecuteSpAsync(
@@ -240,6 +230,5 @@ namespace ProjectApp.Repository.Services.SiteLocation
             return dataList;
         }
 
->>>>>>> Stashed changes
     }
 }
