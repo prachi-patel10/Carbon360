@@ -51,6 +51,8 @@ public partial class CB_VehicleTripEmission
 
     public decimal? ch4 { get; set; }
 
+    public virtual CB_MasterStatus Status { get; set; }
+
     public virtual CB_User entrybyNavigation { get; set; }
 
     public virtual CB_MasterCity fromcity { get; set; }

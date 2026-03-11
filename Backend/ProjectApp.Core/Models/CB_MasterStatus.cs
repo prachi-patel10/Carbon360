@@ -14,4 +14,8 @@ public partial class CB_MasterStatus
     public bool IsActive { get; set; }
 
     public bool IsDeleted { get; set; }
+
+    public virtual ICollection<CB_GeneratorOperation> CB_GeneratorOperations { get; set; } = new List<CB_GeneratorOperation>();
+
+    public virtual ICollection<CB_VehicleTripEmission> CB_VehicleTripEmissions { get; set; } = new List<CB_VehicleTripEmission>();
 }

@@ -111,6 +111,11 @@ public partial class CBContext : DbContext
             entity.HasOne(d => d.Site).WithMany(p => p.CB_GeneratorOperations)
                 .HasForeignKey(d => d.SiteId)
                 .HasConstraintName("FK_GeneratorOperation_Site");
+
+            entity.HasOne(d => d.Status).WithMany(p => p.CB_GeneratorOperations)
+                .HasForeignKey(d => d.StatusId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_GeneratorOperation_MasterStatus");
         });
 
         modelBuilder.Entity<CB_MasterCity>(entity =>
@@ -388,6 +393,11 @@ public partial class CBContext : DbContext
             entity.Property(e => e.tripenddatetime).HasColumnType("datetime");
             entity.Property(e => e.tripstartdatetime).HasColumnType("datetime");
             entity.Property(e => e.updatedate).HasColumnType("datetime");
+
+            entity.HasOne(d => d.Status).WithMany(p => p.CB_VehicleTripEmissions)
+                .HasForeignKey(d => d.StatusId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_CB_VehicleTripEmission_Status");
 
             entity.HasOne(d => d.entrybyNavigation).WithMany(p => p.CB_VehicleTripEmissionentrybyNavigations)
                 .HasForeignKey(d => d.entryby)
