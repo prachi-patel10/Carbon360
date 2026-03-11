@@ -167,7 +167,7 @@ this.filteredData.set(filtered.slice(startIndex, endIndex));
 
   openTrip(tripId: string) {
     if (!tripId) return;
-  this.router.navigate(['/dashboard/vehicle', tripId]);
+  this.router.navigate(['/dashboard/vehicle-ec', tripId]);
   }
   
   getPages(): number[] {

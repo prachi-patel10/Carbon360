@@ -94,18 +94,29 @@ export class TripComponent implements OnInit {
     this.userRole = this.getUserRole();
     // this.setupVehicleChangeListener();
   this.formOpenTime = new Date();
-  // this.initializeForm();
+  //this.initializeForm();
   this.loadAllMasterData();
   this.setupDurationListener();
   this.updateCurrentDateTime();
 
 
-    const tripId = this.route.snapshot.paramMap.get('id');
+     const tripId = this.route.snapshot.paramMap.get('id');
 
-    if (tripId) {
-       this.mode = 'view';  
-      this.loadTrip(tripId)
-    }
+  if (tripId) {
+
+    this.mode = 'view';
+
+    this.loadAllMasterData();
+
+    this.loadTrip(tripId);
+
+  } else {
+
+    this.mode = 'add';
+
+    this.loadAllMasterData();
+
+  }
     // this.setupAutoCalculation();
   }
 
@@ -145,9 +156,9 @@ export class TripComponent implements OnInit {
     this.calculateDuration();
     this.lockFormIfNeeded();//lockform rolewise 
 
-    // if (this.mode === 'view') {
-    //   this.tripForm.disable();
-    // }
+    if (this.mode === 'view') {
+      this.tripForm.disable();
+    }
 
   });
 
@@ -526,6 +537,10 @@ resubmitTrip() {
     this.tripForm.enable();
     this.tripDuration = '';
   }
+
+  goBack() {
+  this.router.navigate(['/dashboard/search-vehicle']);
+}
 
   canSubmit() {
   return this.userRole === 'reporter' && this.mode === 'add';
