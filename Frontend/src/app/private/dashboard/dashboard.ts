@@ -41,6 +41,7 @@ export class DashboardComponent {
       this.router.navigate(['/login']);
       return;
     }
+    
 
     this.loggedInUser = user.name;
     this.roles = user.roles ?? [];
