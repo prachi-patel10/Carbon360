@@ -191,5 +191,30 @@ namespace ProjectApp.API.Controllers.Account.VehicleTripEmission
 
             return Ok(result);
         }
+
+        [HttpGet("{id}/actions")]
+        public async Task<IActionResult> GetWorkflowActions(string id)
+        {
+            var actions = await _service.GetWorkflowActionsAsync(id);
+
+            if (actions == null || !actions.Any())
+            {
+                return Ok(new
+                {
+                    status = true,
+                    statusCode = 200,
+                    message = "No workflow actions available for this trip.",
+                    data = new List<object>()
+                });
+            }
+
+            return Ok(new
+            {
+                status = true,
+                statusCode = 200,
+                message = "Workflow actions fetched successfully.",
+                data = actions
+            });
+        }
     }
 }

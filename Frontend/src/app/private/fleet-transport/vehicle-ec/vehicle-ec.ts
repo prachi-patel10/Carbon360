@@ -22,6 +22,7 @@ export class TripComponent implements OnInit {
   vehicles: any[] = [];
   cities: any[] = [];
   fuels: any[] = [];
+  workflowActions: any[] = [];
   totalCO2: number = 0;
   totalNO2: number = 0;
   totalCH4: number = 0;
@@ -124,57 +125,50 @@ if (tripId) {
     // this.setupAutoCalculation();
   }
 
-  loadTrip(id: string) {
+ loadTrip(id: string) {
 
   this.tripService.getTripById(id).subscribe(res => {
- this.currentStatusId = res.statusId; 
- console.log("USER ROLE:", this.userRole);
-console.log("MODE:", this.mode);
-console.log("STATUS:", this.currentStatusId);
-    this.tripForm.patchValue({
 
+    this.currentStatusId = res.statusId;
+
+    console.log("USER ROLE:", this.userRole);
+    console.log("MODE:", this.mode);
+    console.log("STATUS:", this.currentStatusId);
+
+    this.tripForm.patchValue({
       vehicle_id: res.vehicleId,
       fromCityId: res.fromCityId,
       toCityId: res.toCityId,
-
       distanceKm: res.distanceKm,
       fuelConsumedLtr: res.fuelConsumedLtr,
-
       tripStartDateTime: res.tripStartDateTime,
       tripEndDateTime: res.tripEndDateTime,
-
       fuelType: res.fuelType,
-
       co2Factor: res.cO2,
       no2Factor: res.nO2,
       ch4Factor: res.cH4,
-
       totalCO2: res.totalCO2,
       totalNO2: res.totalNO2,
       totalCH4: res.totalCH4,
       finalTotalEmission: res.totalEmission
-
     });
-    
 
-    // store in variables if UI uses them
     this.totalCO2 = res.totalCO2;
     this.totalNO2 = res.totalNO2;
     this.totalCH4 = res.totalCH4;
-    this.calculateDuration();
-    this.lockFormIfNeeded();//lockform rolewise 
 
-    if (this.mode === 'view') {
-      this.tripForm.disable();
-    }
+    this.calculateDuration();
+
+    // ROLE BASED LOCK
+    this.lockFormIfNeeded();
+
+    // Load buttons
+    this.loadWorkflowActions(id);
 
   });
 
 }
-
-
-
-  loadAllMasterData() {
+ loadAllMasterData() {
 
     this.tripService.getVehicles().subscribe(vehicleRes => {
 
@@ -213,6 +207,21 @@ console.log("STATUS:", this.currentStatusId);
     });
 
   }
+
+  loadWorkflowActions(tripId: string) {
+
+  this.tripService.getWorkflowActions(tripId).subscribe((res:any)=>{
+
+    if(res.status){
+      this.workflowActions = res.data || [];
+    }
+
+    console.log("Workflow Actions:", this.workflowActions);
+
+  });
+
+}
+
   setupVehicleChangeListener() {
     this.tripForm.get('vehicle_id')?.valueChanges.subscribe(selectedVehicleId => {
       if (!selectedVehicleId) return;
@@ -281,108 +290,126 @@ console.log("STATUS:", this.currentStatusId);
     this.tripForm.get('tripEndDateTime')?.valueChanges.subscribe(() => this.calculateDuration());
   }
 
-  submitTrip() {
+ submitTrip() {
 
-    if (this.tripForm.invalid) {
-      this.tripForm.markAllAsTouched();
+  if (this.currentStatusId === 1) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Trip already submitted'
+    });
+    return;
+  }
 
-      Swal.fire({
-        icon: 'warning',
-        title: 'Validation Error',
-        text: 'Please fill all required fields'
-      });
+  if (this.tripForm.invalid) {
 
-      return;
-    }
-
-    const formValue = this.tripForm.getRawValue();
-
-    const payload = {
-      VehicleId: formValue.vehicle_id,
-      FromCityId: formValue.fromCityId,
-      ToCityId: formValue.toCityId,
-      DistanceKm: Number(formValue.distanceKm),
-      FuelConsumedLtr: Number(formValue.fuelConsumedLtr),
-      TripStartDateTime: formValue.tripStartDateTime,
-      TripEndDateTime: formValue.tripEndDateTime,
-      FuelType: formValue.fuelId,
-      StatusId: 1
-    };
-
-    console.log("Submitting payload:", payload);
-
-    this.tripService.addTrip(payload).subscribe({
-  next: (res: any) => {
+    this.tripForm.markAllAsTouched();
 
     Swal.fire({
-      icon: 'success',
-      title: 'Trip Submitted Successfully!',
-      confirmButtonColor: '#16a34a',
-      confirmButtonText: 'OK'
-    }).then(() => {
-
-      this.router.navigate(['/dashboard/MyActionVehicle']);
-
+      icon: 'warning',
+      title: 'Validation Error',
+      text: 'Please fill all required fields'
     });
 
-  },
-
-  error: (err: any) => {
-    console.error(err);
-    Swal.fire('Error', 'Failed to submit record', 'error');
+    return;
   }
-});
 
-  }
-  lockFormIfNeeded() {
+  const formValue = this.tripForm.getRawValue();
 
-    // Example:
-    // 1 = Draft
-    // 2 = Submitted
-    // 3 = Approved
-    // 4 = Rejected
-if (this.userRole === 'corporate') {
+  const payload = {
+    VehicleId: formValue.vehicle_id,
+    FromCityId: formValue.fromCityId,
+    ToCityId: formValue.toCityId,
+    DistanceKm: Number(formValue.distanceKm),
+    FuelConsumedLtr: Number(formValue.fuelConsumedLtr),
+    TripStartDateTime: formValue.tripStartDateTime,
+    TripEndDateTime: formValue.tripEndDateTime,
+    FuelType: formValue.fuelId,
+    StatusId: 1
+  };
+
+  this.tripService.addTrip(payload).subscribe({
+
+    next: (res: any) => {
+
+      Swal.fire({
+        icon: 'success',
+        title: 'Trip Submitted Successfully'
+      }).then(() => {
+
+        this.router.navigate(['/dashboard/MyActionVehicle']);
+
+      });
+
+    },
+
+    error: () => {
+
+      Swal.fire('Error', 'Failed to submit record', 'error');
+
+    }
+
+  });
+
+}
+
+ lockFormIfNeeded() {
+
+  // Corporate always readonly
+  if (this.userRole === 'corporate') {
     this.tripForm.disable();
     return;
   }
 
   if (this.userRole === 'reporter') {
 
+    // Submitted
     if (this.currentStatusId === 1) {
-      this.tripForm.disable(); // waiting approval
+      this.tripForm.disable();
     }
 
-    if (this.currentStatusId === 2) {
-      this.tripForm.disable(); // approved
+    // Approved
+    else if (this.currentStatusId === 2) {
+      this.tripForm.disable();
     }
 
-    if (this.currentStatusId === 3) {
-      this.tripForm.enable(); // rejected → editable
+    // Rejected → allow edit
+    else if (this.currentStatusId === 3) {
+      this.tripForm.enable();
     }
 
   }
 
+}
+
+ updateStatus(workflowId: number) {
+
+  const tripId = this.route.snapshot.paramMap.get('id');
+
+  if (!tripId) return;
+
+  // prevent duplicate action
+  if (this.currentStatusId !== 1) {
+
+    Swal.fire({
+      icon: 'warning',
+      title: 'Action already taken'
+    });
+
+    return;
   }
 
- updateStatus(statusId: number) {
+  this.tripService.updateTripStatus(tripId, workflowId)
+    .subscribe((res: any) => {
 
-const tripId = this.route.snapshot.paramMap.get('id');
+      Swal.fire({
+        icon: 'success',
+        title: 'Status Updated'
+      });
 
-if (!tripId) return;
+      this.loadTrip(tripId);
 
-this.tripService.updateTripStatus(tripId, statusId).subscribe((res:any)=>{
+    });
 
-  this.currentStatusId = statusId;
-
-  Swal.fire({
-    icon:'success',
-    title:'Status Updated'
-  });
-
-  // ⭐ IMPORTANT LINE
-  this.loadTrip(tripId);
-
-});
 }
   //validation
   cityValidator(group: FormGroup) {
@@ -614,23 +641,15 @@ resubmitTrip() {
   this.router.navigate(['/dashboard/search-vehicle']);
 }
 
-  canSubmit() {
+ canSubmit() {
   return this.userRole === 'reporter' && this.mode === 'add';
-}
-
-canEdit() {
-  return this.userRole === 'reporter' && this.currentStatusId === 3;
 }
 
 canResubmit() {
   return this.userRole === 'reporter' && this.currentStatusId === 3;
 }
 
-canApprove() {
-  return this.userRole === 'corporate' && this.currentStatusId === 1;
-}
-
-canReject() {
+canCorporateAction() {
   return this.userRole === 'corporate' && this.currentStatusId === 1;
 }
 }

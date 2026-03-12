@@ -1,4 +1,5 @@
 ﻿using ProjectApp.Core.DTOs.Account.VehicleTripEmission;
+using ProjectApp.Core.DTOs.Common;
 using ProjectApp.Repository.Utilities.SP;
 using System;
 using System.Collections.Generic;
@@ -43,6 +44,8 @@ namespace ProjectApp.Repository.Interfaces.VehicleTripEmission
 
         //Task<PageResult> GetMyActionTripsAsync(int pageNumber, int pageSize);
         Task<PageResult> GetMyActionTripsAsync(int pageNumber, int pageSize, string sortColumn = "tripStartDateTime", string sortDirection = "DESC");
+
+        Task<List<WorkflowActionDTO>> GetWorkflowActionsAsync(string encryptedId);
     }
 
 

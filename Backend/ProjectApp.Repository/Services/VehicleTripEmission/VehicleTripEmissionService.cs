@@ -3,6 +3,7 @@ using HashidsNet;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using ProjectApp.Core.DTOs.Account.VehicleTripEmission;
+using ProjectApp.Core.DTOs.Common;
 using ProjectApp.Core.DTOs.Masters.VehicleType;
 using ProjectApp.Core.Models;
 using ProjectApp.Repository.Interfaces.Common;
@@ -155,12 +156,12 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
             var parameters = new[]
             {
         new SqlParameter("@TripId", tripId),
-        new SqlParameter("@StatusId", dto.StatusId),
+        new SqlParameter("@WorkflowId", dto.WorkflowId),
         new SqlParameter("@UserId", userId)
     };
 
             await _context.Database.ExecuteSqlRawAsync(
-                "EXEC USP_CB_UpdateVehicleTripStatus @TripId,@StatusId,@UserId",
+                "EXEC USP_CB_UpdateVehicleTripStatus @TripId,@WorkflowId,@UserId",
                 parameters);
 
             return true;
@@ -638,7 +639,43 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
             return (result, totalRecords);
         }
 
+        public async Task<List<WorkflowActionDTO>> GetWorkflowActionsAsync(string encryptedId)
+        {
+            int tripId = _idEncoder.Decode(encryptedId);
+            string role = _userContext.Role.Contains("Corporate")
+       ? "Corporate"
+       : "Reporter";
 
+            await using var connection = _context.Database.GetDbConnection();
+            await using var command = connection.CreateCommand();
+
+            command.CommandText = "USP_CB_GetWorkflowActions";
+            command.CommandType = CommandType.StoredProcedure;
+
+            command.Parameters.Add(new SqlParameter("@TripId", tripId));
+            command.Parameters.Add(new SqlParameter("@RoleName", role));
+
+            if (connection.State != ConnectionState.Open)
+                await connection.OpenAsync();
+
+            var actions = new List<WorkflowActionDTO>();
+
+            await using var reader = await command.ExecuteReaderAsync();
+
+            while (await reader.ReadAsync())
+            {
+                actions.Add(new WorkflowActionDTO
+                {
+                    WorkflowId = reader.GetInt32(reader.GetOrdinal("WorkflowId")),
+                    CurrentStatusId = reader.GetInt32(reader.GetOrdinal("currentstatusId")),
+                    NextStatusId = reader.GetInt32(reader.GetOrdinal("nextstatusId")),
+                    ActionName = reader["ActionName"]?.ToString(),
+                    RoleName = reader["RoleName"]?.ToString()
+                });
+            }
+
+            return actions;
+        }
     }
 }
     

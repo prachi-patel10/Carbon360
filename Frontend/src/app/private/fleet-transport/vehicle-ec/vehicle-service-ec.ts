@@ -32,11 +32,11 @@ export class TripService {
     return this.http.post(`${this.apiUrl}/VehicleTripEmission`, data);
   }
 
-  updateTripStatus(tripId: string, statusId: number): Observable<any> {
+  updateTripStatus(tripId: string, workflowId: number): Observable<any> {
 
   const body = {
     TripId: tripId,
-    StatusId: statusId
+    WorkflowId: workflowId
   };
 
   return this.http.patch(
@@ -57,7 +57,11 @@ updateTrip(tripId: string, data: any): Observable<any> {
     data
   );
 }
-  
+  getWorkflowActions(tripId: string): Observable<any> {
+  return this.http.get(
+    `${this.apiUrl}/VehicleTripEmission/${tripId}/actions`
+  );
+}
 // updateTrip(hashId: string, data: any): Observable<any> {
 //   return this.http.put(
 //     `${this.apiUrl}/VehicleTripEmission/${hashId}`,
