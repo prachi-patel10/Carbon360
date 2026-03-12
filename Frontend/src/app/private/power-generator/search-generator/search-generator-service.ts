@@ -7,6 +7,7 @@ export interface GeneratorOperation {
   operationId: string;
   generatorId: string;
   generatorName: string | null;
+  entryDate: string;
   operationDate: string;
   startTime: Date;
   endTime: Date;
@@ -28,7 +29,7 @@ export interface GeneratorOperation {
 export class SearchGeneratorService {
   private apiUrl = `${environment.apiBaseUrl}/GeneratorOperation`;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   getAll(): Observable<GeneratorOperation[]> {
     return this.http.get<GeneratorOperation[]>(`${this.apiUrl}/All`);
@@ -50,19 +51,24 @@ export class SearchGeneratorService {
     return this.http.delete(`${this.apiUrl}/${id}`);
   }
 
-getEmissions(): Observable<GeneratorOperation[]> {
-  return this.http.get<any>(`${this.apiUrl}/search?pageNumber=1&pageSize=1000`).pipe(
-    map(res => res.data.records)
-  );
-}
+  // getEmissions(): Observable<GeneratorOperation[]> {
+  //   return this.http.get<any>(`${this.apiUrl}/search?pageNumber=1&pageSize=1000`).pipe(
+  //     map(res => res.data.records)
+  //   );
+  // }
+
+  getEmissions(): Observable<GeneratorOperation[]> {
+    return this.http.get<GeneratorOperation[]>(`${this.apiUrl}/allgenerator`);
+  }
 
   getGenerators(): Observable<any> {
     return this.http.get(`${environment.apiBaseUrl}/generator`);
   }
 
   getFuels(): Observable<any[]> {
-  return this.http.get<any>(`${environment.apiBaseUrl}/Fuel/All`).pipe(
-    map(res => res.data)
-  );
-}
+    return this.http.get<any>(`${environment.apiBaseUrl}/Fuel/All`).pipe(
+      map(res => res.data)
+    );
+  }
+
 }

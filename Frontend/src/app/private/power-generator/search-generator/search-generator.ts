@@ -1,7 +1,7 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { GeneratorOperation, SearchGeneratorService } from './search-generator-service';
 import { FueltypeService } from '../../masters/fueltype/fueltype-service';
-import { Router,ActivatedRoute } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
@@ -45,12 +45,15 @@ export class SearchGenerator implements OnInit {
 
   calculatedResult: EmissionModal | null = null;
 
+  sortColumn: string = '';
+  sortDirection: 'asc' | 'desc' = 'asc';
+
   constructor(
     private service: SearchGeneratorService,
     private fuelService: FueltypeService,
     private router: Router,
-      private route: ActivatedRoute,
-  ) {}
+    private route: ActivatedRoute,
+  ) { }
 
   ngOnInit(): void {
     this.loadEmissions();
@@ -79,8 +82,11 @@ export class SearchGenerator implements OnInit {
           totalEmission: e.totalEmission ?? 0
         }));
 
-        this.emissions.set(mapped);
-        this.filteredData.set(mapped);
+        const sorted = mapped.sort((a, b) =>
+          new Date(b.entryDate).getTime() - new Date(a.entryDate).getTime()
+        );
+        this.emissions.set(sorted);
+        this.filteredData.set(sorted);
       },
       error: (err) => console.error('Error loading emissions', err)
     });
@@ -140,7 +146,7 @@ export class SearchGenerator implements OnInit {
         (e.fuelType || '').toLowerCase() === fFuel.toLowerCase();
 
       let matchesDate = true;
-      const opDate = new Date(e.operationDate);
+      const opDate = new Date(e.entryDate);
 
       if (startTime) matchesDate = matchesDate && opDate >= new Date(startTime);
       if (endTime) matchesDate = matchesDate && opDate <= new Date(endTime);
@@ -191,14 +197,14 @@ export class SearchGenerator implements OnInit {
   //   };
   // }
 
-//   openOperation(operationId: string) {
+  //   openOperation(operationId: string) {
 
-//   this.router.navigate([
-//     '/dashboard/generator-emission',
-//     operationId
-//   ]);
+  //   this.router.navigate([
+  //     '/dashboard/generator-emission',
+  //     operationId
+  //   ]);
 
-// }
+  // }
 
 
   /* ================= CLOSE MODAL ================= */
@@ -209,14 +215,43 @@ export class SearchGenerator implements OnInit {
 
   goToDetail(operationId: string) {
 
-  this.router.navigate(
-    ['/dashboard/generator-ec', operationId],
-    {
-      queryParams: {
-        mode: 'view'
+    this.router.navigate(
+      ['/dashboard/generator-ec', operationId],
+      {
+        queryParams: {
+          mode: 'view'
+        }
       }
-    }
-  );
+    );
 
-}
+  }
+
+  sortBy(column: string) {
+
+    if (this.sortColumn === column) {
+      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.sortColumn = column;
+      this.sortDirection = 'asc';
+    }
+
+    const sorted = [...this.filteredData()].sort((a: any, b: any) => {
+
+      let valueA = a[column];
+      let valueB = b[column];
+
+      if (valueA == null) valueA = '';
+      if (valueB == null) valueB = '';
+
+      if (typeof valueA === 'string') valueA = valueA.toLowerCase();
+      if (typeof valueB === 'string') valueB = valueB.toLowerCase();
+
+      if (valueA < valueB) return this.sortDirection === 'asc' ? -1 : 1;
+      if (valueA > valueB) return this.sortDirection === 'asc' ? 1 : -1;
+
+      return 0;
+    });
+
+    this.filteredData.set(sorted);
+  }
 }

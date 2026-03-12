@@ -49,22 +49,44 @@
         <table class="table table-hover align-middle mb-0">
           <thead>
             <tr>
-              <th>Generator</th>
-              <th>Date</th>
-              <!-- <th>Start Time</th>
-              <th>End Time</th> -->
-              <th>Load Factor (%)</th>
-              <th>Fuel (L)</th>
-              <!-- <th>Emission (kg CO₂e)</th> -->
-              <th>Action</th>
+              <th (click)="sortBy('generatorName')" style="cursor:pointer">
+                Generator
+              </th>
+
+              <th (click)="sortBy('entryDate')" style="cursor:pointer">
+                Entry Date
+              </th>
+
+              <th (click)="sortBy('startTime')" style="cursor:pointer">
+                Start DateTime
+              </th>
+
+              <th (click)="sortBy('endTime')" style="cursor:pointer">
+                End DateTime
+              </th>
+
+              <th (click)="sortBy('loadFactor')" style="cursor:pointer">
+                Load Factor (%)
+              </th>
+
+              <th (click)="sortBy('fuelConsumedLiters')" style="cursor:pointer">
+                Fuel (L)
+              </th>
+
+              <th>
+                Action
+              </th>
             </tr>
           </thead>
           <tbody>
             <tr *ngFor="let e of filteredEmissions()">
               <td>{{ e.generatorName }}</td>
-              <td>{{ e.operationDate | date:'shortDate' }}</td>
-              <!-- <td>{{ e.startTime | date:'short' }}</td>
-              <td>{{ e.endTime | date:'short' }}</td> -->
+              <!-- <td>{{ e.entryDate | date:'dd-MMM-yyyy HH:mm' : 'UTC' }}</td> -->
+              <td>{{ e.entryDate | date:'dd-MMM-yyyy' : 'UTC' }}</td>
+              <td>{{ e.startTime | date:'short' }}</td>
+              <td>{{ e.endTime | date:'short' }}</td>
+              <!-- <td>{{ e.startTime | date:'hh:mm a' }}</td>
+              <td>{{ e.endTime | date:'hh:mm a' }}</td> -->
               <td>{{ e.loadFactor }}%</td>
               <td>{{ e.fuelConsumedLiters }}</td>
               <!-- <td>{{ e.totalEmission }}</td> -->

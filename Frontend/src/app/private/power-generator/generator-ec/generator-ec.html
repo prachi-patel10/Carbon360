@@ -1,88 +1,86 @@
 <div class="container py-4">
 
   <!-- ================= FORM ================= -->
-   <div class="card mb-4"> 
-  <form [formGroup]="operationForm" (ngSubmit)="submitOperation()" class="row g-3">
+  <div class="card mb-4">
+    <form [formGroup]="operationForm" (ngSubmit)="submitOperation()" class="row g-3">
 
-    <!-- ================= SITE ================= -->
-    <div class="col-md-3">
-      <label class="form-label fw-bold">Site Location</label>
-     <select class="form-select" formControlName="SiteId">
-  <option [ngValue]="null">-- Select Site --</option>
-
-  <option *ngFor="let s of sites" [ngValue]="s.siteId">
-    {{ s.siteName }}
-  </option>
-</select>
-      <div class="text-danger" *ngIf="isInvalid('SiteId')">Site is required</div>
-    </div>
-
-    <!-- ================= GENERATOR ================= -->
-    <div class="col-md-3">
-      <label class="form-label fw-bold">Generator</label>
-     <select class="form-select" formControlName="GeneratorId">
-
-  <option [ngValue]="null">-- Select Generator --</option>
-
-  <option *ngFor="let g of generators" [ngValue]="g.generatorId">
-    {{ g.generatorName }}
-  </option>
-
-</select>
-      <div class="text-danger" *ngIf="isInvalid('GeneratorId')">Generator is required</div>
-    </div>
-
-    <!-- ================= START TIME ================= -->
-    <div class="col-md-3">
-      <label class="form-label fw-bold">Start Date & Time</label>
-      <input type="datetime-local" class="form-control" formControlName="StartTime">
-      <div class="text-danger" *ngIf="isInvalid('StartTime')">
-        <span *ngIf="operationForm.get('StartTime')?.errors?.['required']">Start time is required</span>
-        <span *ngIf="operationForm.get('StartTime')?.errors?.['futureDate']">Future date/time not allowed</span>
+      <!-- ================= SITE ================= -->
+      <div class="col-md-3">
+        <label class="form-label fw-bold">Site Location <span class="text-danger">*</span></label>
+        <select class="form-select" formControlName="SiteId" required>
+          <option [ngValue]="null">-- Select Site --</option>
+          <option *ngFor="let s of sites" [ngValue]="s.siteId">
+            {{ s.siteName }}
+          </option>
+        </select>
+        <div class="text-danger" *ngIf="isInvalid('SiteId')">Site is required</div>
       </div>
-    </div>
 
-    <!-- ================= END TIME ================= -->
-    <div class="col-md-3">
-      <label class="form-label fw-bold">End Date & Time</label>
-      <input type="datetime-local" class="form-control" formControlName="EndTime">
-      <div class="text-danger" *ngIf="isInvalid('EndTime')">
-        <span *ngIf="operationForm.get('EndTime')?.errors?.['required']">End time is required</span>
-        <span *ngIf="operationForm.get('EndTime')?.errors?.['futureDate']">Future date/time not allowed</span>
+      <!-- ================= GENERATOR ================= -->
+      <div class="col-md-3">
+        <label class="form-label fw-bold">Generator <span class="text-danger">*</span></label>
+        <select class="form-select" formControlName="GeneratorId" required>
+          <option [ngValue]="null">-- Select Generator --</option>
+          <option *ngFor="let g of generators" [ngValue]="g.generatorId">
+            {{ g.generatorName }}
+          </option>
+        </select>
+        <div class="text-danger" *ngIf="isInvalid('GeneratorId')">Generator is required</div>
       </div>
-    </div>
 
-    <!-- ================= LOAD FACTOR ================= -->
-    <div class="col-md-3">
-      <label class="form-label fw-bold">Load Factor</label>
-      <input type="number" class="form-control" formControlName="LoadFactor" placeholder="0">
-      <div class="text-danger" *ngIf="isInvalid('LoadFactor')">
-        <span *ngIf="operationForm.get('LoadFactor')?.errors?.['required']">Load Factor is required</span>
-        <span *ngIf="operationForm.get('LoadFactor')?.errors?.['min']">Cannot be negative</span>
+      <!-- ================= START TIME ================= -->
+      <div class="col-md-3">
+        <label class="form-label fw-bold">Start Date & Time <span class="text-danger">*</span></label>
+        <input type="datetime-local" class="form-control" formControlName="StartTime" required>
+        <div class="text-danger" *ngIf="isInvalid('StartTime')">
+          <span *ngIf="operationForm.get('StartTime')?.errors?.['required']">Start time is required</span>
+          <span *ngIf="operationForm.get('StartTime')?.errors?.['futureDate']">Future date/time not allowed</span>
+        </div>
       </div>
-    </div>
 
-    <!-- ================= FUEL CONSUMED ================= -->
-    <div class="col-md-3">
-      <label class="form-label fw-bold">Fuel Consumed (Liters)</label>
-      <input type="number" class="form-control" formControlName="FuelConsumedLiters" placeholder="0">
-      <div class="text-danger" *ngIf="isInvalid('FuelConsumedLiters')">
-        <span *ngIf="operationForm.get('FuelConsumedLiters')?.errors?.['required']">Fuel is required</span>
-        <span *ngIf="operationForm.get('FuelConsumedLiters')?.errors?.['min']">Cannot be negative</span>
+      <!-- ================= END TIME ================= -->
+      <div class="col-md-3">
+        <label class="form-label fw-bold">End Date & Time <span class="text-danger">*</span></label>
+        <input type="datetime-local" class="form-control" formControlName="EndTime" required>
+        <div class="text-danger" *ngIf="isInvalid('EndTime')">
+          <span *ngIf="operationForm.get('EndTime')?.errors?.['required']">End time is required</span>
+          <span *ngIf="operationForm.get('EndTime')?.errors?.['futureDate']">Future date/time not allowed</span>
+        </div>
       </div>
-    </div>
 
-    <!-- ================= FORM BUTTONS ================= -->
-    <div class="col-12 mt-3" *ngIf="!isViewMode && !isReviewMode">
-      <button type="submit" class="btn btn-primary">
-        {{ !operationForm.value.OperationId ? 'Save' : 'Update' }}
-      </button>
+      <!-- ================= LOAD FACTOR ================= -->
+      <div class="col-md-3">
+        <label class="form-label fw-bold">Load Factor % <span class="text-danger">*</span></label>
+        <input type="number" class="form-control" formControlName="LoadFactor" placeholder="0%" required>
+        <div class="text-danger" *ngIf="isInvalid('LoadFactor')">
+          <span *ngIf="operationForm.get('LoadFactor')?.errors?.['required']">Load Factor is required</span>
+          <span *ngIf="operationForm.get('LoadFactor')?.errors?.['min']">Cannot be negative</span>
+          <span *ngIf="operationForm.get('LoadFactor')?.errors?.['max']">Cannot exceed 100%</span>
+        </div>
+      </div>
 
-      <button type="button" class="btn btn-secondary ms-2" (click)="resetForm()">Reset</button>
-    </div>
+      <!-- ================= FUEL CONSUMED ================= -->
+      <div class="col-md-3">
+        <label class="form-label fw-bold">Fuel Consumed (Liters) <span class="text-danger">*</span></label>
+        <input type="number" class="form-control" formControlName="FuelConsumedLiters" placeholder="0" required>
+        <div class="text-danger" *ngIf="isInvalid('FuelConsumedLiters')">
+          <span *ngIf="operationForm.get('FuelConsumedLiters')?.errors?.['required']">Fuel is required</span>
+          <span *ngIf="operationForm.get('FuelConsumedLiters')?.errors?.['min']">Cannot be negative</span>
+        </div>
+      </div>
 
-  </form>
+      <!-- ================= FORM BUTTONS ================= -->
+      <div class="col-12 mt-3" *ngIf="!isViewMode && !isReviewMode">
+        <button type="submit" class="btn btn-primary">
+          {{ !operationForm.value.OperationId ? 'Save' : 'Update' }}
+        </button>
+
+        <button type="button" class="btn btn-secondary ms-2" (click)="resetForm()">Reset</button>
+      </div>
+
+    </form>
   </div>
+
 
   <!-- ================= GENERATOR RESULT SECTION ================= -->
   <div class="card result-card" *ngIf="isViewMode || isReviewMode">
@@ -99,7 +97,7 @@
     <div class="result-grid">
 
       <!-- Inputs Display -->
-      <div><strong>Site:</strong> {{ getSiteName(operationForm.get('SiteId')?.value) }}</div>
+      <!-- <div><strong>Site:</strong> {{ getSiteName(operationForm.get('SiteId')?.value) }}</div>
       <div><strong>Generator:</strong> {{ getGeneratorName(operationForm.get('GeneratorId')?.value) }}</div>
 
       <div><strong>Start Time:</strong> {{ operationForm.get('StartTime')?.value | date:'medium' }}</div>
@@ -108,41 +106,48 @@
       <div><strong>Run Hours:</strong> {{ totalCalculations?.runHours | number:'1.2-2' }} hrs</div>
       <div><strong>Load Factor:</strong> {{ totalCalculations?.avgLoadFactor | number:'1.2-2' }} %</div>
 
-      <div><strong>Fuel Consumed:</strong> {{ totalCalculations?.totalFuel | number:'1.2-2' }} L</div>
+      <div><strong>Fuel Consumed:</strong> {{ totalCalculations?.totalFuel | number:'1.2-2' }} L</div> -->
 
       <hr class="full-width">
 
+      <div><strong>GWP (CH₄):</strong> {{ operation.gwP_CH4 }}</div>
+      <div><strong>GWP (NO₂):</strong> {{ operation.gwP_NO2 }}</div>
+
+
       <!-- Emission Factors -->
-      <h3 class="section-title">Overall Calculation</h3>
+      <!-- <h3 class="section-title">Overall Calculation</h3> -->
       <!-- <div><strong>CO₂ Factor:</strong> {{ totalCalculations?.co2Factor }}</div>
       <div><strong>NO₂ Factor:</strong> {{ totalCalculations?.no2Factor }}</div>
       <div><strong>CH₄ Factor:</strong> {{ totalCalculations?.ch4Factor }}</div> -->
 
       <!-- Calculations -->
-      <div class="formula full-width">
-        CO₂ = Fuel × CO₂ Factor <br>
-        = {{ totalCalculations?.totalFuel }} × {{ totalCalculations?.co2Factor }} <br>
-        = {{ totalCalculations?.totalCO2 | number:'1.3-3' }} kg
-      </div>
+      <!-- Calculations -->
+     <div class="formula full-width">
+  CO₂ = Fuel × CO₂ Factor <br>
+  = {{ fuelConsumed }} × {{ co2Factor }} <br>
+  = {{ totalCO2 | number:'1.3-3' }} kg
+</div>
 
-      <div class="formula full-width">
-        NO₂ = Fuel × NO₂ Factor <br>
-        = {{ totalCalculations?.totalFuel }} × {{ totalCalculations?.no2Factor }} <br>
-        = {{ totalCalculations?.totalNO2 | number:'1.6-6' }} kg
-      </div>
+<div class="formula full-width">
+  NO₂ = Fuel × NO₂ Factor <br>
+  = {{ fuelConsumed }} × {{ no2Factor }} <br>
+  = {{ totalNO2 | number:'1.6-6' }} kg
+</div>
 
-      <div class="formula full-width">
-        CH₄ = Fuel × CH₄ Factor <br>
-        = {{ totalCalculations?.totalFuel }} × {{ totalCalculations?.ch4Factor }} <br>
-        = {{ totalCalculations?.totalCH4 | number:'1.6-6' }} kg
-      </div>
+<div class="formula full-width">
+  CH₄ = Fuel × CH₄ Factor <br>
+  = {{ fuelConsumed }} × {{ ch4Factor }} <br>
+  = {{ totalCH4 | number:'1.6-6' }} kg
+</div>
 
-      <div class="formula full-width">
-        Total Emission CO₂ eq = CO₂ + (CH₄ × 28) + (NO₂ × 265) <br>
-        = {{ totalCalculations?.totalCO2 | number:'1.3-3' }} + ({{ totalCalculations?.totalCH4 | number:'1.6-6' }} × 28)
-        + ({{ totalCalculations?.totalNO2 | number:'1.6-6' }} × 265) <br>
-        = {{ totalCalculations?.totalEmission | number:'1.3-3' }} kg CO₂e
-      </div>
+<div class="formula full-width">
+  Total Emission CO₂ Eq = CO₂ + (CH₄ × GWP) + (NO₂ × GWP) <br>
+  = {{ totalCO2 | number:'1.3-3' }} + 
+    ({{ totalCH4 | number:'1.6-6' }} × {{ operation.gwP_CH4 }}) + 
+    ({{ totalNO2 | number:'1.6-6' }} × {{ operation.gwP_NO2 }}) <br>
+  <!-- = {{ totalEmission | number:'1.3-3' }} kg CO₂e -->
+     = {{ operation.totalEmission | number:'1.3-3' }} kg CO₂e
+</div>
     </div>
 
     <!-- Corporate Approve / Reject

@@ -58,6 +58,7 @@ export class GeneratorOperationComponent implements OnInit {
   generators: any[] = [];
   sites: any[] = [];
   operations: any[] = [];
+  operation: any = {}; 
 
   pageSource: 'myaction' | 'search' = 'search';
   isReviewMode = false;
@@ -66,6 +67,16 @@ export class GeneratorOperationComponent implements OnInit {
 
   showApproveReject = false;
   showResubmit = false;
+
+
+totalCO2: number = 0;
+totalNO2: number = 0;
+totalCH4: number = 0;
+fuelConsumed: number = 0;
+co2Factor: number = 2.68;   // default, can come from backend
+no2Factor: number = 0.00007; 
+ch4Factor: number = 0.00001;
+totalEmission: number = 0; 
 
   totalCalculations: any = {
     runHours: 0,
@@ -84,7 +95,7 @@ export class GeneratorOperationComponent implements OnInit {
     private service: GeneratorecService,
     private route: ActivatedRoute,
     private router: Router,
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.initForm();
@@ -146,20 +157,20 @@ export class GeneratorOperationComponent implements OnInit {
       GeneratorName: [''],
       StartTime: ['', [Validators.required, this.noFutureDateValidator]],
       EndTime: ['', [Validators.required, this.noFutureDateValidator]],
-      LoadFactor: [0, [Validators.required, Validators.min(0)]],
+      LoadFactor: [0, [Validators.required, Validators.min(0), Validators.max(100)]],
       FuelConsumedLiters: [0, [Validators.required, Validators.min(0)]],
     });
   }
 
   getSiteName(siteId: any): string {
-  const site = this.sites.find(s => s.siteId == siteId);
-  return site ? site.siteName : '';
-}
+    const site = this.sites.find(s => s.siteId == siteId);
+    return site ? site.siteName : '';
+  }
 
-getGeneratorName(generatorId: any): string {
-  const gen = this.generators.find(g => g.generatorId == generatorId);
-  return gen ? gen.generatorName : '';
-}
+  getGeneratorName(generatorId: any): string {
+    const gen = this.generators.find(g => g.generatorId == generatorId);
+    return gen ? gen.generatorName : '';
+  }
 
   public isInvalid(controlName: string): boolean {
     const control = this.operationForm.get(controlName);
@@ -196,35 +207,169 @@ getGeneratorName(generatorId: any): string {
     });
   }
 
-  loadOperations() {
-    this.service.getAll().subscribe({
-      next: (res: any) => (this.operations = res.data || []),
-      error: (err) => console.error('Failed to load operations:', err),
-    });
-  }
+calculateEmissions() {
+  // Ensure fuelConsumedLiters is a number
+  const fuel = Number(this.operation?.fuelConsumedLiters) || 0;
+  this.fuelConsumed = fuel;
+
+  // Force numeric GWP factors
+  const gwpCH4 = Number(this.operation?.gwP_CH4) || 28;
+  const gwpNO2 = Number(this.operation?.gwP_NO2) || 265;
+
+  // Force numeric emission factors
+  const co2Factor = Number(this.operation?.co2Factor) || 2.68;
+  const no2Factor = Number(this.operation?.no2Factor) || 0.00007;
+  const ch4Factor = Number(this.operation?.ch4Factor) || 0.00001;
+
+  // Calculate individual emissions
+  this.totalCO2 = fuel * co2Factor;
+  this.totalNO2 = fuel * no2Factor;
+  this.totalCH4 = fuel * ch4Factor;
+
+  // ✅ Total emission: convert everything to numbers before summing
+  this.totalEmission = Number(
+    (this.totalCO2 + (this.totalCH4 * gwpCH4) + (this.totalNO2 * gwpNO2)).toFixed(3)
+  );
+
+  console.log('Fuel:', fuel);
+  console.log('CO2:', this.totalCO2, 'CH4:', this.totalCH4, 'NO2:', this.totalNO2);
+  console.log('Total Emission:', this.totalEmission);
+}
+
+  // 
+
+  loadOperation(id: string) {
+  this.service.getById(id).subscribe({
+    next: (res: any) => {
+      const selected = res.data || res;
+      if (!selected) return;
+
+      // --- GWP values ---
+      const gwP_CH4 = 28;
+      const gwP_NO2 = 265;
+
+      // --- Compute Run Hours ---
+      let runHours = 0;
+      if (selected.startTime && selected.endTime) {
+        const start = new Date(selected.startTime).getTime();
+        const end = new Date(selected.endTime).getTime();
+        runHours = +((end - start) / (1000 * 60 * 60)).toFixed(2);
+      }
+
+      // --- Emission factors ---
+      const co2Factor = selected.co2_kg ?? 0;
+      const no2Factor = selected.no2_kg ?? 0;
+      const ch4Factor = selected.ch4_kg ?? 0;
+
+      // --- Total emissions ---
+      const totalCO2 = (selected.totalCO2 ?? (selected.fuelConsumedLiters * co2Factor)) || 0;
+      const totalNO2 = (selected.totalNO2 ?? (selected.fuelConsumedLiters * no2Factor)) || 0;
+      const totalCH4 = (selected.totalCH4 ?? (selected.fuelConsumedLiters * ch4Factor)) || 0;
+
+      const totalEmission = totalCO2 + totalCH4 * gwP_CH4 + totalNO2 * gwP_NO2;
+
+      // --- Patch operation object ---
+      this.operation = {
+        ...selected,
+        runHours,
+        co2Factor,
+        no2Factor,
+        ch4Factor,
+        cO2: totalCO2,
+        nO2: totalNO2,
+        cH4: totalCH4,
+        gwP_CH4,
+        gwP_NO2,
+        totalEmission,
+      };
+
+      // Optional: update totalCalculations for summary display
+      this.totalCalculations = {
+        runHours,
+        totalFuel: selected.fuelConsumedLiters ?? 0,
+        avgLoadFactor: selected.loadFactor ?? 0,
+        totalEmission,
+      };
+    },
+    error: () => Swal.fire('Error', 'Failed to load operation', 'error'),
+  });
+}
+
+  // loadOperationById(id: string) {
+  //   this.service.getById(id).subscribe({
+  //     next: (res: any) => {
+  //       const op = res.data || res;
+
+  //       // 1️⃣ Load generators for this site first
+  //       this.service.getGeneratorsBySite(op.siteId).subscribe({
+  //         next: (genRes: any) => {
+  //           this.generators = genRes || [];
+
+  //           // 2️⃣ Now patch the form
+  //           this.edit(op);
+
+  //           // 3️⃣ Compute totals & buttons
+  //           this.totalCalculations = this.computeTotals(op);
+  //           this.setButtonVisibility(op);
+  //         },
+  //         error: () => Swal.fire('Error', 'Failed to load generators', 'error'),
+  //       });
+  //     },
+  //     error: () => Swal.fire('Error', 'Failed to load operation', 'error'),
+  //   });
+  // }
   loadOperationById(id: string) {
-    this.service.getById(id).subscribe({
-      next: (res: any) => {
-        const op = res.data || res;
+  this.service.getById(id).subscribe({
+    next: (res: any) => {
+      const op = res.data || res;
 
-        // 1️⃣ Load generators for this site first
-        this.service.getGeneratorsBySite(op.siteId).subscribe({
-          next: (genRes: any) => {
-            this.generators = genRes || [];
+      // Map to operation object for display
+      const gwP_CH4 = 28;
+      const gwP_NO2 = 265;
 
-            // 2️⃣ Now patch the form
-            this.edit(op);
+      const co2Factor = op.co2_kg ?? 2.68; // default factor
+      const no2Factor = op.no2_kg ?? 0.0005;
+      const ch4Factor = op.ch4_kg ?? 0.0003;
 
-            // 3️⃣ Compute totals & buttons
-            this.totalCalculations = this.computeTotals(op);
-            this.setButtonVisibility(op);
-          },
-          error: () => Swal.fire('Error', 'Failed to load generators', 'error'),
-        });
-      },
-      error: () => Swal.fire('Error', 'Failed to load operation', 'error'),
-    });
-  }
+      const runHours = op.startTime && op.endTime
+        ? +((new Date(op.endTime).getTime() - new Date(op.startTime).getTime()) / (1000*60*60)).toFixed(2)
+        : 0;
+
+      const totalCO2 = (op.fuelConsumedLiters || 0) * co2Factor;
+      const totalNO2 = (op.fuelConsumedLiters || 0) * no2Factor;
+      const totalCH4 = (op.fuelConsumedLiters || 0) * ch4Factor;
+      const totalEmission = totalCO2 + totalCH4 * gwP_CH4 + totalNO2 * gwP_NO2;
+
+      this.operation = {
+        ...op,
+        runHours,
+        co2Factor,
+        no2Factor,
+        ch4Factor,
+        cO2: totalCO2,
+        nO2: totalNO2,
+        cH4: totalCH4,
+        gwP_CH4,
+        gwP_NO2,
+        totalEmission,
+      };
+
+      // Update component-level values for HTML bindings
+this.fuelConsumed = op.fuelConsumedLiters || 0;
+this.totalCO2 = +totalCO2.toFixed(3);
+this.totalNO2 = +totalNO2.toFixed(6);
+this.totalCH4 = +totalCH4.toFixed(6);
+
+// Show calculation card
+this.showCalculation = true;
+      // Patch the form for edit/view
+      this.edit(op);
+
+      // Show calculation card
+    },
+    error: () => Swal.fire('Error', 'Failed to load operation', 'error')
+  });
+}
 
   computeTotals(res: any) {
     if (!res.startTime || !res.endTime)
@@ -322,12 +467,20 @@ getGeneratorName(generatorId: any): string {
 
     if (raw.OperationId) {
       this.service.update(raw.OperationId, payload).subscribe({
-        next: () => Swal.fire('Success', 'Operation updated successfully', 'success'),
+        next: () => {
+          Swal.fire('Success', 'Operation updated successfully', 'success').then(() => {
+            this.router.navigate(['/dashboard/MyActionGenerator']);
+          });
+        },
         error: () => Swal.fire('Error', 'Failed to update operation', 'error'),
       });
     } else {
       this.service.create(payload).subscribe({
-        next: () => Swal.fire('Success', 'Operation saved successfully', 'success'),
+        next: () => {
+          Swal.fire('Success', 'Operation saved successfully', 'success').then(() => {
+            this.router.navigate(['/dashboard/MyActionGenerator']);
+          });
+        },
         error: () => Swal.fire('Error', 'Failed to save operation', 'error'),
       });
     }
