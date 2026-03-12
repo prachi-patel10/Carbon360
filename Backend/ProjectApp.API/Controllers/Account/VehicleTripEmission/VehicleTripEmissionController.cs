@@ -18,7 +18,7 @@ namespace ProjectApp.API.Controllers.Account.VehicleTripEmission
             _service = service;
         }
 
-        [Authorize(Roles = "Reporter")]
+        //[Authorize(Roles = "Reporter")]
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateVehicleTripEmissionDTO dto)
         {
@@ -33,7 +33,7 @@ namespace ProjectApp.API.Controllers.Account.VehicleTripEmission
 
 
         }
-        [Authorize(Roles = "Reporter,Corporate")]
+        //[Authorize(Roles = "Reporter,Corporate")]
 
         [HttpGet]
         public async Task<IActionResult> GetAll()
@@ -60,31 +60,21 @@ namespace ProjectApp.API.Controllers.Account.VehicleTripEmission
 
             return Ok(new { message = "Deleted Successfully" });
         }
-        [Authorize(Roles = "Reporter")]
+        //[Authorize(Roles = "Reporter")]
 
-        [HttpPut("{hashId}")]
-        public async Task<IActionResult> Update(string hashId, [FromBody] UpdateVehicleTripEmissionDTO dto)
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateTrip(string id, [FromBody] UpdateVehicleTripEmissionDTO dto)
         {
-            if (dto == null)
-                return BadRequest("Invalid request.");
-
-            dto.TripId = hashId;
+            dto.TripId = id;
 
             var result = await _service.UpdateAsync(dto);
 
-            if (result == null)
-                return NotFound("Trip not found.");
-
-            return Ok(new
-            {
-                success = true,
-                message = "Vehicle trip updated successfully.",
-                data = result
-            });
+            return Ok(result);
         }
-        [Authorize(Roles = "Corporate")]
 
-        [HttpPut("status")]
+        //[Authorize(Roles = "Corporate")]
+
+        [HttpPatch("status")]
         public async Task<IActionResult> UpdateStatus([FromBody] VehicleTripStatusUpdateDTO dto)
         {
             var result = await _service.UpdateStatusAsync(dto);
@@ -143,7 +133,7 @@ namespace ProjectApp.API.Controllers.Account.VehicleTripEmission
         //            return Ok(result);
         //        }
 
-        [Authorize(Roles = "Reporter,Corporate")]
+        //[Authorize(Roles = "Reporter,Corporate")]
 
         [HttpGet("my-actions")]
         public async Task<IActionResult> GetMyActions(

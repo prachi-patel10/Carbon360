@@ -25,6 +25,7 @@ export class TripComponent implements OnInit {
   totalCO2: number = 0;
   totalNO2: number = 0;
   totalCH4: number = 0;
+  
   emissionFactors: any[] = [];
   // result: any;
   currentStatusId: number = 0;
@@ -97,26 +98,29 @@ export class TripComponent implements OnInit {
   //this.initializeForm();
   this.loadAllMasterData();
   this.setupDurationListener();
+    this.tripForm.get('fuelConsumedLtr')?.valueChanges.subscribe(() => {
+    this.calculateEmissions();
+  });
   this.updateCurrentDateTime();
 
 
-     const tripId = this.route.snapshot.paramMap.get('id');
+    const tripId = this.route.snapshot.paramMap.get('id');
 
-  if (tripId) {
+if (tripId) {
 
-    this.mode = 'view';
+  this.mode = 'view';
 
-    this.loadAllMasterData();
+  this.loadAllMasterData();
 
-    this.loadTrip(tripId);
+  this.loadTrip(tripId);
 
-  } else {
+} else {
 
-    this.mode = 'add';
+  this.mode = 'add';
 
-    this.loadAllMasterData();
+  this.loadAllMasterData();
 
-  }
+}
     // this.setupAutoCalculation();
   }
 
@@ -124,6 +128,9 @@ export class TripComponent implements OnInit {
 
   this.tripService.getTripById(id).subscribe(res => {
  this.currentStatusId = res.statusId; 
+ console.log("USER ROLE:", this.userRole);
+console.log("MODE:", this.mode);
+console.log("STATUS:", this.currentStatusId);
     this.tripForm.patchValue({
 
       vehicle_id: res.vehicleId,
@@ -148,6 +155,7 @@ export class TripComponent implements OnInit {
       finalTotalEmission: res.totalEmission
 
     });
+    
 
     // store in variables if UI uses them
     this.totalCO2 = res.totalCO2;
@@ -163,6 +171,7 @@ export class TripComponent implements OnInit {
   });
 
 }
+
 
 
   loadAllMasterData() {
@@ -303,30 +312,26 @@ export class TripComponent implements OnInit {
     console.log("Submitting payload:", payload);
 
     this.tripService.addTrip(payload).subscribe({
-      next: (res: any) => {
+  next: (res: any) => {
 
-        if (!res) {
-          Swal.fire('Error', 'Something went wrong', 'error');
-          return;
-        }
+    Swal.fire({
+      icon: 'success',
+      title: 'Trip Submitted Successfully!',
+      confirmButtonColor: '#16a34a',
+      confirmButtonText: 'OK'
+    }).then(() => {
 
-        this.currentStatusId = res.statusId;
-        this.lockFormIfNeeded();
-
-        Swal.fire({
-          icon: 'success',
-          title: 'Trip Submitted Successfully!',
-          confirmButtonColor: '#16a34a'
-        });
-
-      },
-
-      error: (err: any) => {
-        console.error(err);
-        Swal.fire('Error', 'Failed to submit record', 'error');
-      }
+      this.router.navigate(['/dashboard/MyActionVehicle']);
 
     });
+
+  },
+
+  error: (err: any) => {
+    console.error(err);
+    Swal.fire('Error', 'Failed to submit record', 'error');
+  }
+});
 
   }
   lockFormIfNeeded() {
@@ -336,50 +341,46 @@ export class TripComponent implements OnInit {
     // 2 = Submitted
     // 3 = Approved
     // 4 = Rejected
-
-    // if (this.currentStatusId == 2 || this.currentStatusId == 3) {
-    //   this.tripForm.disable();
-    // } else {
-    //   this.tripForm.enable();
-    // }
-    // Corporate cannot edit trips
- // Corporate can view but not edit
-  // Corporate can only review
-  if (this.userRole === 'corporate') {
+if (this.userRole === 'corporate') {
     this.tripForm.disable();
     return;
   }
 
-  // Reporter cannot edit approved trip
-  if (this.currentStatusId === 2) {
-    this.tripForm.disable();
-  }
+  if (this.userRole === 'reporter') {
 
-  // Reporter can edit rejected trip
-  if (this.currentStatusId === 3) {
-    this.tripForm.enable();
-  }
-  }
+    if (this.currentStatusId === 1) {
+      this.tripForm.disable(); // waiting approval
+    }
 
-  updateStatus(statusId:number){
+    if (this.currentStatusId === 2) {
+      this.tripForm.disable(); // approved
+    }
 
-const payload = {
-  tripId: this.route.snapshot.paramMap.get('id'),
-  statusId: statusId
-};
-
-this.tripService.updateTripStatus(payload).subscribe({
-
-  next: () => {
-
-    this.currentStatusId = statusId;
-
-    Swal.fire({
-      icon:'success',
-      title:'Status Updated'
-    });
+    if (this.currentStatusId === 3) {
+      this.tripForm.enable(); // rejected → editable
+    }
 
   }
+
+  }
+
+ updateStatus(statusId: number) {
+
+const tripId = this.route.snapshot.paramMap.get('id');
+
+if (!tripId) return;
+
+this.tripService.updateTripStatus(tripId, statusId).subscribe((res:any)=>{
+
+  this.currentStatusId = statusId;
+
+  Swal.fire({
+    icon:'success',
+    title:'Status Updated'
+  });
+
+  // ⭐ IMPORTANT LINE
+  this.loadTrip(tripId);
 
 });
 }
@@ -427,6 +428,39 @@ this.tripService.updateTripStatus(payload).subscribe({
     this.todayDateTime = now.toISOString().slice(0, 16);
   }
 
+  // Store totals
+
+totalCO2e: number = 0;
+
+// GWP values (100-year)
+readonly GWP_CH4 = 28;
+readonly GWP_N2O = 265;
+
+calculateEmissions() {
+  const fuel = Number(this.tripForm.get('fuelConsumedLtr')?.value) || 0;
+
+  const co2Factor = Number(this.tripForm.get('co2Factor')?.value) || 0;
+  const ch4Factor = Number(this.tripForm.get('ch4Factor')?.value) || 0;
+  const n2oFactor = Number(this.tripForm.get('no2Factor')?.value) || 0; // assuming NO2 = N2O
+
+  // calculate emissions
+  this.totalCO2 = fuel * co2Factor;
+  this.totalCH4 = fuel * ch4Factor;
+  this.totalNO2 = fuel * n2oFactor;
+
+  // calculate CO2e
+  this.totalCO2e = (this.totalCO2 * 1) +
+                    (this.totalCH4 * this.GWP_CH4) +
+                    (this.totalNO2 * this.GWP_N2O);
+
+  // optionally, patch form values for display
+  this.tripForm.patchValue({
+    totalCO2: this.totalCO2,
+    totalCH4: this.totalCH4,
+    totalNO2: this.totalNO2,
+    finalTotalEmission: this.totalCO2e
+  });
+}
   calculateDuration() {
 
     const start = this.tripForm.get('tripStartDateTime')?.value;
@@ -477,36 +511,90 @@ this.tripService.updateTripStatus(payload).subscribe({
 }
 getUserRole(): string {
 
-  const role = localStorage.getItem('role');
+  const userData = localStorage.getItem('user');
 
-  if (!role) return '';
+  if (!userData) return '';
 
-  return role.toLowerCase();   // normalize
+  const parsed = JSON.parse(userData);
+
+  return parsed.currentRole?.toLowerCase() || '';
 }
-resubmitTrip(){
+resubmitTrip() {
 
-const payload = {
-  tripId: this.route.snapshot.paramMap.get('id'),
-  statusId: 1
-};
+  if (this.tripForm.invalid) {
+    this.tripForm.markAllAsTouched();
 
-this.tripService.updateTripStatus(payload).subscribe(()=>{
+    Swal.fire({
+      icon: 'warning',
+      title: 'Validation Error',
+      text: 'Please fill all required fields'
+    });
 
-  Swal.fire({
-    icon:'success',
-    title:'Trip Resubmitted'
+    return;
+  }
+
+  const tripId = this.route.snapshot.paramMap.get('id');
+
+  if (!tripId) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Trip ID not found'
+    });
+    return;
+  }
+
+  const formValue = this.tripForm.getRawValue();
+
+  const payload = {
+    TripId: tripId,
+    VehicleId: formValue.vehicle_id,
+    FromCityId: formValue.fromCityId,
+    ToCityId: formValue.toCityId,
+    DistanceKm: Number(formValue.distanceKm),
+    FuelConsumedLtr: Number(formValue.fuelConsumedLtr),
+    FuelType: formValue.fuelId,
+    TripStartDateTime: formValue.tripStartDateTime,
+    TripEndDateTime: formValue.tripEndDateTime,
+    StatusId: 1
+  };
+
+  console.log("UPDATE PAYLOAD:", payload);
+
+  this.tripService.updateTrip(tripId, payload).subscribe({
+
+    next: (res:any) => {
+
+      Swal.fire({
+        icon: 'success',
+        title: 'Trip Updated Successfully'
+      });
+
+      this.loadTrip(tripId);
+
+    },
+
+    error: (err:any) => {
+
+      console.error("UPDATE ERROR:", err);
+
+      Swal.fire({
+        icon: 'error',
+        title: 'Trip update failed',
+        text: err?.error?.message || 'Server error'
+      });
+
+    }
+
   });
 
-});
 }
-
   //   updateTrip() {
   //   this.tripService.updateTrip(this.tripId, this.tripForm.value)
   //     .subscribe({
   //       next: (res) => {
   //         console.log('Updated Successfully', res);
   //         this.router.navigate(['/trip-list']);
-  //       },
+  //       }, 
   //       error: (err) => {
   //         console.error(err);
   //       }
@@ -518,6 +606,9 @@ this.tripService.updateTripStatus(payload).subscribe(()=>{
     this.tripForm.enable();
     this.tripDuration = '';
   }
+  enableEdit() {
+  this.tripForm.enable();
+}
 
   goBack() {
   this.router.navigate(['/dashboard/search-vehicle']);
@@ -525,6 +616,10 @@ this.tripService.updateTripStatus(payload).subscribe(()=>{
 
   canSubmit() {
   return this.userRole === 'reporter' && this.mode === 'add';
+}
+
+canEdit() {
+  return this.userRole === 'reporter' && this.currentStatusId === 3;
 }
 
 canResubmit() {
@@ -535,8 +630,7 @@ canApprove() {
   return this.userRole === 'corporate' && this.currentStatusId === 1;
 }
 
-canReject(): boolean {
+canReject() {
   return this.userRole === 'corporate' && this.currentStatusId === 1;
 }
-
 }

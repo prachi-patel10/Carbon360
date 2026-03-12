@@ -13,6 +13,8 @@ public partial class CBContext : DbContext
     {
     }
 
+    public virtual DbSet<CB_Action> CB_Actions { get; set; }
+
     public virtual DbSet<CB_Department> CB_Departments { get; set; }
 
     public virtual DbSet<CB_EmissionFactor> CB_EmissionFactors { get; set; }
@@ -43,8 +45,24 @@ public partial class CBContext : DbContext
 
     public virtual DbSet<CB_VehicleTypeCategory> CB_VehicleTypeCategories { get; set; }
 
+    public virtual DbSet<CB_Workflow> CB_Workflows { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<CB_Action>(entity =>
+        {
+            entity.HasKey(e => e.ActionId).HasName("PK__CB_Actio__FFE3F4D9DD2474D3");
+
+            entity.ToTable("CB_Action");
+
+            entity.Property(e => e.ActionName)
+                .IsRequired()
+                .HasMaxLength(50)
+                .IsUnicode(false);
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+            entity.Property(e => e.IsDeleted).HasDefaultValue(false);
+        });
+
         modelBuilder.Entity<CB_Department>(entity =>
         {
             entity.HasKey(e => e.DepartmentId).HasName("PK__CB_Depar__B2079BED8E6AD1B5");
@@ -435,6 +453,21 @@ public partial class CBContext : DbContext
                 .HasMaxLength(255);
             entity.Property(e => e.EntryDate).HasColumnType("datetime");
             entity.Property(e => e.UpdateDate).HasColumnType("datetime");
+        });
+
+        modelBuilder.Entity<CB_Workflow>(entity =>
+        {
+            entity.HasKey(e => e.workflowId);
+
+            entity.ToTable("CB_Workflow");
+
+            entity.HasOne(d => d.Action).WithMany(p => p.CB_Workflows)
+                .HasForeignKey(d => d.ActionId)
+                .HasConstraintName("FK_CB_Workflow_Action");
+
+            entity.HasOne(d => d.Role).WithMany(p => p.CB_Workflows)
+                .HasForeignKey(d => d.RoleId)
+                .HasConstraintName("FK_CB_Workflow_Role");
         });
 
         OnModelCreatingPartial(modelBuilder);

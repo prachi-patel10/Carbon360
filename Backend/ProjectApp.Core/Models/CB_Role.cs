@@ -26,4 +26,6 @@ public partial class CB_Role
     public bool? IsDeleted { get; set; }
 
     public virtual ICollection<CB_UserRoleMapping> CB_UserRoleMappings { get; set; } = new List<CB_UserRoleMapping>();
+
+    public virtual ICollection<CB_Workflow> CB_Workflows { get; set; } = new List<CB_Workflow>();
 }

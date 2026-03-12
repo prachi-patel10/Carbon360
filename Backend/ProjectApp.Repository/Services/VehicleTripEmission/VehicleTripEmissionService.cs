@@ -105,6 +105,9 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
                 CO2 = entity.co2,
                 NO2 = entity.no2,
                 CH4 = entity.ch4,
+                TotalCO2 = entity.totalco2,
+                TotalNO2 = entity.totalno2,
+                TotalCH4 = entity.totalch4,
                 TotalEmission = entity.totalemission,
                 StatusId = entity.StatusId
             };
@@ -130,24 +133,24 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
 
             int tripId = _idEncoder.Decode(dto.TripId);
             int userId = GetCurrentUserId();
-            string role = _userContext.Role;
+            //string role = _userContext.Role;
 
-            if (!role.Contains("Corporate"))
-                throw new Exception("Only Corporate users can approve or reject trips.");
+            //if (!role.Contains("Corporate"))
+            //    throw new Exception("Only Corporate users can approve or reject trips.");
 
-            if (dto.StatusId != 2 && dto.StatusId != 3)
-                throw new Exception("Invalid StatusId. Only Approve (2) or Reject (3) allowed.");
+            //if (dto.StatusId != 2 && dto.StatusId != 3)
+            //    throw new Exception("Invalid StatusId. Only Approve (2) or Reject (3) allowed.");
 
             // Get current status
-            var trip = await _context.CB_VehicleTripEmissions
-                .Where(x => x.tripid == tripId && x.isactive)
-                .FirstOrDefaultAsync();
+            //var trip = await _context.CB_VehicleTripEmissions
+            //    .Where(x => x.tripid == tripId && x.isactive)
+            //    .FirstOrDefaultAsync();
 
-            if (trip == null)
-                throw new Exception("Trip not found.");
+            //if (trip == null)
+            //    throw new Exception("Trip not found.");
 
-            if (trip.StatusId == 2)
-                throw new Exception("Trip already approved.");
+            //if (trip.StatusId == 2)
+            //    throw new Exception("Trip already approved.");
 
             var parameters = new[]
             {

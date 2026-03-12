@@ -32,10 +32,16 @@ export class TripService {
     return this.http.post(`${this.apiUrl}/VehicleTripEmission`, data);
   }
 
-  updateTripStatus(data: any): Observable<any> {
-  return this.http.put(
+  updateTripStatus(tripId: string, statusId: number): Observable<any> {
+
+  const body = {
+    TripId: tripId,
+    StatusId: statusId
+  };
+
+  return this.http.patch(
     `${this.apiUrl}/VehicleTripEmission/status`,
-    data
+    body
   );
 }
 
@@ -44,7 +50,14 @@ export class TripService {
       `${this.apiUrl}/VehicleTripEmission/${hashId}`
     );
   }
-
+  
+updateTrip(tripId: string, data: any): Observable<any> {
+  return this.http.put(
+    `${this.apiUrl}/VehicleTripEmission/${tripId}`,
+    data
+  );
+}
+  
 // updateTrip(hashId: string, data: any): Observable<any> {
 //   return this.http.put(
 //     `${this.apiUrl}/VehicleTripEmission/${hashId}`,
