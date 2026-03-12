@@ -89,17 +89,54 @@ namespace ProjectApp.API.Controllers.Account.VehicleTripEmission
             });
         }
 
+        //    [HttpGet("search")]
+        //    public async Task<IActionResult> SearchVehicleTrips(
+        //[FromQuery] string? search,
+        //[FromQuery] string? vehicleNumber,
+        //[FromQuery] string? fuelType,
+        //[FromQuery] string? vehicleType,
+        //[FromQuery] DateTime? startDate,
+        //[FromQuery] DateTime? endDate,
+        //[FromQuery] int? statusId,
+        //[FromQuery] int pageNumber = 1,
+        //[FromQuery] int pageSize = 10)
+        //    {
+        //        string role = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+
+        //        var result = await _service.SearchVehicleTrips(
+        //            search,
+        //            vehicleNumber,
+        //            fuelType,
+        //            vehicleType,
+        //            startDate,
+        //            endDate,
+        //            statusId,
+        //            role,
+        //            pageNumber,
+        //            pageSize);
+
+        //        return Ok(new
+        //        {
+        //            success = true,
+        //            data = result.Item1,
+        //            totalRecords = result.Item2,
+        //            pageNumber,
+        //            pageSize
+        //        });
+        //    }
         [HttpGet("search")]
         public async Task<IActionResult> SearchVehicleTrips(
-    [FromQuery] string? search,
-    [FromQuery] string? vehicleNumber,
-    [FromQuery] string? fuelType,
-    [FromQuery] string? vehicleType,
-    [FromQuery] DateTime? startDate,
-    [FromQuery] DateTime? endDate,
-    [FromQuery] int? statusId,
-    [FromQuery] int pageNumber = 1,
-    [FromQuery] int pageSize = 10)
+            [FromQuery] string? search,
+            [FromQuery] string? vehicleNumber,
+            [FromQuery] string? fuelType,
+            [FromQuery] string? vehicleType,
+            [FromQuery] DateTime? startDate,
+            [FromQuery] DateTime? endDate,
+            [FromQuery] int? statusId,
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 10,
+            [FromQuery] string sortColumn = "tripstartdatetime",
+            [FromQuery] string sortDirection = "DESC")
         {
             string role = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
 
@@ -113,7 +150,9 @@ namespace ProjectApp.API.Controllers.Account.VehicleTripEmission
                 statusId,
                 role,
                 pageNumber,
-                pageSize);
+                pageSize,
+                sortColumn,
+                sortDirection);
 
             return Ok(new
             {
@@ -124,6 +163,7 @@ namespace ProjectApp.API.Controllers.Account.VehicleTripEmission
                 pageSize
             });
         }
+
 
         //        [HttpGet("my-actions")]
         //        public async Task<IActionResult> GetMyActions(int pageNumber = 1, int pageSize = 10, string sortColumn = "fromCity",

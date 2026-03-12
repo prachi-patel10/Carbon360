@@ -40,7 +40,9 @@ export class SearchVehicle implements OnInit {
   filterStartDate = signal<string | null>(null);
   filterEndDate = signal<string | null>(null);
   pageSizeOptions = [5, 10, 15, 20]; 
-pageSize = 5;                      
+pageSize = 5;             
+sortColumn = 'tripstartdatetime'
+sortDirection = 'DESC'         
 currentPage = signal<number>(1);
 totalPages = signal<number>(1);
 
@@ -64,10 +66,33 @@ totalPages = signal<number>(1);
     this.loadTrips();
   }
 
-  /*LOAD DATA*/
+  sort(column: string) {
 
+  if (this.sortColumn === column) {
+
+    this.sortDirection = this.sortDirection === 'ASC' ? 'DESC' : 'ASC'
+
+  } else {
+
+    this.sortColumn = column
+    this.sortDirection = 'ASC'
+
+  }
+
+  this.loadTrips()
+
+}
+
+  /*LOAD DATA*/
   loadTrips() {
-  this.service.searchTrips().subscribe({
+
+  this.service.searchTrips(
+    this.currentPage(),
+    this.pageSize,
+    this.sortColumn,
+    this.sortDirection
+  ).subscribe({
+
     next: (res: any) => {
 
       const mapped: VehicleEmissionDisplay[] = res.data.map((e: any) => ({
@@ -92,13 +117,50 @@ totalPages = signal<number>(1);
 
       this.emissions.set(mapped);
 
-      this.totalPages.set(Math.ceil(mapped.length / this.pageSize));
-
+      this.filteredData.set(mapped);
+      this.totalPages.set(Math.ceil(res.totalRecords / this.pageSize));
       this.applyFilters();
     },
+
     error: err => console.error('Error loading vehicle trips', err)
+
   });
+
 }
+
+//   loadTrips() {
+//   this.service.searchTrips().subscribe({
+//     next: (res: any) => {
+
+//       const mapped: VehicleEmissionDisplay[] = res.data.map((e: any) => ({
+//         tripId: e.tripId,
+//         vehicleNumber: e.vehicleNumber,
+//         vehicleType: e.vehicleType,
+//         fuelType: e.fuelType,
+
+//         distanceKm: e.distanceKm ?? 0,
+//         fuelConsumedLtr: e.fuelConsumedLtr ?? 0,
+
+//         statusId: e.statusId,
+
+//         tripStartDateTime: e.tripStartDateTime,
+//         tripEndDateTime: e.tripEndDateTime,
+
+//         totalCO2: e.totalCO2 ?? 0,
+//         totalNO2: e.totalNO2 ?? 0,
+//         totalCH4: e.totalCH4 ?? 0,
+//         totalEmission: e.totalEmission ?? 0
+//       }));
+
+//       this.emissions.set(mapped);
+
+//       this.totalPages.set(Math.ceil(mapped.length / this.pageSize));
+
+//       this.applyFilters();
+//     },
+//     error: err => console.error('Error loading vehicle trips', err)
+//   });
+// }
 
   /*FILTER EVENTS */
 onSearchClick() {
@@ -162,7 +224,9 @@ onSearchClick() {
 const startIndex = (this.currentPage() - 1) * this.pageSize;
 const endIndex = startIndex + this.pageSize;
 
-this.filteredData.set(filtered.slice(startIndex, endIndex));
+//this.filteredData.set(filtered.slice(startIndex, endIndex));
+
+this.filteredData.set(filtered);
 }
   filteredTrips() {
     return this.filteredData();

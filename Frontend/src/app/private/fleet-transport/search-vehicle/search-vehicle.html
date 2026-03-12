@@ -85,15 +85,15 @@
 
       <thead>
         <tr>
-          <th>Vehicle</th>
-          <th>Type</th>
-          <th>Fuel</th>
-          <th>Distance</th>
-          <th>Fuel Used</th>
-          <th>TripStartDateTime</th>
-          <th>TripEndDateTime</th>
+          <th (click)="sort('vehicleNumber')" style="cursor:pointer">Vehicle</th>
+          <th (click)="sort('vehicleType')" style="cursor:pointer">Type</th>
+          <th (click)="sort('fuelType')" style="cursor:pointer">Fuel</th>
+          <th (click)="sort('distanceKm')" style="cursor:pointer">Distance</th>
+          <th (click)="sort('fuelConsumedLtr')" style="cursor:pointer">Fuel Used</th>
+          <th (click)="sort('tripStartDateTime')" style="cursor:pointer">TripStartDateTime</th>
+          <th (click)="sort('tripEndDateTime')" style="cursor:pointer">TripEndDateTime</th>
           <th>Total Emission</th>
-          <th>Status</th>
+          <!-- <th>Status</th> -->
           <th>Action</th>
         </tr>
       </thead>
@@ -115,7 +115,7 @@
             {{ e.totalEmission }} kg
           </td>
 
-          <td>
+          <!-- <td>
 
             <span class="badge" [ngClass]="{
     'bg-warning': e.statusId === 1,
@@ -135,7 +135,7 @@
 
             </span>
 
-          </td>
+          </td> -->
 
 
           <td>

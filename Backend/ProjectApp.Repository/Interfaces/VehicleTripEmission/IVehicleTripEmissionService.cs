@@ -18,14 +18,28 @@ namespace ProjectApp.Repository.Interfaces.VehicleTripEmission
 
         Task<bool> UpdateStatusAsync(VehicleTripStatusUpdateDTO dto);
 
+        //    Task<(IEnumerable<SearchVehicleTripEmissionDTO>, int)> SearchVehicleTrips(
+        //    string search,string vehicleNumber,string fuelType,string vehicleType,
+        //    DateTime? startDate,
+        //    DateTime? endDate,
+        //    int? statusId,
+        //    string userRole,
+        //   int pageNumber = 1,
+        //int pageSize = 10);
+
         Task<(IEnumerable<SearchVehicleTripEmissionDTO>, int)> SearchVehicleTrips(
-        string search,string vehicleNumber,string fuelType,string vehicleType,
+        string? search,
+        string? vehicleNumber,
+        string? fuelType,
+        string? vehicleType,
         DateTime? startDate,
         DateTime? endDate,
         int? statusId,
-        string userRole,
-       int pageNumber = 1,
-    int pageSize = 10);
+        string? userRole,
+        int pageNumber = 1,
+        int pageSize = 10,
+        string sortColumn = "tripstartdatetime",
+        string sortDirection = "DESC");
 
         //Task<PageResult> GetMyActionTripsAsync(int pageNumber, int pageSize);
         Task<PageResult> GetMyActionTripsAsync(int pageNumber, int pageSize, string sortColumn = "fromCity", string sortDirection = "ASC");

@@ -12,8 +12,19 @@ export class SearchVehcileService {
   constructor(private http: HttpClient) {}
 
   /*GET ALL TRIPS (WITH PAGING LIKE GENERATOR SEARCH)*/
-  searchTrips(): Observable<any> {
-  return this.http.get<any>(`${this.apiUrl}/Search?pageNumber=1&pageSize=10`);
+//   searchTrips(): Observable<any> {
+//   return this.http.get<any>(`${this.apiUrl}/Search?pageNumber=1&pageSize=10`);
+// }
+searchTrips(
+  pageNumber: number = 1,
+  pageSize: number = 10,
+  sortColumn: string = 'tripstartdatetime',
+  sortDirection: string = 'DESC'
+): Observable<any> {
+
+  return this.http.get<any>(
+    `${this.apiUrl}/search?pageNumber=${pageNumber}&pageSize=${pageSize}&sortColumn=${sortColumn}&sortDirection=${sortDirection}`
+  );
 }
 
   /*GET SINGLE TRIP BY ID*/
