@@ -42,7 +42,7 @@ namespace ProjectApp.Repository.Interfaces.VehicleTripEmission
         string sortDirection = "DESC");
 
         //Task<PageResult> GetMyActionTripsAsync(int pageNumber, int pageSize);
-        Task<PageResult> GetMyActionTripsAsync(int pageNumber, int pageSize, string sortColumn = "fromCity", string sortDirection = "ASC");
+        Task<PageResult> GetMyActionTripsAsync(int pageNumber, int pageSize, string sortColumn = "tripStartDateTime", string sortDirection = "DESC");
     }
 
 

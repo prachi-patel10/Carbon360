@@ -29,8 +29,8 @@ export class MyActionVehicle implements OnInit{
   totalRecords = signal(0)
   currentPage = signal(1)
   pageSize = 10
-  sortColumn = 'fromCity'
-sortDirection = 'ASC'
+  sortColumn = 'tripStartDateTime'
+sortDirection = 'DESC'
 
   constructor(private service: MyActionVehicleService,private router : Router) {}
 

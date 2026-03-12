@@ -455,7 +455,7 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
             return (result, totalRecords);
         }
 
-        public async Task<PageResult> GetMyActionTripsAsync(int pageNumber, int pageSize, string sortColumn = "fromCity", string sortDirection = "ASC")
+        public async Task<PageResult> GetMyActionTripsAsync(int pageNumber, int pageSize, string sortColumn = "tripStartDateTime", string sortDirection = "DESC")
         {
             int userId = GetCurrentUserId();
 

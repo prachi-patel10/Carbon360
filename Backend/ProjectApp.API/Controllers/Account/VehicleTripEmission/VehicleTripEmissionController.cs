@@ -179,8 +179,8 @@ namespace ProjectApp.API.Controllers.Account.VehicleTripEmission
         public async Task<IActionResult> GetMyActions(
           int pageNumber = 1,
           int pageSize = 10,
-          string sortColumn = "fromCity",
-          string sortDirection = "ASC")
+          string sortColumn = "tripStartDateTime",
+          string sortDirection = "DESC")
         {
             var result = await _service.GetMyActionTripsAsync(
                 pageNumber,
