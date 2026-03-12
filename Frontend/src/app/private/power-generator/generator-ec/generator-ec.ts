@@ -58,25 +58,27 @@ export class GeneratorOperationComponent implements OnInit {
   generators: any[] = [];
   sites: any[] = [];
   operations: any[] = [];
-  operation: any = {}; 
+  operation: any = {};
 
   pageSource: 'myaction' | 'search' = 'search';
   isReviewMode = false;
   isEditMode = false;
   isViewMode = false;
 
+  workflowActions: any[] = [];
+
   showApproveReject = false;
   showResubmit = false;
 
 
-totalCO2: number = 0;
-totalNO2: number = 0;
-totalCH4: number = 0;
-fuelConsumed: number = 0;
-co2Factor: number = 2.68;   // default, can come from backend
-no2Factor: number = 0.00007; 
-ch4Factor: number = 0.00001;
-totalEmission: number = 0; 
+  totalCO2: number = 0;
+  totalNO2: number = 0;
+  totalCH4: number = 0;
+  fuelConsumed: number = 0;
+  co2Factor: number = 2.68;   // default, can come from backend
+  no2Factor: number = 0.00007;
+  ch4Factor: number = 0.00001;
+  totalEmission: number = 0;
 
   totalCalculations: any = {
     runHours: 0,
@@ -102,6 +104,7 @@ totalEmission: number = 0;
     this.loadSites();
     this.loadGenerators(); // optional if you want all generators
 
+    // ================= SITE SELECTION CHANGE =================
     this.operationForm.get('SiteId')?.valueChanges.subscribe((selectedSiteId: string) => {
       if (!selectedSiteId) {
         this.generators = [];
@@ -113,12 +116,10 @@ totalEmission: number = 0;
 
       this.service.getGeneratorsBySite(selectedSiteId).subscribe({
         next: (res: any) => {
-          this.generators = res || []; // Only reset generator selection if not in view/review mode
-
+          this.generators = res || [];
           if (!this.isViewMode && !this.isReviewMode) {
             this.operationForm.get('GeneratorId')?.setValue(null);
           }
-
           if (!this.generators.length) {
             Swal.fire('Info', 'No generators available for this site', 'info');
           }
@@ -127,6 +128,7 @@ totalEmission: number = 0;
       });
     });
 
+    // ================= READ ROUTE PARAMETERS =================
     const operationId = this.route.snapshot.paramMap.get('id');
     const queryParams = this.route.snapshot.queryParamMap;
     const mode = queryParams.get('mode') || 'create';
@@ -140,8 +142,15 @@ totalEmission: number = 0;
     const page = queryParams.get('page');
     this.pageSource = page === 'myaction' || page === 'search' ? page : 'search';
 
-    if (operationId) this.loadOperationById(operationId);
+    // ================= LOAD OPERATION & WORKFLOW =================
+    if (operationId) {
+      this.loadOperationById(operationId);
 
+      // ✅ Load workflow actions for this operation
+      this.loadWorkflowActions(operationId);
+    }
+
+    // ================= SET FORM ENABLE/DISABLE =================
     if (this.isViewMode || this.isReviewMode) {
       this.operationForm.disable();
     } else {
@@ -207,93 +216,93 @@ totalEmission: number = 0;
     });
   }
 
-calculateEmissions() {
-  // Ensure fuelConsumedLiters is a number
-  const fuel = Number(this.operation?.fuelConsumedLiters) || 0;
-  this.fuelConsumed = fuel;
+  calculateEmissions() {
+    // Ensure fuelConsumedLiters is a number
+    const fuel = Number(this.operation?.fuelConsumedLiters) || 0;
+    this.fuelConsumed = fuel;
 
-  // Force numeric GWP factors
-  const gwpCH4 = Number(this.operation?.gwP_CH4) || 28;
-  const gwpNO2 = Number(this.operation?.gwP_NO2) || 265;
+    // Force numeric GWP factors
+    const gwpCH4 = Number(this.operation?.gwP_CH4) || 28;
+    const gwpNO2 = Number(this.operation?.gwP_NO2) || 265;
 
-  // Force numeric emission factors
-  const co2Factor = Number(this.operation?.co2Factor) || 2.68;
-  const no2Factor = Number(this.operation?.no2Factor) || 0.00007;
-  const ch4Factor = Number(this.operation?.ch4Factor) || 0.00001;
+    // Force numeric emission factors
+    const co2Factor = Number(this.operation?.co2Factor) || 2.68;
+    const no2Factor = Number(this.operation?.no2Factor) || 0.00007;
+    const ch4Factor = Number(this.operation?.ch4Factor) || 0.00001;
 
-  // Calculate individual emissions
-  this.totalCO2 = fuel * co2Factor;
-  this.totalNO2 = fuel * no2Factor;
-  this.totalCH4 = fuel * ch4Factor;
+    // Calculate individual emissions
+    this.totalCO2 = fuel * co2Factor;
+    this.totalNO2 = fuel * no2Factor;
+    this.totalCH4 = fuel * ch4Factor;
 
-  // ✅ Total emission: convert everything to numbers before summing
-  this.totalEmission = Number(
-    (this.totalCO2 + (this.totalCH4 * gwpCH4) + (this.totalNO2 * gwpNO2)).toFixed(3)
-  );
+    // ✅ Total emission: convert everything to numbers before summing
+    this.totalEmission = Number(
+      (this.totalCO2 + (this.totalCH4 * gwpCH4) + (this.totalNO2 * gwpNO2)).toFixed(3)
+    );
 
-  console.log('Fuel:', fuel);
-  console.log('CO2:', this.totalCO2, 'CH4:', this.totalCH4, 'NO2:', this.totalNO2);
-  console.log('Total Emission:', this.totalEmission);
-}
+    console.log('Fuel:', fuel);
+    console.log('CO2:', this.totalCO2, 'CH4:', this.totalCH4, 'NO2:', this.totalNO2);
+    console.log('Total Emission:', this.totalEmission);
+  }
 
   // 
 
   loadOperation(id: string) {
-  this.service.getById(id).subscribe({
-    next: (res: any) => {
-      const selected = res.data || res;
-      if (!selected) return;
+    this.service.getById(id).subscribe({
+      next: (res: any) => {
+        const selected = res.data || res;
+        if (!selected) return;
 
-      // --- GWP values ---
-      const gwP_CH4 = 28;
-      const gwP_NO2 = 265;
+        // --- GWP values ---
+        const gwP_CH4 = 28;
+        const gwP_NO2 = 265;
 
-      // --- Compute Run Hours ---
-      let runHours = 0;
-      if (selected.startTime && selected.endTime) {
-        const start = new Date(selected.startTime).getTime();
-        const end = new Date(selected.endTime).getTime();
-        runHours = +((end - start) / (1000 * 60 * 60)).toFixed(2);
-      }
+        // --- Compute Run Hours ---
+        let runHours = 0;
+        if (selected.startTime && selected.endTime) {
+          const start = new Date(selected.startTime).getTime();
+          const end = new Date(selected.endTime).getTime();
+          runHours = +((end - start) / (1000 * 60 * 60)).toFixed(2);
+        }
 
-      // --- Emission factors ---
-      const co2Factor = selected.co2_kg ?? 0;
-      const no2Factor = selected.no2_kg ?? 0;
-      const ch4Factor = selected.ch4_kg ?? 0;
+        // --- Emission factors ---
+        const co2Factor = selected.co2_kg ?? 0;
+        const no2Factor = selected.no2_kg ?? 0;
+        const ch4Factor = selected.ch4_kg ?? 0;
 
-      // --- Total emissions ---
-      const totalCO2 = (selected.totalCO2 ?? (selected.fuelConsumedLiters * co2Factor)) || 0;
-      const totalNO2 = (selected.totalNO2 ?? (selected.fuelConsumedLiters * no2Factor)) || 0;
-      const totalCH4 = (selected.totalCH4 ?? (selected.fuelConsumedLiters * ch4Factor)) || 0;
+        // --- Total emissions ---
+        const totalCO2 = (selected.totalCO2 ?? (selected.fuelConsumedLiters * co2Factor)) || 0;
+        const totalNO2 = (selected.totalNO2 ?? (selected.fuelConsumedLiters * no2Factor)) || 0;
+        const totalCH4 = (selected.totalCH4 ?? (selected.fuelConsumedLiters * ch4Factor)) || 0;
 
-      const totalEmission = totalCO2 + totalCH4 * gwP_CH4 + totalNO2 * gwP_NO2;
+        const totalEmission = totalCO2 + totalCH4 * gwP_CH4 + totalNO2 * gwP_NO2;
 
-      // --- Patch operation object ---
-      this.operation = {
-        ...selected,
-        runHours,
-        co2Factor,
-        no2Factor,
-        ch4Factor,
-        cO2: totalCO2,
-        nO2: totalNO2,
-        cH4: totalCH4,
-        gwP_CH4,
-        gwP_NO2,
-        totalEmission,
-      };
+        // --- Patch operation object ---
+        this.operation = {
+          ...selected,
+          runHours,
+          co2Factor,
+          no2Factor,
+          ch4Factor,
+          cO2: totalCO2,
+          nO2: totalNO2,
+          cH4: totalCH4,
+          gwP_CH4,
+          gwP_NO2,
+          totalEmission,
+        };
 
-      // Optional: update totalCalculations for summary display
-      this.totalCalculations = {
-        runHours,
-        totalFuel: selected.fuelConsumedLiters ?? 0,
-        avgLoadFactor: selected.loadFactor ?? 0,
-        totalEmission,
-      };
-    },
-    error: () => Swal.fire('Error', 'Failed to load operation', 'error'),
-  });
-}
+        // Optional: update totalCalculations for summary display
+        this.totalCalculations = {
+          runHours,
+          totalFuel: selected.fuelConsumedLiters ?? 0,
+          avgLoadFactor: selected.loadFactor ?? 0,
+          totalEmission,
+        };
+      },
+      error: () => Swal.fire('Error', 'Failed to load operation', 'error'),
+    });
+  }
 
   // loadOperationById(id: string) {
   //   this.service.getById(id).subscribe({
@@ -319,57 +328,57 @@ calculateEmissions() {
   //   });
   // }
   loadOperationById(id: string) {
-  this.service.getById(id).subscribe({
-    next: (res: any) => {
-      const op = res.data || res;
+    this.service.getById(id).subscribe({
+      next: (res: any) => {
+        const op = res.data || res;
 
-      // Map to operation object for display
-      const gwP_CH4 = 28;
-      const gwP_NO2 = 265;
+        // Map to operation object for display
+        const gwP_CH4 = 28;
+        const gwP_NO2 = 265;
 
-      const co2Factor = op.co2_kg ?? 2.68; // default factor
-      const no2Factor = op.no2_kg ?? 0.0005;
-      const ch4Factor = op.ch4_kg ?? 0.0003;
+        const co2Factor = op.co2_kg ?? 2.68; // default factor
+        const no2Factor = op.no2_kg ?? 0.0005;
+        const ch4Factor = op.ch4_kg ?? 0.0003;
 
-      const runHours = op.startTime && op.endTime
-        ? +((new Date(op.endTime).getTime() - new Date(op.startTime).getTime()) / (1000*60*60)).toFixed(2)
-        : 0;
+        const runHours = op.startTime && op.endTime
+          ? +((new Date(op.endTime).getTime() - new Date(op.startTime).getTime()) / (1000 * 60 * 60)).toFixed(2)
+          : 0;
 
-      const totalCO2 = (op.fuelConsumedLiters || 0) * co2Factor;
-      const totalNO2 = (op.fuelConsumedLiters || 0) * no2Factor;
-      const totalCH4 = (op.fuelConsumedLiters || 0) * ch4Factor;
-      const totalEmission = totalCO2 + totalCH4 * gwP_CH4 + totalNO2 * gwP_NO2;
+        const totalCO2 = (op.fuelConsumedLiters || 0) * co2Factor;
+        const totalNO2 = (op.fuelConsumedLiters || 0) * no2Factor;
+        const totalCH4 = (op.fuelConsumedLiters || 0) * ch4Factor;
+        const totalEmission = totalCO2 + totalCH4 * gwP_CH4 + totalNO2 * gwP_NO2;
 
-      this.operation = {
-        ...op,
-        runHours,
-        co2Factor,
-        no2Factor,
-        ch4Factor,
-        cO2: totalCO2,
-        nO2: totalNO2,
-        cH4: totalCH4,
-        gwP_CH4,
-        gwP_NO2,
-        totalEmission,
-      };
+        this.operation = {
+          ...op,
+          runHours,
+          co2Factor,
+          no2Factor,
+          ch4Factor,
+          cO2: totalCO2,
+          nO2: totalNO2,
+          cH4: totalCH4,
+          gwP_CH4,
+          gwP_NO2,
+          totalEmission,
+        };
 
-      // Update component-level values for HTML bindings
-this.fuelConsumed = op.fuelConsumedLiters || 0;
-this.totalCO2 = +totalCO2.toFixed(3);
-this.totalNO2 = +totalNO2.toFixed(6);
-this.totalCH4 = +totalCH4.toFixed(6);
+        // Update component-level values for HTML bindings
+        this.fuelConsumed = op.fuelConsumedLiters || 0;
+        this.totalCO2 = +totalCO2.toFixed(3);
+        this.totalNO2 = +totalNO2.toFixed(6);
+        this.totalCH4 = +totalCH4.toFixed(6);
 
-// Show calculation card
-this.showCalculation = true;
-      // Patch the form for edit/view
-      this.edit(op);
+        // Show calculation card
+        this.showCalculation = true;
+        // Patch the form for edit/view
+        this.edit(op);
 
-      // Show calculation card
-    },
-    error: () => Swal.fire('Error', 'Failed to load operation', 'error')
-  });
-}
+        // Show calculation card
+      },
+      error: () => Swal.fire('Error', 'Failed to load operation', 'error')
+    });
+  }
 
   computeTotals(res: any) {
     if (!res.startTime || !res.endTime)
@@ -532,6 +541,70 @@ this.showCalculation = true;
 
     this.router.navigate(['/dashboard/generator-ec', item.operationId], {
       queryParams: { mode, page: source },
+    });
+  }
+
+performAction(workflowId: number) {
+  const operationId = this.operationForm.get('OperationId')?.value;
+
+  if (!operationId) {
+    Swal.fire('Error', 'Operation not found', 'error');
+    return;
+  }
+
+  // Check if the action is "Resubmit" (workflowId for Resubmit should match your SP/logic)
+  const action = this.workflowActions.find(w => w.workflowId === workflowId);
+  if (!action) return;
+
+  if (action.actionName === 'Resubmit') {
+    // 1️⃣ First, update the record with current form values
+    if (this.operationForm.invalid) {
+      Swal.fire('Error', 'Please fill all required fields before resubmitting', 'error');
+      return;
+    }
+
+    const raw = this.operationForm.getRawValue();
+    const payload = {
+      siteId: raw.SiteId,
+      generatorId: raw.GeneratorId,
+      startTime: raw.StartTime,
+      endTime: raw.EndTime,
+      loadFactor: raw.LoadFactor,
+      fuelConsumedLiters: raw.FuelConsumedLiters,
+    };
+
+    this.service.update(operationId, payload).subscribe({
+      next: () => {
+        // ✅ After successful update, update the status
+        this.service.updateStatus(operationId, workflowId).subscribe({
+          next: () => {
+            Swal.fire('Resubmitted', 'Operation updated and resubmitted successfully', 'success')
+              .then(() => this.goBack());
+          },
+          error: () => Swal.fire('Error', 'Failed to update status', 'error'),
+        });
+      },
+      error: () => Swal.fire('Error', 'Failed to update operation', 'error'),
+    });
+
+  } else {
+    // Other workflow actions: Approve / Reject
+    this.service.updateStatus(operationId, workflowId).subscribe({
+      next: () => {
+        Swal.fire('Success', 'Status updated successfully').then(() => this.goBack());
+      },
+      error: () => Swal.fire('Error', 'Failed to update status', 'error'),
+    });
+  }
+}
+  // ================= LOAD WORKFLOW ACTIONS =================
+  loadWorkflowActions(operationId: string) {
+    this.service.getWorkflowActions(operationId).subscribe({
+      next: (res: any) => {
+        this.workflowActions = res.data || [];
+        console.log('Workflow Actions:', this.workflowActions);
+      },
+      error: () => Swal.fire('Error', 'Failed to load workflow actions', 'error')
     });
   }
 }

@@ -145,7 +145,7 @@ export class MyactionGenerator implements OnInit {
       }
 
       // date comparison
-      if (column === 'opDate') {
+      if (column === 'entryDate') {
         const dateA = new Date(valA as string).getTime();
         const dateB = new Date(valB as string).getTime();
         return this.sortDirection() === 'asc' ? dateA - dateB : dateB - dateA;
@@ -160,11 +160,31 @@ export class MyactionGenerator implements OnInit {
     this.data.set(sortedData);
   }
 
+  //   fetchData() {
+  //   this.service.fetchOperations(this.currentPage(), this.pageSize).subscribe({
+  //     next: (res) => {
+  //       // Sort records by entryDate (newest first)
+  //       const sortedRecords = res.records.sort((a: any, b: any) => 
+  //         new Date(b.entryDate).getTime() - new Date(a.entryDate).getTime()
+  //       );
+
+  //       this.data.set(sortedRecords);
+  //       this.totalRecords.set(res.totalRecords);
+  //     },
+  //     error: () => Swal.fire('Error', 'Failed to load records', 'error')
+  //   });
+  // }
+
   fetchData() {
-    this.service.fetchOperations(this.currentPage(), this.pageSize).subscribe({
+    this.service.getAllGenerators().subscribe({
       next: (res) => {
-        this.data.set(res.records);
-        this.totalRecords.set(res.totalRecords);
+        // Sort records by entryDate (newest first)
+        const sortedRecords = res.sort((a, b) =>
+          new Date(b.entryDate).getTime() - new Date(a.entryDate).getTime()
+        );
+
+        this.data.set(sortedRecords);
+        this.totalRecords.set(sortedRecords.length);
       },
       error: () => Swal.fire('Error', 'Failed to load records', 'error')
     });
@@ -221,33 +241,45 @@ export class MyactionGenerator implements OnInit {
   //   }
   // }
 
-  handleAction(item: GeneratorOp) {
+  //   handleAction(item: GeneratorOp) {
+  //   if (this.userRole === 'Corporate' && item.status === 1) {
+  //     this.router.navigate(['/dashboard/generator-ec', item.operationId], { queryParams: { mode: 'review' } });
+  //   }
+  //   if (this.userRole === 'Reporter' && item.status === 3) {
+  //     this.router.navigate(['/dashboard/generator-ec', item.operationId], { queryParams: { mode: 'edit' } });
+  //   }
+  // } 
 
-    // CORPORATE
-    if (this.userRole === 'Corporate' && item.status === 1) {
+//   handleAction(item: GeneratorOp) {
+//   if (this.userRole === 'Corporate') {
+//     this.router.navigate(['/dashboard/generator-review', item.operationId], {
+//       queryParams: { review: true }
+//     });
+//   } else if (this.userRole === 'Reporter') {
+//     this.router.navigate(['/dashboard/generator-ec', item.operationId], {
+//       queryParams: { mode: 'edit' }
+//     });
+//   }
+// }
 
-      this.router.navigate(
-        ['/dashboard/generator-ec', item.operationId],
-        {
-          queryParams: { mode: 'review' }
-        }
-      );
+handleAction(item: GeneratorOp) {
+  if (!item.operationId) return;
 
-    }
+  console.log('UserRole:', this.userRole, 'OperationId:', item.operationId);
 
-    // REPORTER (Edit rejected)
-    if (this.userRole === 'Reporter' && item.status === 3) {
-
-      this.router.navigate(
-        ['/dashboard/generator-ec', item.operationId],
-        {
-          queryParams: { mode: 'edit' }
-        }
-      );
-
-    }
-
+  if (this.userRole === 'Corporate') {
+    // Open form in readonly mode for Corporate
+    this.router.navigate(['/dashboard/generator-ec', item.operationId], {
+      queryParams: { readonly: true }
+    });
+  } else if (this.userRole === 'Reporter') {
+    // Open form in edit mode for Reporter
+    this.router.navigate(['/dashboard/generator-ec', item.operationId], {
+      queryParams: { mode: 'edit' }
+    });
   }
+}
+
   approve(item: GeneratorOp) {
     this.service.updateStatus(item.operationId, 2).subscribe({
       next: () => {

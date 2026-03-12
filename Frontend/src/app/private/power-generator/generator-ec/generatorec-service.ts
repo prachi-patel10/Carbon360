@@ -54,7 +54,12 @@ export class GeneratorecService {
     return this.http.get(`${environment.apiBaseUrl}/Fuel/All`);
   }
 
-  updateStatus(id: string, actionId: number) {
-    return this.http.patch(`${this.apiUrl}/status/${id}?actionId=${actionId}`, {});
-  }
+  updateStatus(id: string, workflowId: number) {
+  return this.http.patch(`${this.apiUrl}/status/${id}?workflowId=${workflowId}`, {});
+}
+
+  // GET workflow actions for a specific operation
+  getWorkflowActions(operationId: string) {
+  return this.http.get(`${this.apiUrl}/${operationId}/actions`);
+}
 }

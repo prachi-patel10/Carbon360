@@ -1,4 +1,5 @@
 ﻿using ProjectApp.Core.DTOs.Account.GeneratorOperation;
+using ProjectApp.Core.DTOs.Common;
 using ProjectApp.Core.DTOs.Masters.Generator;
 using System;
 using System.Collections.Generic;
@@ -35,5 +36,7 @@ namespace ProjectApp.Repository.Interfaces.GenerationOperation
     int pageNumber = 1,
     int pageSize = 10
 );
+        Task<List<WorkflowActionDTO>> GetWorkflowActionsAsync(string encryptedId);
     }
+
 }

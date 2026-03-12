@@ -7,10 +7,10 @@ export interface GeneratorOp {
   generatorId: string;
   generatorName: string;
   fuelType: string;
-  opDate: string;
+  entryDate: string;
   runHours: number;
   loadFactor: number;
-  fuelConsumed: number;
+  fuelConsumedLiters: number; 
   totalEmission: number;
   status: number;
 }
@@ -109,10 +109,10 @@ export class GeneratorOperationService {
           generatorId: r.generatorId,
           generatorName: r.generatorName,
           fuelType: r.fuelType,
-          opDate: r.operationDate,
+          entryDate: r.entryDate,
           runHours: r.runHours,
           loadFactor: r.loadFactor,
-          fuelConsumed: r.fuelConsumedLiters,
+          fuelConsumedLiters: r.fuelConsumedLiters,
           totalEmission: r.totalEmission,
           status: Number(r.statusId) // Must match backend DB
         })),
@@ -132,4 +132,9 @@ export class GeneratorOperationService {
       { params: new HttpParams().set('statusId', statusId.toString()) }
     );
   }
+
+  // Add this method inside GeneratorOperationService
+getAllGenerators(): Observable<GeneratorOp[]> {
+  return this.http.get<GeneratorOp[]>(`${this.baseUrl}/allgenerator`);
+}
 }

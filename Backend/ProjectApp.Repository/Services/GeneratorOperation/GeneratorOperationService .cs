@@ -2,6 +2,7 @@
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using ProjectApp.Core.DTOs.Account.GeneratorOperation;
+using ProjectApp.Core.DTOs.Common;
 using ProjectApp.Core.DTOs.Masters.Generator;
 using ProjectApp.Core.Models;
 using ProjectApp.Repository.Interfaces.Common;
@@ -90,7 +91,6 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
 
             return list;
         }
-
 
         // ================= GET BY ID =================
         public async Task<GeneratorOperationResponseDTO> GetByIdAsync(string encryptedId)
@@ -300,7 +300,7 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
             return rows > 0;
         }
 
-        public async Task<bool> UpdateStatusAsync(string encryptedId, int actionId)
+        public async Task<bool> UpdateStatusAsync(string encryptedId, int workflowId)
         {
             int operationId = _idEncoder.Decode(encryptedId);
             int userId = GetCurrentUserId();
@@ -312,8 +312,9 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
             command.CommandType = CommandType.StoredProcedure;
 
             command.Parameters.Add(new SqlParameter("@OperationId", operationId));
-            command.Parameters.Add(new SqlParameter("@ActionId", actionId));
-            command.Parameters.Add(new SqlParameter("@UpdatedBy", userId));
+            command.Parameters.Add(new SqlParameter("@WorkflowId", workflowId));
+            command.Parameters.Add(new SqlParameter("@UserId", SqlDbType.Int) { Value = userId });
+
 
             if (connection.State != ConnectionState.Open)
                 await connection.OpenAsync();
@@ -418,6 +419,44 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
                 .ToListAsync();
 
             return generators;
+        }
+
+        public async Task<List<WorkflowActionDTO>> GetWorkflowActionsAsync(string encryptedId)
+        {
+            int operationId = _idEncoder.Decode(encryptedId);
+            int userId = GetCurrentUserId();
+            string role = _userContext.Role.Contains("Corporate")
+? "Corporate"
+: "Reporter"; 
+
+            await using var connection = _context.Database.GetDbConnection();
+            await using var command = connection.CreateCommand();
+
+            command.CommandText = "USP_CB_GetWorkflowActions";
+            command.CommandType = CommandType.StoredProcedure;
+
+            command.Parameters.Add(new SqlParameter("@OperationId", operationId));
+            command.Parameters.Add(new SqlParameter("@RoleName", role));
+
+            if (connection.State != ConnectionState.Open)
+                await connection.OpenAsync();
+
+            var actions = new List<WorkflowActionDTO>();
+            await using var reader = await command.ExecuteReaderAsync();
+
+            while (await reader.ReadAsync())
+            {
+                actions.Add(new WorkflowActionDTO
+                {
+                    WorkflowId = reader.GetInt32(reader.GetOrdinal("WorkflowId")),
+                    CurrentStatusId = reader.GetInt32(reader.GetOrdinal("currentstatusId")),
+                    NextStatusId = reader.GetInt32(reader.GetOrdinal("nextstatusId")),
+                    ActionName = reader["ActionName"].ToString(),
+                    RoleName = reader["RoleName"].ToString()
+                });
+            }
+
+            return actions;
         }
     }
     }

@@ -139,3 +139,19 @@
   border:1px solid #ddd;
   border-radius:4px;
 }
+
+.action-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 1.1rem;
+}
+
+.action-btn:disabled {
+  cursor: not-allowed;
+  color: #ccc;
+}
+
+.action-btn i {
+  margin-right: 5px;
+}

@@ -8,44 +8,50 @@
       <thead>
         <tr>
           <th (click)="sortBy('generatorName')" class="sortable">Name</th>
-          <th (click)="sortBy('opDate')" class="sortable">Date</th>
+          <th (click)="sortBy('entryDate')" class="sortable">Entry Date</th>
           <th (click)="sortBy('fuelType')" class="sortable">Fuel</th>
           <th (click)="sortBy('runHours')" class="sortable">Run Hours</th>
           <th (click)="sortBy('loadFactor')" class="sortable">Load Factor</th>
-          <th (click)="sortBy('fuelConsumed')" class="sortable">Fuel Consumed</th>
-          <!-- <th (click)="sortBy('totalEmission')" class="sortable">Emission</th> -->
+          <th (click)="sortBy('fuelConsumedLiters')" class="sortable">Fuel Consumed</th>
           <th class="text-center">Action</th>
         </tr>
       </thead>
 
       <tbody>
-
         <tr *ngFor="let item of data()">
-
           <td>{{ item.generatorName }}</td>
-          <td>{{ item.opDate | date:'shortDate' }}</td>
+          <td>{{ item.entryDate | date:'dd-MMM-yyyy':'UTC' }}</td>
           <td>{{ item.fuelType }}</td>
           <td>{{ item.runHours }}</td>
           <td>{{ item.loadFactor }}</td>
-          <td>{{ item.fuelConsumed }}</td>
-          <!-- <td>{{ item.totalEmission }}</td> -->
+          <td>{{ item.fuelConsumedLiters }}</td>
 
           <td class="action-buttons">
+            <!-- CORPORATE: Edit icon if Reported -->
+            <button *ngIf="userRole === 'Corporate'" class="action-btn" (click)="handleAction(item)">
+              <i class="fa fa-edit"></i>
+            </button>
 
-            <button (click)="handleAction(item)" [disabled]="userRole === 'Corporate' && item.status !== 1">
+            <!-- REPORTER: Resubmit icon if Rejected -->
+            <button *ngIf="userRole === 'Reporter'" class="action-btn" (click)="handleAction(item)">
+              <i class="fa fa-arrow-circle-right"></i>
+            </button>
 
-              {{ getActionText(item) }}
+            <!-- Approved (any user) -->
+            <button *ngIf="+item.status === 2" class="action-btn text-success" disabled>
+              <i class="fa fa-check-circle"></i>
+            </button>
 
+            <!-- Rejected for Corporate -->
+            <button *ngIf="+item.status === 3 && userRole === 'Corporate'" class="action-btn text-danger" disabled>
+              <i class="fa fa-times-circle"></i>
             </button>
           </td>
         </tr>
 
         <tr *ngIf="data().length === 0">
-          <td colspan="8" class="text-center no-data">
-            No records found
-          </td>
+          <td colspan="7" class="text-center no-data">No records found</td>
         </tr>
-
       </tbody>
 
     </table>

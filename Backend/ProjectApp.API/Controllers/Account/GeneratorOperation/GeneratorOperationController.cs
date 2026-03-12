@@ -14,7 +14,7 @@ namespace ProjectApp.API.Controllers.Account.GeneratorOperation
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles = "Admin,Corporate,Reporter")]
+    [Authorize]
     public class GeneratorOperationController : ControllerBase
     {
         private readonly IGeneratorOperationService _service;
@@ -124,11 +124,11 @@ namespace ProjectApp.API.Controllers.Account.GeneratorOperation
         }
 
         [HttpPatch("status/{id}")]
-        public async Task<IActionResult> UpdateStatus(string id, [FromQuery] int actionId)
+        public async Task<IActionResult> UpdateStatus(string id, [FromQuery] int workflowId)
         {
             try
             {
-                var result = await _service.UpdateStatusAsync(id, actionId);
+                var result = await _service.UpdateStatusAsync(id, workflowId);
 
                 _apiResponse.data = result;
                 _apiResponse.status = result;
@@ -193,6 +193,18 @@ namespace ProjectApp.API.Controllers.Account.GeneratorOperation
         {
             var generators = await _service.GetBySiteIdAsync(siteId);
             return Ok(generators);
+        }
+
+        [HttpGet("{id}/actions")]
+        public async Task<IActionResult> GetWorkflowActions(string id)
+        {
+            var actions = await _service.GetWorkflowActionsAsync(id);
+            return Ok(new
+            {
+                status = true,
+                statusCode = 200,
+                data = actions
+            });
         }
     }
     }
