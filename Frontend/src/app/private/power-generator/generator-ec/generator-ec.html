@@ -7,20 +7,28 @@
     <!-- ================= SITE ================= -->
     <div class="col-md-3">
       <label class="form-label fw-bold">Site Location</label>
-      <select class="form-select" formControlName="SiteId">
-        <option value="">-- Select Site --</option>
-        <option *ngFor="let s of sites" [value]="s.siteId">{{ s.siteName }}</option>
-      </select>
+     <select class="form-select" formControlName="SiteId">
+  <option [ngValue]="null">-- Select Site --</option>
+
+  <option *ngFor="let s of sites" [ngValue]="s.siteId">
+    {{ s.siteName }}
+  </option>
+</select>
       <div class="text-danger" *ngIf="isInvalid('SiteId')">Site is required</div>
     </div>
 
     <!-- ================= GENERATOR ================= -->
     <div class="col-md-3">
       <label class="form-label fw-bold">Generator</label>
-      <select class="form-select" formControlName="GeneratorId">
-        <option [ngValue]="null">-- Select Generator --</option>
-        <option *ngFor="let g of generators" [ngValue]="g.generatorId">{{ g.generatorName }}</option>
-      </select>
+     <select class="form-select" formControlName="GeneratorId">
+
+  <option [ngValue]="null">-- Select Generator --</option>
+
+  <option *ngFor="let g of generators" [ngValue]="g.generatorId">
+    {{ g.generatorName }}
+  </option>
+
+</select>
       <div class="text-danger" *ngIf="isInvalid('GeneratorId')">Generator is required</div>
     </div>
 

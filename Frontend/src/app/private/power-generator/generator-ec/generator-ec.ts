@@ -84,14 +84,9 @@ export class GeneratorOperationComponent implements OnInit {
     private service: GeneratorecService,
     private route: ActivatedRoute,
     private router: Router,
-  ) { }
+  ) {}
 
   ngOnInit() {
-     if (this.userRole === 'corporate') {
-    // Optionally navigate back to MyAction list
-    this.router.navigate(['/dashboard/MyActionGenerator']);
-    return; // exit ngOnInit early so form is not initialized
-  }
     this.initForm();
     this.loadSites();
     this.loadGenerators(); // optional if you want all generators
@@ -107,9 +102,8 @@ export class GeneratorOperationComponent implements OnInit {
 
       this.service.getGeneratorsBySite(selectedSiteId).subscribe({
         next: (res: any) => {
-          this.generators = res || [];
+          this.generators = res || []; // Only reset generator selection if not in view/review mode
 
-          // Only reset generator selection if not in view/review mode
           if (!this.isViewMode && !this.isReviewMode) {
             this.operationForm.get('GeneratorId')?.setValue(null);
           }
@@ -118,7 +112,7 @@ export class GeneratorOperationComponent implements OnInit {
             Swal.fire('Info', 'No generators available for this site', 'info');
           }
         },
-        error: () => Swal.fire('Error', 'Failed to load generators', 'error')
+        error: () => Swal.fire('Error', 'Failed to load generators', 'error'),
       });
     });
 
@@ -137,7 +131,6 @@ export class GeneratorOperationComponent implements OnInit {
 
     if (operationId) this.loadOperationById(operationId);
 
-  
     if (this.isViewMode || this.isReviewMode) {
       this.operationForm.disable();
     } else {
@@ -157,6 +150,16 @@ export class GeneratorOperationComponent implements OnInit {
       FuelConsumedLiters: [0, [Validators.required, Validators.min(0)]],
     });
   }
+
+  getSiteName(siteId: any): string {
+  const site = this.sites.find(s => s.siteId == siteId);
+  return site ? site.siteName : '';
+}
+
+getGeneratorName(generatorId: any): string {
+  const gen = this.generators.find(g => g.generatorId == generatorId);
+  return gen ? gen.generatorName : '';
+}
 
   public isInvalid(controlName: string): boolean {
     const control = this.operationForm.get(controlName);
@@ -193,27 +196,12 @@ export class GeneratorOperationComponent implements OnInit {
     });
   }
 
-  // loadOperations() {
-  //   this.service.getAll().subscribe({
-  //     next: (res: any) => (this.operations = res.data || []),
-  //     error: (err) => console.error('Failed to load operations:', err),
-  //   });
-  // }
-
   loadOperations() {
-  this.service.getAll().subscribe({
-    next: (res: any) => {
-      // Only show pending operations in MyAction
-      if (this.userRole === 'corporate') {
-        this.operations = (res.data || []).filter((op: any) => op.statusId === 1);
-      } else {
-        this.operations = res.data || [];
-      }
-    },
-    error: (err) => console.error('Failed to load operations:', err),
-  });
-}
-
+    this.service.getAll().subscribe({
+      next: (res: any) => (this.operations = res.data || []),
+      error: (err) => console.error('Failed to load operations:', err),
+    });
+  }
   loadOperationById(id: string) {
     this.service.getById(id).subscribe({
       next: (res: any) => {
@@ -231,51 +219,35 @@ export class GeneratorOperationComponent implements OnInit {
             this.totalCalculations = this.computeTotals(op);
             this.setButtonVisibility(op);
           },
-          error: () => Swal.fire('Error', 'Failed to load generators', 'error')
+          error: () => Swal.fire('Error', 'Failed to load generators', 'error'),
         });
       },
-      error: () => Swal.fire('Error', 'Failed to load operation', 'error')
+      error: () => Swal.fire('Error', 'Failed to load operation', 'error'),
     });
   }
 
-  computeTotals(op: any) {
-  const fuelConsumed = op.fuelConsumedLiters || 0;
-  const loadFactor = op.loadFactor || 0;
+  computeTotals(res: any) {
+    if (!res.startTime || !res.endTime)
+      return {
+        runHours: 0,
+        totalFuel: res.fuelConsumedLiters || 0,
+        avgLoadFactor: res.loadFactor || 0,
+        totalEmission: 0,
+      };
 
-  const co2Factor = op.co2Factor ?? 2.67;
-  const no2Factor = op.no2Factor ?? 0.0001;
-  const ch4Factor = op.ch4Factor ?? 0.00005;
-
-  // Calculate run hours
-  let runHours = 0;
-  if (op.startTime && op.endTime) {
-    runHours = +(
-      (new Date(op.endTime).getTime() - new Date(op.startTime).getTime()) /
+    const runHours = +(
+      (new Date(res.endTime).getTime() - new Date(res.startTime).getTime()) /
       (1000 * 60 * 60)
     ).toFixed(2);
+    const totalEmission = +(res.fuelConsumedLiters || 0) * 2.67;
+
+    return {
+      runHours,
+      totalFuel: res.fuelConsumedLiters || 0,
+      avgLoadFactor: res.loadFactor || 0,
+      totalEmission,
+    };
   }
-
-  // Calculate emissions
-  const totalCO2 = fuelConsumed * co2Factor;
-  const totalNO2 = fuelConsumed * no2Factor;
-  const totalCH4 = fuelConsumed * ch4Factor;
-
-  // Total CO2 equivalent
-  const totalEmission = totalCO2 + totalCH4 * 28 + totalNO2 * 265;
-
-  return {
-    runHours,
-    totalFuel: fuelConsumed,
-    avgLoadFactor: loadFactor,
-    co2Factor,
-    no2Factor,
-    ch4Factor,
-    totalCO2,
-    totalNO2,
-    totalCH4,
-    totalEmission,
-  };
-}
 
   setButtonVisibility(res: any) {
     const statusId = res?.statusId;
@@ -333,10 +305,6 @@ export class GeneratorOperationComponent implements OnInit {
   }
 
   submitOperation() {
-      if (this.userRole === 'corporate') {
-    Swal.fire('Access Denied', 'You are not allowed to submit a report', 'error');
-    return;
-  }
     if (this.operationForm.invalid) {
       Swal.fire('Error', 'Please fill required fields', 'error');
       return;
@@ -412,15 +380,5 @@ export class GeneratorOperationComponent implements OnInit {
     this.router.navigate(['/dashboard/generator-ec', item.operationId], {
       queryParams: { mode, page: source },
     });
-  }
-
- getSiteName(siteId: any): string {
-  const site = this.sites.find(s => s.siteId == siteId);
-  return site ? site.siteName : '';
-}
-
-  getGeneratorName(generatorId: any): string {
-    const gen = this.generators.find(g => g.generatorId == generatorId);
-    return gen ? gen.generatorName : '';
   }
 }
