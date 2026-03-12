@@ -204,7 +204,8 @@ export class Sitelocationmaster implements OnInit {
 
             this.showToast('Updated', 'Status updated successfully', 'success');
 
-            this.search();
+            //this.search();
+            site.isActive = newStatus;
 
           },
           error: (err) => {
@@ -236,7 +237,7 @@ export class Sitelocationmaster implements OnInit {
   // 
 
   validateShortCode() {
-    const shortCode = this.form.value.shortCode?.trim();
+    const shortCode = this.form.value.shortCode?.trim(); 
 
     if (!shortCode) return;
 

@@ -39,11 +39,11 @@ namespace ProjectApp.Repository.Interfaces.VehicleTripEmission
         string? userRole,
         int pageNumber = 1,
         int pageSize = 10,
-        string sortColumn = "tripstartdatetime",
+        string sortColumn = "entrydate",
         string sortDirection = "DESC");
 
         //Task<PageResult> GetMyActionTripsAsync(int pageNumber, int pageSize);
-        Task<PageResult> GetMyActionTripsAsync(int pageNumber, int pageSize, string sortColumn = "tripStartDateTime", string sortDirection = "DESC");
+        Task<PageResult> GetMyActionTripsAsync(int pageNumber, int pageSize, string sortColumn = "EntryDate", string sortDirection = "ASC");
 
         Task<List<WorkflowActionDTO>> GetWorkflowActionsAsync(string encryptedId);
     }

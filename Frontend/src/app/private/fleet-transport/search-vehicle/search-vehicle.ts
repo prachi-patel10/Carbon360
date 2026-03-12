@@ -41,7 +41,7 @@ export class SearchVehicle implements OnInit {
   filterEndDate = signal<string | null>(null);
   pageSizeOptions = [5, 10, 15, 20]; 
 pageSize = 5;             
-sortColumn = 'tripstartdatetime'
+sortColumn = 'entrydate'
 sortDirection = 'DESC'         
 currentPage = signal<number>(1);
 totalPages = signal<number>(1);

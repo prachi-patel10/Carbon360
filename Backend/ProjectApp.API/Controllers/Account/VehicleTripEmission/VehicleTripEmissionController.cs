@@ -136,7 +136,7 @@ namespace ProjectApp.API.Controllers.Account.VehicleTripEmission
             [FromQuery] int pageNumber = 1,
             [FromQuery] int pageSize = 10,
             [FromQuery] string sortColumn = "tripstartdatetime",
-            [FromQuery] string sortDirection = "DESC")
+            [FromQuery] string sortDirection = "ASC")
         {
             string role = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
 
@@ -179,8 +179,8 @@ namespace ProjectApp.API.Controllers.Account.VehicleTripEmission
         public async Task<IActionResult> GetMyActions(
           int pageNumber = 1,
           int pageSize = 10,
-          string sortColumn = "tripStartDateTime",
-          string sortDirection = "DESC")
+          string sortColumn = "EntryDate",
+          string sortDirection = "ASC")
         {
             var result = await _service.GetMyActionTripsAsync(
                 pageNumber,
