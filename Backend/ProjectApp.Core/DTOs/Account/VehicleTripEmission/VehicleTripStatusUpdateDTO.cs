@@ -10,5 +10,7 @@ namespace ProjectApp.Core.DTOs.Account.VehicleTripEmission
     {
         public string TripId { get; set; }
         public int WorkflowId { get; set; }
+        public int UserId { get; set; }
     }
 }
+

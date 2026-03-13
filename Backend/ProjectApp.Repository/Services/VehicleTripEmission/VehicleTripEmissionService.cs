@@ -642,18 +642,36 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
         public async Task<List<WorkflowActionDTO>> GetWorkflowActionsAsync(string encryptedId)
         {
             int tripId = _idEncoder.Decode(encryptedId);
-            string role = _userContext.Role.Contains("Corporate")
-       ? "Corporate"
-       : "Reporter";
 
+            // 1️⃣ Get current StatusId
+            int statusId = await _context.CB_VehicleTripEmissions
+                .Where(x => x.tripid == tripId && x.isactive)
+                .Select(x => x.StatusId)
+                .FirstOrDefaultAsync();
+
+            if (statusId == 0)
+                return new List<WorkflowActionDTO>(); // No trip or inactive
+
+            // 2️⃣ Map role string to RoleId
+            string role = _userContext.Role.Contains("Corporate") ? "Corporate" : "Reporter";
+
+            int roleId = await _context.CB_Roles
+                .Where(r => r.RoleName == role)
+                .Select(r => r.RoleId)
+                .FirstOrDefaultAsync();
+
+            if (roleId == 0)
+                throw new Exception($"Role '{role}' not found in DB");
+
+            // 3️⃣ Call stored procedure with correct parameters
             await using var connection = _context.Database.GetDbConnection();
             await using var command = connection.CreateCommand();
 
             command.CommandText = "USP_CB_GetWorkflowActions";
             command.CommandType = CommandType.StoredProcedure;
 
-            command.Parameters.Add(new SqlParameter("@TripId", tripId));
-            command.Parameters.Add(new SqlParameter("@RoleName", role));
+            command.Parameters.Add(new SqlParameter("@StatusId", statusId));
+            command.Parameters.Add(new SqlParameter("@RoleId", roleId));
 
             if (connection.State != ConnectionState.Open)
                 await connection.OpenAsync();
@@ -667,15 +685,15 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
                 actions.Add(new WorkflowActionDTO
                 {
                     WorkflowId = reader.GetInt32(reader.GetOrdinal("WorkflowId")),
-                    CurrentStatusId = reader.GetInt32(reader.GetOrdinal("currentstatusId")),
-                    NextStatusId = reader.GetInt32(reader.GetOrdinal("nextstatusId")),
+                    CurrentStatusId = reader.GetInt32(reader.GetOrdinal("CurrentStatusId")),
+                    NextStatusId = reader.GetInt32(reader.GetOrdinal("NextStatusId")),
                     ActionName = reader["ActionName"]?.ToString(),
                     RoleName = reader["RoleName"]?.ToString()
                 });
             }
 
             return actions;
-        }
+        }   
     }
 }
     
