@@ -106,26 +106,27 @@ export class GeneratorOperationComponent implements OnInit {
 
     // ================= SITE SELECTION CHANGE =================
     this.operationForm.get('SiteId')?.valueChanges.subscribe((selectedSiteId: string) => {
-      if (!selectedSiteId) {
-        this.generators = [];
-        if (!this.isViewMode && !this.isReviewMode) {
-          this.operationForm.get('GeneratorId')?.setValue(null);
-        }
-        return;
-      }
 
-      this.service.getGeneratorsBySite(selectedSiteId).subscribe({
-        next: (res: any) => {
-          this.generators = res || [];
-          if (!this.isViewMode && !this.isReviewMode) {
-            this.operationForm.get('GeneratorId')?.setValue(null);
-          }
-          if (!this.generators.length) {
-            Swal.fire('Info', 'No generators available for this site', 'info');
-          }
-        },
-        error: () => Swal.fire('Error', 'Failed to load generators', 'error'),
-      });
+  if (!selectedSiteId) {
+    this.generators = [];
+    return;
+ }
+
+  this.service.getGeneratorsBySite(selectedSiteId).subscribe({
+ next: (res: any) => {
+      this.generators = res || [];
+
+      // Do NOT clear generator during edit
+      if (!this.isViewMode && !this.isReviewMode && !this.isEditMode) {
+        this.operationForm.get('GeneratorId')?.setValue(null);
+ }
+
+      if (!this.generators.length) {
+        Swal.fire('Info', 'No generators available for this site', 'info');
+ }
+ },
+ error: () => Swal.fire('Error', 'Failed to load generators', 'error')
+ });
     });
 
     // ================= READ ROUTE PARAMETERS =================

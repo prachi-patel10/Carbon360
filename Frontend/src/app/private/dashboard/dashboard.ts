@@ -23,8 +23,6 @@ export class DashboardComponent {
   showProfileCard: boolean = false;
   sidebarOpen: boolean = true;
   pageTitle: string = '';
-
-  // Menu states
   openedConfigMenu: string | null = null;  // Configuration -> admin/vehicle/generator/waste
   openedSubMenu: string | null = null;     // For submenus inside configuration
   openedMainMenu: string | null = null;    // Fleet / Waste / Power
@@ -41,7 +39,6 @@ export class DashboardComponent {
       this.router.navigate(['/login']);
       return;
     }
-    
 
     this.loggedInUser = user.name;
     this.roles = user.roles ?? [];
@@ -57,14 +54,14 @@ export class DashboardComponent {
         else if (url.includes('vehiclereport')) this.pageTitle = 'Fleet Report';
         else if (url.includes('waste')) this.pageTitle = 'Waste Management';
         else if (url.includes('vehiclemaster')) this.pageTitle = 'Vehicle Master';
-         else if (url.includes('fueltype')) this.pageTitle = 'FuelType Master';
-         else if (url.includes('vehicletypeservice')) this.pageTitle = 'Vehicle Types';
-         else if (url.includes('vehicle')) this.pageTitle = 'Report Fleet & Transport';
-         else if (url.includes('emissionFactors')) this.pageTitle = ' Emisssion factors ';
-         else if (url.includes('generator-ec')) this.pageTitle = ' Report Power Generation ';
-         else if (url.includes('citymaster')) this.pageTitle = ' Citis ';
-         else if (url.includes('sitelocation')) this.pageTitle = ' Site location ';
-         else if (url.includes('generator')) this.pageTitle = ' Generator Master ';
+        else if (url.includes('fueltype')) this.pageTitle = 'FuelType Master';
+        else if (url.includes('vehicletypeservice')) this.pageTitle = 'Vehicle Types';
+        else if (url.includes('vehicle')) this.pageTitle = 'Report Fleet & Transport';
+        else if (url.includes('emissionFactors')) this.pageTitle = ' Emisssion factors ';
+        else if (url.includes('generator-ec')) this.pageTitle = ' Report Power Generation ';
+        else if (url.includes('citymaster')) this.pageTitle = ' Citis ';
+        else if (url.includes('sitelocation')) this.pageTitle = ' Site location ';
+        else if (url.includes('generator')) this.pageTitle = ' Generator Master ';
         else if (url.includes('searchGenerator')) this.pageTitle = ' Search Power Generator';
         else if (url.includes('MyActionGenerator')) this.pageTitle = ' Actions Power Generator';
         else if (url.includes('MyActionVehicle')) this.pageTitle = 'Actions Fleet & Transport';
@@ -115,8 +112,10 @@ export class DashboardComponent {
         };
         localStorage.setItem('user', JSON.stringify(updatedUser));
         localStorage.setItem('token', res.token);
-        window.location.reload();
-      }
+   this.showProfileCard = false;
+
+      // redirect to dashboard layout only
+      this.router.navigate(['/dashboard']);      }
     });
   }
 

@@ -424,24 +424,42 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
         public async Task<List<WorkflowActionDTO>> GetWorkflowActionsAsync(string encryptedId)
         {
             int operationId = _idEncoder.Decode(encryptedId);
-            int userId = GetCurrentUserId();
-            string role = _userContext.Role.Contains("Corporate")
-? "Corporate"
-: "Reporter"; 
+           
+            // :one: Get current StatusId
+            int statusId = await _context.CB_GeneratorOperations
+.Where(x => x.OperationId == operationId )
+.Select(x => x.StatusId)
+.FirstOrDefaultAsync();
 
-            await using var connection = _context.Database.GetDbConnection();
+            if (statusId == 0)
+                return new List<WorkflowActionDTO>(); // No trip or inactive
+
+            // :two: Map role string to RoleId
+            string role = _userContext.Role.Contains("Corporate") ? "Corporate" : "Reporter";
+
+            int roleId = await _context.CB_Roles
+            .Where(r => r.RoleName == role)
+            .Select(r => r.RoleId)
+            .FirstOrDefaultAsync();
+
+            if (roleId == 0)
+                throw new Exception($"Role '{role}' not found in DB");
+
+            // :three: Call stored procedure with correct parameters
+            await using var connection = _context.Database.GetDbConnection();
             await using var command = connection.CreateCommand();
 
             command.CommandText = "USP_CB_GetWorkflowActions";
             command.CommandType = CommandType.StoredProcedure;
 
-            command.Parameters.Add(new SqlParameter("@OperationId", operationId));
-            command.Parameters.Add(new SqlParameter("@RoleName", role));
+            command.Parameters.Add(new SqlParameter("@StatusId", statusId));
+            command.Parameters.Add(new SqlParameter("@RoleId", roleId));
 
             if (connection.State != ConnectionState.Open)
                 await connection.OpenAsync();
 
             var actions = new List<WorkflowActionDTO>();
+
             await using var reader = await command.ExecuteReaderAsync();
 
             while (await reader.ReadAsync())
@@ -449,10 +467,10 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
                 actions.Add(new WorkflowActionDTO
                 {
                     WorkflowId = reader.GetInt32(reader.GetOrdinal("WorkflowId")),
-                    CurrentStatusId = reader.GetInt32(reader.GetOrdinal("currentstatusId")),
-                    NextStatusId = reader.GetInt32(reader.GetOrdinal("nextstatusId")),
-                    ActionName = reader["ActionName"].ToString(),
-                    RoleName = reader["RoleName"].ToString()
+                    CurrentStatusId = reader.GetInt32(reader.GetOrdinal("CurrentStatusId")),
+                    NextStatusId = reader.GetInt32(reader.GetOrdinal("NextStatusId")),
+                    ActionName = reader["ActionName"]?.ToString(),
+                    RoleName = reader["RoleName"]?.ToString()
                 });
             }
 

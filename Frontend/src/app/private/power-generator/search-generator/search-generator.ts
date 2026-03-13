@@ -40,6 +40,7 @@ export class SearchGenerator implements OnInit {
   selectedFuelType: string = 'All';
 
   searchText = signal<string>('');
+  filterOperationDate = signal<string | null>(null);
   filterStartTime = signal<string | null>(null);
   filterEndTime = signal<string | null>(null);
 
@@ -110,15 +111,68 @@ export class SearchGenerator implements OnInit {
     this.applyFilters();
   }
 
-  onStartTimeChange(event: any) {
-    this.filterStartTime.set(event.target.value || null);
-    this.applyFilters();
+  // onStartTimeChange(event: any) {
+  //   this.filterStartTime.set(event.target.value || null);
+  //   this.applyFilters();
+  // }
+
+onOperationDateChange(event: any) {
+
+  const value = event.target.value;
+
+  if (value) {
+    this.filterOperationDate.set(value);
+
+    console.log("Operation date selected:", value);
+  } 
+  else {
+    this.filterOperationDate.set(null);
   }
 
-  onEndTimeChange(event: any) {
-    this.filterEndTime.set(event.target.value || null);
-    this.applyFilters();
+  this.applyFilters();
+}
+
+  onStartTimeChange(event: any) {
+
+  const value = event.target.value;
+
+  if (value) {
+    const startDate = new Date(value);
+    startDate.setHours(0, 0, 0, 0); // 00:00:00
+
+    this.filterStartTime.set(startDate.toISOString());
+
+    console.log("Start date sent to SQL:", startDate);
+  } else {
+    this.filterStartTime.set(null);
   }
+
+  this.applyFilters();
+}
+
+
+  // onEndTimeChange(event: any) {
+  //   this.filterEndTime.set(event.target.value || null);
+  //   this.applyFilters();
+  // }
+
+  onEndTimeChange(event: any) {
+
+  const value = event.target.value;
+
+  if (value) {
+    const endDate = new Date(value);
+    endDate.setHours(23, 59, 59, 999); // 23:59:59
+
+    this.filterEndTime.set(endDate.toISOString());
+
+    console.log("End date sent to SQL:", endDate);
+  } else {
+    this.filterEndTime.set(null);
+  }
+
+  this.applyFilters();
+}
 
   onSearch(event: any) {
     this.searchText.set(event.target.value);
@@ -127,37 +181,60 @@ export class SearchGenerator implements OnInit {
 
   /* ================= APPLY FILTERS ================= */
 
-  applyFilters() {
+ applyFilters() {
 
-    const sText = this.searchText().toLowerCase();
-    const fFuel = this.selectedFuelType;
-    const startTime = this.filterStartTime();
-    const endTime = this.filterEndTime();
+  const sText = this.searchText().toLowerCase();
+  const fFuel = this.selectedFuelType;
+  const startTime = this.filterStartTime();
+  const endTime = this.filterEndTime();
+  const operationDate = this.filterOperationDate();
 
-    const filtered = this.emissions().filter(e => {
+  const filtered = this.emissions().filter(e => {
 
-      const matchesSearch =
-        (e.operationId || '').toLowerCase().includes(sText) ||
-        (e.generatorName || '').toLowerCase().includes(sText) ||
-        (e.fuelType || '').toLowerCase().includes(sText);
+    const matchesSearch =
+      (e.operationId || '').toLowerCase().includes(sText) ||
+      (e.generatorName || '').toLowerCase().includes(sText) ||
+      (e.fuelType || '').toLowerCase().includes(sText);
 
-      const matchesFuel =
-        fFuel === 'All' ||
-        (e.fuelType || '').toLowerCase() === fFuel.toLowerCase();
+    const matchesFuel =
+      fFuel === 'All' ||
+      (e.fuelType || '').toLowerCase() === fFuel.toLowerCase();
 
-      let matchesDate = true;
-      const opDate = new Date(e.entryDate);
+    let matchesDate = true;
 
-      if (startTime) matchesDate = matchesDate && opDate >= new Date(startTime);
-      if (endTime) matchesDate = matchesDate && opDate <= new Date(endTime);
+    const opStart = new Date(e.startTime);
+    const opEnd = new Date(e.endTime);
 
-      return matchesSearch && matchesFuel && matchesDate;
+    /* ===== Operation Date Filter ===== */
 
-    });
+    if (operationDate) {
 
-    this.filteredData.set(filtered);
-  }
+      const selectedDate = new Date(operationDate).toISOString().split('T')[0];
+      const opDate = new Date(e.operationDate).toISOString().split('T')[0];
 
+      matchesDate = matchesDate && opDate === selectedDate;
+    }
+
+    /* ===== Start Date Filter ===== */
+
+    if (startTime) {
+      const start = new Date(startTime);
+      matchesDate = matchesDate && opStart >= start;
+    }
+
+    /* ===== End Date Filter ===== */
+
+    if (endTime) {
+      const end = new Date(endTime);
+      matchesDate = matchesDate && opEnd <= end;
+    }
+
+    return matchesSearch && matchesFuel && matchesDate;
+
+  });
+
+  this.filteredData.set(filtered);
+}
   /* ================= TABLE DATA ================= */
 
   filteredEmissions() {

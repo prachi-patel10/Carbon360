@@ -249,3 +249,47 @@ input[type="datetime-local"]:disabled {
 
 .btn-approve { background: #16a34a; color: #fff; }
 .btn-reject { background: #dc2626; color: #fff; }
+
+/* ================= EMISSION FACTORS SECTION ================= */
+
+.factors-section {
+  grid-column: span 2;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-left: 5px solid #1b5e20;
+  border-radius: 10px;
+  padding: 16px 18px;
+  margin-bottom: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+.factors-section h6 {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: #1b5e20;
+}
+
+/* factors grid */
+
+.factors-list {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+/* each factor item */
+
+.factors-list div {
+  background: #f8fbf8;
+  border: 1px solid #e4efe4;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #374151;
+  transition: all 0.2s ease;
+}
+
+
+
