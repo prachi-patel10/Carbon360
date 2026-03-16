@@ -70,7 +70,9 @@
       </div>
 
       <!-- ================= FORM BUTTONS ================= -->
-<div class="col-12 mt-3" *ngIf="userRole === 'reporter' && !isViewMode && !isReviewMode">  
+<div class="col-12 mt-3"
+    *ngIf="userRole === 'reporter' && !isViewMode && !isReviewMode && !isResubmitMode">
+
   <button type="submit" class="btn btn-primary">
     Save
   </button>
@@ -78,6 +80,7 @@
   <button type="button" class="btn btn-secondary ms-2" (click)="resetForm()">
     Reset
   </button>
+
 </div>
 
     </form>
@@ -122,6 +125,19 @@
 
     <!-- ================= CALCULATION ================= -->
     <h4 class="section-title">Emission Calculation</h4>
+
+    <hr class="full-width">
+
+
+<div class="formula full-width">
+  Power Output (kWh) = Rated Capacity × Load Factor × Run Hours <br>
+
+  = {{ operation.ratedCapacityKW }} × 
+  ({{ operation.loadFactor }} / 100) × 
+  {{ operation.runHours }} <br>
+
+  = {{ operation.powerOutputKWH | number:'1.2-2' }} kWh
+</div>
 
     <div class="formula full-width">
       CO₂ = Fuel × CO₂ Factor <br>

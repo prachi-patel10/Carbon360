@@ -290,18 +290,19 @@ onOperationDateChange(event: any) {
     this.calculatedResult = null;
   }
 
-  goToDetail(operationId: string) {
+ goToDetail(operationId: string) {
 
-    this.router.navigate(
-      ['/dashboard/generator-ec', operationId],
-      {
-        queryParams: {
-          mode: 'view'
-        }
+  this.router.navigate(
+    ['/dashboard/generator-ec', operationId],
+    {
+      queryParams: {
+        mode: 'view',
+        page: 'search'
       }
-    );
+    }
+  );
 
-  }
+}
 
   sortBy(column: string) {
 

@@ -66,6 +66,7 @@ export class GeneratorOperationComponent implements OnInit {
   isEditMode = false;
   isViewMode = false;
 
+  isResubmitMode: boolean = false;
   workflowActions: any[] = [];
 
   showApproveReject = false;
@@ -134,9 +135,13 @@ export class GeneratorOperationComponent implements OnInit {
     });
 
     // ================= READ ROUTE PARAMETERS =================
-    const operationId = this.route.snapshot.paramMap.get('id');
-    const queryParams = this.route.snapshot.queryParamMap;
-    const mode = queryParams.get('mode') || 'create';
+const operationId = this.route.snapshot.paramMap.get('id');
+const queryParams = this.route.snapshot.queryParamMap;
+const mode = queryParams.get('mode') || 'create';
+const page = queryParams.get('page');
+
+    this.pageSource = page === 'myaction' || page === 'search' ? page : 'search';
+
 // Restrict Corporate from creating new report
 if ((this.userRole === 'corporate' || this.userRole === 'admin') && !operationId) {
 
@@ -151,14 +156,13 @@ if ((this.userRole === 'corporate' || this.userRole === 'admin') && !operationId
 
   return;
 }
-    this.isReviewMode = mode === 'review';
-    this.isEditMode = mode === 'edit';
-    this.isViewMode = mode === 'view';
+  this.pageSource = page === 'myaction' || page === 'search' ? page : 'search';
 
+this.isReviewMode = mode === 'review' && this.pageSource === 'myaction';
+this.isEditMode = mode === 'edit';
+this.isViewMode = mode === 'view';
     this.showCalculation = !!operationId;
 
-    const page = queryParams.get('page');
-    this.pageSource = page === 'myaction' || page === 'search' ? page : 'search';
 
     // ================= LOAD OPERATION & WORKFLOW =================
     if (operationId) {
@@ -365,10 +369,12 @@ if ((this.userRole === 'corporate' || this.userRole === 'admin') && !operationId
         const gwP_CH4 = 28;
         const gwP_NO2 = 265;
 
-        const co2Factor = op.co2_kg ?? 2.68; // default factor
-        const no2Factor = op.no2_kg ?? 0.0005;
-        const ch4Factor = op.ch4_kg ?? 0.0003;
-
+        const co2Factor = op.cO2 ?? 2.68;
+const no2Factor = op.nO2 ?? 0.00007;
+const ch4Factor = op.cH4 ?? 0.00001;
+this.co2Factor = co2Factor;
+this.no2Factor = no2Factor;
+this.ch4Factor = ch4Factor;
         const runHours =
           op.startTime && op.endTime
             ? +(
@@ -376,6 +382,13 @@ if ((this.userRole === 'corporate' || this.userRole === 'admin') && !operationId
                 (1000 * 60 * 60)
               ).toFixed(2)
             : 0;
+// Get generator rated capacity
+const generator = this.generators.find(g => g.generatorId === op.generatorId);
+const ratedCapacityKW = generator?.ratedCapacityKW || 0;
+
+// Calculate Power Output
+const powerOutputKWH =
+  ratedCapacityKW * (op.loadFactor / 100) * runHours;
 
         const totalCO2 = (op.fuelConsumedLiters || 0) * co2Factor;
         const totalNO2 = (op.fuelConsumedLiters || 0) * no2Factor;
@@ -384,16 +397,18 @@ if ((this.userRole === 'corporate' || this.userRole === 'admin') && !operationId
 
         this.operation = {
           ...op,
-          runHours,
-          co2Factor,
-          no2Factor,
-          ch4Factor,
-          cO2: totalCO2,
-          nO2: totalNO2,
-          cH4: totalCH4,
-          gwP_CH4,
-          gwP_NO2,
-          totalEmission,
+ runHours,
+  ratedCapacityKW,
+  powerOutputKWH,
+  co2Factor,
+  no2Factor,
+  ch4Factor,
+  cO2: totalCO2,
+  nO2: totalNO2,
+  cH4: totalCH4,
+  gwP_CH4,
+  gwP_NO2,
+  totalEmission,
         };
 
         // Update component-level values for HTML bindings
@@ -645,14 +660,20 @@ if ((this.userRole === 'corporate' || this.userRole === 'admin') && !operationId
 } 
 
   // ================= LOAD WORKFLOW ACTIONS =================
-  loadWorkflowActions(operationId: string) {
-    this.service.getWorkflowActions(operationId).subscribe({
-      next: (res: any) => {
-        this.workflowActions = res?.data ?? res ?? [];
-
-        console.log('Workflow Actions:', this.workflowActions);
-      },
-      error: () => Swal.fire('Error', 'Failed to load workflow actions', 'error'),
-    });
+loadWorkflowActions(operationId: string) {
+  if (this.pageSource === 'search') {
+    this.workflowActions = [];
+    return;
   }
+
+  this.service.getWorkflowActions(operationId).subscribe({
+    next: (res: any) => {
+      this.workflowActions = res?.data ?? res ?? [];
+
+      // Check if only resubmit action is available
+      this.isResubmitMode = this.workflowActions.some(a => a.actionName === 'Resubmit');
+    },
+    error: () => Swal.fire('Error', 'Failed to load workflow actions', 'error'),
+  });
+}
 }
