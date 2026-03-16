@@ -37,6 +37,8 @@ export class TripComponent implements OnInit {
   showSummary: boolean = false;
   summaryData: any;
   userRole: string = '';
+  source: string = '';
+showEmissionFactorSection: boolean = true;
   mode: 'add' | 'edit' | 'view' = 'add';
 
   constructor(
@@ -103,7 +105,17 @@ export class TripComponent implements OnInit {
     this.calculateEmissions();
   });
   this.updateCurrentDateTime();
+this.route.queryParams.subscribe(params => {
 
+  this.source = params['source'] || '';
+
+  if (this.source === 'search' || this.source === 'action') {
+    this.showEmissionFactorSection = false;
+  } else {
+    this.showEmissionFactorSection = true;
+  }
+
+});
 
     const tripId = this.route.snapshot.paramMap.get('id');
 

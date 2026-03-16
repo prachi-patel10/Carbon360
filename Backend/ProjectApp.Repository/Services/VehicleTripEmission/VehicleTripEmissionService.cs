@@ -456,87 +456,101 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
             return (result, totalRecords);
         }
 
-        public async Task<PageResult> GetMyActionTripsAsync(int pageNumber, int pageSize, string sortColumn = "EntryDate", string sortDirection = "ASC")
+       public async Task<PageResult> GetMyActionTripsAsync(int pageNumber, int pageSize, string sortColumn = "EntryDate", string sortDirection = "DESC")
+    {
+        int userId = GetCurrentUserId();
+
+        int roleId = _userContext.Role.Contains("Corporate") ? 3 : 5;
+
+    var result = new List<ResponseVehicleTripEmissionDTO>();
+    int totalRecords = 0;
+
+    using (var conn = _context.Database.GetDbConnection())
+    {
+        await conn.OpenAsync();
+
+        using (var cmd = conn.CreateCommand())
         {
-            int userId = GetCurrentUserId();
+            cmd.CommandText = "USP_CB_GetMyActionVehicleTrips";
+            cmd.CommandType = CommandType.StoredProcedure;
 
-            string role = _userContext.Role.Contains("Corporate")
-                ? "Corporate"
-                : "Reporter";
+            cmd.Parameters.Add(new SqlParameter("@UserId", userId));
+            cmd.Parameters.Add(new SqlParameter("@RoleId", roleId));
+            cmd.Parameters.Add(new SqlParameter("@PageNumber", pageNumber));
+            cmd.Parameters.Add(new SqlParameter("@PageSize", pageSize));
+            cmd.Parameters.Add(new SqlParameter("@SortColumn", sortColumn));
+            cmd.Parameters.Add(new SqlParameter("@SortDirection", sortDirection));
 
-            var result = new List<ResponseVehicleTripEmissionDTO>();
-            int totalRecords = 0;
-
-            using (var conn = _context.Database.GetDbConnection())
+            var totalParam = new SqlParameter("@TotalRecords", SqlDbType.Int)
             {
-                await conn.OpenAsync();
+                Direction = ParameterDirection.Output
+            };
 
-                using (var cmd = conn.CreateCommand())
+            //cmd.Parameters.Add(totalParam);
+
+            using (var reader = await cmd.ExecuteReaderAsync())
+            {
+                while (await reader.ReadAsync())
                 {
-                    cmd.CommandText = "USP_CB_GetVehicleTripEmission";
-                    cmd.CommandType = CommandType.StoredProcedure;
-
-                    cmd.Parameters.Add(new SqlParameter("@UserId", userId));
-                    cmd.Parameters.Add(new SqlParameter("@UserRole", role));
-                    cmd.Parameters.Add(new SqlParameter("@PageNumber", pageNumber));
-                    cmd.Parameters.Add(new SqlParameter("@PageSize", pageSize));
-                    cmd.Parameters.Add(new SqlParameter("@SortColumn", sortColumn));
-                    cmd.Parameters.Add(new SqlParameter("@SortDirection", sortDirection));
-
-                    var totalParam = new SqlParameter("@TotalRecords", SqlDbType.Int)
-                    {
-                        Direction = ParameterDirection.Output
-                    };
-
-                    cmd.Parameters.Add(totalParam);
-
-                    using (var reader = await cmd.ExecuteReaderAsync())
-                    {
-                        while (await reader.ReadAsync())
-                        {
                             result.Add(new ResponseVehicleTripEmissionDTO
                             {
                                 TripId = _idEncoder.Encode(Convert.ToInt32(reader["TripId"])),
 
                                 VehicleId = _idEncoder.Encode(Convert.ToInt32(reader["VehicleId"])),
 
-                                VehicleName = reader["VehicleName"]?.ToString(),
+                                FromCityId = reader["FromCityId"] == DBNull.Value
+                ? null
+                : _idEncoder.Encode(Convert.ToInt32(reader["FromCityId"])),
 
-                                FromCityId = _idEncoder.Encode(Convert.ToInt32(reader["FromCityId"])),
-
-                                FromCity = reader["FromCity"]?.ToString(),
-
-                                ToCityId = _idEncoder.Encode(Convert.ToInt32(reader["ToCityId"])),
-
-                                ToCity = reader["ToCity"]?.ToString(),
+                                ToCityId = reader["ToCityId"] == DBNull.Value
+                ? null
+                : _idEncoder.Encode(Convert.ToInt32(reader["ToCityId"])),
 
                                 TripStartDateTime = Convert.ToDateTime(reader["TripStartDateTime"]),
 
                                 TripEndDateTime = reader["TripEndDateTime"] == DBNull.Value
-        ? null
-        : Convert.ToDateTime(reader["TripEndDateTime"]),
+                ? null
+                : Convert.ToDateTime(reader["TripEndDateTime"]),
 
-                                TotalEmission = Convert.ToDecimal(reader["TotalEmission"]),
+                                DistanceKm = Convert.ToDecimal(reader["DistanceKm"]),
+
+                                FuelConsumedLtr = Convert.ToDecimal(reader["FuelConsumedLtr"]),
+
+                                CO2 = reader["CO2"] == DBNull.Value ? null : Convert.ToDecimal(reader["CO2"]),
+                                NO2 = reader["NO2"] == DBNull.Value ? null : Convert.ToDecimal(reader["NO2"]),
+                                CH4 = reader["CH4"] == DBNull.Value ? null : Convert.ToDecimal(reader["CH4"]),
+
+                                TotalCO2 = reader["TotalCO2"] == DBNull.Value ? null : Convert.ToDecimal(reader["TotalCO2"]),
+                                TotalNO2 = reader["TotalNO2"] == DBNull.Value ? null : Convert.ToDecimal(reader["TotalNO2"]),
+                                TotalCH4 = reader["TotalCH4"] == DBNull.Value ? null : Convert.ToDecimal(reader["TotalCH4"]),
+                                TotalEmission = reader["TotalEmission"] == DBNull.Value ? null : Convert.ToDecimal(reader["TotalEmission"]),
+
+                                VehicleNumber = reader["VehicleNumber"]?.ToString(),
+                                VehicleType = reader["VehicleType"]?.ToString(),
+                                FuelType = reader["FuelType"]?.ToString(),
+
+                                FromCity = reader["FromCity"]?.ToString(),
+                                ToCity = reader["ToCity"]?.ToString(),
 
                                 StatusId = Convert.ToInt32(reader["StatusId"])
                             });
                         }
-                    }
-
-                    totalRecords = totalParam.Value != DBNull.Value
-                        ? Convert.ToInt32(totalParam.Value)
-                        : result.Count;
-                }
             }
 
-            return new PageResult
-            {
-                Data = result,
-                TotalRecords = totalRecords,
-                TotalPages = (int)Math.Ceiling((double)totalRecords / pageSize),
-                CurrentPage = pageNumber
-            };
+            //totalRecords = totalParam.Value != DBNull.Value
+            //    ? Convert.ToInt32(totalParam.Value)
+            //    : result.Count;
         }
+    }
+
+    return new PageResult
+    {
+        Data = result,
+        TotalRecords = totalRecords,
+        TotalPages = (int)Math.Ceiling((double)totalRecords / pageSize),
+        CurrentPage = pageNumber
+    };
+}
 
         public async Task<(IEnumerable<SearchVehicleTripEmissionDTO>, int)> SearchVehicleTrips(
         string? search,
@@ -598,6 +612,9 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
                     VehicleNumber = reader["VehicleNumber"]?.ToString() ?? "",
                     VehicleType = reader["VehicleType"]?.ToString() ?? "",
                     FuelType = reader["FuelType"]?.ToString() ?? "",
+                    EntryDate = reader.IsDBNull(reader.GetOrdinal("EntryDate"))
+        ? DateTime.MinValue
+        : reader.GetDateTime(reader.GetOrdinal("EntryDate")),
 
                     DistanceKm = reader.IsDBNull(reader.GetOrdinal("DistanceKm")) ? 0 :
                                  reader.GetDecimal(reader.GetOrdinal("DistanceKm")),
@@ -643,7 +660,7 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
         {
             int tripId = _idEncoder.Decode(encryptedId);
 
-            // 1️⃣ Get current StatusId
+           
             int statusId = await _context.CB_VehicleTripEmissions
                 .Where(x => x.tripid == tripId && x.isactive)
                 .Select(x => x.StatusId)
@@ -652,7 +669,7 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
             if (statusId == 0)
                 return new List<WorkflowActionDTO>(); // No trip or inactive
 
-            // 2️⃣ Map role string to RoleId
+            
             string role = _userContext.Role.Contains("Corporate") ? "Corporate" : "Reporter";
 
             int roleId = await _context.CB_Roles
@@ -663,7 +680,7 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
             if (roleId == 0)
                 throw new Exception($"Role '{role}' not found in DB");
 
-            // 3️⃣ Call stored procedure with correct parameters
+          
             await using var connection = _context.Database.GetDbConnection();
             await using var command = connection.CreateCommand();
 

@@ -6,7 +6,7 @@ import { Router } from '@angular/router';
 
 interface VehicleTripDisplay extends VehicleTrip {
 
-  vehicleName: string
+  vehicleNumber: string
   fromCity: string
   toCity: string
   status: string
@@ -57,7 +57,10 @@ sortDirection = 'DESC'
 
   editTrip(tripId: string) {
 
-  this.router.navigate(['/dashboard/vehicle-ec', tripId])
+ this.router.navigate(
+  ['/dashboard/vehicle-ec', tripId],
+  { queryParams: { source: 'action' } }
+);
 
 }
 
@@ -127,6 +130,8 @@ loadTrips() {
 totalPages(): number {
   return Math.ceil(this.totalRecords() / this.pageSize)
 }
+
+
 
 goToPage(page: number) {
 

@@ -85,14 +85,15 @@
 
       <thead>
         <tr>
-          <th (click)="sort('vehicleNumber')" style="cursor:pointer">Vehicle</th>
+          <th (click)="sort('vehicleNumber')" style="cursor:pointer">Vehicle No.</th>
           <th (click)="sort('vehicleType')" style="cursor:pointer">Type</th>
-          <th (click)="sort('fuelType')" style="cursor:pointer">Fuel</th>
-          <th (click)="sort('distanceKm')" style="cursor:pointer">Distance</th>
-          <th (click)="sort('fuelConsumedLtr')" style="cursor:pointer">Fuel Used</th>
-          <th (click)="sort('tripStartDateTime')" style="cursor:pointer">TripStartDateTime</th>
-          <th (click)="sort('tripEndDateTime')" style="cursor:pointer">TripEndDateTime</th>
-          <th>Total Emission</th>
+          <!-- <th (click)="sort('fuelType')" style="cursor:pointer">Fuel</th> -->
+          <th (click)="sort('entryDate')" style="cursor:pointer">Entry Date</th>
+          <th (click)="sort('distanceKm')" style="cursor:pointer">Distance(km)</th>
+          <th (click)="sort('fuelConsumedLtr')" style="cursor:pointer">Fuel Used(L)</th>
+          <th (click)="sort('tripStartDateTime')" style="cursor:pointer">Start Date</th>
+          <th (click)="sort('tripEndDateTime')" style="cursor:pointer">End Date</th>
+          <th>Total Emission(kg CO₂e)</th>
           <!-- <th>Status</th> -->
           <th>Action</th>
         </tr>
@@ -104,15 +105,17 @@
 
           <td>{{ e.vehicleNumber }}</td>
           <td>{{ e.vehicleType }}</td>
-          <td>{{ e.fuelType }}</td>
+          <!-- <td>{{ e.fuelType }}</td> -->
+            <td>{{ e.entryDate | date:'dd-MMM-yyyy' }}</td>
 
-          <td>{{ e.distanceKm }} km</td>
-          <td>{{ e.fuelConsumedLtr }} L</td>
-          <td>{{e.tripStartDateTime | date:'shortDate'}}</td>
-          <td>{{e.tripEndDateTime | date:'shortDate'}}</td>
+          <td>{{ e.distanceKm }} </td>
+          <td>{{ e.fuelConsumedLtr }} </td>
+         
+          <td>{{e.tripStartDateTime |  date:'dd-MMM-yyyy'}}</td>
+          <td>{{e.tripEndDateTime |  date:'dd-MMM-yyyy'}}</td>
 
           <td class="emission-value">
-            {{ e.totalEmission }} kg
+            {{ e.totalEmission }} 
           </td>
 
           <!-- <td>

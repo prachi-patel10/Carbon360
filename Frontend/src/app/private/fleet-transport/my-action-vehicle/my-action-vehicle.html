@@ -16,7 +16,7 @@
 
       <thead>
         <tr>
-          <th (click)="sort('vehicleName')" style="cursor:pointer">
+          <th (click)="sort('vehicleNumber')" style="cursor:pointer">
   Vehicle
 </th>
 
@@ -41,7 +41,7 @@
 
         <tr *ngFor="let e of trips()">
 
-          <td>{{ e.vehicleName }}</td>
+          <td>{{ e.vehicleNumber }}</td>
 
           <td>
             {{ e.fromCity }} - {{ e.toCity }}

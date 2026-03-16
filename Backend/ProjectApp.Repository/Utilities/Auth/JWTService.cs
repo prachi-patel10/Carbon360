@@ -19,18 +19,22 @@ namespace ProjectApp.Repository.Utilities.Auth
         {
             var claims = new List<Claim>
         {
+            //new Claim("UserId", user.UserId.ToString()),
+            //new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
+            new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),  
             new Claim("UserId", user.UserId.ToString()),
-            new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
-            new Claim(ClaimTypes.Name, user.UserName ?? ""),
-            new Claim(ClaimTypes.Email, user.Email ?? "")
+            new Claim(ClaimTypes.Name, user.UserName ?? string.Empty),
+            new Claim(ClaimTypes.Email, user.Email ?? string.Empty)
         };
 
-            if (roles != null)
+            if (roles != null && roles.Count > 0)
             {
                 foreach (var role in roles)
+                {
                     claims.Add(new Claim(ClaimTypes.Role, role));
+                }
             }
-          
+
 
             var key = new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(_configuration["JwtSettings:Key"]));

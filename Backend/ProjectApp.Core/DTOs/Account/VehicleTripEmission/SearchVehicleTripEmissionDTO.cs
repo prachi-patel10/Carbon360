@@ -16,6 +16,7 @@ namespace ProjectApp.Core.DTOs.Account.VehicleTripEmission
         public decimal? FuelConsumedLtr { get; set; }
         public DateTime? TripStartDateTime { get; set; }
         public DateTime? TripEndDateTime { get; set; }
+        public DateTime? EntryDate { get; set; }
         public decimal? TotalCO2 { get; set; }
         public decimal? TotalNO2 { get; set; }
         public decimal? TotalCH4 { get; set; }
