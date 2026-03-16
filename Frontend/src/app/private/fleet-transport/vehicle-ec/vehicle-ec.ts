@@ -348,7 +348,7 @@ if (tripId) {
         title: 'Trip Submitted Successfully'
       }).then(() => {
 
-        this.router.navigate(['/dashboard/MyActionVehicle']);
+        this.router.navigate(['/dashboard/search-vehicle']);
 
       });
 
@@ -412,13 +412,17 @@ if (tripId) {
 
   this.tripService.updateTripStatus(tripId, workflowId)
     .subscribe((res: any) => {
-
-      Swal.fire({
+Swal.fire({
         icon: 'success',
-        title: 'Status Updated'
-      });
+        title: 'Status Updated Successfully',
+        confirmButtonText: 'OK'
+      }).then(() => {
 
-      this.loadTrip(tripId);
+        // Navigate AFTER popup closes
+        this.router.navigate(['/dashboard/MyActionVehicle']);
+
+      });
+      // this.loadTrip(tripId);
 
     });
 
@@ -607,8 +611,9 @@ resubmitTrip() {
         icon: 'success',
         title: 'Trip Updated Successfully'
       });
+       this.router.navigate(['/dashboard/search-vehicle']);
 
-      this.loadTrip(tripId);
+      // this.loadTrip(tripId);
 
     },
 

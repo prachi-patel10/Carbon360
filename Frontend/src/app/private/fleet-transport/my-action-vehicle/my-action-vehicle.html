@@ -10,113 +10,109 @@
 
     <div class="container generator-page">
 
-  <div class="table-responsive">
+      <div class="table-responsive">
 
-    <table class="generator-table">
+        <table class="generator-table">
 
-      <thead>
-        <tr>
-          <th (click)="sort('vehicleNumber')" style="cursor:pointer">
-  Vehicle
-</th>
+          <thead>
+            <tr>
+              <th (click)="sort('vehicleNumber')" style="cursor:pointer">
+                Vehicle
+              </th>
 
-<th (click)="sort('fromCity')" style="cursor:pointer">
-  Route
-</th>
-       
-<th (click)="sort('tripStartDateTime')" style="cursor:pointer">
-  Start Time
-</th>
-          <!-- <th>Start Time</th> -->
-<th (click)="sort('tripEndDateTime')" style="cursor:pointer">
-  End Time
-</th>
-          <!-- <th>End Time</th> -->
-          <th>Emission</th>
-          <th class="text-center">Action</th>
-        </tr>
-      </thead>
+              <th (click)="sort('fromCity')" style="cursor:pointer">
+                Route
+              </th>
 
-      <tbody>
+              <th (click)="sort('tripStartDateTime')" style="cursor:pointer">
+                Start Time
+              </th>
+              <!-- <th>Start Time</th> -->
+              <th (click)="sort('tripEndDateTime')" style="cursor:pointer">
+                End Time
+              </th>
+              <!-- <th>End Time</th> -->
+              <th>Emission</th>
+              <th class="text-center">Action</th>
+            </tr>
+          </thead>
 
-        <tr *ngFor="let e of trips()">
+          <tbody>
 
-          <td>{{ e.vehicleNumber }}</td>
+            <tr *ngFor="let e of trips()">
 
-          <td>
-            {{ e.fromCity }} - {{ e.toCity }}
-          </td>
+              <td>{{ e.vehicleNumber }}</td>
 
-          <td>{{ e.tripStartDateTime | date:'short' }}</td>
+              <td>
+                {{ e.fromCity }} - {{ e.toCity }}
+              </td>
 
-          <td>{{ e.tripEndDateTime | date:'short' }}</td>
+              <td>{{ e.tripStartDateTime | date:'short' }}</td>
 
-          <td>{{ e.totalEmission }}</td>
+              <td>{{ e.tripEndDateTime | date:'short' }}</td>
 
-          <td class="action-buttons">
-            <button class="btn-edit" (click)="editTrip(e.tripId)">
-              <i class="fas fa-edit"></i>
-            </button>
-          </td>
+              <td>{{ e.totalEmission }}</td>
 
-        </tr>
+              <td class="action-btn">
+                <button class="btn-edit" (click)="editTrip(e.tripId)">
+                  <i class="fa fa-edit"></i>
+                </button>
+              </td>
 
-        <tr *ngIf="trips().length === 0">
-          <td colspan="6" class="text-center no-data">
-            No records found
-          </td>
-        </tr>
+            </tr>
 
-      </tbody>
+            <tr *ngIf="trips().length === 0">
+              <td colspan="6" class="text-center no-data">
+                No records found
+              </td>
+            </tr>
 
-    </table>
+          </tbody>
 
-  </div>
+        </table>
 
-  <!-- Pagination -->
+      </div>
 
-  <div class="table-footer">
+      <!-- Pagination -->
 
-    <div class="total-records">
-      Total Records : <b>{{ totalRecords() }}</b>
+      <div class="table-footer">
+
+        <div class="total-records">
+          Total Records : <b>{{ totalRecords() }}</b>
+        </div>
+
+        <div class="page-size">
+          Show
+          <select (change)="changePageSize($event)">
+            <option>5</option>
+            <option selected>10</option>
+            <option>20</option>
+            <option>50</option>
+          </select>
+          entries
+        </div>
+
+        <div class="pagination">
+
+          <button (click)="goToPage(currentPage()-1)" [disabled]="currentPage() === 1">
+
+            Prev
+          </button>
+
+          <span class="page-info">
+            Page {{ currentPage() }} of {{ totalPages() }}
+          </span>
+
+          <button (click)="goToPage(currentPage()+1)" [disabled]="currentPage() === totalPages()">
+
+            Next
+          </button>
+
+        </div>
+
+      </div>
+
     </div>
-
-    <div class="page-size">
-      Show
-      <select (change)="changePageSize($event)">
-        <option>5</option>
-        <option selected>10</option>
-        <option>20</option>
-        <option>50</option>
-      </select>
-      entries
-    </div>
-
-    <div class="pagination">
-
-      <button
-        (click)="goToPage(currentPage()-1)"
-        [disabled]="currentPage() === 1">
-
-        Prev
-      </button>
-
-      <span class="page-info">
-        Page {{ currentPage() }} of {{ totalPages() }}
-      </span>
-
-      <button
-        (click)="goToPage(currentPage()+1)"
-        [disabled]="currentPage() === totalPages()">
-
-        Next
-      </button>
-
-    </div>
-
-  </div>
-
-</div>
 
   </div>
 </div>

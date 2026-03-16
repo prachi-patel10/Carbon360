@@ -65,18 +65,16 @@
 /* Edit button */
 
 .btn-edit{
-  background:#1b5e20;
+  background:white;
   border:none;
-  color:white;
+  color:#1b5e20;
   padding:6px 10px;
   border-radius:6px;
   cursor:pointer;
   transition:0.2s;
 }
 
-.btn-edit:hover{
-  background:#166534;
-}
+
 
 /* Footer */
 
