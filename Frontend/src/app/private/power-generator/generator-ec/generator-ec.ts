@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
 import { GeneratorecService } from './generatorec-service';
 import { ActivatedRoute, Router } from '@angular/router';
+import { switchMap } from 'rxjs/operators';
 import Swal from 'sweetalert2';
 
 interface GeneratorOperation {
@@ -33,7 +34,7 @@ interface Site {
 }
 
 interface Generator {
-  generatorId: number;
+  generatorId: string;
   generatorName: string;
   siteId: number;
   fuelId?: number;
@@ -69,13 +70,13 @@ export class GeneratorOperationComponent implements OnInit {
 
   showApproveReject = false;
   showResubmit = false;
-
+  operationId!: string;
 
   totalCO2: number = 0;
   totalNO2: number = 0;
   totalCH4: number = 0;
   fuelConsumed: number = 0;
-  co2Factor: number = 2.68;   // default, can come from backend
+  co2Factor: number = 2.68; // default, can come from backend
   no2Factor: number = 0.00007;
   ch4Factor: number = 0.00001;
   totalEmission: number = 0;
@@ -90,50 +91,66 @@ export class GeneratorOperationComponent implements OnInit {
 
   showCalculation = false;
 
-  userRole: 'corporate' | 'reporter' = 'reporter';
+  userRole:  'admin' | 'corporate' | 'reporter' = 'reporter';
 
   constructor(
     private fb: FormBuilder,
     private service: GeneratorecService,
     private route: ActivatedRoute,
     private router: Router,
-  ) { }
+  ) {}
 
   ngOnInit() {
     this.initForm();
     this.loadSites();
     this.loadGenerators(); // optional if you want all generators
 
+    const user = localStorage.getItem('user');
+    if (user) {
+      const parsed = JSON.parse(user);
+      this.userRole = parsed.currentRole?.toLowerCase();
+    }
     // ================= SITE SELECTION CHANGE =================
     this.operationForm.get('SiteId')?.valueChanges.subscribe((selectedSiteId: string) => {
+      if (!selectedSiteId) {
+        this.generators = [];
+        return;
+      }
 
-  if (!selectedSiteId) {
-    this.generators = [];
-    return;
- }
+      this.service.getGeneratorsBySite(selectedSiteId).subscribe({
+        next: (res: any) => {
+          this.generators = res || []; // Do NOT clear generator during edit
 
-  this.service.getGeneratorsBySite(selectedSiteId).subscribe({
- next: (res: any) => {
-      this.generators = res || [];
+          if (!this.isViewMode && !this.isReviewMode && !this.isEditMode) {
+            this.operationForm.get('GeneratorId')?.setValue(null);
+          }
 
-      // Do NOT clear generator during edit
-      if (!this.isViewMode && !this.isReviewMode && !this.isEditMode) {
-        this.operationForm.get('GeneratorId')?.setValue(null);
- }
-
-      if (!this.generators.length) {
-        Swal.fire('Info', 'No generators available for this site', 'info');
- }
- },
- error: () => Swal.fire('Error', 'Failed to load generators', 'error')
- });
+          if (!this.generators.length) {
+            Swal.fire('Info', 'No generators available for this site', 'info');
+          }
+        },
+        error: () => Swal.fire('Error', 'Failed to load generators', 'error'),
+      });
     });
 
     // ================= READ ROUTE PARAMETERS =================
     const operationId = this.route.snapshot.paramMap.get('id');
     const queryParams = this.route.snapshot.queryParamMap;
     const mode = queryParams.get('mode') || 'create';
+// Restrict Corporate from creating new report
+if ((this.userRole === 'corporate' || this.userRole === 'admin') && !operationId) {
 
+  Swal.fire({
+    icon: 'warning',
+    title: 'Access Restricted',
+    text: 'you are not allowed to create generator emission reports.',
+    confirmButtonText: 'Go Back'
+  }).then(() => {
+    this.router.navigate(['/dashboard/MyActionGenerator']);
+  });
+
+  return;
+}
     this.isReviewMode = mode === 'review';
     this.isEditMode = mode === 'edit';
     this.isViewMode = mode === 'view';
@@ -152,10 +169,19 @@ export class GeneratorOperationComponent implements OnInit {
     }
 
     // ================= SET FORM ENABLE/DISABLE =================
-    if (this.isViewMode || this.isReviewMode) {
+    // Corporate cannot edit
+    if (this.userRole === 'corporate') {
       this.operationForm.disable();
-    } else {
-      this.operationForm.enable(); // reporter create/edit mode
+    }
+
+    // Reporter editing rejected record
+    if (this.userRole === 'reporter' && this.isEditMode) {
+      this.operationForm.enable();
+    }
+
+    // Reporter creating
+    if (!this.isViewMode && !this.isReviewMode && !this.isEditMode) {
+      this.operationForm.enable();
     }
   }
 
@@ -173,12 +199,12 @@ export class GeneratorOperationComponent implements OnInit {
   }
 
   getSiteName(siteId: any): string {
-    const site = this.sites.find(s => s.siteId == siteId);
+    const site = this.sites.find((s) => s.siteId == siteId);
     return site ? site.siteName : '';
   }
 
   getGeneratorName(generatorId: any): string {
-    const gen = this.generators.find(g => g.generatorId == generatorId);
+    const gen = this.generators.find((g) => g.generatorId == generatorId);
     return gen ? gen.generatorName : '';
   }
 
@@ -238,7 +264,7 @@ export class GeneratorOperationComponent implements OnInit {
 
     // ✅ Total emission: convert everything to numbers before summing
     this.totalEmission = Number(
-      (this.totalCO2 + (this.totalCH4 * gwpCH4) + (this.totalNO2 * gwpNO2)).toFixed(3)
+      (this.totalCO2 + this.totalCH4 * gwpCH4 + this.totalNO2 * gwpNO2).toFixed(3),
     );
 
     console.log('Fuel:', fuel);
@@ -246,7 +272,7 @@ export class GeneratorOperationComponent implements OnInit {
     console.log('Total Emission:', this.totalEmission);
   }
 
-  // 
+  //
 
   loadOperation(id: string) {
     this.service.getById(id).subscribe({
@@ -272,9 +298,9 @@ export class GeneratorOperationComponent implements OnInit {
         const ch4Factor = selected.ch4_kg ?? 0;
 
         // --- Total emissions ---
-        const totalCO2 = (selected.totalCO2 ?? (selected.fuelConsumedLiters * co2Factor)) || 0;
-        const totalNO2 = (selected.totalNO2 ?? (selected.fuelConsumedLiters * no2Factor)) || 0;
-        const totalCH4 = (selected.totalCH4 ?? (selected.fuelConsumedLiters * ch4Factor)) || 0;
+        const totalCO2 = (selected.totalCO2 ?? selected.fuelConsumedLiters * co2Factor) || 0;
+        const totalNO2 = (selected.totalNO2 ?? selected.fuelConsumedLiters * no2Factor) || 0;
+        const totalCH4 = (selected.totalCH4 ?? selected.fuelConsumedLiters * ch4Factor) || 0;
 
         const totalEmission = totalCO2 + totalCH4 * gwP_CH4 + totalNO2 * gwP_NO2;
 
@@ -329,6 +355,8 @@ export class GeneratorOperationComponent implements OnInit {
   //   });
   // }
   loadOperationById(id: string) {
+    this.operationId = id; // ✅ store id globally
+
     this.service.getById(id).subscribe({
       next: (res: any) => {
         const op = res.data || res;
@@ -341,9 +369,13 @@ export class GeneratorOperationComponent implements OnInit {
         const no2Factor = op.no2_kg ?? 0.0005;
         const ch4Factor = op.ch4_kg ?? 0.0003;
 
-        const runHours = op.startTime && op.endTime
-          ? +((new Date(op.endTime).getTime() - new Date(op.startTime).getTime()) / (1000 * 60 * 60)).toFixed(2)
-          : 0;
+        const runHours =
+          op.startTime && op.endTime
+            ? +(
+                (new Date(op.endTime).getTime() - new Date(op.startTime).getTime()) /
+                (1000 * 60 * 60)
+              ).toFixed(2)
+            : 0;
 
         const totalCO2 = (op.fuelConsumedLiters || 0) * co2Factor;
         const totalNO2 = (op.fuelConsumedLiters || 0) * no2Factor;
@@ -377,7 +409,7 @@ export class GeneratorOperationComponent implements OnInit {
 
         // Show calculation card
       },
-      error: () => Swal.fire('Error', 'Failed to load operation', 'error')
+      error: () => Swal.fire('Error', 'Failed to load operation', 'error'),
     });
   }
 
@@ -442,7 +474,7 @@ export class GeneratorOperationComponent implements OnInit {
     const id = this.operationForm.get('OperationId')?.value;
     if (!id) return;
 
-    this.service.updateStatus(id, 4).subscribe({
+    this.service.updateStatus(id, 1).subscribe({
       next: () => {
         Swal.fire('Resubmitted', 'Sent again for approval', 'success');
         this.goBack();
@@ -453,20 +485,29 @@ export class GeneratorOperationComponent implements OnInit {
 
   goBack() {
     if (this.pageSource === 'search') {
-      this.router.navigate(['/dashboard/MyActionGenerator']);
-    } else {
       this.router.navigate(['/dashboard/searchGenerator']);
+    } else {
+      this.router.navigate(['/dashboard/MyActionGenerator']);
     }
   }
 
   submitOperation() {
+
+     if (this.userRole === 'corporate') {
+    Swal.fire('Access Denied', 'Corporate users cannot submit this form', 'error');
+    return;
+     }
+
     if (this.operationForm.invalid) {
       Swal.fire('Error', 'Please fill required fields', 'error');
       return;
     }
 
     const raw = this.operationForm.getRawValue();
+    const operationId = this.operationId; // ✅ declare once
+
     const payload = {
+      operationId: operationId,
       siteId: raw.SiteId,
       generatorId: raw.GeneratorId,
       startTime: raw.StartTime,
@@ -475,23 +516,23 @@ export class GeneratorOperationComponent implements OnInit {
       fuelConsumedLiters: raw.FuelConsumedLiters,
     };
 
-    if (raw.OperationId) {
-      this.service.update(raw.OperationId, payload).subscribe({
+    if (operationId) {
+      this.service.update(operationId, payload).subscribe({
         next: () => {
-          Swal.fire('Success', 'Operation updated successfully', 'success').then(() => {
-            this.router.navigate(['/dashboard/MyActionGenerator']);
-          });
+          Swal.fire('Success', 'Operation updated successfully', 'success').then(() =>
+            this.goBack(),
+          );
         },
-        error: () => Swal.fire('Error', 'Failed to update operation', 'error'),
+        error: () => Swal.fire('Error', 'Update failed', 'error'),
       });
     } else {
       this.service.create(payload).subscribe({
         next: () => {
-          Swal.fire('Success', 'Operation saved successfully', 'success').then(() => {
-            this.router.navigate(['/dashboard/MyActionGenerator']);
-          });
+          Swal.fire('Success', 'Operation created successfully', 'success').then(() =>
+            this.goBack(),
+          );
         },
-        error: () => Swal.fire('Error', 'Failed to save operation', 'error'),
+        error: () => Swal.fire('Error', 'Save failed', 'error'),
       });
     }
   }
@@ -545,7 +586,8 @@ export class GeneratorOperationComponent implements OnInit {
     });
   }
 
-performAction(workflowId: number) {
+  performAction(workflowId: number) {
+
   const operationId = this.operationForm.get('OperationId')?.value;
 
   if (!operationId) {
@@ -553,59 +595,64 @@ performAction(workflowId: number) {
     return;
   }
 
-  // Check if the action is "Resubmit" (workflowId for Resubmit should match your SP/logic)
-  const action = this.workflowActions.find(w => w.workflowId === workflowId);
+  const action = this.workflowActions.find(a => a.workflowId === workflowId);
   if (!action) return;
 
+  const raw = this.operationForm.getRawValue();
+
+  const payload = {
+    siteId: raw.SiteId,
+    generatorId: raw.GeneratorId,
+    startTime: raw.StartTime,
+    endTime: raw.EndTime,
+    loadFactor: raw.LoadFactor,
+    fuelConsumedLiters: raw.FuelConsumedLiters
+  };
+
+  // RESUBMIT (update + status change)
   if (action.actionName === 'Resubmit') {
-    // 1️⃣ First, update the record with current form values
+
     if (this.operationForm.invalid) {
-      Swal.fire('Error', 'Please fill all required fields before resubmitting', 'error');
+      Swal.fire('Error','Please fill all required fields before resubmitting','error');
       return;
     }
 
-    const raw = this.operationForm.getRawValue();
-    const payload = {
-      siteId: raw.SiteId,
-      generatorId: raw.GeneratorId,
-      startTime: raw.StartTime,
-      endTime: raw.EndTime,
-      loadFactor: raw.LoadFactor,
-      fuelConsumedLiters: raw.FuelConsumedLiters,
-    };
-
-    this.service.update(operationId, payload).subscribe({
-      next: () => {
-        // ✅ After successful update, update the status
-        this.service.updateStatus(operationId, workflowId).subscribe({
-          next: () => {
-            Swal.fire('Resubmitted', 'Operation updated and resubmitted successfully', 'success')
-              .then(() => this.goBack());
-          },
-          error: () => Swal.fire('Error', 'Failed to update status', 'error'),
-        });
-      },
-      error: () => Swal.fire('Error', 'Failed to update operation', 'error'),
-    });
+    this.service.update(operationId, payload)
+      .pipe(
+        switchMap(() => this.service.updateStatus(operationId, workflowId))
+      )
+      .subscribe({
+        next: () => {
+          Swal.fire('Resubmitted','Operation updated and resubmitted successfully','success')
+          .then(() => this.goBack());
+        },
+        error: () => Swal.fire('Error','Resubmit failed','error')
+      });
 
   } else {
-    // Other workflow actions: Approve / Reject
-    this.service.updateStatus(operationId, workflowId).subscribe({
-      next: () => {
-        Swal.fire('Success', 'Status updated successfully').then(() => this.goBack());
-      },
-      error: () => Swal.fire('Error', 'Failed to update status', 'error'),
-    });
+
+    // Approve / Reject
+    this.service.updateStatus(operationId, workflowId)
+      .subscribe({
+        next: () => {
+          Swal.fire('Success','Status updated successfully','success')
+          .then(() => this.goBack());
+        },
+        error: () => Swal.fire('Error','Failed to update status','error')
+      });
+
   }
-}
+} 
+
   // ================= LOAD WORKFLOW ACTIONS =================
   loadWorkflowActions(operationId: string) {
     this.service.getWorkflowActions(operationId).subscribe({
       next: (res: any) => {
-        this.workflowActions = res.data || [];
+        this.workflowActions = res?.data ?? res ?? [];
+
         console.log('Workflow Actions:', this.workflowActions);
       },
-      error: () => Swal.fire('Error', 'Failed to load workflow actions', 'error')
+      error: () => Swal.fire('Error', 'Failed to load workflow actions', 'error'),
     });
   }
 }

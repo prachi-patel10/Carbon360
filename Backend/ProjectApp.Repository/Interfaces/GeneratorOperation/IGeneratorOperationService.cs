@@ -21,7 +21,7 @@ namespace ProjectApp.Repository.Interfaces.GenerationOperation
 
         Task<bool> DeleteAsync(string encryptedId);
 
-        Task<GeneratorOperationResponseDTO> UpdateAsync(string encryptedId, GeneratorOperationCreateDTO dto);
+        Task<GeneratorOperationResponseDTO> UpdateAsync(string encryptedId, GenerationOperationUpdateDTO dto);
 
         Task<List<GeneratorResponseDTO>> GetBySiteIdAsync(int siteId);
         Task<bool> UpdateStatusAsync(string encryptedId, int statusId);
@@ -37,6 +37,10 @@ namespace ProjectApp.Repository.Interfaces.GenerationOperation
     int pageSize = 10
 );
         Task<List<WorkflowActionDTO>> GetWorkflowActionsAsync(string encryptedId);
+
+        Task<List<GeneratorOperationResponseDTO>> GetMyActionRecordsAsync();
+
     }
+
 
 }

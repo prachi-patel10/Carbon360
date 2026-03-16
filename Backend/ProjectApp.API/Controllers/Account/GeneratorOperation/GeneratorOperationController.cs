@@ -86,8 +86,8 @@ namespace ProjectApp.API.Controllers.Account.GeneratorOperation
             return StatusCode((int)HttpStatusCode.Created, _apiResponse);
         }
 
-        [HttpPut("{id}")]
-        public async Task<IActionResult> Update(string id, [FromBody] GeneratorOperationCreateDTO dto)
+        [HttpPut("Update/{id}")]
+        public async Task<IActionResult> Update(string id, [FromBody] GenerationOperationUpdateDTO dto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -204,6 +204,19 @@ namespace ProjectApp.API.Controllers.Account.GeneratorOperation
                 status = true,
                 statusCode = 200,
                 data = actions
+            });
+        }
+
+        [HttpGet("myactions")]
+        public async Task<IActionResult> GetMyActions()
+        {
+            var data = await _service.GetMyActionRecordsAsync();
+
+            return Ok(new
+            {
+                status = true,
+                statusCode = 200,
+                data = data
             });
         }
     }

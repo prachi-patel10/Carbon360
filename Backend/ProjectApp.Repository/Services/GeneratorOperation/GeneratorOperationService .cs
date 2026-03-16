@@ -17,6 +17,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace ProjectApp.Repository.Services.GeneratorOperation
 {
@@ -215,63 +216,7 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
             };
         }
 
-        // ================= UPDATE =================
-        public async Task<GeneratorOperationResponseDTO> UpdateAsync(string encryptedId, GeneratorOperationCreateDTO dto)
-        {
-            int operationId = _idEncoder.Decode(encryptedId);
-            int generatorId = _idEncoder.Decode(dto.GeneratorId);
-            int siteId = _idEncoder.Decode(dto.SiteId);
-            int userId = GetCurrentUserId();
-
-            await using var connection = _context.Database.GetDbConnection();
-            await using var command = connection.CreateCommand();
-
-            command.CommandText = "USP_CB_GeneratorOperationUpdate";
-            command.CommandType = CommandType.StoredProcedure;
-
-            command.Parameters.Add(new SqlParameter("@OperationId", SqlDbType.Int) { Value = operationId });
-            command.Parameters.Add(new SqlParameter("@StartTime", SqlDbType.DateTime) { Value = dto.StartTime });
-            command.Parameters.Add(new SqlParameter("@EndTime", SqlDbType.DateTime) { Value = dto.EndTime });
-            command.Parameters.Add(new SqlParameter("@LoadFactor", SqlDbType.Decimal) { Precision = 5, Scale = 2, Value = dto.LoadFactor });
-            command.Parameters.Add(new SqlParameter("@FuelConsumedLiters", SqlDbType.Decimal) { Precision = 10, Scale = 2, Value = dto.FuelConsumedLiters });
-            command.Parameters.Add(new SqlParameter("@SiteId", SqlDbType.Int) { Value = siteId });
-            command.Parameters.Add(new SqlParameter("@UserId", SqlDbType.Int) { Value = userId });
-
-            if (connection.State != ConnectionState.Open)
-                await connection.OpenAsync();
-
-            await command.ExecuteNonQueryAsync();
-
-            var updatedEntity = await _context.CB_GeneratorOperations
-                .AsNoTracking()
-                .FirstOrDefaultAsync(x => x.OperationId == operationId);
-            // Encode SiteId only if it has value
-            var siteIdEncoded = updatedEntity.SiteId.HasValue
-                ? _idEncoder.Encode(updatedEntity.SiteId.Value)
-                : null;
-            var siteName = updatedEntity.SiteId.HasValue
-                ? await _siteService.GetSiteNameByIdAsync(updatedEntity.SiteId.Value)
-                : null;
-            return new GeneratorOperationResponseDTO
-            {
-                OperationId = _idEncoder.Encode(updatedEntity.OperationId),
-                GeneratorId = _idEncoder.Encode(updatedEntity.GeneratorId),
-                SiteId = siteIdEncoded,
-                SiteName = siteName,
-                OperationDate = updatedEntity.OperationDate,
-                RunHours = updatedEntity.RunHours ?? 0,
-                LoadFactor = updatedEntity.LoadFactor ?? 0,
-                PowerOutputKWH = updatedEntity.PowerOutputKWH ?? 0,
-                FuelConsumedLiters = updatedEntity.FuelConsumedLiters ?? 0,
-                TotalCO2 = updatedEntity.total_co2_kg ?? 0,
-                TotalNO2 = updatedEntity.total_no2_kg ?? 0,
-                TotalCH4 = updatedEntity.total_ch4_kg ?? 0,
-                TotalEmission = updatedEntity.total_co2e_kg ?? 0,
-                StatusId = updatedEntity.StatusId,
-                EntryBy = updatedEntity.EntryBy,
-                EntryDate = updatedEntity.EntryDate
-            };
-        }
+       
 
         // ================= DELETE =================
         public async Task<bool> DeleteAsync(string encryptedId)
@@ -475,6 +420,154 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
             }
 
             return actions;
+        }
+
+        public async Task<GeneratorOperationResponseDTO> UpdateAsync(string encryptedId, GenerationOperationUpdateDTO dto)
+        {
+            int operationId = _idEncoder.Decode(encryptedId);
+            int siteId = _idEncoder.Decode(dto.SiteId);
+            int userId = GetCurrentUserId();
+
+            await using var connection = _context.Database.GetDbConnection();
+            await using var command = connection.CreateCommand();
+
+            command.CommandText = "USP_CB_GeneratorOperationUpdate";
+            command.CommandType = CommandType.StoredProcedure;
+
+            command.Parameters.Add(new SqlParameter("@OperationId", SqlDbType.Int) { Value = operationId });
+            command.Parameters.Add(new SqlParameter("@SiteId", SqlDbType.Int) { Value = siteId });
+            command.Parameters.Add(new SqlParameter("@StartTime", SqlDbType.DateTime) { Value = dto.StartTime });
+            command.Parameters.Add(new SqlParameter("@EndTime", SqlDbType.DateTime) { Value = dto.EndTime });
+
+            command.Parameters.Add(new SqlParameter("@LoadFactor", SqlDbType.Decimal)
+            {
+                Precision = 5,
+                Scale = 2,
+                Value = dto.LoadFactor
+            });
+
+            command.Parameters.Add(new SqlParameter("@FuelConsumedLiters", SqlDbType.Decimal)
+            {
+                Precision = 10,
+                Scale = 2,
+                Value = dto.FuelConsumedLiters
+            });
+
+            command.Parameters.Add(new SqlParameter("@UserId", SqlDbType.Int) { Value = userId });
+
+            if (connection.State != ConnectionState.Open)
+                await connection.OpenAsync();
+
+            await command.ExecuteNonQueryAsync();
+
+            var updatedEntity = await _context.CB_GeneratorOperations
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x => x.OperationId == operationId);
+
+            if (updatedEntity == null)
+                throw new Exception("Generator operation not found.");
+
+            var siteName = updatedEntity.SiteId.HasValue
+                ? await _siteService.GetSiteNameByIdAsync(updatedEntity.SiteId.Value)
+                : null;
+
+            var siteIdEncoded = updatedEntity.SiteId.HasValue
+                ? _idEncoder.Encode(updatedEntity.SiteId.Value)
+                : null;
+
+            return new GeneratorOperationResponseDTO
+            {
+                OperationId = _idEncoder.Encode(updatedEntity.OperationId),
+                GeneratorId = _idEncoder.Encode(updatedEntity.GeneratorId),
+                SiteId = siteIdEncoded,
+                SiteName = siteName,
+
+                OperationDate = updatedEntity.OperationDate,
+                StartTime = updatedEntity.StartTime,
+                EndTime = updatedEntity.EndTime,
+
+                RunHours = updatedEntity.RunHours ?? 0,
+                LoadFactor = updatedEntity.LoadFactor ?? 0,
+                PowerOutputKWH = updatedEntity.PowerOutputKWH ?? 0,
+                FuelConsumedLiters = updatedEntity.FuelConsumedLiters ?? 0,
+
+                CO2 = updatedEntity.co2_kg,
+                NO2 = updatedEntity.no2_kg,
+                CH4 = updatedEntity.ch4_kg,
+
+                TotalCO2 = updatedEntity.total_co2_kg ?? 0,
+                TotalNO2 = updatedEntity.total_no2_kg ?? 0,
+                TotalCH4 = updatedEntity.total_ch4_kg ?? 0,
+                TotalEmission = updatedEntity.total_co2e_kg ?? 0,
+
+                StatusId = updatedEntity.StatusId,
+                EntryBy = updatedEntity.EntryBy,
+                EntryDate = updatedEntity.EntryDate
+            };
+
+        }
+
+        public async Task<List<GeneratorOperationResponseDTO>> GetMyActionRecordsAsync()
+        {
+            int userId = GetCurrentUserId();
+            string role = _userContext.Role.Contains("Corporate") ? "Corporate"
+              : _userContext.Role.Contains("Admin") ? "Admin"
+              : "Reporter";
+
+            int roleId = await _context.CB_Roles
+                .Where(r => r.RoleName == role)
+                .Select(r => r.RoleId)
+                .FirstOrDefaultAsync();
+
+            await using var connection = _context.Database.GetDbConnection();
+            await using var command = connection.CreateCommand();
+
+            command.CommandText = "USP_CB_GetMyActionRecords";
+            command.CommandType = CommandType.StoredProcedure;
+
+            command.Parameters.Add(new SqlParameter("@UserId", userId));
+            command.Parameters.Add(new SqlParameter("@RoleId", roleId));
+
+            if (connection.State != ConnectionState.Open)
+                await connection.OpenAsync();
+
+            var list = new List<GeneratorOperationResponseDTO>();
+
+            await using var reader = await command.ExecuteReaderAsync();
+
+            while (await reader.ReadAsync())
+            {
+                list.Add(new GeneratorOperationResponseDTO
+                {
+                    OperationId = _idEncoder.Encode(reader.GetInt32(reader.GetOrdinal("OperationId"))),
+                    GeneratorId = _idEncoder.Encode(reader.GetInt32(reader.GetOrdinal("GeneratorId"))),
+
+                    SiteId = reader.IsDBNull(reader.GetOrdinal("SiteId"))
+                        ? null
+                        : _idEncoder.Encode(reader.GetInt32(reader.GetOrdinal("SiteId"))),
+
+                    GeneratorName = reader["GeneratorName"]?.ToString(),   // ✅ ADD
+                    FuelType = reader["FuelType"]?.ToString(),             // ✅ ADD
+
+                    OperationDate = DateOnly.FromDateTime(reader.GetDateTime(reader.GetOrdinal("OperationDate"))),
+
+                    RunHours = reader.IsDBNull(reader.GetOrdinal("RunHours")) ? 0 :
+                               reader.GetDecimal(reader.GetOrdinal("RunHours")),
+
+                    LoadFactor = reader.IsDBNull(reader.GetOrdinal("LoadFactor")) ? 0 :
+                                 reader.GetDecimal(reader.GetOrdinal("LoadFactor")),
+
+                    FuelConsumedLiters = reader.IsDBNull(reader.GetOrdinal("FuelConsumedLiters")) ? 0 :
+                                         reader.GetDecimal(reader.GetOrdinal("FuelConsumedLiters")),
+
+                    StatusId = reader.GetInt32(reader.GetOrdinal("StatusId")),
+
+                    EntryBy = reader.GetInt32(reader.GetOrdinal("EntryBy")),
+                    EntryDate = reader.GetDateTime(reader.GetOrdinal("EntryDate"))
+                });
+            }
+
+            return list;
         }
     }
     }

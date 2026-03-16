@@ -27,26 +27,41 @@
           <td>{{ item.fuelConsumedLiters }}</td>
 
           <td class="action-buttons">
-            <!-- CORPORATE: Edit icon if Reported -->
-            <button *ngIf="userRole === 'Corporate'" class="action-btn" (click)="handleAction(item)">
-              <i class="fa fa-edit"></i>
-            </button>
 
-            <!-- REPORTER: Resubmit icon if Rejected -->
-            <button *ngIf="userRole === 'Reporter'" class="action-btn" (click)="handleAction(item)">
-              <i class="fa fa-arrow-circle-right"></i>
-            </button>
+  <!-- CORPORATE REVIEW -->
+  <button 
+    *ngIf="userRole === 'corporate' && item.status === 1"
+    class="action-btn"
+    (click)="handleAction(item)">
+    <i class="fa fa-edit"></i>
+  </button>
+    <!-- ADMIN VIEW -->
+  <button 
+    *ngIf="userRole === 'admin'"
+    class="action-btn"
+    (click)="handleAction(item)">
+    <i class="fa fa-eye"></i>
+  </button>
 
-            <!-- Approved (any user) -->
-            <button *ngIf="+item.status === 2" class="action-btn text-success" disabled>
-              <i class="fa fa-check-circle"></i>
-            </button>
+  <!-- REPORTER RESUBMIT -->
+  <button 
+    *ngIf="userRole === 'reporter' && item.status === 3"
+    class="action-btn"
+    (click)="handleAction(item)">
+    <i class="fa fa-arrow-circle-right"></i>
+  </button>
 
-            <!-- Rejected for Corporate -->
-            <button *ngIf="+item.status === 3 && userRole === 'Corporate'" class="action-btn text-danger" disabled>
-              <i class="fa fa-times-circle"></i>
-            </button>
-          </td>
+  <!-- APPROVED -->
+  <button *ngIf="item.status === 2" class="action-btn text-success" disabled>
+    <i class="fa fa-check-circle"></i>
+  </button>
+
+  <!-- REJECTED (Corporate view only) -->
+  <button *ngIf="item.status === 3 && userRole === 'corporate'" class="action-btn text-danger" disabled>
+    <i class="fa fa-times-circle"></i>
+  </button>
+
+</td>
         </tr>
 
         <tr *ngIf="data().length === 0">
