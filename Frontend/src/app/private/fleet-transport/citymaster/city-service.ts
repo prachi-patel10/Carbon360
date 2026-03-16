@@ -50,23 +50,50 @@ export class CityService {
   }
 
   // ================= SEARCH + PAGINATION =================
+  // getPaged(
+  //   pageNumber: number,
+  //   pageSize: number,
+  //   search: string = '',
+  //   onlyActive?: boolean
+  // ) {
+
+  //   let params = new HttpParams()
+  //     .set('pageNumber', pageNumber.toString())
+  //     .set('pageSize', pageSize.toString());
+
+  //   if (search)
+  //     params = params.set('searchText', search);
+
+  //   if (onlyActive === true)
+  //     params = params.set('isActive', 'true');
+
+  //   return this.http.get<any>(`${this.apiUrl}/Search`, { params });
+  // }
   getPaged(
-    pageNumber: number,
-    pageSize: number,
-    search: string = '',
-    onlyActive?: boolean
-  ) {
+  pageNumber:number,
+  pageSize:number,
+  search:string='',
+  onlyActive?:boolean,
+  sortColumn?:string,
+  sortDirection?:string
+){
 
-    let params = new HttpParams()
-      .set('pageNumber', pageNumber.toString())
-      .set('pageSize', pageSize.toString());
+  let params = new HttpParams()
+    .set('pageNumber', pageNumber.toString())
+    .set('pageSize', pageSize.toString());
 
-    if (search)
-      params = params.set('searchText', search);
+  if (search)
+    params = params.set('searchText', search);
 
-    if (onlyActive === true)
-      params = params.set('isActive', 'true');
+  if (onlyActive === true)
+    params = params.set('isActive','true');
 
-    return this.http.get<any>(`${this.apiUrl}/Search`, { params });
-  }
+  if (sortColumn)
+    params = params.set('sortColumn', sortColumn);
+
+  if (sortDirection)
+    params = params.set('sortDirection', sortDirection);
+
+  return this.http.get<any>(`${this.apiUrl}/Search`, { params });
+}
 }

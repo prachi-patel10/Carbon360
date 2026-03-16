@@ -174,7 +174,7 @@ resetUserFilter() {
   loadRoles() {
     this.service.getRoles().subscribe({
       next: (res: any) => {
-        console.log("ROLES RAW RESPONSE:", res);   // :point_left: ADD THIS
+        console.log("ROLES RAW RESPONSE:", res);   // :point_left: ADD THIS
         console.log("ROLES DATA:", res?.data);
         this.rolesList.set(res?.data ?? [])
       },
@@ -342,61 +342,151 @@ resetUserFilter() {
 
   // ================= EDIT =================
   edit(user: any) {
-    this.editingUserId = user.UserId;
-    this.userForm.patchValue({
-      UserId: user.UserId,
-      Fname: user.Fname,
-      Lname: user.Lname,
-      UserName: user.UserName,
-      Email: user.Email,
-      DepartmentId: user.DepartmentId,
-      Roles: user.Roles,
-      IsActive: user.IsActive
-    });
-  }
+
+  this.editingUserId = user.userId;
+
+  this.userForm.patchValue({
+    UserId: user.userId,
+    Fname: user.fName,
+    Lname: user.lName,
+    UserName: user.userName,
+    Email: user.email,
+    DepartmentId: user.departmentId,
+    RoleIds: user.roles || [],
+    IsActive: user.isActive,
+    Password: '',
+    ConfirmPassword: ''
+  });
+
+}
+  // edit(user: any) {
+  //   this.editingUserId = user.UserId;
+  //   this.userForm.patchValue({
+  //     UserId: user.UserId,
+  //     Fname: user.Fname,
+  //     Lname: user.Lname,
+  //     UserName: user.UserName,
+  //     Email: user.Email,
+  //     DepartmentId: user.DepartmentId,
+  //     //Roles: user.Roles,
+  //     //RoleIds: user.roles,
+  //      RoleIds: user.roles,
+  //     IsActive: user.IsActive
+  //   });
+  // }
 
   // ================= DELETE =================
   deleteUI(user: any) {
-    Swal.fire({
-      title: 'Are you sure?',
-      text: 'This will delete the user!',
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonText: 'Yes, delete',
-      cancelButtonText: 'Cancel'
-    }).then(result => {
-      if (result.isConfirmed) {
-        this.service.delete(user.UserId).subscribe(() => {
+
+  Swal.fire({
+    title: 'Are you sure?',
+    text: 'This will delete the user!',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Yes, delete',
+    cancelButtonText: 'Cancel'
+  }).then(result => {
+
+    if (result.isConfirmed) {
+
+      this.service.delete(user.userId).subscribe({
+
+        next: () => {
           Swal.fire('Deleted!', 'User deleted successfully.', 'success');
           this.loadUsers();
-        });
-      }
-    });
-  }
+        },
+
+        error: () => {
+          Swal.fire('Error', 'Delete failed', 'error');
+        }
+
+      });
+
+    }
+
+  });
+
+}
+  // deleteUI(user: any) {
+  //   Swal.fire({
+  //     title: 'Are you sure?',
+  //     text: 'This will delete the user!',
+  //     icon: 'warning',
+  //     showCancelButton: true,
+  //     confirmButtonText: 'Yes, delete',
+  //     cancelButtonText: 'Cancel'
+  //   }).then(result => {
+  //     if (result.isConfirmed) {
+  //       this.service.delete(user.UserId).subscribe(() => {
+  //         Swal.fire('Deleted!', 'User deleted successfully.', 'success');
+  //         this.loadUsers();
+  //       });
+  //     }
+  //   });
+  // }
 
   // ================= TOGGLE ACTIVE =================
   toggleActive(user: any) {
-    const newStatus = !user.IsActive;
-    Swal.fire({
-      title: 'Are you sure?',
-      text: `Change status to ${newStatus ? 'Active' : 'Inactive'}?`,
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonText: 'Yes',
-      cancelButtonText: 'Cancel'
-    }).then(result => {
-      if (result.isConfirmed) {
-        this.service.updateStatus(user.UserId, newStatus).subscribe(() => {
-          Swal.fire('Success', 'Status updated successfully', 'success');
-          this.users.update(list =>
-            list.map(u => u.UserId === user.UserId ? { ...u, IsActive: newStatus } : u)
-          );
-        });
-      } else {
-        this.loadUsers();
-      }
-    });
-  }
+
+  const newStatus = !user.isActive;
+
+  Swal.fire({
+    title: 'Are you sure?',
+    text: `Change status to ${newStatus ? 'Active' : 'Inactive'}?`,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Yes',
+    cancelButtonText: 'Cancel'
+  }).then(result => {
+
+    if (result.isConfirmed) {
+
+      this.service.updateStatus(user.userId, newStatus).subscribe(() => {
+
+        Swal.fire('Success', 'Status updated successfully', 'success');
+
+        this.users.update(list =>
+          list.map(u =>
+            u.userId === user.userId
+              ? { ...u, isActive: newStatus }
+              : u
+          )
+        );
+
+      });
+
+    } else {
+
+      this.loadUsers();
+
+    }
+
+  });
+
+}
+  // toggleActive(user: any) {
+  //   const newStatus = !user.IsActive;
+  //   Swal.fire({
+  //     title: 'Are you sure?',
+  //     text: `Change status to ${newStatus ? 'Active' : 'Inactive'}?`,
+  //     icon: 'warning',
+  //     showCancelButton: true,
+  //     confirmButtonText: 'Yes',
+  //     cancelButtonText: 'Cancel'
+  //   }).then(result => {
+  //     if (result.isConfirmed) {
+  //       this.service.updateStatus(user.UserId, newStatus).subscribe(() => {
+  //         Swal.fire('Success', 'Status updated successfully', 'success');
+  //         this.users.update(list =>
+  //           list.map(u => u.UserId === user.UserId ? { ...u, IsActive: newStatus } : u)
+  //         );
+  //       });
+  //     } else {
+  //       this.loadUsers();
+  //     }
+  //   });
+  // }
+  
 
   // ================= SEARCH =================
   onSearch(event: any) {
@@ -441,7 +531,7 @@ resetUserFilter() {
     this.editingUserId = null;
     this.userForm.reset({
       IsActive: true,
-      Roles: []
+      RoleIds: []
     });
   }
 
@@ -452,7 +542,7 @@ resetUserFilter() {
   }
 
   isRoleSelected(roleId: string): boolean {
-    return (this.userForm.value.Roles || []).includes(roleId);
+    return (this.userForm.value.RoleIds || []).includes(roleId);
   }
 
   // onRoleChange(roleId: string, event: any) {
@@ -467,8 +557,10 @@ resetUserFilter() {
 
 
   onRoleChange(event: any) {
-    const roleId = Number(event.target.value);
-    let selectedRoles: number[] = this.userForm.get('RoleIds')?.value || [];
+    //const roleId = Number(event.target.value);
+    const roleId = event.target.value;
+    //let selectedRoles: number[] = this.userForm.get('RoleIds')?.value || [];
+    let selectedRoles: string[] = this.userForm.get('RoleIds')?.value || [];
 
     if (event.target.checked) {
       selectedRoles = [...selectedRoles, roleId];
@@ -479,7 +571,7 @@ resetUserFilter() {
     this.userForm.get('RoleIds')?.setValue(selectedRoles);
   }
   selectedRoleNames(): string {
-    const selectedIds: string[] = this.userForm.value.Roles || [];
+    const selectedIds: string[] = this.userForm.value.RoleIds || [];
     return this.rolesList()
       .filter((r: any) => selectedIds.includes(r.roleId))
       .map((r: any) => r.roleName)

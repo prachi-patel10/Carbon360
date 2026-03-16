@@ -60,25 +60,49 @@ export class VehicletypeService {
   }
 
   // ================= SEARCH + PAGINATION =================
+
   getPaged(
-    pageNumber: number,
-    pageSize: number,
-    search: string = '',
-    onlyActive?: boolean
-  ) {
-    let params = new HttpParams()
-      .set('pageNumber', pageNumber.toString())
-      .set('pageSize', pageSize.toString());
+  pageNumber: number,
+  pageSize: number,
+  search: string = '',
+  onlyActive?: boolean,
+  sortColumn: string = 'vehicle_type_name',
+  sortDirection: string = 'ASC'
+) {
 
-    if (search) params = params.set('searchText', search);
-    
-    if (onlyActive === true) {
-  params = params.set('isActive', 'true');
+  let params = new HttpParams()
+    .set('pageNumber', pageNumber.toString())
+    .set('pageSize', pageSize.toString())
+    .set('sortColumn', sortColumn)
+    .set('sortDirection', sortDirection);
+
+  if (search)
+    params = params.set('searchText', search);
+
+  if (onlyActive === true)
+    params = params.set('isActive', 'true');
+
+  return this.http.get<any>(`${this.apiUrl}/Search`, { params });
 }
+//   getPaged(
+//     pageNumber: number,
+//     pageSize: number,
+//     search: string = '',
+//     onlyActive?: boolean
+//   ) {
+//     let params = new HttpParams()
+//       .set('pageNumber', pageNumber.toString())
+//       .set('pageSize', pageSize.toString());
 
-   // if (onlyActive) params = params.set('isActive', 'true');
+//     if (search) params = params.set('searchText', search);
+    
+//     if (onlyActive === true) {
+//   params = params.set('isActive', 'true');
+// }
 
-    return this.http.get<any>(`${this.apiUrl}/Search`, { params });
-  }
+//    // if (onlyActive) params = params.set('isActive', 'true');
+
+//     return this.http.get<any>(`${this.apiUrl}/Search`, { params });
+//   }
   
 }

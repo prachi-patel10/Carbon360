@@ -242,7 +242,7 @@ namespace ProjectApp.Repository.Services.Masters.Fuel
                     fuel_name = reader["fuel_name"]?.ToString(),
                     fuel_Desc = reader["fuel_desc"]?.ToString(),
                     IsActive = (bool)reader["IsActive"],
-                    //isapplicable = (bool)reader["IsApplicable"]
+                    isapplicable = (bool)reader["isapplicable"]
                 });
             }
 

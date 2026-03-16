@@ -39,12 +39,23 @@
       <!-- Department -->
       <div class="form-group">
         <label>Department</label>
-        <select name="department_id" [(ngModel)]="newVehicle().department_id" class="form-control">
+        <select name="department_id"
+        [(ngModel)]="newVehicle().department_id"
+        class="form-control">
+        <option [ngValue]="null" disabled hidden>Select Department...</option>
+        <!-- <option value="" disabled>Select Department...</option> -->
+
+        <option *ngFor="let d of departments()" [ngValue]="d.department_id">
+          {{ d.department_name }}
+        </option>
+
+</select>
+        <!-- <select name="department_id" [(ngModel)]="newVehicle().department_id" class="form-control">
           <option [ngValue]="null" disabled hidden>Select Department...</option>
           <option *ngFor="let d of departments()" [ngValue]="d.department_id">
             {{ d.department_name }}
           </option>
-        </select>
+        </select> -->
       </div>
 
       <!-- Engine Capacity -->

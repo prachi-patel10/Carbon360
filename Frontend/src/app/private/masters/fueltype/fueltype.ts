@@ -89,6 +89,7 @@ clearSearch() {
   this.searchText = '';
   this.onlyActive = false;
   this.currentPage = 1;
+  this.loadFuels();
 }
 
   newFuel = {
@@ -149,35 +150,181 @@ clearSearch() {
   });
 }
 
-  createFuel() {
+      createFuel() {
 
-  if (this.editingFuelId) {
+  const isCreate = !this.editingFuelId;
 
-    const payload = {
-      fuel_id: this.editingFuelId,
-      fuel_name: this.newFuel.fuel_name,
-      fuel_Desc: this.newFuel.fuel_Desc,
-      isapplicable: this.newFuel.isapplicable
-    };
+  if (!this.newFuel.fuel_name) return;
 
-    this.fuelService.updateFuel(payload)
-      .subscribe(() => {
-        this.toastr.success('Fuel Updated');
+  const payload = {
+    fuel_id: this.editingFuelId,
+    fuel_name: this.newFuel.fuel_name,
+    fuel_Desc: this.newFuel.fuel_Desc,
+    isapplicable: this.newFuel.isapplicable
+  };
+
+  const request$ = isCreate
+    ? this.fuelService.createFuel(this.newFuel)
+    : this.fuelService.updateFuel(payload);
+
+  request$.subscribe({
+
+    next: (res: any) => {
+
+      console.log("SUCCESS RESPONSE:", res);
+
+      this.showToast(
+        isCreate
+          ? 'Fuel created successfully'
+          : 'Fuel updated successfully',
+        'success'
+      );
+
+      this.resetForm();
+      this.loadFuels();
+    },
+
+    error: (err) => {
+
+      console.log("ERROR RESPONSE:", err);
+
+      // 🔥 some APIs return success inside error block
+      if (err.status === 200 || err.status === 204) {
+
+        this.showToast(
+          isCreate
+            ? 'Fuel created successfully'
+            : 'Fuel updated successfully',
+          'success'
+        );
+
         this.resetForm();
         this.loadFuels();
-      });
+        return;
+      }
 
-  } else {
+      this.showToast(
+        isCreate
+          ? 'Fuel creation failed'
+          : 'Fuel update failed',
+        'error'
+      );
+    }
 
-    this.fuelService.createFuel(this.newFuel)
-      .subscribe(() => {
-        this.toastr.success('Fuel Created');
-        this.resetForm();
-        this.loadFuels();
-      });
+  });
 
-  }
 }
+//     createFuel() {
+
+//   if (this.editingFuelId) {
+
+//     const payload = {
+//       fuel_id: this.editingFuelId,
+//       fuel_name: this.newFuel.fuel_name,
+//       fuel_Desc: this.newFuel.fuel_Desc,
+//       isapplicable: this.newFuel.isapplicable
+//     };
+
+//     this.fuelService.updateFuel(payload).subscribe({
+
+//       next: (res: any) => {
+
+//       this.toastr.success('Fuel updated successfully ✅');
+
+//       this.fuels = this.fuels.map(f =>
+//         f.fuel_id === this.editingFuelId
+//           ? {
+//               ...f,
+//               fuel_name: this.newFuel.fuel_name,
+//               fuel_Desc: this.newFuel.fuel_Desc,
+//               isapplicable: this.newFuel.isapplicable
+//             }
+//           : f
+//       );
+
+//       this.resetForm();
+
+//     },
+
+//       error: (err) => {
+
+//         console.error(err);
+
+//         this.toastr.error('Fuel update failed ❌');
+
+//       }
+
+//     });
+
+//   } else {
+
+//     this.fuelService.createFuel(this.newFuel).subscribe({
+
+//       next: (res: any) => {
+
+//         this.toastr.success('Fuel created successfully ✅');
+
+//         this.resetForm();
+//         this.loadFuels();
+
+//       },
+
+//       error: (err) => {
+
+//         console.error(err);
+
+//         this.toastr.error('Fuel creation failed ❌');
+
+//       }
+
+//     });
+
+//   }
+
+// }
+//   createFuel() {
+
+//   if (this.editingFuelId) {
+
+//     const payload = {
+//       fuel_id: this.editingFuelId,
+//       fuel_name: this.newFuel.fuel_name,
+//       fuel_Desc: this.newFuel.fuel_Desc,
+//       isapplicable: this.newFuel.isapplicable
+//     };
+
+//     this.fuelService.updateFuel(payload)
+//       .subscribe(() => {
+//         this.toastr.success('Fuel Updated');
+//         this.resetForm();
+//         this.loadFuels();
+//       });
+
+//   } else {
+
+//     this.fuelService.createFuel(this.newFuel)
+//       .subscribe(() => {
+//         this.toastr.success('Fuel Created');
+//         this.resetForm();
+//         this.loadFuels();
+//       });
+
+//   }
+// }
+
+
+  showToast(title: string, icon: 'success' | 'error' = 'success') {
+  Swal.fire({
+    toast: true,
+    position: 'top-end',
+    icon: icon,
+    title: title,
+    showConfirmButton: false,
+    timer: 2000,
+    timerProgressBar: true
+  });
+}
+
   editFuel(fuel: any) {
     this.editingFuelId = fuel.fuel_id;
 
@@ -190,21 +337,78 @@ clearSearch() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
+
   deleteFuel(fuel: any) {
-    Swal.fire({
-      title: 'Delete this fuel?',
-      icon: 'warning',
-      showCancelButton: true
-    }).then(result => {
-      if (result.isConfirmed) {
-        this.fuelService.deleteFuel(fuel.fuel_id)
-          .subscribe(() => {
-            this.toastr.success('Fuel Deleted');
-            this.loadFuels();
-          });
-      }
-    });
-  }
+
+  Swal.fire({
+    title: 'Are you sure?',
+    text: 'This will delete the fuel!',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Yes, Delete'
+  }).then(result => {
+
+    if (result.isConfirmed) {
+
+      this.fuelService.deleteFuel(fuel.fuel_id).subscribe({
+
+        next: () => {
+
+          this.showToast('Fuel deleted successfully', 'success');
+
+          this.fuels = this.fuels.filter(f => f.fuel_id !== fuel.fuel_id);
+        },
+
+        error: (err) => {
+
+          console.log("DELETE ERROR:", err);
+
+          if (err.status === 200 || err.status === 204) {
+
+            this.showToast('Fuel deleted successfully', 'success');
+
+            this.fuels = this.fuels.filter(f => f.fuel_id !== fuel.fuel_id);
+            return;
+          }
+
+          this.showToast('Delete failed', 'error');
+        }
+
+      });
+
+    }
+
+  });
+
+}
+
+  // deleteFuel(fuel: any) {
+  //   Swal.fire({
+  //     title: 'Delete this fuel?',
+  //     icon: 'warning',
+  //     showCancelButton: true
+  //   }).then(result => {
+  //     if (result.isConfirmed) {
+
+  //       this.fuelService.deleteFuel(fuel.fuel_id)
+  // .subscribe(() => {
+
+  //   this.fuels = this.fuels.filter(f => f.fuel_id !== fuel.fuel_id);
+
+  //   this.toastr.success('Fuel Deleted');
+  // })}
+
+  // });
+  //   //     this.fuelService.deleteFuel(fuel.fuel_id)
+  //   //       .subscribe(() => {
+  //   //         this.fuels = this.fuels.filter(f => f.fuel_id !== fuel.fuel_id);
+  //   //         this.toastr.success('Fuel Deleted');
+  //   //         // this.toastr.success('Fuel Deleted');
+  //   //         // this.loadFuels();
+  //   //       });
+  //   //   }
+  //   // });
+  // }
 
     confirmApplicableChange(newValue: boolean, fuel: any) {
 
@@ -239,11 +443,11 @@ clearSearch() {
   });
 }
 
- confirmStatusChange(event: any, fuel: any) {
+      confirmStatusChange(event: any, fuel: any) {
 
-  event.preventDefault();   // 🔥 STOP automatic toggle
+  event.preventDefault();
 
-  const newStatus = !fuel.IsActive;
+  const newStatus = !fuel.isActive;   // ✅ correct
 
   Swal.fire({
     title: 'Are you sure?',
@@ -257,19 +461,19 @@ clearSearch() {
 
       const payload = {
         fuel_id: fuel.fuel_id,
-        IsActive: newStatus
+        isActive: newStatus   // ✅ correct
       };
 
       this.fuelService.updateStatus(payload).subscribe({
-        next: (res: any) => {
+        next: () => {
 
-          fuel.IsActive = newStatus;   // update manually
+          fuel.isActive = newStatus;  // ✅ correct
+          this.cdr.detectChanges();
 
           Swal.fire('Updated!', 'Status changed successfully.', 'success');
         },
         error: (err) => {
           console.error(err);
-
           Swal.fire('Error!', 'Update failed.', 'error');
         }
       });
@@ -277,6 +481,45 @@ clearSearch() {
     }
   });
 }
+
+//  confirmStatusChange(event: any, fuel: any) {
+
+//   event.preventDefault();   // 🔥 STOP automatic toggle
+
+//   const newStatus = !fuel.IsActive;
+
+//   Swal.fire({
+//     title: 'Are you sure?',
+//     text: `You want to ${newStatus ? 'Activate' : 'Deactivate'} this fuel?`,
+//     icon: 'warning',
+//     showCancelButton: true,
+//     confirmButtonText: 'Yes, change it!'
+//   }).then((result) => {
+
+//     if (result.isConfirmed) {
+
+//       const payload = {
+//         fuel_id: fuel.fuel_id,
+//         IsActive: newStatus
+//       };
+
+//       this.fuelService.updateStatus(payload).subscribe({
+//         next: (res: any) => {
+
+//           fuel.IsActive = newStatus;   // update manually
+
+//           Swal.fire('Updated!', 'Status changed successfully.', 'success');
+//         },
+//         error: (err) => {
+//           console.error(err);
+
+//           Swal.fire('Error!', 'Update failed.', 'error');
+//         }
+//       });
+
+//     }
+//   });
+// }
 
   resetForm() {
     this.editingFuelId = null;
@@ -286,4 +529,8 @@ clearSearch() {
       isapplicable: true
     };
   }
+
+  trackByFuel(index: number, fuel: any) {
+  return fuel.fuel_id;
+}
 }

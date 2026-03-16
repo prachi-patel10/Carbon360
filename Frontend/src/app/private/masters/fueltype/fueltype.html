@@ -30,7 +30,10 @@
     </div>
 
     <div class="button-row">
-      <button class="btn-save" (click)="createFuel()">Save</button>
+      <!-- <button class="btn-save" (click)="createFuel()">Save</button> -->
+      <button class="btn-save" (click)="createFuel()">
+        {{ editingFuelId ? 'Update' : 'Save' }}
+      </button>
       <button class="btn-reset" (click)="resetForm()">Reset</button>
     </div>
   </div>
@@ -79,42 +82,41 @@
       </thead>
 
       <tbody>
-        <tr *ngFor="let fuel of fuels">
 
-          <td>{{ fuel.fuel_name }}</td>
-          <td>{{ fuel.fuel_Desc }}</td>
+  <tr *ngFor="let fuel of fuels; trackBy: trackByFuel">
 
-          <!-- ✅ Generator Toggle -->
-          <td>
-            <label class="switch">
-              <input type="checkbox"
-       [(ngModel)]="fuel.isapplicable"
-       (ngModelChange)="confirmApplicableChange($event, fuel)" />
-             <!-- <input type="checkbox"
-         [checked]="fuel.isapplicable"
-         (change)="confirmApplicableChange($event, fuel)" /> -->
-              <span class="slider round green"></span>
-            </label>
-          </td>
+    <td>{{ fuel.fuel_name }}</td>
+    <td>{{ fuel.fuel_Desc }}</td>
 
-          <!-- ✅ Status Toggle -->
-          <td>
-            <label class="switch">
-  <input type="checkbox"
-       [checked]="fuel.isActive"
-       (click)="confirmStatusChange($event, fuel)" />
-              <span class="slider round blue"></span>
-            </label>
-          </td>
+    <!-- Generator Toggle -->
+    <td>
+      <label class="switch">
+        <input type="checkbox"
+               [(ngModel)]="fuel.isapplicable"
+               (ngModelChange)="confirmApplicableChange($event, fuel)" />
+        <span class="slider round green"></span>
+      </label>
+    </td>
 
-          <!-- ✅ Actions -->
-          <td class="action-buttons">
-            <button class="btn-edit" (click)="editFuel(fuel)">Edit</button>
-            <button class="btn-delete" (click)="deleteFuel(fuel)">Delete</button>
-          </td>
+    <!-- Status Toggle -->
+    <td>
+      <label class="switch">
+        <input type="checkbox"
+               [checked]="fuel.isActive"
+               (change)="confirmStatusChange($event, fuel)" />
+        <span class="slider round blue"></span>
+      </label>
+    </td>
 
-        </tr>
-      </tbody>
+    <!-- Actions -->
+    <td class="action-buttons">
+      <button class="btn-edit" (click)="editFuel(fuel)">Edit</button>
+      <button class="btn-delete" (click)="deleteFuel(fuel)">Delete</button>
+    </td>
+
+  </tr>
+
+</tbody>
     </table>
 
   </div>

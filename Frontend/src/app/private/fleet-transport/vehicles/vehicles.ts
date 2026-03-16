@@ -92,7 +92,7 @@ export class Vehicles implements OnInit {
     this.loadVehicles();
 
     effect(() => {
-      this.activeFilter();
+      const active = this.activeFilter();
       this.pageNumber.set(1);
       this.loadVehicles();
     });
@@ -103,7 +103,7 @@ export class Vehicles implements OnInit {
     // Vehicle Types
     this.vehicleService.getVehicleTypeList().subscribe((res: any[]) => {
       const mapped = (res || []).map(vt => ({
-        vehicle_type_id: vt.id?.toString() || '',  // <--- string
+        vehicle_type_id:vt.vehicle_type_id,  // <--- string
         vehicle_type_name: vt.vehicle_type_name || ''
       }));
       this.vehicleTypes.set(mapped);
@@ -112,7 +112,8 @@ export class Vehicles implements OnInit {
     // Fuel Types
     this.vehicleService.getFuelList().subscribe((res: any[]) => {
       const mapped = (res || []).map(f => ({
-        fuel_id: f.id?.toString() || '',          // <--- string
+        //fuel_id: f.id?.toString() || '',          // <--- string
+        fuel_id: f.fuel_id,
         fuel_name: f.fuel_name || ''
       }));
       this.fuelTypes.set(mapped);
@@ -127,7 +128,10 @@ export class Vehicles implements OnInit {
         deptArray = [res.data];
       }
       const mapped = deptArray.map(d => ({
-        department_id: d.id?.toString() || '',     // <--- string
+        //department_id: d.id?.toString() || '',     // <--- string
+        //department_id: d.department_id,
+        //department_id: String(d.department_id),
+        department_id: d.department_id || d.id,
         department_name: d.departmentName || ''
       }));
       this.departments.set(mapped);
@@ -287,6 +291,12 @@ export class Vehicles implements OnInit {
 
   // ----------------- CREATE / UPDATE -----------------
   saveVehicle() {
+
+    // ✅ Vehicle number format validation
+  if (!this.validateVehicleNumber()) {
+    this.showToast('Error', 'Invalid Vehicle Number format', 'error');
+    return;
+  }
     const raw = this.newVehicle();
 
     if (!raw.vehicle_number?.trim()) { this.showToast('Error', 'Vehicle number is required!', 'error'); return; }
@@ -297,25 +307,46 @@ export class Vehicles implements OnInit {
     if (!raw.engine_capacity && raw.engine_capacity !== 0) { this.showToast('Error', 'Engine capacity is required!', 'error'); return; }
 
     const payload = this.isEditMode()
-      ? {
-        vehicle_id: raw.vehicle_id!,
-        vehicle_number: raw.vehicle_number.trim(),
-        vehicle_type_id: Number(raw.vehicle_type_id), // convert to number here
-        fuel_id: Number(raw.fuel_id),
-        department_id: Number(raw.department_id),
-        engine_capacity: raw.engine_capacity != null ? Number(raw.engine_capacity) : null,
-        emission_standard: raw.emission_standard!.trim(),
-        IsActive: raw.isActive ?? true
-      }
-      : {
-        vehicle_number: raw.vehicle_number.trim(),
-        vehicle_type_id: Number(raw.vehicle_type_id), // convert to number here
-        fuel_id: Number(raw.fuel_id),
-        department_id: Number(raw.department_id),
-        engine_capacity: raw.engine_capacity != null ? Number(raw.engine_capacity) : null,
-        emission_standard: raw.emission_standard!.trim(),
-        IsActive: raw.isActive ?? true
-      };
+  ? {
+    vehicle_id: raw.vehicle_id!,
+    vehicle_number: raw.vehicle_number.trim(),
+    vehicle_type_id: raw.vehicle_type_id,
+    fuel_id: raw.fuel_id,
+    department_id: raw.department_id,
+    engine_capacity: raw.engine_capacity,
+    emission_standard: raw.emission_standard?.trim(),
+    isActive: raw.isActive ?? true
+  }
+  : {
+    vehicle_number: raw.vehicle_number.trim(),
+    vehicle_type_id: raw.vehicle_type_id,
+    fuel_id: raw.fuel_id,
+    department_id: raw.department_id,
+    engine_capacity: raw.engine_capacity,
+    emission_standard: raw.emission_standard?.trim(),
+    isActive: raw.isActive ?? true
+  };
+
+    // const payload = this.isEditMode()
+    //   ? {
+    //     vehicle_id: raw.vehicle_id!,
+    //     vehicle_number: raw.vehicle_number.trim(),
+    //     vehicle_type_id: Number(raw.vehicle_type_id), // convert to number here
+    //     fuel_id: Number(raw.fuel_id),
+    //     department_id: Number(raw.department_id),
+    //     engine_capacity: raw.engine_capacity != null ? Number(raw.engine_capacity) : null,
+    //     emission_standard: raw.emission_standard!.trim(),
+    //     IsActive: raw.isActive ?? true
+    //   }
+    //   : {
+    //     vehicle_number: raw.vehicle_number.trim(),
+    //     vehicle_type_id: Number(raw.vehicle_type_id), // convert to number here
+    //     fuel_id: Number(raw.fuel_id),
+    //     department_id: Number(raw.department_id),
+    //     engine_capacity: raw.engine_capacity != null ? Number(raw.engine_capacity) : null,
+    //     emission_standard: raw.emission_standard!.trim(),
+    //     IsActive: raw.isActive ?? true
+    //   };
 
     const request$ = this.isEditMode()
       ? this.vehicleService.updateVehicle(payload)
@@ -331,6 +362,7 @@ export class Vehicles implements OnInit {
       },
       error: err => {
         console.error('Vehicle save error', err);
+        console.error('API message:', err?.error);
         this.showToast('Error', 'Failed to save vehicle', 'error');
       }
     });
@@ -354,6 +386,7 @@ export class Vehicles implements OnInit {
       vehicle_type_id: null,
       fuel_id: null,
       department_id: null,
+      //department_id: null,
       engine_capacity: null,
       emission_standard: null,
       isActive: true,
@@ -361,23 +394,111 @@ export class Vehicles implements OnInit {
   }
 
   deleteVehicle(vehicle: VehicleDto) {
-    if (!vehicle.vehicle_id) return;
 
-    Swal.fire({
-      title: 'Are you sure?',
-      text: 'This will delete the record!',
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonText: 'Delete',
-    }).then(result => {
-      if (result.isConfirmed) {
-        this.vehicleService.deleteVehicle(vehicle.vehicle_id!.toString()).subscribe(() => {
-          this.showToast('Deleted', 'Vehicle deleted successfully!', 'success');
-          this.vehicles.update(arr => arr.filter(v => v.vehicle_id !== vehicle.vehicle_id));
+  if (!vehicle.vehicle_id) return;
+
+  Swal.fire({
+    title: 'Are you sure?',
+    text: 'This will delete the record!',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Delete'
+  }).then(result => {
+
+    if (result.isConfirmed) {
+
+      this.vehicleService.deleteVehicle(vehicle.vehicle_id!.toString())
+        .subscribe({
+
+          next: () => {
+
+            // ✅ SUCCESS
+            this.showToast('Deleted', 'Vehicle deleted successfully!', 'success');
+
+            // pagination fix (same as your logic)
+            if (this.vehicles().length === 1 && this.pageNumber() > 1) {
+              this.pageNumber.update(p => p - 1);
+            }
+
+            this.loadVehicles();
+          },
+
+          error: (err) => {
+
+            console.log("DELETE ERROR:", err);
+
+            // ⚠️ some APIs return 204 → Angular treats as error
+            if (err.status === 200 || err.status === 204) {
+
+              this.showToast('Deleted', 'Vehicle deleted successfully!', 'success');
+
+              if (this.vehicles().length === 1 && this.pageNumber() > 1) {
+                this.pageNumber.update(p => p - 1);
+              }
+
+              this.loadVehicles();
+              return;
+            }
+
+            // ❌ real error
+            this.showToast('Error', 'Delete failed', 'error');
+          }
+
         });
-      }
-    });
-  }
+
+    }
+
+  });
+
+}
+
+//   deleteVehicle(vehicle: VehicleDto) {
+//   if (!vehicle.vehicle_id) return;
+
+//   Swal.fire({
+//     title: 'Are you sure?',
+//     text: 'This will delete the record!',
+//     icon: 'warning',
+//     showCancelButton: true,
+//     confirmButtonText: 'Delete',
+//   }).then(result => {
+//     if (result.isConfirmed) {
+
+//       this.vehicleService.deleteVehicle(vehicle.vehicle_id!.toString()).subscribe(() => {
+
+//         this.showToast('Deleted', 'Vehicle deleted successfully!', 'success');
+
+//         // ⭐ FIX
+//         if (this.vehicles().length === 1 && this.pageNumber() > 1) {
+//           this.pageNumber.update(p => p - 1);
+//         }
+
+//         this.loadVehicles();
+
+//       });
+
+//     }
+//   });
+// }
+  // deleteVehicle(vehicle: VehicleDto) {
+  //   if (!vehicle.vehicle_id) return;
+
+  //   Swal.fire({
+  //     title: 'Are you sure?',
+  //     text: 'This will delete the record!',
+  //     icon: 'warning',
+  //     showCancelButton: true,
+  //     confirmButtonText: 'Delete',
+  //   }).then(result => {
+  //     if (result.isConfirmed) {
+  //       this.vehicleService.deleteVehicle(vehicle.vehicle_id!.toString()).subscribe(() => {
+  //         this.showToast('Deleted', 'Vehicle deleted successfully!', 'success');
+  //         this.loadVehicles();
+  //         //this.vehicles.update(arr => arr.filter(v => v.vehicle_id !== vehicle.vehicle_id));
+  //       });
+  //     }
+  //   });
+  // }
 
   toggleStatus(vehicle: VehicleDto) {
     const originalStatus = vehicle.isActive;
@@ -411,19 +532,40 @@ export class Vehicles implements OnInit {
   }
 
   validateVehicleNumber(): boolean {
-    const vehicleNo = this.newVehicle().vehicle_number?.trim();
-    if (!vehicleNo) {
-      this.vehicleNumberError.set('Vehicle Number is required');
-      return false;
-    }
-    const regex = /^[A-Z]{2}-?\d{2}-?[A-Z]{2}-?\d{4}$/;
-    if (!regex.test(vehicleNo)) {
-      this.vehicleNumberError.set('Invalid format. Example: DL12AB1234');
-      return false;
-    }
-    this.vehicleNumberError.set('');
-    return true;
+
+  const vehicleNo = this.newVehicle().vehicle_number?.trim();
+
+  if (!vehicleNo) {
+    this.vehicleNumberError.set('Vehicle Number is required');
+    return false;
   }
+
+  const regex = /^[A-Z]{2}[0-9]{2}[A-Z]{1,2}[0-9]{4}$/;
+
+  if (!regex.test(vehicleNo)) {
+    this.vehicleNumberError.set('Invalid format. Example: DL12AB1234');
+    return false;
+  }
+
+  this.vehicleNumberError.set('');
+  return true;
+}
+
+  // validateVehicleNumber(): boolean {
+  //   const vehicleNo = this.newVehicle().vehicle_number?.trim();
+  //   if (!vehicleNo) {
+  //     this.vehicleNumberError.set('Vehicle Number is required');
+  //     return false;
+  //   }
+  //   //const regex = /^[A-Z]{2}-?\d{2}-?[A-Z]{2}-?\d{4}$/;
+  //   const regex = /^[A-Z]{2}[0-9]{2}[A-Z]{2}[0-9]{4}$/;
+  //   if (!regex.test(vehicleNo)) {
+  //     this.vehicleNumberError.set('Invalid format. Example: DL12AB1234');
+  //     return false;
+  //   }
+  //   this.vehicleNumberError.set('');
+  //   return true;
+  // }
 
   onVehicleNumberChange(value: string) {
     const upper = (value || '').toUpperCase();

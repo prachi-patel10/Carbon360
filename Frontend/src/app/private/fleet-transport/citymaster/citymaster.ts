@@ -34,6 +34,9 @@ export class Citymaster implements OnInit {
   currentPage = signal(1);
   requestedRecords = signal(5);
 
+  sortColumn = signal<string>('CityName');
+  sortDirection = signal<'asc' | 'desc'>('asc');
+
   onlyActive = signal(false);
   searchText = signal('');
   refreshTrigger = signal(0);
@@ -77,6 +80,21 @@ export class Citymaster implements OnInit {
     this.loadAllStates();
      this.loadAllFilterData();
   }
+
+  sort(column: string) {
+
+  if (this.sortColumn() === column) {
+    this.sortDirection.set(
+      this.sortDirection() === 'asc' ? 'desc' : 'asc'
+    );
+  } else {
+    this.sortColumn.set(column);
+    this.sortDirection.set('asc');
+  }
+
+  this.currentPage.set(1);
+  this.refreshTrigger.update(x => x + 1);
+}
 
   toggleCity(city: string) {
   const selected = [...this.filter().cityNames];
@@ -139,7 +157,14 @@ isShortCodeSelected(city:string):boolean{
 
 loadCities(page:number,size:number,search:string,active:boolean) {
 
-  this.service.getPaged(page,size,search,active).subscribe({
+  this.service.getPaged(
+  page,
+  size,
+  search,
+  active,
+  this.sortColumn(),
+  this.sortDirection()
+).subscribe({
     next:(res:any)=>{
 
       const result = res.data;
@@ -151,6 +176,7 @@ loadCities(page:number,size:number,search:string,active:boolean) {
         shortCode:c.shortCode,
         isActive:c.isActive
       }));
+      
 
       let filtered = mapped;
 
@@ -170,7 +196,7 @@ loadCities(page:number,size:number,search:string,active:boolean) {
       }
 
       //this.cities.set(filtered);
-      this.cities.set(mapped);
+      this.cities.set(filtered);
       // this.totalRecords.set(filtered.length);
       // this.totalPages.set(Math.ceil(filtered.length / size) || 1);
 
