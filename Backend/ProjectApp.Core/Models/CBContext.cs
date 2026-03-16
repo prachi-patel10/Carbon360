@@ -13,13 +13,13 @@ public partial class CBContext : DbContext
     {
     }
 
-    public virtual DbSet<CB_Action> CB_Actions { get; set; }
-
     public virtual DbSet<CB_Department> CB_Departments { get; set; }
 
     public virtual DbSet<CB_EmissionFactor> CB_EmissionFactors { get; set; }
 
     public virtual DbSet<CB_GeneratorOperation> CB_GeneratorOperations { get; set; }
+
+    public virtual DbSet<CB_MasterAction> CB_MasterActions { get; set; }
 
     public virtual DbSet<CB_MasterCity> CB_MasterCities { get; set; }
 
@@ -35,6 +35,8 @@ public partial class CBContext : DbContext
 
     public virtual DbSet<CB_MasterVehicleType> CB_MasterVehicleTypes { get; set; }
 
+    public virtual DbSet<CB_MasterWorkflow> CB_MasterWorkflows { get; set; }
+
     public virtual DbSet<CB_Role> CB_Roles { get; set; }
 
     public virtual DbSet<CB_User> CB_Users { get; set; }
@@ -45,24 +47,8 @@ public partial class CBContext : DbContext
 
     public virtual DbSet<CB_VehicleTypeCategory> CB_VehicleTypeCategories { get; set; }
 
-    public virtual DbSet<CB_Workflow> CB_Workflows { get; set; }
-
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<CB_Action>(entity =>
-        {
-            entity.HasKey(e => e.ActionId).HasName("PK__CB_Actio__FFE3F4D9DD2474D3");
-
-            entity.ToTable("CB_Action");
-
-            entity.Property(e => e.ActionName)
-                .IsRequired()
-                .HasMaxLength(50)
-                .IsUnicode(false);
-            entity.Property(e => e.IsActive).HasDefaultValue(true);
-            entity.Property(e => e.IsDeleted).HasDefaultValue(false);
-        });
-
         modelBuilder.Entity<CB_Department>(entity =>
         {
             entity.HasKey(e => e.DepartmentId).HasName("PK__CB_Depar__B2079BED8E6AD1B5");
@@ -134,6 +120,20 @@ public partial class CBContext : DbContext
                 .HasForeignKey(d => d.StatusId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_GeneratorOperation_MasterStatus");
+        });
+
+        modelBuilder.Entity<CB_MasterAction>(entity =>
+        {
+            entity.HasKey(e => e.ActionId).HasName("PK__CB_Actio__FFE3F4D9DD2474D3");
+
+            entity.ToTable("CB_MasterAction");
+
+            entity.Property(e => e.ActionName)
+                .IsRequired()
+                .HasMaxLength(50)
+                .IsUnicode(false);
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+            entity.Property(e => e.IsDeleted).HasDefaultValue(false);
         });
 
         modelBuilder.Entity<CB_MasterCity>(entity =>
@@ -318,6 +318,36 @@ public partial class CBContext : DbContext
                 .HasConstraintName("FK_VehicleType_Category");
         });
 
+        modelBuilder.Entity<CB_MasterWorkflow>(entity =>
+        {
+            entity.HasKey(e => e.WorkflowId);
+
+            entity.ToTable("CB_MasterWorkflow");
+
+            entity.Property(e => e.WorkflowId).ValueGeneratedNever();
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+            entity.Property(e => e.IsDeleted).HasDefaultValue(false);
+
+            entity.HasOne(d => d.Action).WithMany(p => p.CB_MasterWorkflows)
+                .HasForeignKey(d => d.ActionId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Workflow_Action");
+
+            entity.HasOne(d => d.CurrentStatus).WithMany(p => p.CB_MasterWorkflowCurrentStatuses)
+                .HasForeignKey(d => d.CurrentStatusId)
+                .HasConstraintName("FK_Workflow_CurrentStatus");
+
+            entity.HasOne(d => d.NextStatus).WithMany(p => p.CB_MasterWorkflowNextStatuses)
+                .HasForeignKey(d => d.NextStatusId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Workflow_NextStatus");
+
+            entity.HasOne(d => d.Role).WithMany(p => p.CB_MasterWorkflows)
+                .HasForeignKey(d => d.RoleId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Workflow_Role");
+        });
+
         modelBuilder.Entity<CB_Role>(entity =>
         {
             entity.HasKey(e => e.RoleId).HasName("PK__CB_Role__8AFACE1A4E6560C1");
@@ -453,21 +483,6 @@ public partial class CBContext : DbContext
                 .HasMaxLength(255);
             entity.Property(e => e.EntryDate).HasColumnType("datetime");
             entity.Property(e => e.UpdateDate).HasColumnType("datetime");
-        });
-
-        modelBuilder.Entity<CB_Workflow>(entity =>
-        {
-            entity.HasKey(e => e.workflowId);
-
-            entity.ToTable("CB_Workflow");
-
-            entity.HasOne(d => d.Action).WithMany(p => p.CB_Workflows)
-                .HasForeignKey(d => d.ActionId)
-                .HasConstraintName("FK_CB_Workflow_Action");
-
-            entity.HasOne(d => d.Role).WithMany(p => p.CB_Workflows)
-                .HasForeignKey(d => d.RoleId)
-                .HasConstraintName("FK_CB_Workflow_Role");
         });
 
         OnModelCreatingPartial(modelBuilder);

@@ -25,12 +25,11 @@ export class MyactionGenerator implements OnInit {
 
   ngOnInit(): void {
     this.fetchData();
-    const user = localStorage.getItem('user');
-
-    if (user) {
-      const parsedUser = JSON.parse(user);
-      this.userRole = parsedUser.currentRole;
-    }
+  const user = localStorage.getItem('user');
+if (user) {
+  const parsed = JSON.parse(user);
+  this.userRole = parsed.currentRole?.toLowerCase();
+}
   }
 
   //   fetchData() {
@@ -175,20 +174,26 @@ export class MyactionGenerator implements OnInit {
   //   });
   // }
 
-  fetchData() {
-    this.service.getAllGenerators().subscribe({
-      next: (res) => {
-        // Sort records by entryDate (newest first)
-        const sortedRecords = res.sort((a, b) =>
-          new Date(b.entryDate).getTime() - new Date(a.entryDate).getTime()
-        );
+ fetchData() {
+  this.service.getMyActions().subscribe({
+    next: (res) => {
 
-        this.data.set(sortedRecords);
-        this.totalRecords.set(sortedRecords.length);
-      },
-      error: () => Swal.fire('Error', 'Failed to load records', 'error')
-    });
-  }
+      const sortedRecords = res.sort((a, b) =>
+        new Date(b.entryDate).getTime() - new Date(a.entryDate).getTime()
+      );
+
+      this.totalRecords.set(sortedRecords.length);
+
+      const startIndex = (this.currentPage() - 1) * this.pageSize;
+      const endIndex = startIndex + this.pageSize;
+
+      const paginatedData = sortedRecords.slice(startIndex, endIndex);
+
+      this.data.set(paginatedData);
+    },
+    error: () => Swal.fire('Error', 'Failed to load records', 'error')
+  });
+}
 
   totalPages(): number {
     return Math.ceil(this.totalRecords() / this.pageSize);
@@ -218,12 +223,12 @@ export class MyactionGenerator implements OnInit {
 
   getActionText(item: GeneratorOp): string {
     const status = item.status;
-    if (this.userRole === 'Corporate') {
+    if (this.userRole === 'corporate') {
       if (status === 2) return 'Approved';
       if (status === 3) return 'Rejected';
       if (status === 1) return 'Review';
     }
-    if (this.userRole === 'Reporter') {
+    if (this.userRole === 'reporter') {
       if (status === 3) return 'Edit';
       if (status === 1) return 'Reported';
       if (status === 2) return 'Approved';
@@ -267,15 +272,21 @@ handleAction(item: GeneratorOp) {
 
   console.log('UserRole:', this.userRole, 'OperationId:', item.operationId);
 
-  if (this.userRole === 'Corporate') {
+  if (this.userRole === 'corporate') {
     // Open form in readonly mode for Corporate
-    this.router.navigate(['/dashboard/generator-ec', item.operationId], {
-      queryParams: { readonly: true }
+      this.router.navigate(['/dashboard/generator-ec', item.operationId], {
+      queryParams: { mode: 'review', page: 'myaction' }
     });
-  } else if (this.userRole === 'Reporter') {
+  } else if (this.userRole === 'reporter') {
     // Open form in edit mode for Reporter
+      this.router.navigate(['/dashboard/generator-ec', item.operationId], {
+        queryParams: { mode: 'edit', page: 'myaction' }
+      });
+  }
+    // ADMIN
+  else if (this.userRole === 'admin') {
     this.router.navigate(['/dashboard/generator-ec', item.operationId], {
-      queryParams: { mode: 'edit' }
+      queryParams: { mode: 'view', page: 'myaction' }
     });
   }
 }
@@ -306,11 +317,11 @@ handleAction(item: GeneratorOp) {
   // }
 
   edit(operationId: string) {
-    if (this.userRole === 'Corporate') {
+    if (this.userRole === 'corporate') {
       this.router.navigate(['/dashboard/generator-review', operationId], {
         queryParams: { review: true }
       });
-    } else if (this.userRole === 'Reporter') {
+    } else if (this.userRole === 'reporter') {
       this.router.navigate(['/dashboard/generator-ec', operationId], {
         queryParams: { review: false }
       });

@@ -16,6 +16,7 @@ interface VehicleEmissionDisplay {
   tripStartDateTime: string;
   tripEndDateTime: string;
   statusId: number; 
+  entryDate:string;
 
   totalCO2: number;
   totalNO2: number;
@@ -100,7 +101,7 @@ totalPages = signal<number>(1);
         vehicleNumber: e.vehicleNumber,
         vehicleType: e.vehicleType,
         fuelType: e.fuelType,
-
+ entryDate: e.entryDate,
         distanceKm: e.distanceKm ?? 0,
         fuelConsumedLtr: e.fuelConsumedLtr ?? 0,
 
@@ -115,9 +116,11 @@ totalPages = signal<number>(1);
         totalEmission: e.totalEmission ?? 0
       }));
 
-      this.emissions.set(mapped);
-
-      this.filteredData.set(mapped);
+       const sorted = mapped.sort((a, b) =>
+          new Date(b.entryDate).getTime() - new Date(a.entryDate).getTime()
+        );
+     this.emissions.set(sorted);
+this.filteredData.set(sorted);
       this.totalPages.set(Math.ceil(res.totalRecords / this.pageSize));
       this.applyFilters();
     },
@@ -232,10 +235,14 @@ this.filteredData.set(filtered);
     return this.filteredData();
   }
 
-  openTrip(tripId: string) {
-    if (!tripId) return;
-  this.router.navigate(['/dashboard/vehicle-ec', tripId]);
-  }
+ openTrip(tripId: string) {
+  if (!tripId) return;
+
+  this.router.navigate(
+    ['/dashboard/vehicle-ec', tripId],
+    { queryParams: { source: 'search' } }
+  );
+}
   
   getPages(): number[] {
   const pages = [];

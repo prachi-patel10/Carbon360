@@ -137,4 +137,23 @@ export class GeneratorOperationService {
 getAllGenerators(): Observable<GeneratorOp[]> {
   return this.http.get<GeneratorOp[]>(`${this.baseUrl}/allgenerator`);
 }
+
+getMyActions(): Observable<GeneratorOp[]> {
+  return this.http.get<any>(`${this.baseUrl}/myactions`).pipe(
+    map(res => res.data.map((r: any) => ({
+      operationId: r.operationId,
+      generatorId: r.generatorId,
+      generatorName: r.generatorName,
+      fuelType: r.fuelType,
+      entryDate: r.entryDate,
+      runHours: r.runHours,
+      loadFactor: r.loadFactor,
+      fuelConsumedLiters: r.fuelConsumedLiters,
+      totalEmission: r.totalEmission,
+      status: Number(r.statusId)
+    })))
+  );
+}
+
+
 }

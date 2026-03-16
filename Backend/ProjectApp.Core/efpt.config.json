@@ -19,10 +19,6 @@
    "T4TemplatePath": null,
    "Tables": [
       {
-         "Name": "[dbo].[CB_Action]",
-         "ObjectType": 0
-      },
-      {
          "Name": "[dbo].[CB_Department]",
          "ObjectType": 0
       },
@@ -32,6 +28,10 @@
       },
       {
          "Name": "[dbo].[CB_GeneratorOperation]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[CB_MasterAction]",
          "ObjectType": 0
       },
       {
@@ -63,6 +63,10 @@
          "ObjectType": 0
       },
       {
+         "Name": "[dbo].[CB_MasterWorkflow]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[dbo].[CB_Role]",
          "ObjectType": 0
       },
@@ -80,10 +84,6 @@
       },
       {
          "Name": "[dbo].[CB_VehicleTypeCategory]",
-         "ObjectType": 0
-      },
-      {
-         "Name": "[dbo].[CB_Workflow]",
          "ObjectType": 0
       }
    ],

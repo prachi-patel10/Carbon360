@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace ProjectApp.Core.Models;
 
-public partial class CB_Action
+public partial class CB_MasterAction
 {
     public int ActionId { get; set; }
 
@@ -15,5 +15,5 @@ public partial class CB_Action
 
     public bool? IsDeleted { get; set; }
 
-    public virtual ICollection<CB_Workflow> CB_Workflows { get; set; } = new List<CB_Workflow>();
+    public virtual ICollection<CB_MasterWorkflow> CB_MasterWorkflows { get; set; } = new List<CB_MasterWorkflow>();
 }

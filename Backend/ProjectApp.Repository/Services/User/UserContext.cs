@@ -31,15 +31,18 @@ namespace ProjectApp.Repository.Services.User
             {
                 var user = _http.HttpContext?.User;
 
-                if (user == null || !user.Identity.IsAuthenticated)
-                    throw new Exception("User is not authenticated");
+                if (user == null || !user.Identity!.IsAuthenticated)
+                    throw new UnauthorizedAccessException("User is not authenticated.");
 
                 var claim = user.FindFirst(ClaimTypes.NameIdentifier);
 
-                if (claim == null)
-                    throw new Exception("UserId claim not found in token");
+                if (claim == null || string.IsNullOrWhiteSpace(claim.Value))
+                    throw new Exception("UserId claim not found in token.");
 
-                return int.Parse(claim.Value);
+                if (!int.TryParse(claim.Value, out int userId))
+                    throw new Exception("Invalid UserId claim value.");
+
+                return userId;
             }
         }
 
@@ -50,10 +53,10 @@ namespace ProjectApp.Repository.Services.User
             {
                 var user = _http.HttpContext?.User;
 
-                if (user == null || !user.Identity.IsAuthenticated)
-                    throw new Exception("User is not authenticated");
+                if (user == null || !user.Identity!.IsAuthenticated)
+                    throw new UnauthorizedAccessException("User is not authenticated.");
 
-                return user.FindFirst(ClaimTypes.Role)?.Value;
+                return user.FindFirst(ClaimTypes.Role)?.Value ?? string.Empty;
             }
         }
 

@@ -29,7 +29,7 @@ export class GeneratorecService {
 
   // ================= UPDATE =================
   update(id: string, data: any): Observable<any> {
-    return this.http.put(`${this.apiUrl}/${id}`, data);
+    return this.http.put(`${this.apiUrl}/Update/${id}`, data);
   }
 
   // ================= DELETE =================
