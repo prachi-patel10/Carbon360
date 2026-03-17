@@ -2,29 +2,38 @@
 
   <!-- 🔹 Create Fuel -->
   <div class="card">
-    <div class="form-grid">
+   <div class="form-grid">
 
-      <input type="text"
-             placeholder="Fuel Name"
-             [(ngModel)]="newFuel.fuel_name" />
+      <!-- Fuel Name -->
+      <div class="form-group">
+        <label>Fuel Name</label>
+        <input type="text"
+               placeholder="Enter Fuel Name"
+               [(ngModel)]="newFuel.fuel_name">
+      </div>
 
-      <input type="text"
-             placeholder="Fuel Description"
-             [(ngModel)]="newFuel.fuel_Desc" />
+      <!-- Fuel Description -->
+      <div class="form-group">
+        <label>Fuel Description</label>
+        <input type="text"
+               placeholder="Enter Fuel Description"
+               [(ngModel)]="newFuel.fuel_Desc">
+      </div>
 
-      <!-- ✅ Applicable Toggle -->
-      <div class="toggle-group">
+      <!-- Generator Applicable -->
+      <div class="form-group">
         <label>Generator Applicable</label>
 
-        <label class="switch">
-          <input type="checkbox"
-                 [(ngModel)]="newFuel.isapplicable">
-          <span class="slider round green"></span>
-        </label>
+        <div class="status-toggle">
+          <label class="switch">
+            <input type="checkbox"
+                   [(ngModel)]="newFuel.isapplicable">
+<span class="slider green"></span>          </label>
 
-        <span class="toggle-text">
-          {{ newFuel.isapplicable ? 'Applicable' : 'Not Applicable' }}
-        </span>
+          <span class="toggle-text">
+            {{ newFuel.isapplicable ? 'Applicable' : 'Not Applicable' }}
+          </span>
+        </div>
       </div>
 
     </div>
@@ -45,11 +54,11 @@
   <div class="search-row">
 
     <div class="search-left">
-      <input type="text"
-             class="search-input"
-             placeholder="Search fuel..."
-             [(ngModel)]="searchText"
-             (input)="onSearchChange()">
+     <input type="text"
+       class="search-input"
+       placeholder="Quick Search"
+       [(ngModel)]="searchText"
+       (input)="onSearchChange($event)">
     </div>
 
     <div class="search-right">
@@ -58,14 +67,14 @@
       <div class="status-toggle">
         <span>Active Only</span>
         <label class="switch">
-          <input type="checkbox"
-                 [(ngModel)]="onlyActive"
-                 (change)="onFilterChange()">
+         <input type="checkbox"
+       [(ngModel)]="onlyActive"
+       (change)="onFilterChange($event)">
           <span class="slider"></span>
         </label>
       </div>
 
-      <button class="btn-delete" (click)="clearSearch()">Clear</button>
+      <button class="filter-btn" (click)="clearSearch()">Clear</button>
 
     </div>
   </div>
@@ -75,7 +84,7 @@
         <tr>
           <th>Name</th>
           <th>Description</th>
-          <th>Generator</th>
+          <th>Generator Applicable</th>
           <th>Status</th>
           <th>Actions</th>
         </tr>
@@ -110,8 +119,8 @@
 
     <!-- Actions -->
     <td class="action-buttons">
-      <button class="btn-edit" (click)="editFuel(fuel)">Edit</button>
-      <button class="btn-delete" (click)="deleteFuel(fuel)">Delete</button>
+      <button class="edit-btn" (click)="editFuel(fuel)">Edit</button>
+      <button class="delete-btn" (click)="deleteFuel(fuel)">Delete</button>
     </td>
 
   </tr>
@@ -122,27 +131,34 @@
   </div>
 
   <!-- ================= PAGINATION ================= -->
-<div class="pagination-info">
-  <span>Total Records: {{ totalRecords  }}</span>
+<!-- ================= PAGINATION ================= -->
+<div class="pagination-bar">
 
-  <div class="pagination-controls">
-    <button (click)="previousPage()" [disabled]="currentPage === 1">
-      Previous
-    </button>
+  <button 
+    (click)="previousPage()" 
+    [disabled]="currentPage() === 1">
+    Previous
+  </button>
 
-    <span>Page {{ currentPage }} of {{ totalPages }}</span>
+  <span class="page-info">
+    Page {{ currentPage() }} of {{ totalPages() }}
+  </span>
 
-    <button (click)="nextPage()" [disabled]="currentPage === totalPages">
-      Next
-    </button>
+  <button 
+    (click)="nextPage()" 
+    [disabled]="currentPage() === totalPages()">
+    Next
+  </button>
 
-    <label>Page Size:</label>
-    <select [(ngModel)]="pageSize" (change)="updatePagination()">
-      <option [value]="5">5</option>
-      <option [value]="10">10</option>
-      <option [value]="20">20</option>
+  <div class="page-size">
+    <span>Page Size:</span>
+    <select (change)="onPageSizeChange($event)">
+      <option [selected]="pageSize() === 5" value="5">5</option>
+      <option [selected]="pageSize() === 10" value="10">10</option>
+      <option [selected]="pageSize() === 20" value="20">20</option>
     </select>
   </div>
+
 </div>
 
 

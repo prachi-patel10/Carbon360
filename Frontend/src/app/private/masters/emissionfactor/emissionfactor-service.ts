@@ -6,8 +6,8 @@ export interface CB_EmissionFactor {
   EmissionFactorId: string;
   FuelType: string;
   CO2_Factor_KgPerL: number;
-  NO2_Factor_KgPerKm: number;
-  CH4_Factor_KgPerKm: number;
+  NO2_Factor_KgPerL: number;
+  CH4_Factor_KgPerL: number;
   IsActive: boolean;
 }
 

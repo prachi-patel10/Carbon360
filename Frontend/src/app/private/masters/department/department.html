@@ -7,7 +7,7 @@
       <!-- Department Name -->
       <div class="form-group">
         <label>Department Name</label>
-        <input type="text" formControlName="DepartmentName" placeholder="Enter department name">
+        <input type="text" formControlName="DepartmentName" placeholder="Enter Department Name">
 
         <small class="error-text"
           *ngIf="departmentForm.get('DepartmentName')?.touched && departmentForm.get('DepartmentName')?.invalid">
@@ -16,30 +16,23 @@
       </div>
 
       <!-- Status -->
-      <div class="form-group">
-        <label>Status</label>
-
+     <div class="form-actions">
         <div class="status-toggle">
+          <span>Active</span>
           <label class="switch">
             <input type="checkbox" formControlName="IsActive">
             <span class="slider"></span>
           </label>
-
-          <span>
-            {{ departmentForm.get('IsActive')?.value ? 'Active' : 'Inactive' }}
-          </span>
         </div>
-      </div>
-
+</div>
       <!-- Buttons -->
       <div class="form-actions">
         <button type="submit" class="save-btn">
           {{ !departmentForm.value.DepartmentId ? 'Save' : 'Update' }}
         </button>
 
-        <button type="button" class="btn-secondary" (click)="resetForm()">
-          Reset
-        </button>
+               <button type="button" class="btn-secondary" (click)="resetForm()">Reset</button>
+
       </div>
 
     </form>
@@ -54,7 +47,7 @@
       <div class="search-left">
         <input type="text"
                class="search-input"
-               placeholder="Search department..."
+               placeholder="Quick Search"
                formControlName="searchText"
                [formGroup]="searchForm">
       </div>

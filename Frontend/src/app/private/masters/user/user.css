@@ -69,6 +69,33 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+
+   /* Arrow like select */
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+
+  background-image: url("data:image/svg+xml;utf8,<svg fill='gray' height='20' viewBox='0 0 24 24' width='20' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  background-size: 16px;
+
+  padding-right: 30px; /* space for arrow */
+}
+.form-select {
+  color: black;
+}
+
+/* When no value selected (placeholder state) */
+.form-select:invalid {
+  color: #6c757d; /* same as input placeholder */
+}
+
+.dropdown-header {
+  color: black;
+}
+.placeholder-text {
+  color: #6c757d; /* only text becomes gray */
 }
 
 .dropdown-list {
@@ -114,13 +141,13 @@
   background-color: #145214;
 }
 
-.reset-btn-ui {
+.btn-secondary {
+  background: #e5e7eb;
   padding: 8px 16px;
   border-radius: 5px;
-  border: 1px solid #ccc;
-  background-color: #f5f5f5;
-  cursor: pointer;
+  border: none;
 }
+
 
 /* ================= SWITCH ================= */
 .switch {
@@ -193,10 +220,19 @@ input:checked + .slider:before {
   min-width: 200px;     
 }
 
+.search-input {
+  flex: 0 0 220px;
+  padding: 6px 10px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+}
+
+
 /* Make the input fill the container */
 .search-left .search-input {
   width: 50%;           /* fill parent width */
-  max-width: 50%;
+  max-width: 25%;
   box-sizing: border-box; /* includes padding in width */
 }
 

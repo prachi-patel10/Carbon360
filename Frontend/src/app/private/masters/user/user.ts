@@ -535,7 +535,14 @@ resetUserFilter() {
     });
   }
 
+getSelectedRoleNames(): string {
+  const selectedIds = this.userForm.value.RoleIds || [];
 
+  return this.rolesList()
+    .filter(r => selectedIds.includes(r.roleId))
+    .map(r => r.roleName)
+    .join(', ');
+}
   // ================= ROLE MULTISELECT =================
   toggleRoleDropdown() {
     this.showRoleDropdown = !this.showRoleDropdown;

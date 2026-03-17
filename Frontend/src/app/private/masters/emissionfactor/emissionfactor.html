@@ -1,55 +1,77 @@
 <div class="emission-page">
 
-  <!-- ================= INPUT FORM ================= -->
-  <div class="card form-card">
-    <form [formGroup]="emissionForm" (ngSubmit)="submitEmission()">
+<div class="card">
+  <form [formGroup]="emissionForm" (ngSubmit)="submitEmission()" class="form-grid">
 
-      <div class="form-row">
-<div class="mb-3">
+    <!-- Fuel Dropdown -->
+   <div class="form-group">
   <label>Fuel</label>
-  <select formControlName="FuelId" class="form-control">
-    <option value="">-- Select Fuel --</option>
-    <option *ngFor="let f of fuels" [value]="f.fuelId">
+
+  <select formControlName="FuelId"
+          [style.color]="!emissionForm.get('FuelId')?.value ? '#999' : '#000'">
+
+    <!-- Placeholder -->
+    <option value="" disabled>
+      Select Fuel
+    </option>
+
+    <!-- Options -->
+    <option *ngFor="let f of fuels" 
+            [value]="f.fuelId"
+            style="color:#000;">
       {{ f.fuelName }}
     </option>
+
   </select>
 </div>
+    <!-- CO2 -->
+    <div class="form-group">
+      <label>CO2 Factor (Kg/L)</label>
+      <input type="number"
+             formControlName="CO2_Factor_KgPerL"
+             placeholder="Enter CO2 Factor">
+    </div>
 
-        <div class="form-group">
-          <label>CO2 Factor (Kg/L)</label>
-          <input type="number" formControlName="CO2_Factor_KgPerL">
-        </div>
+    <!-- NO2 -->
+    <div class="form-group">
+      <label>NO2 Factor (Kg/Km)</label>
+      <input type="number"
+             formControlName="NO2_Factor_KgPerKm"
+             placeholder="Enter NO2 Factor">
+    </div>
 
-        <div class="form-group">
-          <label>NO2 Factor (Kg/Km)</label>
-          <input type="number" formControlName="NO2_Factor_KgPerKm">
-        </div>
+    <!-- CH4 -->
+    <div class="form-group">
+      <label>CH4 Factor (Kg/Km)</label>
+      <input type="number"
+             formControlName="CH4_Factor_KgPerKm"
+             placeholder="Enter CH4 Factor">
+    </div>
 
-        <div class="form-group">
-          <label>CH4 Factor (Kg/Km)</label>
-          <input type="number" formControlName="CH4_Factor_KgPerKm">
-        </div>
-
-        <div class="form-group status-group">
-          <label>Status</label>
-          <label class="toggle-switch">
-            <input type="checkbox" formControlName="IsActive">
-            <span class="toggle-slider"></span>
-          </label>
-          <span>{{ emissionForm.get('IsActive')?.value ? 'Active' : 'Inactive' }}</span>
-        </div>
-
+    <!-- Status -->
+    <div class="form-actions">
+      <div class="status-toggle">
+        <span>Active</span>
+        <label class="switch">
+          <input type="checkbox" formControlName="IsActive">
+          <span class="slider"></span>
+        </label>
       </div>
+    </div>
 
-      <div class="form-buttons">
-        <button type="submit" class="btn-primary">
-          {{ !emissionForm.value.EmissionFactorId ? 'Save' : 'Update' }}
-        </button>
-        <button type="button" class="btn-secondary" (click)="resetForm()">Reset</button>
-      </div>
+    <!-- Buttons -->
+    <div class="form-actions">
+      <button type="submit" class="save-btn">
+        {{ !emissionForm.value.EmissionFactorId ? 'Save' : 'Update' }}
+      </button>
 
-    </form>
-  </div>
+      <button type="button" class="btn-secondary" (click)="resetForm()">
+        Reset
+      </button>
+    </div>
+
+  </form>
+</div>
 
   <!-- ================= SIMPLE LIST ================= -->
   <div class="card table-card">
@@ -69,8 +91,8 @@
         <tr *ngFor="let e of emissionFactors()">
           <td>{{ e.FuelName }}</td>
           <td>{{ e.CO2_Factor_KgPerL }}</td>
-          <td>{{ e.NO2_Factor_KgPerKm }}</td>
-          <td>{{ e.CH4_Factor_KgPerKm }}</td>
+          <td>{{ e.NO2_Factor_KgPerL }}</td>
+          <td>{{ e.CH4_Factor_KgPerL }}</td>
           <td>
             <label class="toggle-switch">
               <input type="checkbox" [checked]="e.IsActive" (change)="toggleActive(e)">

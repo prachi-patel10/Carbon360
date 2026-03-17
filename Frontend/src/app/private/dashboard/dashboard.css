@@ -109,6 +109,8 @@
 .role-select {
   width: 100%; padding: 8px 10px; border-radius: 6px; border: 1px solid #ccc; font-size: 14px;
 }
+
+
 .role-select:focus { border-color: #1b7d55; box-shadow: 0 0 0 2px rgba(27,125,85,0.2); }
 
 .logout-btn {

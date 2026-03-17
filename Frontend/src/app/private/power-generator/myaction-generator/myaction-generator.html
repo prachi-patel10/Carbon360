@@ -35,13 +35,22 @@
     (click)="handleAction(item)">
     <i class="fa fa-edit"></i>
   </button>
-    <!-- ADMIN VIEW -->
-  <button 
-    *ngIf="userRole === 'admin'"
-    class="action-btn"
-    (click)="handleAction(item)">
-    <i class="fa fa-eye"></i>
-  </button>
+<!-- ADMIN VIEW -->
+  <!-- Approved -->
+  <i *ngIf="userRole === 'admin' && item.status === 2"
+     class="fa fa-arrow-circle-right text-success action-icon"
+     title="Approved"></i>
+
+  <!-- Rejected -->
+  <i *ngIf="userRole === 'admin' && item.status === 3"
+     class="fa fa-times-circle text-danger action-icon"
+     title="Rejected"></i>
+
+  <!-- Review -->
+  <i *ngIf="userRole === 'admin' && item.status === 1"
+     class="fa fa-info-circle action-icon"
+     (click)="handleAction(item)"
+     title="Review"></i>
 
   <!-- REPORTER RESUBMIT -->
   <button 

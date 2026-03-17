@@ -7,56 +7,82 @@
       <!-- Vehicle Number -->
       <div class="form-group">
         <label>Vehicle Number</label>
+        
         <input type="text" name="vehicle_number" [(ngModel)]="newVehicle().vehicle_number"
-          (ngModelChange)="onVehicleNumberChange($event)" />
+          (ngModelChange)="onVehicleNumberChange($event)" placeholder="Enter Vehicle Number"/>
         <small class="error-text" *ngIf="vehicleNumberError()">
           {{ vehicleNumberError() }}
         </small>
       </div>
 
-      <!-- Vehicle Type -->
-      <div class="form-group">
-        <label>Vehicle Type</label>
-        <select name="vehicle_type_id" [(ngModel)]="newVehicle().vehicle_type_id" class="form-control">
-          <option [ngValue]="null" disabled hidden>Select Vehicle Type...</option>
-          <option *ngFor="let vt of vehicleTypes()" [ngValue]="vt.vehicle_type_id">
-            {{ vt.vehicle_type_name }}
-          </option>
-        </select>
-      </div>
+<div class="form-group">
+  <label>Vehicle Type</label>
 
-      <!-- Fuel -->
-      <div class="form-group">
-        <label>Fuel</label>
-        <select name="fuel_id" [(ngModel)]="newVehicle().fuel_id" class="form-control">
-          <option [ngValue]="null" disabled hidden>Select Fuel...</option>
-          <option *ngFor="let f of fuelTypes()" [ngValue]="f.fuel_id">
-            {{ f.fuel_name }}
-          </option>
-        </select>
-      </div>
+  <select name="vehicle_type_id"
+          [(ngModel)]="newVehicle().vehicle_type_id"
+          [style.color]="!newVehicle().vehicle_type_id ? '#999' : '#000'">
+
+    <!-- Placeholder -->
+    <option [ngValue]="null" disabled>
+      Select Vehicle Type
+    </option>
+
+    <!-- Options -->
+    <option *ngFor="let vt of vehicleTypes()" 
+            [ngValue]="vt.vehicle_type_id"
+            style="color: #000;">
+      {{ vt.vehicle_type_name }}
+    </option>
+
+  </select>
+</div>
+
+     <div class="form-group">
+  <label>Fuel</label>
+
+  <select name="fuel_id"
+          [(ngModel)]="newVehicle().fuel_id"
+          [style.color]="!newVehicle().fuel_id ? '#999' : '#000'">
+
+    <option [ngValue]="null" disabled>
+      Select Fuel
+    </option>
+
+    <option *ngFor="let f of fuelTypes()" 
+            [ngValue]="f.fuel_id"
+            style="color: #000;">
+      {{ f.fuel_name }}
+    </option>
+
+  </select>
+</div>
 
       <!-- Department -->
-      <div class="form-group">
-        <label>Department</label>
-        <select name="department_id"
-        [(ngModel)]="newVehicle().department_id"
-        class="form-control">
-        <option [ngValue]="null" disabled hidden>Select Department...</option>
-        <!-- <option value="" disabled>Select Department...</option> -->
+    <div class="form-group">
+  <label>Department</label>
 
-        <option *ngFor="let d of departments()" [ngValue]="d.department_id">
-          {{ d.department_name }}
-        </option>
+  <select name="department_id"
+          [(ngModel)]="newVehicle().department_id"
+          [style.color]="!newVehicle().department_id ? '#999' : '#000'">
 
-</select>
+    <option [ngValue]="null" disabled>
+      Select Department
+    </option>
+
+    <option *ngFor="let d of departments()" 
+            [ngValue]="d.department_id"
+            style="color: #000;">
+      {{ d.department_name }}
+    </option>
+
+  </select>
+</div>
         <!-- <select name="department_id" [(ngModel)]="newVehicle().department_id" class="form-control">
           <option [ngValue]="null" disabled hidden>Select Department...</option>
           <option *ngFor="let d of departments()" [ngValue]="d.department_id">
             {{ d.department_name }}
           </option>
         </select> -->
-      </div>
 
       <!-- Engine Capacity -->
       <div class="form-group">
@@ -67,13 +93,23 @@
 
       <!-- Emission Standard -->
       <div class="form-group">
-        <label>Emission Standard</label>
-        <select [(ngModel)]="newVehicle().emission_standard" name="emissionStandard">
-          <option [ngValue]="null" disabled hidden>Select Emission Standard...</option>
-          <option value="BS4">BS4</option>
-          <option value="BS6">BS6</option>
-        </select>
-      </div>
+  <label>Emission Standard</label>
+
+  <select name="emissionStandard"
+          [(ngModel)]="newVehicle().emission_standard"
+          [style.color]="!newVehicle().emission_standard ? '#999' : '#000'">
+
+    <!-- Placeholder -->
+    <option [ngValue]="null" disabled>
+      Select Emission Standard
+    </option>
+
+    <!-- Options -->
+    <option value="BS4" style="color:#000;">BS4</option>
+    <option value="BS6" style="color:#000;">BS6</option>
+
+  </select>
+</div>
 
       <!-- Status + Save Button -->
       <div class="form-actions">
@@ -91,7 +127,8 @@
     <div class="search-row">
 
       <div class="search-left">
-        <input type="text" class="search-input" placeholder="Search by any column..." [(ngModel)]="searchText"
+        <input type="text" class="search-input"         placeholder="Quick Search"
+ [(ngModel)]="searchText"
           (input)="search()" />
       </div>
 

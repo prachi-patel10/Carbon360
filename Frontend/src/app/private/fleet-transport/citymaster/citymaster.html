@@ -6,20 +6,26 @@
           [formGroup]="cityForm"
           (ngSubmit)="submit()">
 
-      <div class="form-group">
-        <label>City Name</label>
-        <input type="text" formControlName="cityName">
-      </div>
+     <div class="form-group">
+  <label>City Name</label>
+  <input type="text"
+         formControlName="cityName"
+         placeholder="Enter City Name">
+</div>
 
-      <div class="form-group">
-        <label>State Name</label>
-        <input type="text" formControlName="stateName">
-      </div>
+<div class="form-group">
+  <label>State Name</label>
+  <input type="text"
+         formControlName="stateName"
+         placeholder="Enter State Name">
+</div>
 
-      <div class="form-group">
-        <label>Short Code</label>
-        <input type="text" formControlName="shortCode">
-      </div>
+<div class="form-group">
+  <label>Short Code</label>
+  <input type="text"
+         formControlName="shortCode"
+         placeholder="Enter Short Code">
+</div>
 
       <div class="form-actions">
         <button class="save-btn" type="submit">
@@ -40,7 +46,8 @@
 
         <input type="text"
                class="search-input"
-               placeholder="Search city..."
+                       placeholder="Quick Search"
+
                formControlName="searchText">
 
         <div class="search-right">

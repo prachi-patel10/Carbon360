@@ -44,6 +44,15 @@
   border: 1px solid #ccc;
   font-size: 14px;
 }
+/* Placeholder default gray */
+.form-group input::placeholder {
+  color: #999;
+}
+
+/* When user types → make text black */
+.form-group input {
+  color: #000;
+}
 
 /* ================= FORM ACTION ================= */
 .form-actions {
@@ -115,7 +124,13 @@ input:checked + .slider:before {
   justify-content: space-between;
   align-items: center;
   gap: 10px;
+  margin-bottom: 10px;
   flex-wrap: wrap;
+}
+
+.search-left {
+  display: flex;
+  align-items: center;
 }
 
 .search-input {
@@ -123,8 +138,8 @@ input:checked + .slider:before {
   padding: 6px 10px;
   border-radius: 5px;
   border: 1px solid #ccc;
+  font-size: 14px;
 }
-
 .search-right {
   display: flex;
   align-items: center;

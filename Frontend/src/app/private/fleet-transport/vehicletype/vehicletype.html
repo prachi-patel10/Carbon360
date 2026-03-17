@@ -6,23 +6,30 @@
 
       <div class="form-group">
         <label>Vehicle Type Name</label>
-        <input type="text" formControlName="vehicle_type_name" />
-      </div>
+<input type="text"
+       formControlName="description"
+       placeholder="Enter Description" />      </div>
 
       <div class="form-group">
         <label>Vehicle Category</label>
-        <select formControlName="categoryId">
-          <option value="">Select Category</option>
-          <option value="1">LDV</option>
-          <option value="2">MDV</option>
-          <option value="3">HDV</option>
-        </select>
+       <select formControlName="categoryId"
+        [style.color]="!vehicleForm.get('categoryId')?.value ? '#999' : '#000'">
+
+  <option value="" disabled>Select Category</option>
+
+  <option value="1" style="color:#000;">LDV</option>
+  <option value="2" style="color:#000;">MDV</option>
+  <option value="3" style="color:#000;">HDV</option>
+
+</select>
       </div>
 
       <div class="form-group">
         <label>Description</label>
-        <input type="text" formControlName="description" />
-      </div>
+
+<input type="text"
+       formControlName="description"
+       placeholder="Enter Description" />      </div>
 
       <div class="form-actions">
         <button type="submit" class="save-btn">
@@ -42,7 +49,7 @@
     <div class="search-left">
       <input
         type="text"
-        placeholder="Search vehicle type..."
+        placeholder="Quick Search"
         formControlName="searchText"
         class="search-input">
     </div>

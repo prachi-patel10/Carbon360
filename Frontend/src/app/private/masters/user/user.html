@@ -7,58 +7,73 @@
       <!-- First Name -->
       <div class="form-group">
         <label>First Name</label>
-        <input type="text" formControlName="Fname" placeholder="Enter first name">
+        <input type="text" formControlName="Fname" placeholder="Enter First Name">
       </div>
 
       <!-- Last Name -->
       <div class="form-group">
         <label>Last Name</label>
-        <input type="text" formControlName="Lname" placeholder="Enter last name">
+        <input type="text" formControlName="Lname" placeholder="Enter Last Name">
       </div>
 
       <!-- Username -->
       <div class="form-group">
         <label>Username</label>
-        <input type="text" formControlName="UserName" placeholder="Enter username">
+        <input type="text" formControlName="UserName" placeholder="Enter Username">
       </div>
 
       <!-- Email -->
       <div class="form-group">
         <label>Email</label>
-        <input type="email" formControlName="Email" placeholder="Enter email">
+        <input type="email" formControlName="Email" placeholder="Enter Email">
       </div>
 
       <!-- Password -->
       <div class="form-group">
         <label>Password</label>
-        <input type="password" formControlName="Password" placeholder="Enter password">
+        <input type="password" formControlName="Password" placeholder="Enter Password">
       </div>
 
       <!-- Confirm Password -->
       <div class="form-group">
         <label>Confirm Password</label>
-        <input type="password" formControlName="ConfirmPassword" placeholder="Confirm password">
+        <input type="password" formControlName="ConfirmPassword" placeholder="Confirm Password">
       </div>
 
-      <!-- Department -->
-      <div class="form-group">
-        <label>Department</label>
-        <select formControlName="DepartmentId">
-          <option value="">Select Department...</option>
-          <option *ngFor="let d of departments()" [value]="d.DepartmentId">
-            {{ d.DepartmentName }}
-          </option>
-        </select>
-      </div>
+<div class="form-group">
+  <label>Department</label>
 
+  <select formControlName="DepartmentId"
+          [style.color]="!userForm.get('DepartmentId')?.value ? '#999' : '#000'">
+
+    <!-- Placeholder -->
+    <option value="" disabled>
+      Select Department
+    </option>
+
+    <!-- Options -->
+    <option *ngFor="let d of departments()" 
+            [value]="d.DepartmentId"
+            style="color:#000;">
+      {{ d.DepartmentName }}
+    </option>
+
+  </select>
+</div>
       <!-- Roles -->
       <div class="form-group">
         <label>Roles</label>
         <div class="dropdown-checkbox">
           <div class="dropdown-header" (click)="toggleRoleDropdown()">
-            Select Roles
-            <span class="arrow">{{ showRoleDropdown ? '▲' : '▼' }}</span>
-          </div>
+
+
+  <span [ngClass]="{'placeholder-text': !userForm.value.RoleIds?.length}">
+    {{ userForm.value.RoleIds?.length 
+        ? getSelectedRoleNames() 
+        : 'Select Roles' }}
+  </span>
+
+</div>
           <div class="dropdown-list" *ngIf="showRoleDropdown">
             <div *ngFor="let r of rolesList()" class="role-checkbox">
               <input type="checkbox" [value]="r.roleId" (change)="onRoleChange($event)"
@@ -81,6 +96,7 @@
         <button type="submit" class="save-btn">
           {{ !userForm.value.UserId ? 'Save' : 'Update' }}
         </button>
+        <button type="button" class="btn-secondary" (click)="resetForm()">Reset</button>
 
         <!-- <button type="button" class="reset-btn-ui" (click)="resetForm()">
           Reset
@@ -96,8 +112,11 @@
 
     <div class="search-row">
       <div class="search-left">
-        <input type="text" class="search-input" placeholder="Search user..." [value]="searchText()"
-          (input)="onSearch($event)">
+        <input type="text"
+       class="search-input"
+       placeholder="Quick Search"
+       [value]="searchText()"
+       (input)="onSearch($event)">
       </div>
 
       <div class="search-right">

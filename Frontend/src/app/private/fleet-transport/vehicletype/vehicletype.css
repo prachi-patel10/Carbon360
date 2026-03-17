@@ -49,6 +49,22 @@
   border-color: #1b5e20;
 }
 
+
+/* Input placeholder gray */
+.form-group input::placeholder {
+  color: #999;
+}
+
+/* Input text always black */
+.form-group input {
+  color: #000;
+}
+
+
+/* Dropdown default gray (handled inline, but fallback) */
+.form-group select {
+  color: #000;
+}
 /* ================= BUTTONS ================= */
 .save-btn {
   padding: 8px 20px;

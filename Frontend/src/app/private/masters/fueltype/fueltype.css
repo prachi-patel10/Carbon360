@@ -17,17 +17,54 @@ h2 {
   font-size: 20px;
 }
 
+.status-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.toggle-text {
+  font-size: 13px;
+  font-weight: 500;
+  color: #444;
+}
+
+input:checked + .slider.green {
+  background-color: #2e7d32 !important;
+}
 /* Grid Layout */
 .form-grid {
-  display: flex;
-  gap: 20px;
-  align-items: center;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 15px;
 }
 
 .toggle-group {
   display: flex;
   align-items: center;
   gap: 10px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column; /* 🔥 this makes label go above input */
+}
+
+
+.form-group label {
+  margin-bottom: 5px;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  font-size: 14px;
 }
 
 .search-grid {
@@ -39,7 +76,6 @@ h2 {
 /* Inputs */
 input,
 select {
-  flex: 1 1 200px;
   padding: 8px;
   border-radius: 4px;
   border: 1px solid #ccc;
@@ -79,9 +115,9 @@ button:disabled {
   cursor: not-allowed;
 }
 
-button:hover:not(:disabled) {
+/* button:hover:not(:disabled) {
   background-color: #125ea8;
-}
+} */
 
 /* Table */
 .table-wrapper {
@@ -271,14 +307,24 @@ input:checked + .slider:before {
   border: none;
 }
 
-.btn-edit {
-  background: #cfe2ff;
-  color: #084298;
+
+
+.edit-btn {
+  background-color: #d0ebff;
+  color: #0369a1;
 }
 
-.btn-delete {
-  background: #f8d7da;
-  color: #842029;
+.edit-btn:hover {
+  background-color: #a5d8ff !important;
+}
+
+.delete-btn {
+  background-color: #ffe3e3;
+  color: #c92a2a;
+}
+
+.delete-btn:hover {
+  background-color: #ffc9c9 !important;
 }
 
 .search-row {
@@ -307,6 +353,19 @@ input:checked + .slider:before {
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+.filter-btn {
+  background-color: #959090c9;
+  color: #fff;
+  padding: 6px 12px;
+  border-radius: 5px;
+  border: none;
+  cursor: pointer;
+}
+
+.filter-btn:hover {
+  background-color: #454748eb !important;
 }
 
 .pagination-bar {

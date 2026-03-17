@@ -17,15 +17,11 @@ import { EmissionFactorComponent } from './private/masters/emissionfactor/emissi
 import { GeneratorOperationComponent } from './private/power-generator/generator-ec/generator-ec';
 import { Citymaster } from './private/fleet-transport/citymaster/citymaster';
 import { Sitelocationmaster } from './private/power-generator/sitelocationmaster/sitelocationmaster';
-import { VehicleReport } from './private/fleet-transport/vehicle-report/vehicle-report';
 import { SearchGenerator } from './private/power-generator/search-generator/search-generator';
 import { MyActionVehicle } from './private/fleet-transport/my-action-vehicle/my-action-vehicle';
 import { MyactionGenerator } from './private/power-generator/myaction-generator/myaction-generator';
-import { GeneratorEmissionDetailComponent } from './private/power-generator/generator-emission-detail-page/generator-emission-detail-page';
 import { authGuard } from './core/guards/auth-guard';
 import { SearchVehicle } from './private/fleet-transport/search-vehicle/search-vehicle';
-import { VehicleTripDetail } from './private/fleet-transport/vehicle-trip-detail/vehicle-trip-detail';
-import { GeneratorReviewComponent } from './private/power-generator/generatorrecordlist/generatorrecordlist';
 
 export const routes: Routes = [
 
@@ -52,7 +48,6 @@ export const routes: Routes = [
             { path: 'role', component: MasterRoleComponent },
             { path: 'department', component: DepartmentComponent }, // create/import DepartmentComponent
             { path: 'vehicle', component: TripComponent },
-            { path: 'vehicleReport', component: VehicleReport },
             { path: 'vehiclemaster', component: Vehicles },// create/import VehicleComponent
             { path: 'fueltype', component: Fueltype },
             { path: 'emissionFactors', component: EmissionFactorComponent },
@@ -67,9 +62,7 @@ export const routes: Routes = [
             { path: 'MyActionVehicle', component: MyActionVehicle },
             { path: 'MyActionGenerator', component: MyactionGenerator },
             { path: 'generator-ec/:id', component: GeneratorOperationComponent },
-            { path: 'generatordetailpage/:id', component: GeneratorEmissionDetailComponent },
             // { path: 'generator-review/:id', component: GeneratorReviewComponent },
-            { path: 'vehicledetaillist/:id', component: VehicleTripDetail },
             { path: 'vehicle-ec/:id', component: TripComponent },
             {
                 path: 'dashboard/generator-review/:id',

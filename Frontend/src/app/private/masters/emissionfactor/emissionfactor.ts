@@ -9,8 +9,8 @@ interface CB_EmissionFactor {
   FuelId: number;
   FuelName: string;
   CO2_Factor_KgPerL: number;
-  NO2_Factor_KgPerKm: number;
-  CH4_Factor_KgPerKm: number;
+  NO2_Factor_KgPerL: number;
+  CH4_Factor_KgPerL: number;
   IsActive: boolean;
 }
 
@@ -40,15 +40,17 @@ fuels: any[] = [];
   ngOnInit(): void {
     this.initForm();
     this.loadList();
+      this.loadFuels();
   }
 
   initForm() {
     this.emissionForm = this.fb.group({
       EmissionFactorId: [''],
+        FuelId: ['', Validators.required],
       FuelType: ['', Validators.required],
       CO2_Factor_KgPerL: [0],
-      NO2_Factor_KgPerKm: [0],
-      CH4_Factor_KgPerKm: [0],
+      NO2_Factor_KgPerL: [0],
+      CH4_Factor_KgPerL: [0],
       IsActive: [true]
     });
   }
@@ -61,8 +63,8 @@ loadList() {
         FuelId: e.fuelId,
         FuelName: e.fuelName,
         CO2_Factor_KgPerL: e.cO2_Factor_KgPerL,
-        NO2_Factor_KgPerKm: e.nO2_Factor_KgPerKm,
-        CH4_Factor_KgPerKm: e.cH4_Factor_KgPerKm,
+        NO2_Factor_KgPerL: e.nO2_Factor_KgPerL,
+        CH4_Factor_KgPerL: e.cH4_Factor_KgPerL,
         IsActive: e.isActive
       }));
       this.emissionFactors.set(mapped);
@@ -95,8 +97,8 @@ resetForm() {
     EmissionFactorId: '',
     FuelId: null,
     CO2_Factor_KgPerL: 0,
-    NO2_Factor_KgPerKm: 0,
-    CH4_Factor_KgPerKm: 0,
+    NO2_Factor_KgPerL: 0,
+    CH4_Factor_KgPerL: 0,
     IsActive: true
   });
 }
@@ -132,9 +134,14 @@ resetForm() {
 loadFuels() {
   this.service.getFuels().subscribe({
     next: (res: any) => {
-      this.fuels = res.data.map((f: any) => ({
-        fuelId: f.id,          // encrypted id not needed if API returns int
-        fuelName: f.fuelName
+      console.log('Fuel API Response:', res); // 👈 check this
+
+      // ✅ SAFE HANDLING
+      const fuelData = res?.data || res || [];
+
+      this.fuels = fuelData.map((f: any) => ({
+        fuelId: f.fuel_id || f.fuelId,
+        fuelName: f.fuel_name || f.fuelName
       }));
     },
     error: () => {
@@ -142,4 +149,5 @@ loadFuels() {
     }
   });
 }
+
 }

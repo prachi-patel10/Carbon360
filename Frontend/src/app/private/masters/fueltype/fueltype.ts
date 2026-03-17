@@ -5,7 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
 import Swal from 'sweetalert2';
 import { ChangeDetectorRef } from '@angular/core';
-
+import { signal, effect } from '@angular/core';
 @Component({
   selector: 'app-fueltype',
   imports: [CommonModule,FormsModule],
@@ -17,14 +17,15 @@ export class Fueltype implements OnInit {
 
   fuels: any[] = [];
   editingFuelId: number | null = null;
-  searchText: string = '';
-onlyActive: boolean = false;
+currentPage = signal(1);
+pageSize = signal(5);
+totalRecords = signal(0);
+totalPages = signal(1);
 
-currentPage: number = 1;
-pageSize: number = 5;
+searchText = signal('');
+onlyActive = signal(false);
 
-totalRecords: number = 0;
-totalPages: number = 0;
+refreshTrigger = signal(0);
 sortColumn: string = 'fuel_name';
 sortDirection: string = 'ASC';
 
@@ -56,41 +57,6 @@ sortDirection: string = 'ASC';
 //   return this.filteredFuels.slice(start, start + this.pageSize);
 // }
 
-previousPage() {
-  if (this.currentPage > 1) {
-    this.currentPage--;
-    this.loadFuels();
-  }
-}
-
-nextPage() {
-  if (this.currentPage < this.totalPages) {
-    this.currentPage++;
-    this.loadFuels();
-  }
-}
-
-updatePagination() {
-  this.currentPage = 1;
-  this.loadFuels();
-}
-
-onSearchChange() {
-  this.currentPage = 1;
-  this.loadFuels();
-}
-
-onFilterChange() {
-  this.currentPage = 1;
-  this.loadFuels();
-}
-
-clearSearch() {
-  this.searchText = '';
-  this.onlyActive = false;
-  this.currentPage = 1;
-  this.loadFuels();
-}
 
   newFuel = {
     fuel_name: '',
@@ -102,53 +68,61 @@ clearSearch() {
     private fuelService: FueltypeService,
     private toastr: ToastrService,
     private cdr: ChangeDetectorRef
-  ) {}
+
+  ) {effect(() => {
+
+  const page = this.currentPage();
+  const size = this.pageSize();
+  const search = this.searchText();
+  const active = this.onlyActive();
+
+  this.refreshTrigger();
+
+  this.loadFuels(page, size, search, active);
+
+});}
 
   ngOnInit() {
-    this.loadFuels();
+    this.refreshTrigger.update(v => v + 1);
   }
 
-  loadFuels() {
+ loadFuels(page: number, size: number, search: string, active: boolean) {
 
   let params: any = {
-    pageNumber: this.currentPage,
-    pageSize: this.pageSize,
+    pageNumber: page,
+    pageSize: size,
     sortColumn: this.sortColumn,
     sortDirection: this.sortDirection
   };
 
-  // Only add searchText if it exists
-  if (this.searchText && this.searchText.trim() !== '') {
-    params.searchText = this.searchText;
+  if (search && search.trim() !== '') {
+    params.searchText = search;
   }
 
-  // Only add isActive if filter is ON
-  if (this.onlyActive) {
-    params.isActive = this.onlyActive;
+  if (active) {
+    params.isActive = active;
   }
 
   this.fuelService.search(params).subscribe({
+    next: (res: any) => {
 
-   next: (res: any) => {
+      const result = res.data;
 
-  const result = res.data;
+      this.fuels = result.data.map((f: any) => ({
+        ...f,
+        isapplicable: f.isapplicable === 1 || f.isapplicable === true,
+        isActive: f.isActive === 1 || f.isActive === true
+      }));
 
-  this.fuels = result.data.map((f: any) => ({
-    ...f,
-    isapplicable: f.isapplicable === 1 || f.isapplicable === true,
-    isActive: f.isActive === 1 || f.isActive === true
-  }));
+      this.totalRecords.set(result.totalRecords);
+      this.totalPages.set(result.totalPages);
+      this.currentPage.set(result.currentPage);
 
-  this.totalRecords = result.totalRecords;
-  this.totalPages = result.totalPages;
-  this.currentPage = result.currentPage;
-
-},
-    error: (err) => {
-      console.error(err);
-    }
+    },
+    error: (err) => console.error(err)
   });
 }
+
 
       createFuel() {
 
@@ -181,7 +155,7 @@ clearSearch() {
       );
 
       this.resetForm();
-      this.loadFuels();
+      this.refreshTrigger.update(v => v + 1);
     },
 
     error: (err) => {
@@ -199,7 +173,7 @@ clearSearch() {
         );
 
         this.resetForm();
-        this.loadFuels();
+       this.refreshTrigger.update(v => v + 1);
         return;
       }
 
@@ -311,7 +285,41 @@ clearSearch() {
 
 //   }
 // }
+previousPage() {
+  if (this.currentPage() > 1) {
+    this.currentPage.set(this.currentPage() - 1);
+  }
+}
 
+nextPage() {
+  if (this.currentPage() < this.totalPages()) {
+    this.currentPage.set(this.currentPage() + 1);
+  }
+}
+
+onPageSizeChange(event: any) {
+  const val = +event.target.value;
+  if (val > 0) {
+    this.pageSize.set(val);
+    this.currentPage.set(1);
+  }
+}
+
+onSearchChange(event: any) {
+  this.searchText.set(event.target.value || '');
+  this.currentPage.set(1);
+}
+
+onFilterChange(event: any) {
+  this.onlyActive.set(event.target.checked);
+  this.currentPage.set(1);
+}
+
+clearSearch() {
+  this.searchText.set('');
+  this.onlyActive.set(false);
+  this.currentPage.set(1);
+}
 
   showToast(title: string, icon: 'success' | 'error' = 'success') {
   Swal.fire({

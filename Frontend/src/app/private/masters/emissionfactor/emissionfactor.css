@@ -1,58 +1,66 @@
+/* ================= CONTAINER ================= */
 .emission-page {
-  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 15px;
 }
 
+/* ================= CARD ================= */
 .card {
-  background: #fff;
-  border-radius: 10px;
+  background-color: #fff;
+  border-radius: 12px;
   padding: 20px;
-  margin-bottom: 20px;
-  box-shadow: 0 3px 10px rgba(0,0,0,0.05);
-}
-
-.card-title {
   margin-bottom: 15px;
-  font-weight: 600;
-  color: #1b5e20;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
 }
 
-.form-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 15px;
+/* ================= FORM GRID ================= */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
 }
 
 .form-group {
-  flex: 1;
   display: flex;
   flex-direction: column;
 }
 
-.form-group input {
-  height: 36px;
-  padding: 6px;
+.form-group label {
+  margin-bottom: 5px;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.form-group input,
+.form-group select {
+  padding: 6px 10px;
   border-radius: 5px;
   border: 1px solid #ccc;
+  font-size: 14px;
 }
 
-.status-group {
+/* ================= ACTIONS ================= */
+.form-actions {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 15px;
+  margin-top: 10px;
 }
 
-.form-buttons {
-  margin-top: 15px;
-  display: flex;
-  gap: 10px;
-}
-
-.btn-primary {
-  background: #1b5e20;
-  color: #fff;
+/* ================= BUTTONS ================= */
+.save-btn {
   padding: 8px 16px;
   border-radius: 5px;
   border: none;
+  background-color: #1b5e20;
+  color: #fff;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.save-btn:hover {
+  background-color: #145214;
 }
 
 .btn-secondary {
@@ -62,33 +70,72 @@
   border: none;
 }
 
-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-th, td {
-  text-align: center;
-  padding: 10px;
-  border-bottom: 1px solid #ddd;
-}
-
-.action-buttons {
+/* ================= TOGGLE ================= */
+.status-toggle {
   display: flex;
-  justify-content: center;
+  align-items: center;
   gap: 8px;
 }
 
-.btn-edit { background: #e0f2fe; color: #0369a1; padding: 5px 12px; border-radius: 5px; border: none; }
-.btn-delete { background: #fee2e2; color: #991b1b; padding: 5px 12px; border-radius: 5px; border: none; }
+.status-toggle span {
+  font-weight: 500;
+  font-size: 14px;
+}
 
-.toggle-switch {
+.switch {
   position: relative;
+  display: inline-block;
   width: 40px;
   height: 20px;
 }
 
-.toggle-switch input { opacity: 0; width: 0; height: 0; }
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  inset: 0;
+  background-color: #ccc;
+  transition: 0.3s;
+  border-radius: 20px;
+}
+
+.slider:before {
+  content: "";
+  position: absolute;
+  height: 14px;
+  width: 14px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: 0.3s;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: #1b5e20;
+}
+
+input:checked + .slider:before {
+  transform: translateX(20px);
+}
+/* ================= TABLE TOGGLE SWITCH ================= */
+.toggle-switch {
+  position: relative;
+  width: 40px;
+  height: 20px;
+  display: inline-block;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
 
 .toggle-slider {
   position: absolute;
@@ -96,7 +143,7 @@ th, td {
   inset: 0;
   background-color: #ccc;
   border-radius: 34px;
-  transition: .3s;
+  transition: 0.3s;
 }
 
 .toggle-slider:before {
@@ -108,8 +155,90 @@ th, td {
   bottom: 2px;
   background-color: white;
   border-radius: 50%;
-  transition: .3s;
+  transition: 0.3s;
 }
 
-.toggle-switch input:checked + .toggle-slider { background-color: #1b5e20; }
-.toggle-switch input:checked + .toggle-slider:before { transform: translateX(20px); }
+/* ✅ ACTIVE STATE */
+.toggle-switch input:checked + .toggle-slider {
+  background-color: #1b5e20;
+}
+
+.toggle-switch input:checked + .toggle-slider:before {
+  transform: translateX(20px);
+}
+/* ================= TABLE ================= */
+.table-card table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.table-card th,
+.table-card td {
+  padding: 10px 8px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+.btn-edit {
+  background-color: #d0ebff;
+  color: #0369a1;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: none;
+}
+
+.btn-delete {
+  background-color: #ffe3e3;
+  color: #c92a2a;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: none;
+}
+
+.form-group select {
+  color: #000; /* default = black */
+}
+
+.form-group select.placeholder {
+  color: #999; /* only when placeholder selected */
+}
+.dropdown-checkbox {
+  position: relative;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  width: 100%;
+  font-size: 14px;
+}
+.dropdown-header {
+  padding: 6px 10px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+   /* Arrow like select */
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+
+  background-image: url("data:image/svg+xml;utf8,<svg fill='gray' height='20' viewBox='0 0 24 24' width='20' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  background-size: 16px;
+
+  padding-right: 30px; /* space for arrow */
+}
+
+/* ================= RESPONSIVE ================= */
+@media (max-width: 768px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+}

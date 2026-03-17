@@ -49,19 +49,19 @@ export class DashboardComponent {
       .subscribe(() => {
         const url = this.router.url;
         if (url.includes('user')) this.pageTitle = 'User Administration';
-        else if (url.includes('role')) this.pageTitle = 'Access Control : Role Management';
+        // else if (url.includes('role')) this.pageTitle = 'Access Control : Role Management';
         else if (url.includes('department')) this.pageTitle = 'Organizational Units : Manage Departments';
         else if (url.includes('vehiclereport')) this.pageTitle = 'Fleet Report';
         else if (url.includes('waste')) this.pageTitle = 'Waste Management';
-        else if (url.includes('vehiclemaster')) this.pageTitle = 'Vehicle Master';
-        else if (url.includes('fueltype')) this.pageTitle = 'FuelType Master';
-        else if (url.includes('vehicletypeservice')) this.pageTitle = 'Vehicle Types';
+        else if (url.includes('vehiclemaster')) this.pageTitle = 'Vehicles';
+        else if (url.includes('fueltype')) this.pageTitle = 'Fuel Management';
+        else if (url.includes('vehicletypeservice')) this.pageTitle = 'Vehicle Type';
         else if (url.includes('vehicle')) this.pageTitle = 'Report Fleet & Transport';
         else if (url.includes('emissionFactors')) this.pageTitle = ' Emisssion factors ';
         else if (url.includes('generator-ec')) this.pageTitle = ' Report Power Generation ';
-        else if (url.includes('citymaster')) this.pageTitle = ' Citis ';
+        else if (url.includes('citymaster')) this.pageTitle = ' Cities ';
         else if (url.includes('sitelocation')) this.pageTitle = ' Site location ';
-        else if (url.includes('generator')) this.pageTitle = ' Generator Master ';
+        else if (url.includes('generator')) this.pageTitle = ' Generators ';
         else if (url.includes('searchGenerator')) this.pageTitle = ' Search Power Generator';
         else if (url.includes('MyActionGenerator')) this.pageTitle = ' Actions Power Generator';
         else if (url.includes('MyActionVehicle')) this.pageTitle = 'Actions Fleet & Transport';
@@ -100,6 +100,9 @@ export class DashboardComponent {
     this.router.navigate(['/login']);
   }
 
+  goToDashboard() {
+  this.router.navigate(['/dashboard']); // change route if needed
+}
   /* Role Switch */
   onRoleChange() {
     this.authService.switchRole(this.selectedRole).subscribe({

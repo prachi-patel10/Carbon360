@@ -647,12 +647,12 @@ td.actions button {
 }
 
 .btn-secondary {
-  background: transparent;
-  border: 1px solid #ced4da;
-  padding: 8px 20px;
-  border-radius: 6px;
-  cursor: pointer;
+  background: #e5e7eb;
+  padding: 8px 16px;
+  border-radius: 5px;
+  border: none;
 }
+
 
 /* --- Grid Layout for the Top Card --- */
 .filter-layout-grid {
