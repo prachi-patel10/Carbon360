@@ -127,7 +127,6 @@ goToDashboard() {
 }
   /* Role Switch */
 onRoleChange() {
-  this.loader.show(); // ✅ START loader immediately
 
   this.authService.switchRole(this.selectedRole).subscribe({
     next: (res: any) => {
