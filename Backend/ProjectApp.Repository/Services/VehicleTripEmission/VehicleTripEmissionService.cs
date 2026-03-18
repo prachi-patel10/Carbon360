@@ -287,78 +287,108 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
             };
         }
 
-       public async Task<List<ResponseVehicleTripEmissionDTO>> GetAllAsync()
-        {
-            var data = await _context.CB_VehicleTripEmissions
-       .FromSqlRaw("EXEC USP_CB_GetAllVehicleTripEmission")
-       .ToListAsync();
+       //public async Task<List<ResponseVehicleTripEmissionDTO>> GetAllAsync()
+       // {
+       //     var data = await _context.CB_VehicleTripEmissions
+       //.FromSqlRaw("EXEC USP_CB_GetAllVehicleTripEmission")
+       //.ToListAsync();
 
-            return data.Select(x => new ResponseVehicleTripEmissionDTO
-            {
-                TripId = _idEncoder.Encode(x.tripid),
-                VehicleId = _idEncoder.Encode(x.vehicleid),
-                FromCityId = _idEncoder.Encode(x.fromcityid),
-                ToCityId = _idEncoder.Encode(x.tocityid),
-                TripStartDateTime = x.tripstartdatetime,
-                TripEndDateTime = x.tripenddatetime,
-                DistanceKm = x.distancekm,
-                FuelConsumedLtr = x.fuelconsumedltr,
+       //     return data.Select(x => new ResponseVehicleTripEmissionDTO
+       //     {
+       //         TripId = _idEncoder.Encode(x.tripid),
+       //         VehicleId = _idEncoder.Encode(x.vehicleid),
+       //         VehicleNumber = x.VehicleName,
+       //         VehicleType = x.VehicleType,
+       //         FromCityId = _idEncoder.Encode(x.fromcityid),
+       //         ToCityId = _idEncoder.Encode(x.tocityid),
+       //         TripStartDateTime = x.tripstartdatetime,
+       //         TripEndDateTime = x.tripenddatetime,
+       //         DistanceKm = x.distancekm,
+       //         FuelConsumedLtr = x.fuelconsumedltr,
+       //         CO2 = x.co2,
+       //         NO2 = x.no2,
+       //         CH4 = x.ch4,
+       //         TotalCO2 = x.totalco2,
+       //         TotalNO2 = x.totalno2,
+       //         TotalCH4 = x.totalch4,
 
-                CO2 = x.co2,
-                NO2 = x.no2,
-                CH4 = x.ch4,
-
-                
-                TotalCO2 = x.totalco2,
-                TotalNO2 = x.totalno2,
-                TotalCH4 = x.totalch4,
-
-                TotalEmission = x.totalemission,
-                StatusId = x.StatusId
-            }).ToList();
-        }
+       //         TotalEmission = x.totalemission,
+       //         StatusId = x.StatusId
+       //     }).ToList();
+       // }
 
          public async Task<ResponseVehicleTripEmissionDTO> GetByHashIdAsync(string hashId)
         {
             int tripId = _idEncoder.Decode(hashId);
 
-            var data = await _context.CB_VehicleTripEmissions
-                .FromSqlRaw("EXEC USP_CB_GetVehicleTripEmissionById @tripid",
-                    new SqlParameter("@tripid", tripId))
-                .ToListAsync();
+            ResponseVehicleTripEmissionDTO result = null;
 
-            var entity = data.FirstOrDefault();
-            if (entity == null) return null;
-            return new ResponseVehicleTripEmissionDTO
+            using (var conn = _context.Database.GetDbConnection())
             {
-                TripId = hashId,
-                VehicleId = _idEncoder.Encode(entity.vehicleid),
-                FromCityId = _idEncoder.Encode(entity.fromcityid),
-                ToCityId = _idEncoder.Encode(entity.tocityid),
-                TripStartDateTime = entity.tripstartdatetime,
-                TripEndDateTime = entity.tripenddatetime,
-                DistanceKm = entity.distancekm,
-                FuelConsumedLtr = entity.fuelconsumedltr,
+                await conn.OpenAsync();
 
-                CO2 = entity.co2,
-                NO2 = entity.no2,
-                CH4 = entity.ch4,
+                using (var cmd = conn.CreateCommand())
+                {
+                    cmd.CommandText = "USP_CB_GetVehicleTripEmissionById";
+                    cmd.CommandType = CommandType.StoredProcedure;
 
-                FuelType = entity.fueltype,
+                    cmd.Parameters.Add(new SqlParameter("@tripid", tripId));
 
-                //CO2Factor = entity.co2,
+                    using (var reader = await cmd.ExecuteReaderAsync())
+                    {
+                        if (await reader.ReadAsync())
+                        {
+                            result = new ResponseVehicleTripEmissionDTO
+                            {
+                                TripId = hashId,
 
-                //NO2Factor = entity.no2,
+                                VehicleId = _idEncoder.Encode(Convert.ToInt32(reader["VehicleId"])),
 
-                //CH4Factor = entity.ch4,
+                                FromCityId = reader["FromCityId"] == DBNull.Value
+                                    ? null
+                                    : _idEncoder.Encode(Convert.ToInt32(reader["FromCityId"])),
 
-                TotalCO2 = entity.totalco2,
-                TotalNO2 = entity.totalno2,
-                TotalCH4 = entity.totalch4,
+                                ToCityId = reader["ToCityId"] == DBNull.Value
+                                    ? null
+                                    : _idEncoder.Encode(Convert.ToInt32(reader["ToCityId"])),
 
-                TotalEmission = entity.totalemission,
-                StatusId = entity.StatusId
-            };
+                                TripStartDateTime = Convert.ToDateTime(reader["TripStartDateTime"]),
+                                TripEndDateTime = reader["TripEndDateTime"] == DBNull.Value
+                                    ? null
+                                    : Convert.ToDateTime(reader["TripEndDateTime"]),
+
+                                DistanceKm = Convert.ToDecimal(reader["DistanceKm"]),
+                                FuelConsumedLtr = Convert.ToDecimal(reader["FuelConsumedLtr"]),
+
+                                CO2 = reader["CO2"] == DBNull.Value ? null : Convert.ToDecimal(reader["CO2"]),
+                                NO2 = reader["NO2"] == DBNull.Value ? null : Convert.ToDecimal(reader["NO2"]),
+                                CH4 = reader["CH4"] == DBNull.Value ? null : Convert.ToDecimal(reader["CH4"]),
+
+                                TotalCO2 = reader["TotalCO2"] == DBNull.Value ? null : Convert.ToDecimal(reader["TotalCO2"]),
+                                TotalNO2 = reader["TotalNO2"] == DBNull.Value ? null : Convert.ToDecimal(reader["TotalNO2"]),
+                                TotalCH4 = reader["TotalCH4"] == DBNull.Value ? null : Convert.ToDecimal(reader["TotalCH4"]),
+                                TotalEmission = reader["TotalEmission"] == DBNull.Value ? null : Convert.ToDecimal(reader["TotalEmission"]),
+
+                                StatusId = Convert.ToInt32(reader["StatusId"]),
+
+                               
+                                VehicleNumber = reader["VehicleNumber"]?.ToString(),
+                                VehicleType = reader["VehicleType"]?.ToString(),
+
+                                FromCity = reader["FromCity"]?.ToString(),
+                                ToCity = reader["ToCity"]?.ToString(),
+
+                                FuelType = reader["FuelType"]?.ToString(),
+
+                                EntryBy = reader["EntryBy"] == DBNull.Value ? null : Convert.ToInt32(reader["EntryBy"]),
+                                EntryDate = reader["EntryDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["EntryDate"])
+                            };
+                        }
+                    }
+                }
+            }
+
+            return result;
         }
 
         private string GetCurrentUserRole()
@@ -369,94 +399,94 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
             return _userContext.Role; // assuming Role property exists
         }
 
-        public async Task<(IEnumerable<SearchVehicleTripEmissionDTO>, int)> SearchVehicleTrips(string? search, string? vehicleNumber, string? fuelType, string? vehicleType, DateTime? startDate, DateTime? endDate, int? statusId, string? userRole, int pageNumber = 1, int pageSize = 10)
-        {
-            int userId = GetCurrentUserId();
-            string role = _userContext.Role;
+        //public async Task<(IEnumerable<SearchVehicleTripEmissionDTO>, int)> SearchVehicleTrips(string? search, string? vehicleNumber, string? fuelType, string? vehicleType, DateTime? startDate, DateTime? endDate, int? statusId, string? userRole, int pageNumber = 1, int pageSize = 10)
+        //{
+        //    int userId = GetCurrentUserId();
+        //    string role = _userContext.Role;
 
-            await using var connection = _context.Database.GetDbConnection();
-            await using var command = connection.CreateCommand();
+        //    await using var connection = _context.Database.GetDbConnection();
+        //    await using var command = connection.CreateCommand();
 
-            command.CommandText = "USP_CB_SearchVehicleTripEmission";
-            command.CommandType = CommandType.StoredProcedure;
+        //    command.CommandText = "USP_CB_SearchVehicleTripEmission";
+        //    command.CommandType = CommandType.StoredProcedure;
 
-            command.Parameters.Add(new SqlParameter("@Search", (object?)search ?? DBNull.Value));
-            command.Parameters.Add(new SqlParameter("@VehicleNumber", (object?)vehicleNumber ?? DBNull.Value));
-            command.Parameters.Add(new SqlParameter("@FuelType", (object?)fuelType ?? DBNull.Value));
-            command.Parameters.Add(new SqlParameter("@VehicleType", (object?)vehicleType ?? DBNull.Value));
-            command.Parameters.Add(new SqlParameter("@StartDate", (object?)startDate ?? DBNull.Value));
-            command.Parameters.Add(new SqlParameter("@EndDate", (object?)endDate ?? DBNull.Value));
-            command.Parameters.Add(new SqlParameter("@StatusId", (object?)statusId ?? DBNull.Value));
-            command.Parameters.Add(new SqlParameter("@UserId", userId));
-            command.Parameters.Add(new SqlParameter("@UserRole", role));
-            command.Parameters.Add(new SqlParameter("@PageNumber", pageNumber));
-            command.Parameters.Add(new SqlParameter("@PageSize", pageSize));
+        //    command.Parameters.Add(new SqlParameter("@Search", (object?)search ?? DBNull.Value));
+        //    command.Parameters.Add(new SqlParameter("@VehicleNumber", (object?)vehicleNumber ?? DBNull.Value));
+        //    command.Parameters.Add(new SqlParameter("@FuelType", (object?)fuelType ?? DBNull.Value));
+        //    command.Parameters.Add(new SqlParameter("@VehicleType", (object?)vehicleType ?? DBNull.Value));
+        //    command.Parameters.Add(new SqlParameter("@StartDate", (object?)startDate ?? DBNull.Value));
+        //    command.Parameters.Add(new SqlParameter("@EndDate", (object?)endDate ?? DBNull.Value));
+        //    command.Parameters.Add(new SqlParameter("@StatusId", (object?)statusId ?? DBNull.Value));
+        //    command.Parameters.Add(new SqlParameter("@UserId", userId));
+        //    command.Parameters.Add(new SqlParameter("@UserRole", role));
+        //    command.Parameters.Add(new SqlParameter("@PageNumber", pageNumber));
+        //    command.Parameters.Add(new SqlParameter("@PageSize", pageSize));
 
-            var totalParam = new SqlParameter("@TotalRecords", SqlDbType.Int)
-            {
-                Direction = ParameterDirection.Output
-            };
+        //    var totalParam = new SqlParameter("@TotalRecords", SqlDbType.Int)
+        //    {
+        //        Direction = ParameterDirection.Output
+        //    };
 
-            command.Parameters.Add(totalParam);
+        //    command.Parameters.Add(totalParam);
 
-            if (connection.State != ConnectionState.Open)
-                await connection.OpenAsync();
+        //    if (connection.State != ConnectionState.Open)
+        //        await connection.OpenAsync();
 
-            var result = new List<SearchVehicleTripEmissionDTO>();
+        //    var result = new List<SearchVehicleTripEmissionDTO>();
 
-            await using var reader = await command.ExecuteReaderAsync();
+        //    await using var reader = await command.ExecuteReaderAsync();
 
-            while (await reader.ReadAsync())
-            {
-                var dto = new SearchVehicleTripEmissionDTO
-                {
-                    TripId = _idEncoder.Encode(reader.GetInt32(reader.GetOrdinal("TripId"))),
+        //    while (await reader.ReadAsync())
+        //    {
+        //        var dto = new SearchVehicleTripEmissionDTO
+        //        {
+        //            TripId = _idEncoder.Encode(reader.GetInt32(reader.GetOrdinal("TripId"))),
 
-                    VehicleNumber = reader["VehicleNumber"]?.ToString() ?? "",
-                    VehicleType = reader["VehicleType"]?.ToString() ?? "",
-                    FuelType = reader["FuelType"]?.ToString() ?? "",
+        //            VehicleNumber = reader["VehicleNumber"]?.ToString() ?? "",
+        //            VehicleType = reader["VehicleType"]?.ToString() ?? "",
+        //            FuelType = reader["FuelType"]?.ToString() ?? "",
 
-                    DistanceKm = reader.IsDBNull(reader.GetOrdinal("DistanceKm")) ? 0 :
-                                 reader.GetDecimal(reader.GetOrdinal("DistanceKm")),
+        //            DistanceKm = reader.IsDBNull(reader.GetOrdinal("DistanceKm")) ? 0 :
+        //                         reader.GetDecimal(reader.GetOrdinal("DistanceKm")),
 
-                    FuelConsumedLtr = reader.IsDBNull(reader.GetOrdinal("FuelConsumedLtr")) ? 0 :
-                                      reader.GetDecimal(reader.GetOrdinal("FuelConsumedLtr")),
+        //            FuelConsumedLtr = reader.IsDBNull(reader.GetOrdinal("FuelConsumedLtr")) ? 0 :
+        //                              reader.GetDecimal(reader.GetOrdinal("FuelConsumedLtr")),
 
-                    TripStartDateTime = reader.GetDateTime(reader.GetOrdinal("TripStartDateTime")),
+        //            TripStartDateTime = reader.GetDateTime(reader.GetOrdinal("TripStartDateTime")),
 
-                    TripEndDateTime = reader.IsDBNull(reader.GetOrdinal("TripEndDateTime"))
-                        ? DateTime.MinValue
-                        : reader.GetDateTime(reader.GetOrdinal("TripEndDateTime")),
+        //            TripEndDateTime = reader.IsDBNull(reader.GetOrdinal("TripEndDateTime"))
+        //                ? DateTime.MinValue
+        //                : reader.GetDateTime(reader.GetOrdinal("TripEndDateTime")),
 
-                    TotalCO2 = reader.IsDBNull(reader.GetOrdinal("TotalCO2")) ? 0 :
-                               reader.GetDecimal(reader.GetOrdinal("TotalCO2")),
+        //            TotalCO2 = reader.IsDBNull(reader.GetOrdinal("TotalCO2")) ? 0 :
+        //                       reader.GetDecimal(reader.GetOrdinal("TotalCO2")),
 
-                    TotalNO2 = reader.IsDBNull(reader.GetOrdinal("TotalNO2")) ? 0 :
-                               reader.GetDecimal(reader.GetOrdinal("TotalNO2")),
+        //            TotalNO2 = reader.IsDBNull(reader.GetOrdinal("TotalNO2")) ? 0 :
+        //                       reader.GetDecimal(reader.GetOrdinal("TotalNO2")),
 
-                    TotalCH4 = reader.IsDBNull(reader.GetOrdinal("TotalCH4")) ? 0 :
-                               reader.GetDecimal(reader.GetOrdinal("TotalCH4")),
+        //            TotalCH4 = reader.IsDBNull(reader.GetOrdinal("TotalCH4")) ? 0 :
+        //                       reader.GetDecimal(reader.GetOrdinal("TotalCH4")),
 
-                    TotalEmission = reader.IsDBNull(reader.GetOrdinal("TotalEmission")) ? 0 :
-                                         reader.GetDecimal(reader.GetOrdinal("TotalEmission")),
+        //            TotalEmission = reader.IsDBNull(reader.GetOrdinal("TotalEmission")) ? 0 :
+        //                                 reader.GetDecimal(reader.GetOrdinal("TotalEmission")),
 
-                    StatusId = reader.IsDBNull(reader.GetOrdinal("StatusId")) ? 0 :
-                               reader.GetInt32(reader.GetOrdinal("StatusId"))
-                };
+        //            StatusId = reader.IsDBNull(reader.GetOrdinal("StatusId")) ? 0 :
+        //                       reader.GetInt32(reader.GetOrdinal("StatusId"))
+        //        };
 
-                result.Add(dto);
-            }
+        //        result.Add(dto);
+        //    }
 
-            await reader.CloseAsync();
+        //    await reader.CloseAsync();
 
-            int totalRecords = totalParam.Value != DBNull.Value
-                ? (int)totalParam.Value
-                : result.Count;
+        //    int totalRecords = totalParam.Value != DBNull.Value
+        //        ? (int)totalParam.Value
+        //        : result.Count;
 
-            return (result, totalRecords);
-        }
+        //    return (result, totalRecords);
+        //}
 
-       public async Task<PageResult> GetMyActionTripsAsync(int pageNumber, int pageSize, string sortColumn = "EntryDate", string sortDirection = "DESC")
+        public async Task<PageResult> GetMyActionTripsAsync(int pageNumber, int pageSize, string sortColumn = "EntryDate", string sortDirection = "DESC")
     {
             int userId = GetCurrentUserId();
             int roleId = _userContext.Role.Contains("Corporate") ? 3 : 5;
@@ -516,7 +546,13 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
                                 TotalNO2 = reader["TotalNO2"] == DBNull.Value ? null : Convert.ToDecimal(reader["TotalNO2"]),
                                 TotalCH4 = reader["TotalCH4"] == DBNull.Value ? null : Convert.ToDecimal(reader["TotalCH4"]),
                                 TotalEmission = reader["TotalEmission"] == DBNull.Value ? null : Convert.ToDecimal(reader["TotalEmission"]),
+                                EntryDate = reader["EntryDate"] == DBNull.Value
+                                 ? null
+                                : Convert.ToDateTime(reader["EntryDate"]),
 
+                                EntryBy = reader["EntryBy"] == DBNull.Value
+                                    ? null
+                                 : Convert.ToInt32(reader["EntryBy"]),
                                 VehicleNumber = reader["VehicleNumber"]?.ToString(),
                                 VehicleType = reader["VehicleType"]?.ToString(),
                                 FuelType = reader["FuelType"]?.ToString(),
@@ -548,7 +584,7 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
                 CurrentPage = pageNumber
             };
         }
-
+            
         public async Task<(IEnumerable<SearchVehicleTripEmissionDTO>, int)> SearchVehicleTrips(
         string? search,
         string? vehicleNumber,
@@ -707,8 +743,94 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
             }
 
             return actions;
-        }   
+        }
+
+       public async Task<(List<ResponseVehicleTripEmissionDTO> Data, int TotalRecords)> GetAllAsync()
+        {
+            int userId = GetCurrentUserId();
+            string role = _userContext.Role.Contains("Corporate") ? "Corporate" : "Reporter";
+
+            var result = new List<ResponseVehicleTripEmissionDTO>();
+            int totalRecords = 0;
+
+            await using var connection = _context.Database.GetDbConnection();
+            await using var command = connection.CreateCommand();
+
+            command.CommandText = "USP_CB_GetVehicleTripEmission";
+            command.CommandType = CommandType.StoredProcedure;
+
+            
+            command.Parameters.Add(new SqlParameter("@UserId", userId));
+            command.Parameters.Add(new SqlParameter("@UserRole", role));
+
+            var totalParam = new SqlParameter("@TotalRecords", SqlDbType.Int)
+            {
+                Direction = ParameterDirection.Output
+            };
+            command.Parameters.Add(totalParam);
+
+            if (connection.State != ConnectionState.Open)
+                await connection.OpenAsync();
+
+            await using var reader = await command.ExecuteReaderAsync();
+
+            while (await reader.ReadAsync())
+            {
+                result.Add(new ResponseVehicleTripEmissionDTO
+                {
+                    TripId = _idEncoder.Encode(Convert.ToInt32(reader["TripId"])),
+
+                    VehicleId = _idEncoder.Encode(Convert.ToInt32(reader["VehicleId"])),
+
+                    FromCityId = _idEncoder.Encode(Convert.ToInt32(reader["FromCityId"])),
+                    ToCityId = _idEncoder.Encode(Convert.ToInt32(reader["ToCityId"])),
+
+                    FromCity = reader["FromCity"]?.ToString(),
+                    ToCity = reader["ToCity"]?.ToString(),
+
+                    VehicleNumber = reader["VehicleName"]?.ToString(), 
+                    VehicleType = reader["VehicleType"]?.ToString(),
+                    FuelType = reader["FuelType"]?.ToString(),
+
+                    TripStartDateTime = Convert.ToDateTime(reader["TripStartDateTime"]),
+
+                    TripEndDateTime = reader["TripEndDateTime"] == DBNull.Value
+                        ? null
+                        : Convert.ToDateTime(reader["TripEndDateTime"]),
+
+                    DistanceKm = Convert.ToDecimal(reader["DistanceKm"]),
+                    FuelConsumedLtr = Convert.ToDecimal(reader["FuelConsumedLtr"]),
+
+                    CO2 = reader["CO2"] == DBNull.Value ? null : Convert.ToDecimal(reader["CO2"]),
+                    NO2 = reader["NO2"] == DBNull.Value ? null : Convert.ToDecimal(reader["NO2"]),
+                    CH4 = reader["CH4"] == DBNull.Value ? null : Convert.ToDecimal(reader["CH4"]),
+
+                    TotalCO2 = reader["TotalCO2"] == DBNull.Value ? null : Convert.ToDecimal(reader["TotalCO2"]),
+                    TotalNO2 = reader["TotalNO2"] == DBNull.Value ? null : Convert.ToDecimal(reader["TotalNO2"]),
+                    TotalCH4 = reader["TotalCH4"] == DBNull.Value ? null : Convert.ToDecimal(reader["TotalCH4"]),
+
+                    TotalEmission = reader["TotalEmission"] == DBNull.Value
+                    ? null
+                    : Convert.ToDecimal(reader["TotalEmission"]),
+
+                    EntryBy = reader["EntryBy"] == DBNull.Value ? null : Convert.ToInt32(reader["EntryBy"]),
+                    EntryDate = reader["EntryDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["EntryDate"]),
+
+                    StatusId = Convert.ToInt32(reader["StatusId"])
+                });
+            }
+
+            await reader.CloseAsync();
+
+          
+            totalRecords = totalParam.Value != DBNull.Value
+                ? (int)totalParam.Value
+                : result.Count;
+
+            return (result, totalRecords);
+        }
     }
+    
 }
     
 

@@ -156,12 +156,10 @@ select.invalid {
 }
 
 /* ================= ACTION BUTTONS ================= */
-/* ================= ACTION BUTTONS ================= */
-
 .review-actions {
   display: flex;
-  justify-content: center;   /* centers buttons horizontally */
-  align-items: center;
+  /* justify-content: center;   centers buttons horizontally */
+  /* align-items: center; */
   gap: 10px;                 /* space between buttons */
   margin-top: 0px;
   padding-top: 1px;
@@ -223,6 +221,11 @@ select.invalid {
 }
 .btn-reject:hover {
   background-color: #991b1b;
+}
+.btn-reset {
+  background-color: #6c757d;
+  color: white;
+  margin-left: 10px;
 }
 
 /* ================= TABLE STYLING ================= */

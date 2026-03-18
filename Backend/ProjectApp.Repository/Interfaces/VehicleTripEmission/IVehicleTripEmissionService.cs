@@ -12,7 +12,8 @@ namespace ProjectApp.Repository.Interfaces.VehicleTripEmission
     public interface IVehicleTripEmissionService
     {
         Task<ResponseVehicleTripEmissionDTO> CreateAsync(CreateVehicleTripEmissionDTO dto);
-        Task<List<ResponseVehicleTripEmissionDTO>> GetAllAsync();
+        //Task<List<ResponseVehicleTripEmissionDTO>> GetAllAsync();
+        Task<(List<ResponseVehicleTripEmissionDTO> Data, int TotalRecords)> GetAllAsync();
         Task<ResponseVehicleTripEmissionDTO> GetByHashIdAsync(string hashId);
         Task<bool> DeleteAsync(string hashId);
         Task<ResponseVehicleTripEmissionDTO> UpdateAsync(UpdateVehicleTripEmissionDTO dto);

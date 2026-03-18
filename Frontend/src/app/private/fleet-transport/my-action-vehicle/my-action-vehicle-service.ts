@@ -18,6 +18,8 @@ export interface VehicleTrip {
   fuelConsumedLtr: number
   totalEmission: number
   statusId: number
+  entryDate:string
+  fuelType:string
 
 }
 

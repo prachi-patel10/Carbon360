@@ -24,14 +24,13 @@
                 Route
               </th>
 
-              <th (click)="sort('tripStartDateTime')" style="cursor:pointer">
-                Start Time
+              <th (click)="sort('tripEntryDate')" style="cursor:pointer">
+                Entry Date
               </th>
-              <!-- <th>Start Time</th> -->
-              <th (click)="sort('tripEndDateTime')" style="cursor:pointer">
-                End Time
-              </th>
-              <!-- <th>End Time</th> -->
+
+              <th (click)="sort('fuelType')" style="cursor:pointer">Fuel Type</th>
+              <th (click)="sort('runHours')" style="cursor:pointer">Run Hours</th>
+
               <th>Emission</th>
               <th class="text-center">Action</th>
             </tr>
@@ -47,9 +46,13 @@
                 {{ e.fromCity }} - {{ e.toCity }}
               </td>
 
-              <td>{{ e.tripStartDateTime | date:'short' }}</td>
+              <!-- <td>{{ e.tripStartDateTime | date:'short' }}</td>
 
-              <td>{{ e.tripEndDateTime | date:'short' }}</td>
+              <td>{{ e.tripEndDateTime | date:'short' }}</td> -->
+                <td>{{ e.entryDate | date:'dd-MMM-yyyy' }}</td>
+              <td>{{ e.fuelType }}</td>
+
+              <td>{{ e.runHours }} hrs</td>
 
               <td>{{ e.totalEmission }}</td>
 

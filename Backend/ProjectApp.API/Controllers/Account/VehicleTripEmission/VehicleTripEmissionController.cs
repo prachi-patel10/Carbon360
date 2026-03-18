@@ -38,9 +38,17 @@ namespace ProjectApp.API.Controllers.Account.VehicleTripEmission
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var result = await _service.GetAllAsync();
-            return Ok(result);
+            //var result = await _service.GetAllAsync();
+            //return Ok(result);
+            var (data, totalRecords) = await _service.GetAllAsync();
+
+            return Ok(new
+            {
+                Data = data,
+                TotalRecords = totalRecords
+            });
         }
+        
 
         [HttpGet("{hashId}")]
         public async Task<IActionResult> Get(string hashId)
