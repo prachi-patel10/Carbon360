@@ -283,6 +283,10 @@ th span {
   color: #1b5e20;
 }
 
+th:last-child {
+  text-align: center;
+}
+
 /* ================= PAGINATION ================= */
 .pagination-info {
   display: flex;

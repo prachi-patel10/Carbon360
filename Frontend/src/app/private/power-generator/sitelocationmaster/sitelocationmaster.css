@@ -182,6 +182,9 @@ th {
   position: relative;
 }
 
+th:last-child {
+  text-align: center;
+}
 td.actions {
   display: flex;
   gap: 8px;

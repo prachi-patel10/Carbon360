@@ -127,6 +127,7 @@ goToDashboard() {
 }
   /* Role Switch */
 onRoleChange() {
+  this.loader.show();
 
   this.authService.switchRole(this.selectedRole).subscribe({
     next: (res: any) => {
@@ -150,7 +151,7 @@ onRoleChange() {
 
       // ✅ CLEAR SAVED SIDEBAR STATE
       localStorage.removeItem('sidebarState');
-
+this.loader.hide(); 
       // ✅ NAVIGATE TO DASHBOARD
       this.router.navigate(['/dashboard']);
     }

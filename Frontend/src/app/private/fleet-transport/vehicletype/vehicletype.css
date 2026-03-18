@@ -167,11 +167,15 @@ th {
   user-select: none;
   position: relative;
 }
+
+
 td {
   padding: 12px 10px;
   border-bottom: 1px solid #eee;
   vertical-align: middle;
 }
+
+
 
 .actions {
   display: flex;

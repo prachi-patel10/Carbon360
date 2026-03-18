@@ -134,7 +134,9 @@ body {
     border-bottom: 1px solid #f1f5f9;
 }
 
-
+.table tbody tr:hover td {
+  background: #f0fdf4 !important;
+}
 
 
 /* Badges */

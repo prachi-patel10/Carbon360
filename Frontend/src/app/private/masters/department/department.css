@@ -454,6 +454,9 @@ td.actions button {
   border-radius: 0 0 12px 12px;
 }
 
+th:last-child {
+  text-align: center;
+}
 
 .reset-btn {
   background: #ccc;

@@ -172,6 +172,10 @@ th, td {
   border-bottom: 1px solid #ddd;
 }
 
+th:last-child {
+  text-align: center;
+}
+
 td.actions {
   display: flex;
   gap: 8px;

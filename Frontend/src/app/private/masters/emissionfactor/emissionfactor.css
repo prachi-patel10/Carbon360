@@ -48,6 +48,7 @@
   margin-top: 10px;
 }
 
+
 /* ================= BUTTONS ================= */
 .save-btn {
   padding: 8px 16px;
@@ -178,6 +179,24 @@ input:checked + .slider:before {
   padding: 10px 8px;
   text-align: left;
   border-bottom: 1px solid #ddd;
+}
+
+.table-card th,
+.table-card td {
+  text-align: left;
+}
+
+.table-card th:last-child {
+  text-align: center;
+}
+
+.actions-header {
+  text-align: center;
+  width: 140px; /* 🔥 important for alignment */
+}
+
+th:last-child {
+  text-align: center;
 }
 
 .action-buttons {
