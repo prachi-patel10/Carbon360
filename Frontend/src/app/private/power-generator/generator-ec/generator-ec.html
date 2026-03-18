@@ -104,7 +104,7 @@
 </div>
 
   <!-- ================= GENERATOR RESULT SECTION ================= -->
-<div class="card result-card" *ngIf="isViewMode || isReviewMode || isEditMode || (isEditMode && userRole === 'reporter')">
+<div class="card result-card" *ngIf="isViewMode || isReviewMode|| isResubmitMode || isEditMode || (isEditMode && userRole === 'reporter')">
 
   <!-- Main Header -->
 
@@ -130,6 +130,16 @@
 
 
 <div class="formula full-width">
+  Run Hours (hrs) = (End Time − Start Time) <br>
+
+  = {{ operation.endTime | date:'dd-MM-yyyy HH:mm' }} - {{ operation.startTime | date:'dd-MM-yyyy HH:mm' }}
+<br>
+
+  = {{ operation.runHours }} hours <br>
+  </div>
+
+<div class="formula full-width">
+
   Power Output (kWh) = Rated Capacity × Load Factor × Run Hours <br>
 
   = {{ operation.ratedCapacityKW }} × 

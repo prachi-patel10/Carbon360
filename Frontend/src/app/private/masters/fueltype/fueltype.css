@@ -99,6 +99,7 @@ select {
   border: none;
   border-radius: 6px;
   margin-left: 10px;
+  color: black;
 }
 /* Buttons */
 button {

@@ -33,43 +33,55 @@ export class DashboardComponent {
     private route: ActivatedRoute
   ) {}
 
-  ngOnInit() {
-    const user = this.authService.getLoggedInUser();
-    if (!user) {
-      this.router.navigate(['/login']);
-      return;
-    }
-
-    this.loggedInUser = user.name;
-    this.roles = user.roles ?? [];
-    this.selectedRole = user.currentRole ?? '';
-
-    this.router.events
-      .pipe(filter(event => event instanceof NavigationEnd))
-      .subscribe(() => {
-        const url = this.router.url;
-        if (url.includes('user')) this.pageTitle = 'User Administration';
-        // else if (url.includes('role')) this.pageTitle = 'Access Control : Role Management';
-        else if (url.includes('department')) this.pageTitle = 'Organizational Units';
-        else if (url.includes('vehiclereport')) this.pageTitle = 'Fleet Report';
-        else if (url.includes('waste')) this.pageTitle = 'Waste Management';
-        else if (url.includes('vehiclemaster')) this.pageTitle = 'Vehicles';
-        else if (url.includes('fueltype')) this.pageTitle = 'Fuel Management';
-        else if (url.includes('vehicletypeservice')) this.pageTitle = 'Vehicle Type';
-        else if (url.includes('vehicle')) this.pageTitle = 'Report Fleet & Transport';
-        else if (url.includes('emissionFactors')) this.pageTitle = ' Emisssion Factors ';
-        else if (url.includes('generator-ec')) this.pageTitle = ' Report Power Generation ';
-        else if (url.includes('citymaster')) this.pageTitle = ' Cities ';
-        else if (url.includes('sitelocation')) this.pageTitle = ' Site Location ';
-        else if (url.includes('generator')) this.pageTitle = ' Generators ';
-        else if (url.includes('searchGenerator')) this.pageTitle = ' Search Power Generator';
-        else if (url.includes('MyActionGenerator')) this.pageTitle = ' Actions Power Generator';
-        else if (url.includes('MyActionVehicle')) this.pageTitle = 'Actions Fleet & Transport';
-        else if (url.includes('searchVehicle')) this.pageTitle = 'Search Fleet & Transport';
-
-        else this.pageTitle = 'Dashboard';
-      });
+ngOnInit() {
+  const user = this.authService.getLoggedInUser();
+  if (!user) {
+    this.router.navigate(['/login']);
+    return;
   }
+
+  this.loggedInUser = user.name;
+  this.roles = user.roles ?? [];
+  this.selectedRole = user.currentRole ?? '';
+
+  // ✅ FIX: set title on page reload
+  this.setPageTitle(this.router.url);
+
+  // Existing logic
+  this.router.events
+    .pipe(filter(event => event instanceof NavigationEnd))
+    .subscribe(() => {
+      this.setPageTitle(this.router.url);
+    });
+
+    const savedState = localStorage.getItem('sidebarState');
+if (savedState) {
+  const state = JSON.parse(savedState);
+  this.openedConfigMenu = state.config;
+  this.openedSubMenu = state.sub;
+  this.openedMainMenu = state.main;
+}
+}
+
+  setPageTitle(url: string) {
+  if (url.includes('user')) this.pageTitle = 'User Administration';
+  else if (url.includes('department')) this.pageTitle = 'Organizational Units';
+  else if (url.includes('vehiclereport')) this.pageTitle = 'Fleet Report';
+  else if (url.includes('waste')) this.pageTitle = 'Waste Management';
+  else if (url.includes('vehiclemaster')) this.pageTitle = 'Vehicles';
+  else if (url.includes('fueltype')) this.pageTitle = 'Fuel Management';
+  else if (url.includes('vehicle')) this.pageTitle = 'Report Fleet & Transport';
+  else if (url.includes('emissionFactors')) this.pageTitle = ' Emission Factors ';
+  else if (url.includes('generator-ec')) this.pageTitle = ' Report Power Generation ';
+  else if (url.includes('citymaster')) this.pageTitle = ' Cities ';
+  else if (url.includes('sitelocation')) this.pageTitle = ' Site Location ';
+  else if (url.includes('generator')) this.pageTitle = ' Generators ';
+  else if (url.includes('searchGenerator')) this.pageTitle = ' Search Power Generator';
+  else if (url.includes('MyActionGenerator')) this.pageTitle = ' Actions Power Generator';
+  else if (url.includes('MyActionVehicle')) this.pageTitle = 'Actions Fleet & Transport';
+  else if (url.includes('searchVehicle')) this.pageTitle = 'Search Fleet & Transport';
+  else this.pageTitle = 'Dashboard';
+}
 
   goTo(path: string) {
     this.router.navigate([path], { relativeTo: this.route });
@@ -100,46 +112,76 @@ export class DashboardComponent {
     this.router.navigate(['/login']);
   }
 
-  goToDashboard() {
-  this.router.navigate(['/dashboard']); // change route if needed
-}
-  /* Role Switch */
-  onRoleChange() {
-    this.authService.switchRole(this.selectedRole).subscribe({
-      next: (res: any) => {
-        const updatedUser = {
-          name: res.userName,
-          roles: res.roles,
-          currentRole: res.currentRole,
-          token: res.token
-        };
-        localStorage.setItem('user', JSON.stringify(updatedUser));
-        localStorage.setItem('token', res.token);
-   this.showProfileCard = false;
-
-      // redirect to dashboard layout only
-      this.router.navigate(['/dashboard']);      }
-    });
-  }
-
-  // Menu toggles
-toggleConfigMenu(menu: string) {
-  this.openedConfigMenu = this.openedConfigMenu === menu ? null : menu;
-
-  // close other menus
-  this.openedMainMenu = null;
-
-  this.openedSubMenu = null;
-}
-  toggleSubMenu(submenu: string) {
-    this.openedSubMenu = this.openedSubMenu === submenu ? null : submenu;
-  }
-toggleMainMenu(menu: string) {
-  this.openedMainMenu = this.openedMainMenu === menu ? null : menu;
-
-  // close configuration menu
+goToDashboard() {
+  // ✅ Reset sidebar state
   this.openedConfigMenu = null;
   this.openedSubMenu = null;
+  this.openedMainMenu = null;
+
+  localStorage.removeItem('sidebarState'); // optional clean reset
+
+  this.router.navigate(['/dashboard']);
+}
+  /* Role Switch */
+onRoleChange() {
+  this.authService.switchRole(this.selectedRole).subscribe({
+    next: (res: any) => {
+      const updatedUser = {
+        name: res.userName,
+        roles: res.roles,
+        currentRole: res.currentRole,
+        token: res.token
+      };
+
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+      localStorage.setItem('token', res.token);
+
+      // ✅ CLOSE PROFILE DROPDOWN
+      this.showProfileCard = false;
+
+      // ✅ RESET SIDEBAR STATE (IMPORTANT)
+      this.openedConfigMenu = null;
+      this.openedSubMenu = null;
+      this.openedMainMenu = null;
+
+      // ✅ CLEAR SAVED SIDEBAR STATE
+      localStorage.removeItem('sidebarState');
+
+      // ✅ NAVIGATE TO DASHBOARD
+      this.router.navigate(['/dashboard']);
+    }
+  });
+}
+
+toggleConfigMenu(menu: string) {
+  this.openedConfigMenu = this.openedConfigMenu === menu ? null : menu;
+  this.openedMainMenu = null;
+  this.openedSubMenu = null;
+
+  this.saveSidebarState(); // ✅ save
+}
+
+toggleSubMenu(submenu: string) {
+  this.openedSubMenu = this.openedSubMenu === submenu ? null : submenu;
+
+  this.saveSidebarState(); // ✅ save
+}
+
+toggleMainMenu(menu: string) {
+  this.openedMainMenu = this.openedMainMenu === menu ? null : menu;
+  this.openedConfigMenu = null;
+  this.openedSubMenu = null;
+
+  this.saveSidebarState(); // ✅ save
+}
+
+saveSidebarState() {
+  const state = {
+    config: this.openedConfigMenu,
+    sub: this.openedSubMenu,
+    main: this.openedMainMenu
+  };
+  localStorage.setItem('sidebarState', JSON.stringify(state));
 }
   isConfigMenuOpen(menu: string): boolean {
     return this.openedConfigMenu === menu;

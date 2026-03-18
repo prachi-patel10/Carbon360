@@ -95,7 +95,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let site of siteList">
+          <tr *ngFor="let site of siteList()">
             <td>{{ site.siteName }}</td>
             <td>{{ site.buildingName }}</td>
             <td>{{ site.city }}</td>
@@ -153,7 +153,7 @@
           <div class="form-group half-width">
             <label>Site Name</label>
             <div class="multi-select-box">
-              <div *ngFor="let site of siteList" class="checkbox-item">
+              <div *ngFor="let site of siteList()" class="checkbox-item">
                 <label>
                   <input type="checkbox" [checked]="selectedSiteNames.includes(site.siteName)"
                     (change)="toggleSiteName(site.siteName)" />
@@ -167,7 +167,7 @@
           <div class="form-group half-width">
             <label>City Name</label>
             <div class="multi-select-box">
-              <div *ngFor="let site of siteList" class="checkbox-item">
+              <div *ngFor="let site of siteList()" class="checkbox-item">
                 <label>
                   <input type="checkbox" [checked]="selectedCityNames.includes(site.city)"
                     (change)="toggleCityName(site.city)" />

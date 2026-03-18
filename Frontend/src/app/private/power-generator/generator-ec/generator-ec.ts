@@ -81,7 +81,7 @@ export class GeneratorOperationComponent implements OnInit {
   no2Factor: number = 0.00007;
   ch4Factor: number = 0.00001;
   totalEmission: number = 0;
-
+ratedCapacityKW: number = 0;
   totalCalculations: any = {
     runHours: 0,
     totalFuel: 0,
@@ -122,6 +122,9 @@ export class GeneratorOperationComponent implements OnInit {
         next: (res: any) => {
           this.generators = res || []; // Do NOT clear generator during edit
 
+           setTimeout(() => {
+      this.calculateLiveValues(); // ✅ trigger after load
+    });
           if (!this.isViewMode && !this.isReviewMode && !this.isEditMode) {
             this.operationForm.get('GeneratorId')?.setValue(null);
           }
@@ -187,6 +190,9 @@ this.isViewMode = mode === 'view';
     if (!this.isViewMode && !this.isReviewMode && !this.isEditMode) {
       this.operationForm.enable();
     }
+this.operationForm.valueChanges.subscribe(() => {
+  this.calculateLiveValues();
+});
   }
 
   initForm() {
@@ -200,7 +206,66 @@ this.isViewMode = mode === 'view';
       LoadFactor: [0, [Validators.required, Validators.min(0), Validators.max(100)]],
       FuelConsumedLiters: [0, [Validators.required, Validators.min(0)]],
     });
+
+  
   }
+
+ calculateLiveValues() {
+  const raw = this.operationForm.getRawValue();
+
+  const start = new Date(raw.StartTime);
+  const end = new Date(raw.EndTime);
+
+  if (!raw.StartTime || !raw.EndTime || end <= start) {
+    this.operation.runHours = 0;
+    return;
+  }
+
+  const runHours = +((end.getTime() - start.getTime()) / (1000 * 60 * 60)).toFixed(2);
+
+  // ✅ FIXED (type safe)
+  const generator = this.generators.find(
+    g => String(g.generatorId) === String(raw.GeneratorId)
+  );
+
+this.ratedCapacityKW =
+  generator?.ratedCapacityKW ||
+  this.ratedCapacityKW ||
+  this.operation.ratedCapacityKW ||
+  0;
+  
+  const powerOutputKWH = this.ratedCapacityKW * (raw.LoadFactor / 100) * runHours;
+
+  const fuel = Number(raw.FuelConsumedLiters) || 0;
+
+  // ✅ IMPORTANT FIX
+  this.fuelConsumed = fuel;
+
+  const totalCO2 = fuel * this.co2Factor;
+  const totalNO2 = fuel * this.no2Factor;
+  const totalCH4 = fuel * this.ch4Factor;
+
+  const totalEmission =
+    totalCO2 +
+    totalCH4 * (this.operation.gwP_CH4 || 28) +
+    totalNO2 * (this.operation.gwP_NO2 || 265);
+
+  this.operation = {
+    ...this.operation,
+    startTime: start,
+    endTime: end,
+    runHours,
+    ratedCapacityKW: this.ratedCapacityKW,
+    powerOutputKWH,
+    loadFactor: raw.LoadFactor,
+    fuelConsumedLiters: fuel,
+    totalEmission
+  };
+
+  this.totalCO2 = +totalCO2.toFixed(3);
+  this.totalNO2 = +totalNO2.toFixed(6);
+  this.totalCH4 = +totalCH4.toFixed(6);
+}
 
   getSiteName(siteId: any): string {
     const site = this.sites.find((s) => s.siteId == siteId);
@@ -238,6 +303,7 @@ this.isViewMode = mode === 'view';
 
       this.sites = Array.from(uniqueSitesMap.values());
     });
+
   }
 
   loadGenerators() {
@@ -358,75 +424,29 @@ this.isViewMode = mode === 'view';
   //     error: () => Swal.fire('Error', 'Failed to load operation', 'error'),
   //   });
   // }
-  loadOperationById(id: string) {
-    this.operationId = id; // ✅ store id globally
-
-    this.service.getById(id).subscribe({
-      next: (res: any) => {
-        const op = res.data || res;
-
-        // Map to operation object for display
-        const gwP_CH4 = 28;
-        const gwP_NO2 = 265;
-
-        const co2Factor = op.cO2 ?? 2.68;
-const no2Factor = op.nO2 ?? 0.00007;
-const ch4Factor = op.cH4 ?? 0.00001;
-this.co2Factor = co2Factor;
-this.no2Factor = no2Factor;
-this.ch4Factor = ch4Factor;
-        const runHours =
-          op.startTime && op.endTime
-            ? +(
-                (new Date(op.endTime).getTime() - new Date(op.startTime).getTime()) /
-                (1000 * 60 * 60)
-              ).toFixed(2)
-            : 0;
-// Get generator rated capacity
-const generator = this.generators.find(g => g.generatorId === op.generatorId);
-const ratedCapacityKW = generator?.ratedCapacityKW || 0;
-
-// Calculate Power Output
-const powerOutputKWH =
-  ratedCapacityKW * (op.loadFactor / 100) * runHours;
-
-        const totalCO2 = (op.fuelConsumedLiters || 0) * co2Factor;
-        const totalNO2 = (op.fuelConsumedLiters || 0) * no2Factor;
-        const totalCH4 = (op.fuelConsumedLiters || 0) * ch4Factor;
-        const totalEmission = totalCO2 + totalCH4 * gwP_CH4 + totalNO2 * gwP_NO2;
-
-        this.operation = {
-          ...op,
- runHours,
-  ratedCapacityKW,
-  powerOutputKWH,
-  co2Factor,
-  no2Factor,
-  ch4Factor,
-  cO2: totalCO2,
-  nO2: totalNO2,
-  cH4: totalCH4,
-  gwP_CH4,
-  gwP_NO2,
-  totalEmission,
-        };
-
-        // Update component-level values for HTML bindings
-        this.fuelConsumed = op.fuelConsumedLiters || 0;
-        this.totalCO2 = +totalCO2.toFixed(3);
-        this.totalNO2 = +totalNO2.toFixed(6);
-        this.totalCH4 = +totalCH4.toFixed(6);
-
-        // Show calculation card
-        this.showCalculation = true;
-        // Patch the form for edit/view
-        this.edit(op);
-
-        // Show calculation card
-      },
-      error: () => Swal.fire('Error', 'Failed to load operation', 'error'),
-    });
-  }
+loadOperationById(id: string) { this.operationId = id; 
+  // ✅ store id globally
+    this.service.getById(id).subscribe({ next: (res: any) => { const op = res.data || res; 
+      // Map to operation object for display 
+      const gwP_CH4 = 28; const gwP_NO2 = 265; const co2Factor = op.cO2 ?? 2.68; const no2Factor = op.nO2 ?? 0.00007; const ch4Factor = op.cH4 ?? 0.00001; this.co2Factor = co2Factor; this.no2Factor = no2Factor; this.ch4Factor = ch4Factor; const runHours = op.startTime && op.endTime ? +( (new Date(op.endTime).getTime() - new Date(op.startTime).getTime()) / (1000 * 60 * 60) ).toFixed(2) : 0;
+       // Get generator rated capacity 
+       const generator = this.generators.find(g => g.generatorId === op.generatorId); 
+       const ratedCapacityKW = generator?.ratedCapacityKW || 0;
+       this.ratedCapacityKW = ratedCapacityKW; // ✅ IMPORTANT
+        // Calculate Power Output
+         const powerOutputKWH = ratedCapacityKW * (op.loadFactor / 100) * runHours; const totalCO2 = (op.fuelConsumedLiters || 0) * co2Factor; const totalNO2 = (op.fuelConsumedLiters || 0) * no2Factor; const totalCH4 = (op.fuelConsumedLiters || 0) * ch4Factor; const totalEmission = totalCO2 + totalCH4 * gwP_CH4 + totalNO2 * gwP_NO2; this.operation = { ...op, runHours, ratedCapacityKW, powerOutputKWH, co2Factor, no2Factor, ch4Factor, cO2: totalCO2, nO2: totalNO2, cH4: totalCH4, gwP_CH4, gwP_NO2, totalEmission, };
+          // Update component-level values for HTML bindings 
+          this.fuelConsumed = op.fuelConsumedLiters || 0; this.totalCO2 = +totalCO2.toFixed(3); this.totalNO2 = +totalNO2.toFixed(6); this.totalCH4 = +totalCH4.toFixed(6); 
+          // Show calculation card
+           this.showCalculation = true;
+            // Patch the form for edit/view
+             this.edit(op); 
+             setTimeout(() => {
+  this.calculateLiveValues(); // ✅ important
+});
+             
+             // Show calculation card
+              }, error: () => Swal.fire('Error', 'Failed to load operation', 'error'), }); }
 
   computeTotals(res: any) {
     if (!res.startTime || !res.endTime)

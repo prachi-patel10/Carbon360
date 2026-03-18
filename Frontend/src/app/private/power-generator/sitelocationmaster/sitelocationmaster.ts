@@ -15,8 +15,7 @@ import { ToastrService } from 'ngx-toastr'; // <-- For toast messages
 })
 export class Sitelocationmaster implements OnInit {
   form!: FormGroup;
-  siteList: any[] = [];
-  cityList: any[] = [];
+siteList = signal<any[]>([]);  cityList: any[] = [];
 
   editingSiteId: string | null = null;
   searchText: string = '';
@@ -24,7 +23,7 @@ export class Sitelocationmaster implements OnInit {
 
   totalRecords = 0;
   pageNumber = 1;
-  pageSize = 10;
+  pageSize = 5;
   totalPages = 0;
   pageSizeOptions = [5, 10, 20, 50];
 
@@ -77,14 +76,14 @@ export class Sitelocationmaster implements OnInit {
     const shortCode = payload.shortCode.trim().toUpperCase();
 
     // ===== DUPLICATE RECORD CHECK =====
-    const duplicateRecord = this.siteList.find(
-      s =>
-        s.siteName.toLowerCase() === siteName.toLowerCase() &&
-        s.buildingName.toLowerCase() === buildingName.toLowerCase() &&
-        s.city.toLowerCase() === city.toLowerCase() &&
-        s.state.toLowerCase() === state.toLowerCase() &&
-        (!this.editingSiteId || s.siteId !== this.editingSiteId)
-    );
+    const duplicateRecord = this.siteList().find(
+  s =>
+    s.siteName.toLowerCase() === siteName.toLowerCase() &&
+    s.buildingName.toLowerCase() === buildingName.toLowerCase() &&
+    s.city.toLowerCase() === city.toLowerCase() &&
+    s.state.toLowerCase() === state.toLowerCase() &&
+    (!this.editingSiteId || s.siteId !== this.editingSiteId)
+);
 
     if (duplicateRecord) {
       this.showToast(
@@ -96,11 +95,11 @@ export class Sitelocationmaster implements OnInit {
     }
 
     // ===== SHORTCODE UNIQUE CHECK =====
-    const duplicateShortCode = this.siteList.find(
-      s =>
-        s.shortCode.toLowerCase() === shortCode.toLowerCase() &&
-        (!this.editingSiteId || s.siteId !== this.editingSiteId)
-    );
+  const duplicateShortCode = this.siteList().find(
+  s =>
+    s.shortCode.toLowerCase() === shortCode.toLowerCase() &&
+    (!this.editingSiteId || s.siteId !== this.editingSiteId)
+);
 
     if (duplicateShortCode) {
       this.showToast(
@@ -247,9 +246,9 @@ export class Sitelocationmaster implements OnInit {
       return;
     }
 
-    const duplicate = this.siteList.find(
-      s => s.shortCode.toLowerCase() === shortCode.toLowerCase()
-    );
+    const duplicate = this.siteList().find(
+  s => s.shortCode.toLowerCase() === shortCode.toLowerCase()
+);
 
     if (duplicate) {
       this.showToast('Error', 'ShortCode already exists!', 'error');
@@ -277,12 +276,11 @@ export class Sitelocationmaster implements OnInit {
     cityNames: this.selectedCityNames,
   };
 
-  this.service.search(params).subscribe((res: any) => {
-    // Replace array so Angular signals refresh correctly
-    this.siteList = [...(res.data || [])];
-    this.totalRecords = res.totalRecords || 0;
-    this.totalPages = res.totalPages || 1;
-  });
+ this.service.search(params).subscribe((res: any) => {
+  this.siteList.set(res.data || []);   // ✅ correct
+  this.totalRecords = res.totalRecords || 0;
+  this.totalPages = res.totalPages || 1;
+});
   }
 
   //active filter
@@ -294,19 +292,8 @@ export class Sitelocationmaster implements OnInit {
 }
 
   // ================= PAGINATION =================
-  nextPage() {
-    if (this.pageNumber < this.totalPages) {
-      this.pageNumber++;
-      this.search();
-    }
-  }
-
-  prevPage() {
-    if (this.pageNumber > 1) {
-      this.pageNumber--;
-      this.search();
-    }
-  }
+   prevPage() { if (this.pageNumber > 1) { this.pageNumber--; this.search(); } }
+  nextPage() { if (this.pageNumber < this.totalPages) { this.pageNumber++; this.search(); } }
   changePageSize(event: Event) {
     const value = (event.target as HTMLSelectElement).value;
 

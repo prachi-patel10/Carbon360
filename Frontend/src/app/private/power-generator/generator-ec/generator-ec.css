@@ -304,14 +304,18 @@ input[type="datetime-local"]:disabled {
 /* common button style */
 
 .workflow-btn {
-  flex: 1;            /* both buttons equal width */
-  padding: 12px;
   border-radius: 8px;
   border: none;
   font-size: 14px;
   font-weight: 600;
   color: white;
   transition: 0.2s;
+  display: inline-block;   /* ✅ important */
+  width: auto;             /* ✅ remove full width */
+  padding: 12px 25px;       /* ✅ smaller size */
+  font-size: 13px;         /* optional */
+  margin-right: 8px;       /* spacing between buttons */
+
 }
 
 /* approve */
