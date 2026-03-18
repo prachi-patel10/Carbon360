@@ -16,12 +16,12 @@
 }
 
 /* ================= FORM GRID ================= */
-.form-grid {
+/* ===== VEHICLE FORM GRID (TOP FORM ONLY) ===== */
+.card > .form-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(3, 1fr); /* ✅ EXACTLY 3 per row */
   gap: 12px;
 }
-
 .form-group {
   display: flex;
   flex-direction: column;

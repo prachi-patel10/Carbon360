@@ -50,7 +50,7 @@
 
       <!-- ================= LOAD FACTOR ================= -->
       <div class="col-md-3">
-        <label class="form-label fw-bold">Load Factor % <span class="text-danger">*</span></label>
+        <label class="form-label fw-bold">Load Factor (%) <span class="text-danger">*</span></label>
         <input type="number" class="form-control" formControlName="LoadFactor" placeholder="0%" required>
         <div class="text-danger" *ngIf="isInvalid('LoadFactor')">
           <span *ngIf="operationForm.get('LoadFactor')?.errors?.['required']">Load Factor is required</span>
@@ -61,7 +61,7 @@
 
       <!-- ================= FUEL CONSUMED ================= -->
       <div class="col-md-3">
-        <label class="form-label fw-bold">Fuel Consumed (Liters) <span class="text-danger">*</span></label>
+        <label class="form-label fw-bold">Fuel Consumed (L) <span class="text-danger">*</span></label>
         <input type="number" class="form-control" formControlName="FuelConsumedLiters" placeholder="0" required>
         <div class="text-danger" *ngIf="isInvalid('FuelConsumedLiters')">
           <span *ngIf="operationForm.get('FuelConsumedLiters')?.errors?.['required']">Fuel is required</span>
@@ -150,19 +150,19 @@
 </div>
 
     <div class="formula full-width">
-      CO₂ = Fuel × CO₂ Factor <br>
+      CO₂ = Fuel(L) × CO₂ Factor <br>
       = {{ fuelConsumed }} × {{ co2Factor }} <br>
       = {{ totalCO2 | number:'1.3-3' }} kg
     </div>
 
     <div class="formula full-width">
-      NO₂ = Fuel × NO₂ Factor <br>
+      NO₂ = Fuel(L) × NO₂ Factor <br>
       = {{ fuelConsumed }} × {{ no2Factor }} <br>
       = {{ totalNO2 | number:'1.6-6' }} kg
     </div>
 
     <div class="formula full-width">
-      CH₄ = Fuel × CH₄ Factor <br>
+      CH₄ = Fuel(L) × CH₄ Factor <br>
       = {{ fuelConsumed }} × {{ ch4Factor }} <br>
       = {{ totalCH4 | number:'1.6-6' }} kg
     </div>

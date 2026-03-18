@@ -4,6 +4,7 @@ import { AuthService } from '../../core/guards/auth-service';
 import { filter } from 'rxjs/operators';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { LoaderService } from '../../core/loader/loader-service';
 
 @Component({
   selector: 'app-dashboard',
@@ -30,7 +31,9 @@ export class DashboardComponent {
   constructor(
     private authService: AuthService,
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+      private loader: LoaderService   // ✅ ADD THIS
+
   ) {}
 
 ngOnInit() {
@@ -124,6 +127,8 @@ goToDashboard() {
 }
   /* Role Switch */
 onRoleChange() {
+  this.loader.show(); // ✅ START loader immediately
+
   this.authService.switchRole(this.selectedRole).subscribe({
     next: (res: any) => {
       const updatedUser = {

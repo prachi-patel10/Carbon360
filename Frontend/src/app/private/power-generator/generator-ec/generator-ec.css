@@ -143,6 +143,7 @@ input[type="datetime-local"]:disabled {
   padding: 10px 20px;
   border-radius: 8px;
   border: none;
+  color: black;
 }
 
 

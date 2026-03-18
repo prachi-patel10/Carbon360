@@ -24,10 +24,32 @@ body {
   border-bottom: 2px solid  #6c757d;
 }
 
+.emission-value {
+    font-weight: 700;
+    color: #1b5e20;   /* your main green */
+}
+
+.emission-header {
+    color: #3cc946;
+}
+
+.leaf-icon {
+    color: #1b5e20;   /* green leaf */
+    margin-right: 5px;
+}
+
+.generator-table{
+  width:100%;
+  border-collapse:collapse;
+  background:white;
+  border-radius:8px;
+  overflow:hidden;
+  box-shadow:0 2px 8px rgba(0,0,0,0.05);
+}
 /* Card Enhancements */
 .filter-card, .table-card {
     border: none;
-    border-radius: 12px;
+    border-radius: 19px;
     background: #ffffff;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
 }
@@ -98,8 +120,8 @@ body {
 
 /* Table Design */
 .table thead th {
-    background-color: #f8fafc;
-    color: #64748b;
+    background-color: #0f5132;
+    color: white;
     font-size: 0.75rem;
     text-transform: uppercase;
     letter-spacing: 0.05em;
@@ -112,10 +134,8 @@ body {
     border-bottom: 1px solid #f1f5f9;
 }
 
-.emission-value {
-    font-weight: 700;
-    color: #0f172a;
-}
+
+
 
 /* Badges */
 .badge-status-completed {

@@ -1,7 +1,3 @@
-.generator-page{
-  padding:20px;
-  background:#f8fafc;
-}
 
 /* Generator Icon */
 .generator-icon {
@@ -33,7 +29,7 @@
 /* Header */
 
 .generator-table thead{
-  background:#1b5e20;
+  background:#0f5132;
   color:white;
 }
 
@@ -54,7 +50,7 @@
 /* Hover */
 
 .generator-table tbody tr:hover{
-  background:#f0fdf4;
+background:#f0fdf4;
 }
 
 /* No data row */
@@ -68,8 +64,12 @@
 
 .action-buttons{
   text-align:center;
+  color:#1b5e20;
 }
+.action-btn{
+    color:#0f5132;
 
+}
 /* Edit Button */
 
 .btn-edit{
