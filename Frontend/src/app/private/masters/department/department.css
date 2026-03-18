@@ -45,7 +45,7 @@
 .form-actions {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 10px;
   margin-top: 10px;
 }
 
@@ -208,52 +208,38 @@ td.actions button {
 }
 
 /* ================= PAGINATION ================= */
-/* ================= PAGINATION COMPACT ================= */
-/* ================= PAGINATION RIGHT SIDE ================= */
-.pagination-bar {
+
+.pagination-info {
   display: flex;
-  justify-content: flex-end;   /* 👈 yaha change kiya */
+  justify-content: space-between; /* Isse text left aur buttons right mein jayenge */
   align-items: center;
-  gap: 12px;
   margin-top: 15px;
   flex-wrap: wrap;
+  font-size: 14px;
+  color: #333;
 }
 
-.pagination-bar button {
-  padding: 6px 14px;
-  border-radius: 6px;
+
+.pagination-controls button {
+  padding: 5px 10px;
+  margin: 0 5px;
+  border-radius: 5px;
   border: 1px solid #ccc;
   background-color: #f5f5f5;
   cursor: pointer;
-  font-size: 14px;
-  transition: 0.2s;
+  color: black;
 }
 
-.pagination-bar button:hover:not(:disabled) {
+.pagination-controls button:hover {
   background-color: #e0e0e0;
 }
 
-.pagination-bar button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.page-info {
-  font-weight: 500;
+.pagination-controls select {
+  margin-left: 5px;
+  padding: 3px 6px;
   font-size: 14px;
-}
-
-.page-size {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-
-.page-size select {
-  padding: 4px 8px;
-  border-radius: 6px;
+  border-radius: 5px;
   border: 1px solid #ccc;
-  font-size: 14px;
 }
 /* ================= MODAL ================= */
 .modal {
@@ -468,13 +454,13 @@ td.actions button {
   border-radius: 0 0 12px 12px;
 }
 
+
 .reset-btn {
-  background: none;
+  background: #ccc;
+  padding: 8px 16px;
   border: none;
-  color: #e53e3e;
-  font-weight: 600;
-  font-size: 13px;
-  cursor: pointer;
+  border-radius: 6px;
+ font-size: 14px;
 }
 
 .main-actions {
@@ -554,15 +540,7 @@ td.actions button {
   color: #1b5e20;
 }
 
-.icon-btn.reset-btn {
-  color: #e03131;
-  background: #fff5f5;
-  border: 1px solid #ffc9c9;
-}
 
-.icon-btn.reset-btn:hover {
-  background: #ffe3e3;
-}
 
 /* --- Multi-Select Dropdown Box --- */
 .multi-select-box {
@@ -751,14 +729,7 @@ td.actions button {
   border-color: #1b5e20;
 }
 
-.icon-btn-outline.reset {
-  color: #ef4444;
-}
 
-.icon-btn-outline.reset:hover {
-  background: #fef2f2;
-  border-color: #ef4444;
-}
 
 .btn-icon {
   font-family: system-ui;

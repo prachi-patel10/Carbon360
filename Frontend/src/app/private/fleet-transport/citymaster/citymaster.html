@@ -31,6 +31,8 @@
         <button class="save-btn" type="submit">
           {{ !cityForm.value.cityId ? 'Save' : 'Update' }}
         </button>
+      <button class="btn-reset" (click)="resetForm()">Reset</button>
+
       </div>
 
     </form>
@@ -47,7 +49,6 @@
         <input type="text"
                class="search-input"
                        placeholder="Quick Search"
-
                formControlName="searchText">
 
         <div class="search-right">
@@ -113,39 +114,20 @@
     </div>
 
     <!-- ================= PAGINATION ================= -->
-    <div class="pagination-info">
+   <!-- ================= PAGINATION ================= -->
+         <div class="pagination-info">
+    <span>Total Records: {{ totalRecords() }}</span>
+    <div class="pagination-controls">
+      <button (click)="previousPage()" [disabled]="currentPage() === 1">Previous</button>
+      <span>Page {{ currentPage() }} of {{ totalPages() }}</span>
+      <button (click)="nextPage()" [disabled]="currentPage() === totalPages()">Next</button>
 
-      <div>
-        Showing {{startRecord}} to {{endRecord}}
-        of {{totalRecords()}} entries
-      </div>
-
-      <div class="pagination-controls">
-        <button (click)="previousPage()" [disabled]="currentPage()===1">
-          Previous
-        </button>
-
-        Page {{currentPage()}} of {{totalPages()}}
-
-        <button (click)="nextPage()"
-                [disabled]="currentPage()===totalPages()">
-          Next
-        </button>
-
-        <div class="page-size">
-      <span>Show</span>
-      <select [value]="pageSize()"
-              (change)="onPageSizeChange($event)">
-        <option *ngFor="let size of pageSizeOptions"
-                [value]="size">
-          {{ size }}
-        </option>
+      <label for="pageSize">Page Size:</label>
+      <select id="pageSize" [value]="pageSize()" (change)="onPageSizeChange($event)">
+        <option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</option>
       </select>
     </div>
-
-      </div>
-
-    </div>
+  </div>
     
 
   </div>

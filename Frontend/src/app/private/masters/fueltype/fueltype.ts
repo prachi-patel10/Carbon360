@@ -21,6 +21,7 @@ currentPage = signal(1);
 pageSize = signal(5);
 totalRecords = signal(0);
 totalPages = signal(1);
+pageSizeOptions = [5, 10, 15,20];
 
 searchText = signal('');
 onlyActive = signal(false);

@@ -58,22 +58,32 @@
 .form-actions {
   display: flex;
   align-items: center;
-  gap: 20px;
-  margin-top: 10px;
+  gap: 10px;
+  margin-top: 20px;
 }
 
 .save-btn {
-  padding: 8px 16px;
+  padding: 10px 20px;
   border-radius: 5px;
   border: none;
   background-color: #1b5e20;
   color: #fff;
   cursor: pointer;
+  font-size: 14px;
 }
 
 .save-btn:hover {
   background-color: #145214;
 }
+
+.btn-reset {
+  background: #ccc;
+  padding: 10px 20px;
+  border: none;
+  font-size: 14px;
+  border-radius: 6px;
+}
+
 
 /* ================= SWITCH ================= */
 .switch {
@@ -201,50 +211,46 @@ td.actions {
 }
 
 /* ================= PAGINATION ================= */
+/* ================= PAGINATION (Exactly like User List) ================= */
 .pagination-info {
   display: flex;
-  justify-content: space-between;
+  justify-content: space-between; /* Isse text left aur buttons right mein jayenge */
   align-items: center;
   margin-top: 15px;
+  flex-wrap: wrap;
+  font-size: 14px;
+  color: #333;
 }
+
 
 .pagination-controls button {
   padding: 5px 10px;
   margin: 0 5px;
   border-radius: 5px;
   border: 1px solid #ccc;
-  background: #f5f5f5;
+  background-color: #f5f5f5;
   cursor: pointer;
+  color: #000;
 }
 
 .pagination-controls button:hover {
-  background: #e0e0e0;
+  background-color: #e0e0e0;
 }
 
+.pagination-controls select {
+  margin-left: 5px;
+  padding: 3px 6px;
+  font-size: 14px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
 /* ================= RESPONSIVE ================= */
 @media (max-width:768px){
   .form-grid { grid-template-columns:1fr; }
   .search-row { flex-direction:column; align-items:stretch; }
 }
 
-.pagination-controls {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
 
-.page-size {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  margin-left: 10px;
-}
-
-.page-size select {
-  padding: 4px 8px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-}
 
 /* ================= DARK BACKGROUND ================= */
 .filter-overlay {
@@ -306,12 +312,6 @@ td.actions {
   margin-top: 15px;
 }
 
-.reset-btn {
-  padding: 5px 12px;
-  border: 1px solid #aaa;
-  background: #f5f5f5;
-  cursor: pointer;
-}
 
 .apply-btn {
   padding: 5px 12px;

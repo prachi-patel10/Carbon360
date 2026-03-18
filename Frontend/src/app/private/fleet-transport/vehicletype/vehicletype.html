@@ -35,6 +35,8 @@
         <button type="submit" class="save-btn">
           {{ !vehicleForm.value.vehicle_type_id ? 'Save' : 'Update' }}
         </button>
+      <button class="btn-reset" (click)="resetForm()">Reset</button>
+
       </div>
 
     </form>
@@ -75,7 +77,6 @@
     </div>
   </div>
 </form>
-    </div>
 
     <!-- ================= TABLE ================= -->
     <div class="table-wrapper">
@@ -120,39 +121,20 @@
     </div>
 
     <!-- ================= PAGINATION ================= -->
-    <div>
-    Showing {{startRecord}} to {{endRecord}}
-    of {{totalRecords()}} entries
-  </div>
+         <div class="pagination-info">
+    <span>Total Records: {{ totalRecords() }}</span>
+    <div class="pagination-controls">
+      <button (click)="previousPage()" [disabled]="currentPage() === 1">Previous</button>
+      <span>Page {{ currentPage() }} of {{ totalPages() }}</span>
+      <button (click)="nextPage()" [disabled]="currentPage() === totalPages()">Next</button>
 
-     <div class="pagination-info">
-  <div class="pagination-controls">
-
-    <button (click)="previousPage()" [disabled]="currentPage()===1">
-      Previous
-    </button>
-
-    Page {{ currentPage() }} of {{ totalPages() }}
-
-    <button (click)="nextPage()" [disabled]="currentPage()===totalPages()">
-      Next
-    </button>
-
-    <!-- ✅ PAGE SIZE DROPDOWN -->
-    <div class="page-size">
-      <span>Show</span>
-      <select [value]="pageSize()"
-              (change)="onPageSizeChange($event)">
-        <option *ngFor="let size of pageSizeOptions"
-                [value]="size">
-          {{ size }}
-        </option>
+      <label for="pageSize">Page Size:</label>
+      <select id="pageSize" [value]="pageSize()" (change)="onPageSizeChange($event)">
+        <option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</option>
       </select>
     </div>
-
   </div>
-
-</div>
+  
 
 <!-- ================= FILTER MODAL ================= -->
 <div class="filter-overlay" *ngIf="filterModalOpen()">
@@ -257,6 +239,8 @@
     </div>
   </div>
 </div>
+    </div>
+
     <!-- <div class="pagination-info">
       <span>Total Records: {{ totalRecords() }}</span>
 

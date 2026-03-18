@@ -49,6 +49,7 @@
 
 
   <!-- 🔹 Fuel List -->
+   
   <div class="card">
     <!-- ================= SEARCH ROW ================= -->
   <div class="search-row">
@@ -79,6 +80,7 @@
     </div>
   </div>
   
+      <div class="table-wrapper">
     <table>
       <thead>
         <tr>
@@ -132,34 +134,36 @@
 
   <!-- ================= PAGINATION ================= -->
 <!-- ================= PAGINATION ================= -->
-<div class="pagination-bar">
+  <!-- Pagination -->
+<div class="pagination-info">
+  <span>Total Records: {{ totalRecords() }}</span>
 
-  <button 
-    (click)="previousPage()" 
-    [disabled]="currentPage() === 1">
-    Previous
-  </button>
+  <div class="pagination-controls">
+    <!-- Previous Button -->
+    <button (click)="previousPage()" [disabled]="currentPage() === 1">
+      Previous
+    </button>
 
-  <span class="page-info">
-    Page {{ currentPage() }} of {{ totalPages() }}
-  </span>
+    <!-- Page Info -->
+    <span>Page {{ currentPage() }} of {{ totalPages() }}</span>
 
-  <button 
-    (click)="nextPage()" 
-    [disabled]="currentPage() === totalPages()">
-    Next
-  </button>
+    <!-- Next Button -->
+    <button (click)="nextPage()" [disabled]="currentPage() === totalPages()">
+      Next
+    </button>
 
-  <div class="page-size">
-    <span>Page Size:</span>
-    <select (change)="onPageSizeChange($event)">
-      <option [selected]="pageSize() === 5" value="5">5</option>
-      <option [selected]="pageSize() === 10" value="10">10</option>
-      <option [selected]="pageSize() === 20" value="20">20</option>
+    <!-- Page Size Selector -->
+    <label for="pageSize">Page Size:</label>
+    <select
+      id="pageSize"
+      [value]="currentPage()"
+      (change)="onPageSizeChange($event)"
+    >
+      <option *ngFor="let size of pageSizeOptions" [value]="size">
+        {{ size }}
+      </option>
     </select>
   </div>
-
 </div>
-
 
 </div>

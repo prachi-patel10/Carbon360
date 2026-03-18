@@ -22,7 +22,7 @@ export class Generatormaster implements OnInit {
   isActiveFilter: boolean | null = null;
 
   pageNumber = 1;
-  pageSize = 10;
+pageSize = 5;
   pageSizeOptions = [5, 10, 20, 50];
   totalRecords = 0;
   totalPages = 1;
@@ -199,11 +199,15 @@ export class Generatormaster implements OnInit {
   prevPage() { if (this.pageNumber > 1) { this.pageNumber--; this.loadGenerators(); } }
   nextPage() { if (this.pageNumber < this.totalPages) { this.pageNumber++; this.loadGenerators(); } }
 
-  changePageSize(value: number) {
-  this.pageSize = Number(value);
-  this.pageNumber = 1;
-  this.loadGenerators();
-}
+  changePageSize(event: Event) {
+    const value = (event.target as HTMLSelectElement).value;
+
+    this.pageSize = Number(value);
+    this.pageNumber = 1;
+
+    this.loadGenerators();
+  }
+
 
   clearFilter() { this.searchText = ''; this.isActiveFilter = null; this.pageNumber = 1; this.loadGenerators(); }
 
@@ -244,6 +248,7 @@ export class Generatormaster implements OnInit {
   sortColumn() { return this.sortColumnName; }
   sortDirection() { return this.sortDir; }
 
+  
   // ================== Filter Modal ==================
   openFilterModal() { this.filterModalOpen = true; }
   closeFilter() { this.filterModalOpen = false; }

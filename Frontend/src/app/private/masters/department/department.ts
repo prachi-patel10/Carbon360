@@ -33,7 +33,7 @@ export class DepartmentComponent implements OnInit {
   searchText = signal('');
   refreshTrigger = signal(0);
   departmentFilterModalOpen = signal(false);
-
+pageSizeOptions = [5, 10, 15,20];
   selectedDepartmentIds: string[] = [];
   appliedDepartmentIds: string[] = [];
 

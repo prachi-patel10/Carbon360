@@ -31,7 +31,7 @@
           {{ !departmentForm.value.DepartmentId ? 'Save' : 'Update' }}
         </button>
 
-               <button type="button" class="btn-secondary" (click)="resetForm()">Reset</button>
+               <button type="button" class="reset-btn" (click)="resetForm()">Reset</button>
 
       </div>
 
@@ -161,36 +161,36 @@
 </div>
 
     <!-- Pagination -->
-  <!-- Pagination -->
-<div class="pagination-bar">
+ <!-- Pagination -->
+<div class="pagination-info">
+  <span>Total Records: {{ totalRecords() }}</span>
 
-  <button 
-    (click)="previousPage()" 
-    [disabled]="currentPage() === 1">
-    Previous
-  </button>
+  <div class="pagination-controls">
+    <!-- Previous Button -->
+    <button (click)="previousPage()" [disabled]="currentPage() === 1">
+      Previous
+    </button>
 
-  <span class="page-info">
-    Page {{ currentPage() }} of {{ totalPages() }}
-  </span>
+    <!-- Page Info -->
+    <span>Page {{ currentPage() }} of {{ totalPages() }}</span>
 
-  <button 
-    (click)="nextPage()" 
-    [disabled]="currentPage() === totalPages()">
-    Next
-  </button>
+    <!-- Next Button -->
+    <button (click)="nextPage()" [disabled]="currentPage() === totalPages()">
+      Next
+    </button>
 
-  <div class="page-size">
-    <span>Page Size:</span>
-    <select (change)="onRecordsChange($event)">
-      <option value="5">5</option>
-      <option value="10">10</option>
-      <option value="20">20</option>
+    <!-- Page Size Selector -->
+    <label for="pageSize">Page Size:</label>
+    <select
+      id="pageSize"
+      [value]="requestedRecords()"
+      (change)="onRecordsChange($event)"
+    >
+      <option *ngFor="let size of pageSizeOptions" [value]="size">
+        {{ size }}
+      </option>
     </select>
   </div>
-
 </div>
-
-  </div>
 
 </div>

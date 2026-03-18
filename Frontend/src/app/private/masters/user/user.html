@@ -179,26 +179,38 @@
 
 
     <!-- Pagination -->
-    <div class="pagination-info">
-      <span>Total Records: {{ totalRecords() }}</span>
+   <!-- Pagination -->
+<div class="pagination-info">
+  <span>Total Records: {{ totalRecords() }}</span>
 
-      <div class="pagination-controls">
-        <button (click)="prevPage()" [disabled]="currentPage() === 1">Previous</button>
+  <div class="pagination-controls">
+    <!-- Previous Button -->
+    <button (click)="prevPage()" [disabled]="currentPage() === 1">
+      Previous
+    </button>
 
-        <span>Page {{ currentPage() }} of {{ totalPages() }}</span>
+    <!-- Page Info -->
+    <span>Page {{ currentPage() }} of {{ totalPages() }}</span>
 
-        <button (click)="nextPage()" [disabled]="currentPage() === totalPages()">Next</button>
+    <!-- Next Button -->
+    <button (click)="nextPage()" [disabled]="currentPage() === totalPages()">
+      Next
+    </button>
 
-        <label>Page Size:</label>
-        <select [value]="requestedRecords()" (change)="onRecordsChange($event)">
-          <option value="5">5</option>
-          <option value="10">10</option>
-          <option value="25">25</option>
-          <option value="50">50</option>
-        </select>
+    <!-- Page Size Selector -->
+    <label for="pageSize">Page Size:</label>
+    <select
+      id="pageSize"
+      [value]="requestedRecords()"
+      (change)="onRecordsChange($event)"
+    >
+      <option *ngFor="let size of pageSizeOptions" [value]="size">
+        {{ size }}
+      </option>
+    </select>
+  </div>
+</div>
 
-      </div>
-    </div>
 
   </div>
 

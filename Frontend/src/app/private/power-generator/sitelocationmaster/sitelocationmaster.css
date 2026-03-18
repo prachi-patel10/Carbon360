@@ -231,6 +231,7 @@ td.actions button {
   border: 1px solid #ccc;
   background-color: #f5f5f5;
   cursor: pointer;
+  color: black;
 }
 
 .pagination-controls button:hover {

@@ -27,10 +27,18 @@
       <!-- ================= Site Dropdown ================= -->
       <div class="form-group">
         <label>Site</label>
-        <select formControlName="siteId">
-          <option value="" disabled>Select Site</option>
-          <option *ngFor="let s of sites()" [value]="s.siteId">{{ s.siteName }}</option>
-        </select>
+<select formControlName="siteId"
+        [style.color]="!generatorForm.get('siteId')?.value ? '#999' : '#000'">
+
+  <option value="" disabled>Select Site</option>
+
+  <option *ngFor="let s of sites()"
+          [value]="s.siteId"
+          style="color:#000;">
+    {{ s.siteName }}
+  </option>
+
+</select>
         <span class="error-text" *ngIf="generatorForm.get('siteId')?.invalid && generatorForm.get('siteId')?.touched">
           Site is required
         </span>
@@ -39,10 +47,18 @@
       <!-- ================= Department Dropdown ================= -->
       <div class="form-group">
         <label>Department</label>
-        <select formControlName="departmentId">
-          <option value="" disabled>Select Department</option>
-          <option *ngFor="let d of departments()" [value]="d.departmentId">{{ d.departmentName }}</option>
-        </select>
+        <select formControlName="departmentId"
+        [style.color]="!generatorForm.get('departmentId')?.value ? '#999' : '#000'">
+
+  <option value="" disabled>Select Department</option>
+
+  <option *ngFor="let d of departments()"
+          [value]="d.departmentId"
+          style="color:#000;">
+    {{ d.departmentName }}
+  </option>
+
+</select>
         <span class="error-text"
           *ngIf="generatorForm.get('departmentId')?.invalid && generatorForm.get('departmentId')?.touched">
           Department is required
@@ -52,9 +68,18 @@
       <!-- fuel -->
       <div class="form-group">
         <label>Fuel</label>
-        <select formControlName="fuelId">
-          <option *ngFor="let f of fuels()" [value]="f.fuelId">{{ f.fuelName }}</option>
-        </select>
+       <select formControlName="fuelId"
+        [style.color]="!generatorForm.get('fuelId')?.value ? '#999' : '#000'">
+
+  <option value="" disabled>Select Fuel</option>
+
+  <option *ngFor="let f of fuels()"
+          [value]="f.fuelId"
+          style="color:#000;">
+    {{ f.fuelName }}
+  </option>
+
+</select>
         <span class="error-text" *ngIf="generatorForm.get('fuelId')?.invalid && generatorForm.get('fuelId')?.touched">
           Fuel is required
         </span>
@@ -72,6 +97,7 @@
         <button type="submit" class="save-btn">
           {{ editingGeneratorId ? 'Update' : 'Save' }}
         </button>
+              <button class="btn-reset" (click)="resetForm()">Reset</button>
       </div>
 
     </form>
@@ -82,7 +108,7 @@
     <div class="search-row">
 
       <div class="search-left">
-        <input type="text" class="search-input" placeholder="Search generator..." [(ngModel)]="searchText"
+        <input type="text" class="search-input" placeholder="Quick Search" [(ngModel)]="searchText"
           (input)="loadGenerators()" />
       </div>
 
@@ -147,20 +173,19 @@
     </div> <!-- end table-wrapper -->
 
     <!-- ================= PAGINATION ================= -->
-    <div class="pagination-info">
+     <div class="pagination-info">
       <span>Total Records: {{ totalRecords }}</span>
       <div class="pagination-controls">
-        <button (click)="prevPage()" [disabled]="pageNumber === 1">Previous</button>
+        <button (click)="prevPage()" [disabled]="pageNumber===1">Previous</button>
         <span>Page {{ pageNumber }} of {{ totalPages }}</span>
-        <button (click)="nextPage()" [disabled]="pageNumber === totalPages">Next</button>
-        <select (change)="changePageSize($any($event.target).value)">
-          <option *ngFor="let size of pageSizeOptions" [value]="size">
-            {{size}}
-          </option>
+        <button (click)="nextPage()" [disabled]="pageNumber===totalPages">Next</button>
+        <label for="pageSize">Page Size :</label>
+        <select id="pageSize" [value]="pageSize" (change)="changePageSize($event)">
+          <option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</option>
         </select>
       </div>
     </div>
-
+  
   </div>
 
 

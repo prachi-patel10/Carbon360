@@ -43,6 +43,7 @@ export class MasterUserComponent implements OnInit {
 
   searchText = signal<string>('');
   onlyActive = signal<boolean>(false);
+pageSizeOptions = [5, 10, 15,20];
 
   currentPage = signal<number>(1);
   totalPages = signal<number>(1);
