@@ -25,7 +25,7 @@
 /* Header */
 
 .generator-table thead{
-  background:#1b5e20;
+   background-color: #0f5132;
   color:white;
 }
 
@@ -44,13 +44,11 @@
 }
 
 /* Hover */
-
 .generator-table tbody tr:hover{
   background:#f0fdf4;
 }
 
 /* No data */
-
 .no-data{
   padding:20px;
   color:#777;
@@ -60,6 +58,21 @@
 
 .action-buttons{
   text-align:center;
+  color:#1b7d55;
+}
+
+.emission-value {
+    font-weight: 700;
+    color: #1b5e20;   /* your main green */
+}
+
+.emission-header {
+    color: #3cc946;
+}
+
+.leaf-icon {
+    color: #1b5e20;   /* green leaf */
+    margin-right: 5px;
 }
 
 /* Edit button */
@@ -75,9 +88,7 @@
 }
 
 
-
 /* Footer */
-
 .table-footer{
   margin-top:15px;
   display:flex;

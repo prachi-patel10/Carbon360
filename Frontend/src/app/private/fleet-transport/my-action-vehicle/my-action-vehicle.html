@@ -52,9 +52,9 @@
                 <td>{{ e.entryDate | date:'dd-MMM-yyyy' }}</td>
               <td>{{ e.fuelType }}</td>
 
-              <td>{{ e.runHours }} hrs</td>
+              <td>{{ e.runHours }}</td>
 
-              <td>{{ e.totalEmission }}</td>
+              <td class="emission-value">{{ e.totalEmission }} <i class="fas fa-leaf leaf-icon"></i></td>
 
               <td class="action-btn">
                 <button class="btn-edit" (click)="editTrip(e.tripId)">
