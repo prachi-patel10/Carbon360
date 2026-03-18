@@ -1,0 +1,73 @@
+<div class="range-wrapper">
+
+  <!-- Button -->
+  <div class="range-input" (click)="togglePicker()">
+    <i class="fas fa-calendar"></i>
+    <span *ngIf="rangeForm.value.startDate && rangeForm.value.endDate; else placeholder">
+      {{ rangeForm.value.startDate | date:'dd MMM yyyy' }} -
+      {{ rangeForm.value.endDate | date:'dd MMM yyyy' }}
+    </span>
+    <ng-template #placeholder>
+      Select Date Range
+    </ng-template>
+  </div>
+
+  <!-- Popup -->
+  <div *ngIf="showPicker()">
+    <div class="range-popup">
+      <form [formGroup]="rangeForm">
+
+        <div class="calendar-container">
+
+          <!-- FROM -->
+          <div class="calendar-box">
+            <label>From</label>
+            <input type="date"
+                   class="form-control"
+                   formControlName="startDate"
+                   [max]="today">
+          </div>
+
+          <!-- ICON -->
+          <i class="bi bi-arrow-right arrow"></i>
+
+          <!-- TO -->
+          <div class="calendar-box">
+            <label>To</label>
+            <input type="date"
+                   class="form-control"
+                   formControlName="endDate"
+                   [max]="today">
+          </div>
+
+        </div>
+
+        <!-- VALIDATION MESSAGES -->
+        <div class="error" *ngIf="rangeForm.hasError('invalidRange') && (rangeForm.touched || rangeForm.dirty)">
+          From date must be earlier than To date
+        </div>
+
+        <div class="error" *ngIf="rangeForm.get('startDate')?.touched && rangeForm.get('startDate')?.errors?.['required']">
+          Start date is required
+        </div>
+
+        <div class="error" *ngIf="rangeForm.get('endDate')?.touched && rangeForm.get('endDate')?.errors?.['required']">
+          End date is required
+        </div>
+
+        <!-- ACTIONS -->
+        <div class="actions">
+          <button type="button" class="btn btn-secondary" (click)="cancel()">Cancel</button>
+          <button type="button"
+                  class="btn btn-primary"
+                  (click)="apply()"
+                  [disabled]="rangeForm.invalid">
+            Apply
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+</div>

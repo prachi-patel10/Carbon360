@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { map, Observable } from 'rxjs';
 import { environment } from '../../../enviorments/environment';
@@ -21,6 +21,7 @@ export interface GeneratorOperation {
   total_co2e_kg?: number;
   statusId: number;
   statusName?: string;
+  fuelType?: string;
 }
 
 @Injectable({
@@ -69,6 +70,26 @@ export class SearchGeneratorService {
     return this.http.get<any>(`${environment.apiBaseUrl}/Fuel/All`).pipe(
       map(res => res.data)
     );
+  }
+
+  // ================= SEARCH API =================
+  searchEmissions(filters: {
+    startDate?: string;
+    endDate?: string;
+    startTime?: string;
+    endTime?: string;
+    fuelType?: string;
+    searchTerm?: string;
+  }): Observable<GeneratorOperation[]> {
+    let params = new HttpParams();
+    if (filters.startDate) params = params.set('startDate', filters.startDate);
+    if (filters.endDate) params = params.set('endDate', filters.endDate);
+    if (filters.startTime) params = params.set('startTime', filters.startTime);
+    if (filters.endTime) params = params.set('endTime', filters.endTime);
+    if (filters.fuelType) params = params.set('fuelType', filters.fuelType);
+    if (filters.searchTerm) params = params.set('searchTerm', filters.searchTerm);
+
+    return this.http.get<GeneratorOperation[]>(`${this.apiUrl}/search`, { params });
   }
 
 }

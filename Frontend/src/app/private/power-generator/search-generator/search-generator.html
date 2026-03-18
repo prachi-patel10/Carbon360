@@ -3,8 +3,10 @@
     <!-- Filters -->
     <div class="card filter-card mb-4">
       <div class="card-body p-4">
-<span class="filter-title">Apply Filter</span>
+        <!-- <span class="filter-title">Apply Filter</span> -->
         <form class="row g-3 align-items-end">
+
+          <!-- Fuel Type -->
           <div class="col-md-3">
             <label class="form-label fw-bold">
               <i class="fas fa-gas-pump icon-addon"></i> Fuel Type
@@ -17,33 +19,55 @@
             </select>
           </div>
 
+          <!-- Operation Date -->
           <div class="col-md-3">
-  <label class="form-label fw-bold">
-    <i class="fas fa-calendar icon-addon"></i> Operation Date
-  </label>
-  <input type="date" class="form-control" (change)="onOperationDateChange($event)" />
-</div>
-
-          <div class="col-md-3">
-            <label class="form-label fw-bold"><i class="fas fa-calendar-alt icon-addon"></i> Start Date</label>
-<input type="date" class="form-control" (change)="onStartTimeChange($event)" />
+            <label class="form-label fw-bold">
+              <i class="fas fa-calendar-alt icon-addon"></i> Operation Date
+            </label>
+            <app-date-range-picker-component (rangeSelected)="onDateRangeSelected($event)">
+            </app-date-range-picker-component>
           </div>
 
+          <!-- Entry Date -->
           <div class="col-md-3">
-            <label class="form-label fw-bold"><i class="fas fa-calendar-check icon-addon"></i> End Date</label>
-<input type="date" class="form-control" (change)="onEndTimeChange($event)" />          </div>
+            <label class="form-label fw-bold">
+              <i class="fas fa-calendar-alt icon-addon"></i> Entry Date
+            </label>
+            <app-date-range-picker-component (rangeSelected)="onEntryDateRangeSelected($event)">
+            </app-date-range-picker-component>
+          </div>
 
-          <!-- <div class="col-md-3">
-            <button type="button" class="btn btn-filter btn-primary w-100" (click)="applyFilters()">
-              <i class="fas fa-filter me-2"></i>Apply Filters
-            </button>
-          </div> -->
 
+
+          <!-- <div class="timeline-range">
+              
+              <div class="timeline-box">
+                <span class="timeline-label">From</span>
+                <input type="date" class="form-control" (change)="onFromDateChange($event)" />
+                <small class="timeline-time">00:00</small>
+              </div>
+
+              <span class="timeline-separator">→</span>
+
+            
+              <div class="timeline-box">
+                <span class="timeline-label">To</span>
+                <input type="date" class="form-control" (change)="onToDateChange($event)" />
+                <small class="timeline-time">23:59</small>
+              </div>
+            </div> -->
+
+
+
+
+          <!-- Search -->
           <div class="col-md-12 mt-3">
             <div class="input-group">
-              <span class="input-group-text bg-white border-end-0"><i class="fas fa-search text-muted"></i></span>
+              <span class="input-group-text bg-white border-end-0">
+                <i class="fas fa-search text-muted"></i>
+              </span>
               <input type="text" class="form-control border-start-0"
-                placeholder="Quick search by ID or Generator Name..." (input)="onSearch($event)" />
+                placeholder="Quick search" (input)="onSearch($event)" />
             </div>
           </div>
         </form>
@@ -56,36 +80,71 @@
         <table class="table table-hover align-middle mb-0">
           <thead>
             <tr>
-   <th (click)="sortBy('generatorName')" class="sortable">Generator</th>
-    <th (click)="sortBy('entryDate')" class="sortable">Date</th>
-    <th (click)="sortBy('startTime')" class="sortable">Start Date</th>
-    <th (click)="sortBy('endTime')" class="sortable">End Date</th>
-    <th (click)="sortBy('loadFactor')" class="sortable">Load Factor (%)</th>
-    <th (click)="sortBy('fuelConsumedLiters')" class="sortable">Fuel (L)</th>
-    <th (click)="sortBy('totalEmission')" class="sortable">Emission (kg CO₂e)</th>
-    <th>Action</th>
+              <th (click)="sortBy('generatorName')" class="sortable">Generator</th>
+              <th (click)="sortBy('entryDate')" class="sortable">Reported Date</th>
+              <th (click)="sortBy('startTime')" class="sortable">Start Date</th>
+              <th (click)="sortBy('endTime')" class="sortable">End Date</th>
+              <th (click)="sortBy('loadFactor')" class="sortable">Load Factor (%)</th>
+              <th (click)="sortBy('fuelConsumedLiters')" class="sortable">Fuel (L)</th>
+              <th (click)="sortBy('totalEmission')" class="sortable">Emission (kg CO₂e)</th>
+              <th>Action</th>
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let e of filteredEmissions()">
+            <tr *ngFor="let e of paginatedData()">
               <td>{{ e.generatorName }}</td>
-<td>{{ e.entryDate | date:'dd-MMM-yyyy'  }}</td>
-           <td>{{ e.startTime | date:'dd-MMM-yyyy' }}</td>
-<td>{{ e.endTime | date:'dd-MMM-yyyy' }}</td>
+              <td>{{ e.entryDate | date:'dd-MMM-yyyy' }}</td>
+              <td>{{ e.startTime | date:'dd-MMM-yyyy' }}</td>
+              <td>{{ e.endTime | date:'dd-MMM-yyyy' }}</td>
               <td>{{ e.loadFactor }}%</td>
               <td>{{ e.fuelConsumedLiters }}</td>
               <td>{{ e.totalEmission }}</td>
               <td>
-     <button class="btn btn-sm btn-open" (click)="goToDetail(e.operationId)">
-  <i class="fas fa-eye"></i>
-</button>
+                <button class="btn btn-sm btn-open" (click)="goToDetail(e.operationId)">
+                  <i class="fas fa-eye"></i>
+                </button>
+              </td>
+            </tr>
+            <tr *ngIf="paginatedData().length === 0">
+              <td colspan="8" class="text-center py-4 text-muted">
+                No records found.
               </td>
             </tr>
           </tbody>
         </table>
       </div>
-    </div>
 
-  
+      <!-- Pagination Footer -->
+      <div class="table-footer">
+        <div class="total-records">
+          Total Records : <b>{{ totalRecords() }}</b>
+        </div>
+
+        <div class="page-size">
+          Show
+          <select (change)="changePageSize($event)">
+            <option>5</option>
+            <option selected>10</option>
+            <option>20</option>
+            <option>50</option>
+          </select>
+
+        </div>
+
+        <div class="pagination">
+          <button (click)="goToPage(currentPage()-1)" [disabled]="currentPage() === 1">
+            Prev
+          </button>
+
+          <span class="page-info">
+            Page {{ currentPage() }} of {{ totalPages() }}
+          </span>
+
+          <button (click)="goToPage(currentPage()+1)" [disabled]="currentPage() === totalPages()">
+            Next
+          </button>
+        </div>
+      </div>
     </div>
   </div>
+</div>

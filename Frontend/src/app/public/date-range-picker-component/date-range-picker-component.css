@@ -1,0 +1,116 @@
+.range-wrapper{
+  position:relative;
+}
+
+/* .range-input{
+  border:1px solid #ddd;
+  padding:10px;
+  border-radius:6px;
+  cursor:pointer;
+  background:white;
+} */
+
+.range-input {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+
+  border: 1px solid #ddd;
+  padding: 10px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  background: white;
+
+  min-width: 320px;   /* enough space for full date */
+}
+
+/* .range-popup{
+  position:absolute;
+  top:45px;
+  left:0;
+  background:white;
+  border:1px solid #ddd;
+  border-radius:8px;
+  padding:20px;
+  width:420px;
+  box-shadow:0 10px 25px rgba(0,0,0,0.15);
+  z-index:1000;
+}
+
+.calendar-container{
+  display:flex;
+  align-items:center;
+  gap:20px;
+}
+
+.calendar-box{
+  display:flex;
+  flex-direction:column;
+} */
+
+
+.range-popup {
+  position: absolute;
+  top: 45px;
+  left: 0;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 20px;
+  width: 520px; /* 🔥 increased width */
+  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+  z-index: 1000;
+}
+
+.calendar-container {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  width: 100%;
+}
+
+.calendar-box {
+  display: flex;
+  flex-direction: column;
+  flex: 1; /* 🔥 makes both inputs take equal full space */
+}
+
+.calendar-box input {
+  width: 100%; /* 🔥 full width input */
+}
+
+
+
+
+.arrow {
+  font-size: 18px;
+  color: #666;
+  display: flex;
+  align-items: center;
+}
+
+
+.error {
+  color: red;
+  font-size: 12px;
+  margin-top: 5px;
+}
+
+
+.actions{
+  margin-top:15px;
+  display:flex;
+  justify-content:flex-end;
+  gap:10px;
+}
+
+.actions .btn-primary {
+  background-color:#1b5e20; /* your green color */
+  border-color: #1b5e20;     /* match border to button */
+  color: #fff;                /* white text */
+}
+
+.actions .btn-primary:hover {
+  background-color: #145017; /* slightly darker on hover */
+  border-color: #145017;
+}

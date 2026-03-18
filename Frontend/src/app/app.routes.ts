@@ -22,6 +22,7 @@ import { MyActionVehicle } from './private/fleet-transport/my-action-vehicle/my-
 import { MyactionGenerator } from './private/power-generator/myaction-generator/myaction-generator';
 import { authGuard } from './core/guards/auth-guard';
 import { SearchVehicle } from './private/fleet-transport/search-vehicle/search-vehicle';
+import { ChartsComponent } from './public/charts-component/charts-component';
 
 export const routes: Routes = [
 
@@ -62,12 +63,15 @@ export const routes: Routes = [
             { path: 'MyActionVehicle', component: MyActionVehicle },
             { path: 'MyActionGenerator', component: MyactionGenerator },
             { path: 'generator-ec/:id', component: GeneratorOperationComponent },
+            { path: 'chart', component: ChartsComponent },
             // { path: 'generator-review/:id', component: GeneratorReviewComponent },
             { path: 'vehicle-ec/:id', component: TripComponent },
             {
                 path: 'dashboard/generator-review/:id',
                 component: GeneratorOperationComponent
-            }
+            },
+             
+
         ]
     },
 
