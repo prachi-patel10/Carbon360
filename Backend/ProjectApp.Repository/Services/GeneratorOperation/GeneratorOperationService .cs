@@ -546,8 +546,8 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
                         ? null
                         : _idEncoder.Encode(reader.GetInt32(reader.GetOrdinal("SiteId"))),
 
-                    GeneratorName = reader["GeneratorName"]?.ToString(),   // ✅ ADD
-                    FuelType = reader["FuelType"]?.ToString(),             // ✅ ADD
+                    GeneratorName = reader["GeneratorName"]?.ToString(),   
+                    FuelType = reader["FuelType"]?.ToString(),            
 
                     OperationDate = DateOnly.FromDateTime(reader.GetDateTime(reader.GetOrdinal("OperationDate"))),
 

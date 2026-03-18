@@ -359,3 +359,152 @@ body {
 .action-btn:hover {
   background: rgba(255, 255, 255, 0.2);
 }
+
+
+/* Timeline inputs width */
+input[ngxDaterangepickerMd] {
+  width: 100%;
+  max-width: 400px;
+}
+
+/* Pagination Footer */
+.table-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-top: 1px solid #e5e7eb;
+  background: #f9fafb;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.total-records {
+  font-size: 0.9rem;
+  color: #374151;
+}
+
+.page-size {
+  font-size: 0.9rem;
+  color: #374151;
+}
+
+.page-size select {
+  margin: 0 5px;
+  padding: 4px 6px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pagination button {
+  border: none;
+  padding: 6px 14px;
+  background: #1b5e20;
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.pagination button:hover {
+  background: #166534;
+}
+
+.pagination button:disabled {
+  background: #cbd5e1;
+  cursor: not-allowed;
+}
+
+.page-info {
+  font-weight: 500;
+  color: #374151;
+}
+
+/* ------------- */
+/* Timeline Range */
+.timeline-range {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+}
+
+.timeline-box {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.timeline-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 4px;
+}
+
+.timeline-time {
+  font-size: 0.75rem;
+  color: #6c757d;
+  margin-top: 4px;
+}
+
+.timeline-separator {
+  font-size: 1.4rem;
+  color: #1b5e20;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+input[type="date"] {
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  padding: 0.5rem;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+}
+
+input[type="date"]:focus {
+  border-color: #1b5e20;
+  box-shadow: 0 0 0 3px rgba(11, 90, 23, 0.1);
+}
+
+
+/* Make both date range pickers full width inside their column */
+app-date-range-picker-component {
+  width: 100%;
+  display: block;
+}
+
+/* Align icon and input nicely */
+.input-group .form-control {
+  border-radius: 0 8px 8px 0;
+  padding: 0.55rem 0.75rem;
+}
+
+.input-group .input-group-text {
+  border-radius: 8px 0 0 8px;
+  padding: 0.55rem 0.75rem;
+  background-color: #fff;
+  border-right: 0;
+}
+
+/* Make date range pickers responsive */
+@media (max-width: 991px) {
+  .filter-card .row > div {
+    margin-bottom: 12px;
+  }
+}
+
+/* Optional: Add spacing inside picker card */
+.filter-card app-date-range-picker-component {
+  margin-top: 0.25rem;
+}
+
+.col-md-3:nth-child(2) {
+  margin-right: 50px; 
+}
