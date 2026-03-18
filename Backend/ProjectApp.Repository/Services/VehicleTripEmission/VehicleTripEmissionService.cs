@@ -134,6 +134,7 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
 
             int tripId = _idEncoder.Decode(dto.TripId);
             int userId = GetCurrentUserId();
+            int roleId = _userContext.Role.Contains("Corporate") ? 3 : 5;
             //string role = _userContext.Role;
 
             //if (!role.Contains("Corporate"))
@@ -157,11 +158,13 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
             {
         new SqlParameter("@TripId", tripId),
         new SqlParameter("@WorkflowId", dto.WorkflowId),
-        new SqlParameter("@UserId", userId)
+        new SqlParameter("@UserId", userId),
+        new SqlParameter("@RoleId", roleId)
+
     };
 
             await _context.Database.ExecuteSqlRawAsync(
-                "EXEC USP_CB_UpdateVehicleTripStatus @TripId,@WorkflowId,@UserId",
+                "EXEC USP_CB_UpdateVehicleTripStatus @TripId,@WorkflowId,@UserId,@RoleId",
                 parameters);
 
             return true;
@@ -233,6 +236,7 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
             decimal fuelConsumed = dto.FuelConsumedLtr;
             // For Petrol/Diesel = Liter
             // For CNG = KG (conversion handled in SQL)
+            int roleId = _userContext.Role.Contains("Corporate") ? 3 : 5;
 
             var parameters = new[]
             {
@@ -243,14 +247,15 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
         new SqlParameter("@TripEndDateTime", dto.TripEndDateTime ?? (object)DBNull.Value),
         new SqlParameter("@DistanceKm", dto.DistanceKm),
         new SqlParameter("@FuelConsumedLtr", fuelConsumed),
-        new SqlParameter("@UserId", userId)
+        new SqlParameter("@UserId", userId),
+        new SqlParameter("@RoleId", roleId)
     };
 
             var result = await _context.CB_VehicleTripEmissions
                 .FromSqlRaw(
                     "EXEC USP_CB_InsertVehicleTripEmission " +
                     "@VehicleId,@FromCityId,@ToCityId,@TripStartDateTime," +
-                    "@TripEndDateTime,@DistanceKm,@FuelConsumedLtr,@UserId",
+                    "@TripEndDateTime,@DistanceKm,@FuelConsumedLtr,@UserId,@RoleId",
                     parameters)
                 .ToListAsync();
 
@@ -283,7 +288,12 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
                 TotalCH4 = entity.totalch4,
 
                 TotalEmission = entity.totalemission,
-                StatusId = entity.StatusId
+                StatusId = entity.StatusId,
+                EntryBy=entity.entryby,
+                EntryDate=entity.entrydate,
+                FuelType=entity.fueltype,
+               
+
             };
         }
 
@@ -745,7 +755,7 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
             return actions;
         }
 
-       public async Task<(List<ResponseVehicleTripEmissionDTO> Data, int TotalRecords)> GetAllAsync()
+        public async Task<(List<ResponseVehicleTripEmissionDTO> Data, int TotalRecords)> GetAllAsync()
         {
             int userId = GetCurrentUserId();
             string role = _userContext.Role.Contains("Corporate") ? "Corporate" : "Reporter";
@@ -759,7 +769,7 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
             command.CommandText = "USP_CB_GetVehicleTripEmission";
             command.CommandType = CommandType.StoredProcedure;
 
-            
+
             command.Parameters.Add(new SqlParameter("@UserId", userId));
             command.Parameters.Add(new SqlParameter("@UserRole", role));
 
@@ -788,7 +798,7 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
                     FromCity = reader["FromCity"]?.ToString(),
                     ToCity = reader["ToCity"]?.ToString(),
 
-                    VehicleNumber = reader["VehicleName"]?.ToString(), 
+                    VehicleNumber = reader["VehicleName"]?.ToString(),
                     VehicleType = reader["VehicleType"]?.ToString(),
                     FuelType = reader["FuelType"]?.ToString(),
 
@@ -822,12 +832,113 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
 
             await reader.CloseAsync();
 
-          
+
             totalRecords = totalParam.Value != DBNull.Value
                 ? (int)totalParam.Value
                 : result.Count;
 
             return (result, totalRecords);
+        }
+
+        private void EncodeIds(Dictionary<string, object> data)
+        {
+            if (data == null) return;
+
+            var keys = data.Keys.ToList();
+
+            foreach (var key in keys)
+            {
+                if (key.EndsWith("Id") && data[key] != null)
+                {
+                    if (int.TryParse(data[key].ToString(), out int id))
+                    {
+                        data[key] = _idEncoder.Encode(id);
+                    }
+                }
+            }
+        }
+
+        public async Task<Dictionary<string, object>> GetByHashIdAsyncPDF(string hashId, int roleId)
+        {
+            int tripId = _idEncoder.Decode(hashId);
+
+            var result = new Dictionary<string, object>();
+
+            using (SqlConnection conn = new SqlConnection(_context.Database.GetConnectionString()))
+            {
+                await conn.OpenAsync();
+
+                using (SqlCommand cmd = new SqlCommand("USP_CB_GetVehicleTripFullDetails", conn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@TripId", tripId);
+                    cmd.Parameters.AddWithValue("@RoleId", roleId);
+
+                    using (SqlDataReader reader = await cmd.ExecuteReaderAsync())
+                    {
+                       
+                        // EMISSION DETAILS
+                        var trip = new Dictionary<string, object>();
+
+                        if (await reader.ReadAsync())
+                        {
+                            for (int i = 0; i < reader.FieldCount; i++)
+                            {
+                                var value = reader.GetValue(i);
+                                trip[reader.GetName(i)] = value == DBNull.Value ? null : value;
+                            }
+
+                            EncodeIds(trip); // ✅ FIXED
+                        }
+
+                        result["Trip"] = trip;
+
+                        //WORKFLOW ACTIONS
+                        await reader.NextResultAsync();
+
+                        var actions = new List<Dictionary<string, object>>();
+
+                        while (await reader.ReadAsync())
+                        {
+                            var row = new Dictionary<string, object>();
+
+                            for (int i = 0; i < reader.FieldCount; i++)
+                            {
+                                var value = reader.GetValue(i);
+                                row[reader.GetName(i)] = value == DBNull.Value ? null : value;
+                            }
+
+                            EncodeIds(row); // ✅ FIXED
+                            actions.Add(row);
+                        }
+
+                        result["Actions"] = actions;
+
+                        //HISTORY
+                        await reader.NextResultAsync();
+
+                        var history = new List<Dictionary<string, object>>();
+
+                        while (await reader.ReadAsync())
+                        {
+                            var row = new Dictionary<string, object>();
+
+                            for (int i = 0; i < reader.FieldCount; i++)
+                            {
+                                var value = reader.GetValue(i);
+                                row[reader.GetName(i)] = value == DBNull.Value ? null : value;
+                            }
+
+                            EncodeIds(row); // ✅ FIXED
+                            history.Add(row);
+                        }
+
+                        result["History"] = history;
+                    }
+                }
+            }
+
+            return result;
         }
     }
     

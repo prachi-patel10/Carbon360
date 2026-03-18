@@ -47,6 +47,8 @@ namespace ProjectApp.Repository.Interfaces.VehicleTripEmission
         Task<PageResult> GetMyActionTripsAsync(int pageNumber, int pageSize, string sortColumn = "EntryDate", string sortDirection = "ASC");
 
         Task<List<WorkflowActionDTO>> GetWorkflowActionsAsync(string encryptedId);
+
+        Task<Dictionary<string, object>> GetByHashIdAsyncPDF(string hashId, int roleId);
     }
 
 

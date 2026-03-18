@@ -48,7 +48,7 @@ namespace ProjectApp.API.Controllers.Account.VehicleTripEmission
                 TotalRecords = totalRecords
             });
         }
-        
+
 
         [HttpGet("{hashId}")]
         public async Task<IActionResult> Get(string hashId)
@@ -223,6 +223,17 @@ namespace ProjectApp.API.Controllers.Account.VehicleTripEmission
                 message = "Workflow actions fetched successfully.",
                 data = actions
             });
+        }
+
+        [HttpGet("pdf/{hashId}")]
+        public async Task<IActionResult> GetTripDetailsForPDF(string hashId, int roleId)
+        {
+            var data = await _service.GetByHashIdAsyncPDF(hashId, roleId);
+
+            return data == null || data.Count == 0
+                ? NotFound("Trip not found")
+                : Ok(data);
+
         }
     }
 }
