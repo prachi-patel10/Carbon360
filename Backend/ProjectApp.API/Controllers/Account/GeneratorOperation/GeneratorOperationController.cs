@@ -210,16 +210,15 @@ namespace ProjectApp.API.Controllers.Account.GeneratorOperation
         }
 
         [HttpGet("myactions")]
-        public async Task<IActionResult> GetMyActions()
+        public async Task<IActionResult> GetMyActions(
+     [FromQuery] int pageNumber = 1,
+     [FromQuery] int pageSize = 10,
+     [FromQuery] string sortColumn = "EntryDate",
+     [FromQuery] string sortDirection = "DESC")
         {
-            var data = await _service.GetMyActionRecordsAsync();
-
-            return Ok(new
-            {
-                status = true,
-                statusCode = 200,
-                data = data
-            });
+            var result = await _service.GetMyActionRecordsAsync(
+                pageNumber, pageSize, sortColumn, sortDirection);
+            return Ok(result);
         }
     }
     }

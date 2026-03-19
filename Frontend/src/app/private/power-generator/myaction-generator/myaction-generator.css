@@ -39,12 +39,41 @@
   text-align:left;
 }
 
+.generator-table th.sortable {
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+  text-align: left;
+}
+
+.generator-table th.sortable:hover {
+  background-color: #0a3d22;
+}
+
+.sort-icon {
+  font-size: 11px;
+  opacity: 0.6;
+  margin-left: 4px;
+}
+
+.generator-table th {
+  text-transform: uppercase;
+      background-color: #0f5132;
+        text-align: left;
+    color: white;
+    font-size: 0.85rem;
+    letter-spacing: 0.05em;
+    padding: 1.1rem 0.5rem;
+    border-bottom: 2px solid #f1f5f9;
+}
+
 /* Cells */
 
 .generator-table td{
   padding:10px;
   border-bottom:1px solid #eee;
   vertical-align:middle;
+ 
 }
 
 /* Hover */

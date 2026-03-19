@@ -12,6 +12,7 @@ export interface GeneratorOp {
   loadFactor: number;
   fuelConsumedLiters: number; 
   totalEmission: number;
+   statusId: number; 
   status: number;
 }
 
@@ -138,20 +139,26 @@ getAllGenerators(): Observable<GeneratorOp[]> {
   return this.http.get<GeneratorOp[]>(`${this.baseUrl}/allgenerator`);
 }
 
-getMyActions(): Observable<GeneratorOp[]> {
-  return this.http.get<any>(`${this.baseUrl}/myactions`).pipe(
-    map(res => res.data.map((r: any) => ({
-      operationId: r.operationId,
-      generatorId: r.generatorId,
-      generatorName: r.generatorName,
-      fuelType: r.fuelType,
-      entryDate: r.entryDate,
-      runHours: r.runHours,
-      loadFactor: r.loadFactor,
-      fuelConsumedLiters: r.fuelConsumedLiters,
-      totalEmission: r.totalEmission,
-      status: Number(r.statusId)
-    })))
+getMyActions(
+  pageNumber: number = 1,
+  pageSize: number = 10,
+  sortColumn: string = 'EntryDate',
+  sortDirection: string = 'DESC'
+): Observable<{ records: GeneratorOp[], totalRecords: number }> {
+  return this.http.get<any>(
+    `${this.baseUrl}/myactions?pageNumber=${pageNumber}&pageSize=${pageSize}&sortColumn=${sortColumn}&sortDirection=${sortDirection}`
+  ).pipe(
+    map(res => {
+      const data = res.data ?? res; // handle both wrapped and unwrapped
+      const records = (data.records ?? data).map((r: any) => ({
+        ...r,
+        status: Number(r.statusId) // map statusId → status for HTML
+      }));
+      return {
+        records,
+        totalRecords: data.totalRecords ?? records.length
+      };
+    })
   );
 }
 

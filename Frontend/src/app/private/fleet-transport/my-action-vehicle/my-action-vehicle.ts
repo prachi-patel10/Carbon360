@@ -123,6 +123,10 @@ changePageSize(event: any) {
   this.currentPage.set(1)
   this.loadTrips()
 }
+getSortIcon(column: string): string {
+  if (this.sortColumn !== column) return '↕';
+  return this.sortDirection === 'ASC' ? '↑' : '↓';
+}
 
 //   loadTrips() {
 //   this.service.getTrips().subscribe(data => {

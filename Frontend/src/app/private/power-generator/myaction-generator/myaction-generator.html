@@ -5,17 +5,32 @@
 
     <table class="generator-table">
 
-      <thead>
-        <tr>
-          <th (click)="sortBy('generatorName')" class="sortable">Name</th>
-          <th (click)="sortBy('entryDate')" class="sortable">Reported Date</th>
-          <th (click)="sortBy('fuelType')" class="sortable">Fuel Type</th>
-          <th (click)="sortBy('runHours')" class="sortable">Run Hours</th>
-          <th (click)="sortBy('loadFactor')" class="sortable">Load Factor (%)</th>
-          <th (click)="sortBy('fuelConsumedLiters')" class="sortable">Fuel (L)</th>
-          <th class="text-center">Action</th>
-        </tr>
-      </thead>
+     <thead>
+  <tr>
+    <th (click)="sortBy('generatorName')" class="sortable">
+      Generator <span class="sort-icon">{{ getSortIcon('generatorName') }}</span>
+    </th>
+    <th (click)="sortBy('entryDate')" class="sortable">
+      Reported Date <span class="sort-icon">{{ getSortIcon('entryDate') }}</span>
+    </th>
+    <th (click)="sortBy('fuelType')" class="sortable">
+      Fuel Type <span class="sort-icon">{{ getSortIcon('fuelType') }}</span>
+    </th>
+    <th (click)="sortBy('runHours')" class="sortable">
+      Run Hours <span class="sort-icon">{{ getSortIcon('runHours') }}</span>
+    </th>
+    <th (click)="sortBy('loadFactor')" class="sortable">
+      Load Factor (%) <span class="sort-icon">{{ getSortIcon('loadFactor') }}</span>
+    </th>
+    <th (click)="sortBy('fuelConsumedLiters')" class="sortable">
+      Fuel (L) <span class="sort-icon">{{ getSortIcon('fuelConsumedLiters') }}</span>
+    </th>
+     <th (click)="sortBy('totalEmission')" class="sortable emission-header">
+      Emission (kg CO₂e) <span class="sort-icon">{{ getSortIcon('totalEmission') }}</span>
+    </th>
+    <th class="text-center">Action</th>
+  </tr>
+</thead>
 
       <tbody>
         <tr *ngFor="let item of data()">
@@ -25,7 +40,9 @@
           <td>{{ item.runHours }}</td>
           <td>{{ item.loadFactor }}</td>
           <td>{{ item.fuelConsumedLiters }}</td>
-
+ <td class="emission-value">{{ item.totalEmission }}   <i class="fas fa-leaf leaf-icon"></i>  </td>           
+                
+              
           <td class="action-buttons">
 
   <!-- CORPORATE REVIEW -->

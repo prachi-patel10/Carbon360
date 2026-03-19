@@ -15,28 +15,28 @@
         <table class="generator-table">
 
           <thead>
-            <tr>
-              <th (click)="sort('vehicleNumber')" style="cursor:pointer">
-                Vehicle
-              </th>
-
-              <th (click)="sort('fromCity')" style="cursor:pointer">
-                Route
-              </th>
-
-              <th (click)="sort('tripEntryDate')" style="cursor:pointer">
-                Entry Date
-              </th>
-
-              <th (click)="sort('fuelType')" style="cursor:pointer">Fuel Type</th>
-              <th (click)="sort('runHours')" style="cursor:pointer">Run Hours</th>
-
-              <th>Emission</th>
-              <th class="text-center">Action</th>
-            </tr>
-          </thead>
-
-          <tbody>
+  <tr>
+    <th (click)="sort('vehicleNumber')" class="sortable">
+      Vehicle No. <span class="sort-icon">{{ getSortIcon('vehicleNumber') }}</span>
+    </th>
+    <th (click)="sort('fromCity')" class="sortable">
+      Route <span class="sort-icon">{{ getSortIcon('fromCity') }}</span>
+    </th>
+    <th (click)="sort('tripEntryDate')" class="sortable">
+      Reported Date <span class="sort-icon">{{ getSortIcon('tripEntryDate') }}</span>
+    </th>
+    <th (click)="sort('fuelType')" class="sortable">
+      Fuel Type <span class="sort-icon">{{ getSortIcon('fuelType') }}</span>
+    </th>
+    <th (click)="sort('runHours')" class="sortable">
+      Run Hours <span class="sort-icon">{{ getSortIcon('runHours') }}</span>
+    </th>
+    <th (click)="sort('totalEmission')" class="sortable">
+      Total Emission <span class="sort-icon">{{ getSortIcon('totalEmission') }}</span>
+    </th>
+    <th class="text-center">Action</th>
+  </tr>
+</thead>          <tbody>
 
             <tr *ngFor="let e of trips()">
 

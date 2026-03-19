@@ -513,12 +513,13 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
 
         }
 
-        public async Task<List<GeneratorOperationResponseDTO>> GetMyActionRecordsAsync()
+        public async Task<GeneratorOperationPagedResponseDTO> GetMyActionRecordsAsync(
+     int pageNumber, int pageSize, string sortColumn, string sortDirection)
         {
             int userId = GetCurrentUserId();
             string role = _userContext.Role.Contains("Corporate") ? "Corporate"
-              : _userContext.Role.Contains("Admin") ? "Admin"
-              : "Reporter";
+                : _userContext.Role.Contains("Admin") ? "Admin"
+                : "Reporter";
 
             int roleId = await _context.CB_Roles
                 .Where(r => r.RoleName == role)
@@ -533,6 +534,10 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
 
             command.Parameters.Add(new SqlParameter("@UserId", userId));
             command.Parameters.Add(new SqlParameter("@RoleId", roleId));
+            command.Parameters.Add(new SqlParameter("@PageNumber", pageNumber));
+            command.Parameters.Add(new SqlParameter("@PageSize", pageSize));
+            command.Parameters.Add(new SqlParameter("@SortColumn", sortColumn ?? "EntryDate"));
+            command.Parameters.Add(new SqlParameter("@SortDirection", sortDirection ?? "DESC"));
 
             if (connection.State != ConnectionState.Open)
                 await connection.OpenAsync();
@@ -541,6 +546,7 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
 
             await using var reader = await command.ExecuteReaderAsync();
 
+            // First result set — records
             while (await reader.ReadAsync())
             {
                 list.Add(new GeneratorOperationResponseDTO
@@ -552,28 +558,55 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
                         ? null
                         : _idEncoder.Encode(reader.GetInt32(reader.GetOrdinal("SiteId"))),
 
-                    GeneratorName = reader["GeneratorName"]?.ToString(),   
-                    FuelType = reader["FuelType"]?.ToString(),            
+                    GeneratorName = reader["GeneratorName"]?.ToString(),
+                    FuelType = reader["FuelType"]?.ToString(),
 
-                    OperationDate = DateOnly.FromDateTime(reader.GetDateTime(reader.GetOrdinal("OperationDate"))),
+                    OperationDate = DateOnly.FromDateTime(
+                        reader.GetDateTime(reader.GetOrdinal("OperationDate"))),
 
                     RunHours = reader.IsDBNull(reader.GetOrdinal("RunHours")) ? 0 :
-                               reader.GetDecimal(reader.GetOrdinal("RunHours")),
+                               Convert.ToDecimal(reader["RunHours"]),
 
                     LoadFactor = reader.IsDBNull(reader.GetOrdinal("LoadFactor")) ? 0 :
-                                 reader.GetDecimal(reader.GetOrdinal("LoadFactor")),
+                                 Convert.ToDecimal(reader["LoadFactor"]),
 
                     FuelConsumedLiters = reader.IsDBNull(reader.GetOrdinal("FuelConsumedLiters")) ? 0 :
-                                         reader.GetDecimal(reader.GetOrdinal("FuelConsumedLiters")),
+                                         Convert.ToDecimal(reader["FuelConsumedLiters"]),
+
+                    TotalCO2 = reader.IsDBNull(reader.GetOrdinal("totalCO2")) ? 0 :
+                               Convert.ToDecimal(reader["totalCO2"]),
+
+                    TotalNO2 = reader.IsDBNull(reader.GetOrdinal("totalNO2")) ? 0 :
+                               Convert.ToDecimal(reader["totalNO2"]),
+
+                    TotalCH4 = reader.IsDBNull(reader.GetOrdinal("totalCH4")) ? 0 :
+                               Convert.ToDecimal(reader["totalCH4"]),
+
+                    TotalEmission = reader.IsDBNull(reader.GetOrdinal("totalEmission")) ? 0 :
+                                    Convert.ToDecimal(reader["totalEmission"]),
+
+                    GWP_CH4 = reader.IsDBNull(reader.GetOrdinal("gwP_CH4")) ? 0 :
+                              Convert.ToDecimal(reader["gwP_CH4"]),
+
+                    GWP_NO2 = reader.IsDBNull(reader.GetOrdinal("gwP_NO2")) ? 0 :
+                              Convert.ToDecimal(reader["gwP_NO2"]),
 
                     StatusId = reader.GetInt32(reader.GetOrdinal("StatusId")),
-
                     EntryBy = reader.GetInt32(reader.GetOrdinal("EntryBy")),
                     EntryDate = reader.GetDateTime(reader.GetOrdinal("EntryDate"))
                 });
             }
 
-            return list;
+            // Second result set — total records
+            int totalRecords = 0;
+            if (await reader.NextResultAsync() && await reader.ReadAsync())
+                totalRecords = reader.GetInt32(0);
+
+            return new GeneratorOperationPagedResponseDTO
+            {
+                Records = list,
+                TotalRecords = totalRecords
+            };
         }
     }
     }

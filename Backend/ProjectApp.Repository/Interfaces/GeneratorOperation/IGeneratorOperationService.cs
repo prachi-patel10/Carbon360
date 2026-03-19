@@ -37,7 +37,8 @@ namespace ProjectApp.Repository.Interfaces.GenerationOperation
     int pageSize);
         Task<List<WorkflowActionDTO>> GetWorkflowActionsAsync(string encryptedId);
 
-        Task<List<GeneratorOperationResponseDTO>> GetMyActionRecordsAsync();
+        Task<GeneratorOperationPagedResponseDTO> GetMyActionRecordsAsync(
+      int pageNumber, int pageSize, string sortColumn, string sortDirection);
 
     }
 }
