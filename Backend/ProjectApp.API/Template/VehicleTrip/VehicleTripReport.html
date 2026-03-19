@@ -1,0 +1,184 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+    <!-- ── CREATED BY ── -->
+    <div class="section section-first">
+        <div class="section-title">Reported By</div>
+        <div class="row">
+            <div class="col">
+                <span class="bold">Name:</span> {{EntryByFullName}}
+            </div>
+            <div class="col">
+                <span class="bold">Email:</span> {{EntryByEmail}}
+            </div>
+            <div class="col">
+                <span class="bold">Status:</span> {{status}}
+            </div>
+        </div>
+    </div>
+
+    <!-- ── TRIP DETAILS ── -->
+    <div class="section">
+        <div class="section-title">Trip Details</div>
+
+        <div class="row">
+            <div class="col">
+                <span class="bold">Vehicle:</span> {{vehicle}}
+            </div>
+            <div class="col">
+                <span class="bold">From City:</span> {{fromCity}}
+            </div>
+            <div class="col">
+                <span class="bold">To City:</span> {{toCity}}
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col">
+                <span class="bold">Vehicle Type:</span> {{VehicleType}}
+            </div>
+            <div class="col">
+                <span class="bold">Fuel Type:</span> {{fuelType}}
+            </div>
+            <div class="col">
+                <span class="bold">Distance (KM):</span> {{distance}}
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col">
+                <span class="bold">Fuel (Ltr):</span> {{fuel}}
+            </div>
+            <div class="col">
+                <span class="bold">Trip Start Date:</span> {{tripstartdate}}
+            </div>
+            <div class="col">
+                <span class="bold">Trip End Date:</span> {{tripenddate}}
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col">
+                <span class="bold">Trip Duration:</span> {{tripduration}}
+            </div>
+            <div class="col"></div>
+            <div class="col"></div>
+        </div>
+    </div>
+
+    <!-- ── EMISSION DETAILS ── -->
+    <div class="section">
+        <div class="section-title">Emission Details</div>
+        <div class="section-body">
+
+            <!-- Emission Factors & GWP -->
+            <div class="formula-section-title">Emission Factors &amp; GWP Values</div>
+            <div class="factors-grid">
+                <div class="factor-cell">
+                    <div class="factor-label">CO&#8322; Factor</div>
+                    <div class="factor-value">{{co2Factor}}</div>
+                </div>
+                <div class="factor-cell">
+                    <div class="factor-label">NO&#8322; Factor</div>
+                    <div class="factor-value">{{no2Factor}}</div>
+                </div>
+                <div class="factor-cell">
+                    <div class="factor-label">CH&#8324; Factor</div>
+                    <div class="factor-value">{{ch4Factor}}</div>
+                </div>
+                <div class="factor-cell">
+                    <div class="factor-label">GWP (CH&#8324;)</div>
+                    <div class="factor-value">{{GWP_CH4}}</div>
+                </div>
+                <div class="factor-cell">
+                    <div class="factor-label">GWP (NO&#8322;)</div>
+                    <div class="factor-value">{{GWP_N2O}}</div>
+                </div>
+            </div>
+
+            <!-- Formula Cards -->
+            <div class="formula-section-title">Emission Calculation</div>
+            <div class="formula-grid">
+
+                <!-- CO2 Card -->
+                <div class="formula-card">
+                    <div class="formula-inner">
+                        <div class="formula-gas">CO&#8322;</div>
+                        <div class="formula-line">= Fuel &times; CO&#8322; Factor</div>
+                        <div class="formula-eq">= {{fuel}} &times; {{co2Factor}}</div>
+                        <div class="formula-result">= {{co2}} kg</div>
+                    </div>
+                </div>
+
+                <!-- NO2 Card -->
+                <div class="formula-card">
+                    <div class="formula-inner">
+                        <div class="formula-gas">NO&#8322;</div>
+                        <div class="formula-line">= Fuel &times; NO&#8322; Factor</div>
+                        <div class="formula-eq">= {{fuel}} &times; {{no2Factor}}</div>
+                        <div class="formula-result">= {{no2}} kg</div>
+                    </div>
+                </div>
+
+                <!-- CH4 Card -->
+                <div class="formula-card">
+                    <div class="formula-inner">
+                        <div class="formula-gas">CH&#8324;</div>
+                        <div class="formula-line">= Fuel &times; CH&#8324; Factor</div>
+                        <div class="formula-eq">= {{fuel}} &times; {{ch4Factor}}</div>
+                        <div class="formula-result">= {{ch4}} kg</div>
+                    </div>
+                </div>
+
+                <!-- Total CO2e Card -->
+                <div class="formula-card">
+                    <div class="formula-inner total-card">
+                        <div class="formula-gas red">Total CO&#8322;e</div>
+                        <div class="formula-line">= CO&#8322; + (CH&#8324;&times;{{GWP_CH4}}) + (NO&#8322;&times;{{GWP_N2O}})</div>
+                        <div class="formula-eq">= ({{co2}}&times;1) + ({{ch4}}&times;{{GWP_CH4}}) + ({{no2}}&times;{{GWP_N2O}})</div>
+                        <div class="formula-result red">= {{total}} kg CO&#8322;e</div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Final Total Box -->
+            <div class="total-box">
+                <div class="total-box-left">
+                    <strong>Total Emission (CO&#8322; Equivalent)</strong><br>
+                    Sum of all greenhouse gas emissions converted to CO&#8322; equivalent using GWP values.
+                </div>
+                <div class="total-box-right">
+                    {{total}} kg CO&#8322;e
+                    <span class="total-formula">CO&#8322; + (CH&#8324; &times; GWP {{GWP_CH4}}) + (NO&#8322; &times; GWP {{GWP_N2O}})</span>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ── WORKFLOW HISTORY ── -->
+    <div class="section">
+        <div class="section-title">Workflow History</div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Action</th>
+                    <th>Role</th>
+                    <th>User</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{historyRows}}
+            </tbody>
+        </table>
+    </div>
+
+</body>
+</html>

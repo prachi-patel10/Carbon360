@@ -1,0 +1,323 @@
+﻿* {
+    box-sizing: border-box;
+}
+
+/* ================= BODY ================= */
+body {
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+    color: #333;
+    margin: 0;
+    padding: 0 24px 24px 24px;
+    line-height: 1.5;
+}
+
+/* ================= HEADER c5f2d7================= */
+.header {
+    width: 100%;
+    display: table;
+    background: #fff;
+    color: #0f5132;
+    border-bottom: 2px solid #155f40;
+    margin-bottom: 4px;
+}
+
+.header-logo,
+.header-title,
+.header-right {
+    display: table-cell;
+    vertical-align: middle;
+    padding: 10px 14px;
+}
+
+.header-logo {
+    width: 200px;
+}
+
+.logo-text {
+    font-size: 18px;
+    font-weight: bold;
+    color: #c5f2d7;
+}
+
+    .logo-text span {
+        color: #27ae60;
+    }
+
+.logo-sub {
+    font-size: 10px;
+    color: #888;
+    margin-top: 2px;
+}
+
+.header-title {
+    text-align: center;
+    font-size: 16px;
+    font-weight: bold;
+    color: #0f5132;
+}
+
+.header-right {
+    width: 200px;
+}
+
+/* ================= FOOTER ================= */
+.footer {
+    width: 100%;
+    display: table;
+    font-size: 9px;
+    background: #0f5132;
+    color: #fff;
+    border-top: 2px solid #155f40;
+    padding: 6px 14px;
+}
+
+.footer-left,
+.footer-center,
+.footer-right {
+    display: table-cell;
+    vertical-align: middle;
+}
+
+.footer-left {
+    width: 33%;
+}
+
+.footer-center {
+    width: 34%;
+    text-align: center;
+}
+
+.footer-right {
+    width: 33%;
+    text-align: right;
+}
+
+.footer span {
+    color: #c5f2d7;
+    font-weight: bold;
+}
+
+/* ================= SECTION ================= */
+.section {
+    margin-top: 14px;
+    border: 1px solid #d0d0d0;
+    border-radius: 4px;
+    background: #ffffff;
+    overflow: hidden;
+}
+
+.section-first {
+    border-left: 5px solid #0f5132;
+    background: #f4fffa;
+}
+
+.section-title {
+    background: #f0f0f0;
+    padding: 8px 14px;
+    font-weight: bold;
+    font-size: 13px;
+    border-bottom: 1px solid #d0d0d0;
+    color: #0f5132;
+    letter-spacing: 0.3px;
+}
+
+/* ================= GRID ROWS ================= */
+.row {
+    width: 100%;
+    display: table;
+    table-layout: fixed;
+    padding: 6px 14px;
+}
+
+.col {
+    display: table-cell;
+    width: 33.33%;
+    vertical-align: top;
+    padding: 4px 6px;
+    word-wrap: break-word;
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+/* ================= TABLE ================= */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 0;
+}
+
+    table th {
+        background: #0f5132;
+        color: #ffffff;
+        padding: 8px 10px;
+        font-size: 11px;
+        text-align: left;
+        letter-spacing: 0.3px;
+    }
+
+    table td {
+        padding: 7px 10px;
+        border: 1px solid #dcdcdc;
+        font-size: 11px;
+        line-height: 1.5;
+    }
+
+    table tr:nth-child(even) td {
+        background: #f9fdfb;
+    }
+
+/* ================= TEXT ================= */
+.bold {
+    font-weight: bold;
+}
+
+/* ================= EMISSION SECTION ================= */
+.section-body {
+    padding: 12px 14px;
+}
+
+.formula-section-title {
+    font-weight: bold;
+    font-size: 11px;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 10px 0 8px 0;
+    border-bottom: 1px dashed #ccc;
+    padding-bottom: 4px;
+}
+
+/* ── Factors Grid ── */
+.factors-grid {
+    width: 100%;
+    display: table;
+    table-layout: fixed;
+    border-collapse: separate;
+    border-spacing: 6px;
+    margin-bottom: 4px;
+}
+
+.factor-cell {
+    display: table-cell;
+    width: 20%;
+    border: 1px solid #d0d0d0;
+    padding: 8px 10px;
+    background: #f9fdfb;
+    border-radius: 4px;
+    vertical-align: top;
+}
+
+.factor-label {
+    font-size: 10px;
+    color: #777;
+    margin-bottom: 4px;
+}
+
+.factor-value {
+    font-weight: bold;
+    font-size: 13px;
+    color: #0f5132;
+}
+
+/* ── Formula Cards ── */
+.formula-grid {
+    width: 100%;
+    display: table;
+    table-layout: fixed;
+    border-collapse: separate;
+    border-spacing: 8px;
+    margin-top: 4px;
+}
+
+.formula-card {
+    display: table-cell;
+    width: 25%;
+    vertical-align: top;
+}
+
+.formula-inner {
+    border: 1px solid #d0d0d0;
+    border-top: 4px solid #0f5132;
+    border-radius: 0 0 4px 4px;
+    padding: 10px;
+    background: #f9fdfb;
+    font-size: 11px;
+    line-height: 1.7;
+    min-height: 100px;
+}
+
+    .formula-inner.total-card {
+        border-top-color: #e74c3c;
+        background: #fff7f7;
+    }
+
+.formula-gas {
+    font-weight: bold;
+    font-size: 13px;
+    color: #0f5132;
+    margin-bottom: 4px;
+}
+
+    .formula-gas.red {
+        color: #e74c3c;
+    }
+
+.formula-line,
+.formula-eq {
+    color: #555;
+    font-size: 10.5px;
+}
+
+.formula-result {
+    margin-top: 8px;
+    font-weight: bold;
+    font-size: 12px;
+    color: #333;
+    border-top: 1px solid #e0e0e0;
+    padding-top: 5px;
+}
+
+    .formula-result.red {
+        color: #e74c3c;
+    }
+
+/* ── Total Box ── */
+.total-box {
+    width: 100%;
+    display: table;
+    table-layout: fixed;
+    border: 1px solid #0f5132;
+    border-left: 5px solid #0f5132;
+    border-radius: 4px;
+    background: #f4fffa;
+    margin-top: 14px;
+}
+
+.total-box-left {
+    display: table-cell;
+    width: 60%;
+    padding: 12px 14px;
+    font-size: 11px;
+    line-height: 1.6;
+    vertical-align: middle;
+}
+
+.total-box-right {
+    display: table-cell;
+    width: 40%;
+    padding: 12px 14px;
+    text-align: right;
+    font-size: 18px;
+    font-weight: bold;
+    color: #e74c3c;
+    vertical-align: middle;
+}
+
+.total-formula {
+    display: block;
+    font-size: 9.5px;
+    color: #777;
+    margin-top: 4px;
+    font-weight: normal;
+}

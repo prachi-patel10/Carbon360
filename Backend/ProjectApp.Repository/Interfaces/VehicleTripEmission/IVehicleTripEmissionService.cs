@@ -59,7 +59,10 @@ namespace ProjectApp.Repository.Interfaces.VehicleTripEmission
         DateTime? entryEndDate,
         string sortColumn,
         string sortDirection);
+
+        Task<byte[]> GenerateVehicleTripPdf(string tripId);
+
+
+
     }
-
-
 }

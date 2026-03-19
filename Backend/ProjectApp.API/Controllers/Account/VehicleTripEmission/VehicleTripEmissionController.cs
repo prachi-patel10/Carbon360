@@ -269,5 +269,25 @@ namespace ProjectApp.API.Controllers.Account.VehicleTripEmission
             );
         }
 
+        [HttpGet("trip-pdf/{tripId}")]
+        public async Task<IActionResult> DownloadTripPdf(string tripId)
+        {
+            try
+            {
+                var pdf = await _service.GenerateVehicleTripPdf(tripId);
+
+                if (pdf == null || pdf.Length == 0)
+                    return NotFound("Trip PDF could not be generated");
+
+                return File(pdf, "application/pdf", $"VehicleTrip_{tripId}.pdf");
+            }
+            catch (Exception ex)
+            {
+
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
+
     }
 }

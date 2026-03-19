@@ -1,5 +1,13 @@
 ﻿using AutoMapper;
+using Azure;
+using DocumentFormat.OpenXml.Bibliography;
+using DocumentFormat.OpenXml.Drawing.Spreadsheet;
+using DocumentFormat.OpenXml.InkML;
+using DocumentFormat.OpenXml.Office.Word;
+using DocumentFormat.OpenXml.Spreadsheet;
 using HashidsNet;
+using Irony.Parsing;
+using Microsoft.AspNetCore.Components;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using ProjectApp.Core.DTOs.Account.VehicleTripEmission;
@@ -10,8 +18,11 @@ using ProjectApp.Repository.Interfaces.Common;
 using ProjectApp.Repository.Interfaces.User;
 using ProjectApp.Repository.Interfaces.VehicleTripEmission;
 using ProjectApp.Repository.Services.Common;
+using ProjectApp.Repository.Services.User;
 using ProjectApp.Repository.Utilities.Auth;
 using ProjectApp.Repository.Utilities.SP;
+using PuppeteerSharp;
+using PuppeteerSharp.Media;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -170,60 +181,10 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
             return true;
         }
 
-        
-       public async Task<ResponseVehicleTripEmissionDTO> CreateAsync(CreateVehicleTripEmissionDTO dto)
+
+        public async Task<ResponseVehicleTripEmissionDTO> CreateAsync(CreateVehicleTripEmissionDTO dto)
         {
-            //        var userId = GetCurrentUserId();
-
-            //        int vehicleId = _idEncoder.Decode(dto.VehicleId);
-            //        int fromCityId = _idEncoder.Decode(dto.FromCityId);
-            //        int toCityId = _idEncoder.Decode(dto.ToCityId);
-
-            //        var parameters = new[]
-            //        {
-            //    new SqlParameter("@VehicleId", vehicleId),
-            //    new SqlParameter("@FromCityId", fromCityId),
-            //    new SqlParameter("@ToCityId", toCityId),
-            //    new SqlParameter("@TripStartDateTime", dto.TripStartDateTime),
-            //    new SqlParameter("@TripEndDateTime", dto.TripEndDateTime ?? (object)DBNull.Value),
-            //    new SqlParameter("@DistanceKm", dto.DistanceKm),
-            //    new SqlParameter("@FuelConsumedLtr", dto.FuelConsumedLtr),
-            //    new SqlParameter("@UserId", userId)
-            //};
-
-            //        var result = await _context.CB_VehicleTripEmissions
-            //            .FromSqlRaw(
-            //                "EXEC USP_CB_InsertVehicleTripEmission " +
-            //                "@VehicleId,@FromCityId,@ToCityId,@TripStartDateTime," +
-            //                "@TripEndDateTime,@DistanceKm,@FuelConsumedLtr,@UserId",
-            //                parameters)
-            //            .ToListAsync();
-
-            //        var entity = result.FirstOrDefault();
-
-            //        return new ResponseVehicleTripEmissionDTO
-            //        {
-            //            TripId = _idEncoder.Encode(entity.tripid),
-            //            VehicleId = _idEncoder.Encode(entity.vehicleid),
-            //            FromCityId = _idEncoder.Encode(entity.fromcityid),
-            //            ToCityId = _idEncoder.Encode(entity.tocityid),
-            //            TripStartDateTime = entity.tripstartdatetime,
-            //            TripEndDateTime = entity.tripenddatetime,
-            //            DistanceKm = entity.distancekm,
-            //            FuelConsumedLtr = entity.fuelconsumedltr,
-
-            //            CO2 = entity.co2,
-            //            NO2 = entity.no2,
-            //            CH4 = entity.ch4,
-
-            //            TotalCO2 = entity.totalco2,
-            //            TotalNO2 = entity.totalno2,
-            //            TotalCH4 = entity.totalch4,
-
-            //            TotalEmission = entity.totalemission,
-            //            StatusId = entity.StatusId
-            //        };
-            var userId = GetCurrentUserId();
+            int userId = GetCurrentUserId();
             string role = _userContext.Role;
 
             if (!role.Contains("Reporter"))
@@ -232,69 +193,76 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
             int vehicleId = _idEncoder.Decode(dto.VehicleId);
             int fromCityId = _idEncoder.Decode(dto.FromCityId);
             int toCityId = _idEncoder.Decode(dto.ToCityId);
-
-            decimal fuelConsumed = dto.FuelConsumedLtr;
-            // For Petrol/Diesel = Liter
-            // For CNG = KG (conversion handled in SQL)
             int roleId = _userContext.Role.Contains("Corporate") ? 3 : 5;
 
-            var parameters = new[]
+            ResponseVehicleTripEmissionDTO response = null;
+
+            using (var conn = _context.Database.GetDbConnection())
             {
-        new SqlParameter("@VehicleId", vehicleId),
-        new SqlParameter("@FromCityId", fromCityId),
-        new SqlParameter("@ToCityId", toCityId),
-        new SqlParameter("@TripStartDateTime", dto.TripStartDateTime),
-        new SqlParameter("@TripEndDateTime", dto.TripEndDateTime ?? (object)DBNull.Value),
-        new SqlParameter("@DistanceKm", dto.DistanceKm),
-        new SqlParameter("@FuelConsumedLtr", fuelConsumed),
-        new SqlParameter("@UserId", userId),
-        new SqlParameter("@RoleId", roleId)
-    };
+                await conn.OpenAsync();
 
-            var result = await _context.CB_VehicleTripEmissions
-                .FromSqlRaw(
-                    "EXEC USP_CB_InsertVehicleTripEmission " +
-                    "@VehicleId,@FromCityId,@ToCityId,@TripStartDateTime," +
-                    "@TripEndDateTime,@DistanceKm,@FuelConsumedLtr,@UserId,@RoleId",
-                    parameters)
-                .ToListAsync();
+                using (var cmd = conn.CreateCommand())
+                {
+                    cmd.CommandText = "USP_CB_InsertVehicleTripEmission";
+                    cmd.CommandType = CommandType.StoredProcedure;
 
-            var entity = result.FirstOrDefault();
+                    cmd.Parameters.Add(new SqlParameter("@VehicleId", vehicleId));
+                    cmd.Parameters.Add(new SqlParameter("@FromCityId", fromCityId));
+                    cmd.Parameters.Add(new SqlParameter("@ToCityId", toCityId));
+                    cmd.Parameters.Add(new SqlParameter("@TripStartDateTime", dto.TripStartDateTime));
+                    cmd.Parameters.Add(new SqlParameter("@TripEndDateTime", dto.TripEndDateTime ?? (object)DBNull.Value));
+                    cmd.Parameters.Add(new SqlParameter("@DistanceKm", dto.DistanceKm));
+                    cmd.Parameters.Add(new SqlParameter("@FuelConsumedLtr", dto.FuelConsumedLtr));
+                    cmd.Parameters.Add(new SqlParameter("@UserId", userId));
+                    cmd.Parameters.Add(new SqlParameter("@RoleId", roleId));
 
-            if (entity == null)
+                    using (var reader = await cmd.ExecuteReaderAsync())
+                    {
+                        if (await reader.ReadAsync())
+                        {
+                            response = new ResponseVehicleTripEmissionDTO
+                            {
+                                TripId = _idEncoder.Encode(Convert.ToInt32(reader["tripid"])),
+                                VehicleId = _idEncoder.Encode(Convert.ToInt32(reader["vehicleid"])),
+                                FromCityId = _idEncoder.Encode(Convert.ToInt32(reader["fromcityid"])),
+                                ToCityId = _idEncoder.Encode(Convert.ToInt32(reader["tocityid"])),
+
+                                TripStartDateTime = Convert.ToDateTime(reader["tripstartdatetime"]),
+                                TripEndDateTime = reader["tripenddatetime"] == DBNull.Value
+                                    ? null
+                                    : Convert.ToDateTime(reader["tripenddatetime"]),
+
+                                DistanceKm = Convert.ToDecimal(reader["distancekm"]),
+                                FuelConsumedLtr = Convert.ToDecimal(reader["fuelconsumedltr"]),
+
+                                CO2 = reader["co2"] == DBNull.Value ? null : Convert.ToDecimal(reader["co2"]),
+                                NO2 = reader["no2"] == DBNull.Value ? null : Convert.ToDecimal(reader["no2"]),
+                                CH4 = reader["ch4"] == DBNull.Value ? null : Convert.ToDecimal(reader["ch4"]),
+
+                                TotalCO2 = reader["totalco2"] == DBNull.Value ? null : Convert.ToDecimal(reader["totalco2"]),
+                                TotalNO2 = reader["totalno2"] == DBNull.Value ? null : Convert.ToDecimal(reader["totalno2"]),
+                                TotalCH4 = reader["totalch4"] == DBNull.Value ? null : Convert.ToDecimal(reader["totalch4"]),
+                                TotalEmission = reader["totalemission"] == DBNull.Value ? null : Convert.ToDecimal(reader["totalemission"]),
+
+                                StatusId = Convert.ToInt32(reader["StatusId"]),
+                                EntryBy = reader["entryby"] == DBNull.Value ? null : Convert.ToInt32(reader["entryby"]),
+                                EntryDate = reader["entrydate"] == DBNull.Value ? null : Convert.ToDateTime(reader["entrydate"]),
+                                FuelType = reader["fueltype"]?.ToString(),
+                                VehicleNumber = reader["VehicleNumber"]?.ToString(),
+                                VehicleType = reader["VehicleType"]?.ToString(),
+                                FromCity = reader["FromCity"]?.ToString(),
+                                ToCity = reader["ToCity"]?.ToString()
+                            };
+                        }
+                    }
+                }
+            }
+
+            if (response == null)
                 throw new Exception("Trip emission record not created.");
 
+            return response;
 
-     
-            return new ResponseVehicleTripEmissionDTO
-            {
-                TripId = _idEncoder.Encode(entity.tripid),
-                VehicleId = _idEncoder.Encode(entity.vehicleid),
-                FromCityId = _idEncoder.Encode(entity.fromcityid),
-                ToCityId = _idEncoder.Encode(entity.tocityid),
-
-                TripStartDateTime = entity.tripstartdatetime,
-                TripEndDateTime = entity.tripenddatetime,
-                DistanceKm = entity.distancekm,
-
-                FuelConsumedLtr = entity.fuelconsumedltr,
-
-                CO2 = entity.co2,
-                NO2 = entity.no2,
-                CH4 = entity.ch4,
-
-                TotalCO2 = entity.totalco2,
-                TotalNO2 = entity.totalno2,
-                TotalCH4 = entity.totalch4,
-
-                TotalEmission = entity.totalemission,
-                StatusId = entity.StatusId,
-                EntryBy=entity.entryby,
-                EntryDate=entity.entrydate,
-                FuelType=entity.fueltype,
-               
-
-            };
         }
 
        //public async Task<List<ResponseVehicleTripEmissionDTO>> GetAllAsync()
@@ -877,70 +845,26 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
 
                     using (SqlDataReader reader = await cmd.ExecuteReaderAsync())
                     {
-                       
-                        // EMISSION DETAILS
-                        var trip = new Dictionary<string, object>();
-
-                        if (await reader.ReadAsync())
-                        {
-                            for (int i = 0; i < reader.FieldCount; i++)
-                            {
-                                var value = reader.GetValue(i);
-                                trip[reader.GetName(i)] = value == DBNull.Value ? null : value;
-                            }
-
-                            EncodeIds(trip); // ✅ FIXED
-                        }
-
+                        var trip = await ReadSingleRowAsync(reader);
+                        FormatTripData(trip);
                         result["Trip"] = trip;
 
-                        //WORKFLOW ACTIONS
                         await reader.NextResultAsync();
-
-                        var actions = new List<Dictionary<string, object>>();
-
-                        while (await reader.ReadAsync())
-                        {
-                            var row = new Dictionary<string, object>();
-
-                            for (int i = 0; i < reader.FieldCount; i++)
-                            {
-                                var value = reader.GetValue(i);
-                                row[reader.GetName(i)] = value == DBNull.Value ? null : value;
-                            }
-
-                            EncodeIds(row); // ✅ FIXED
-                            actions.Add(row);
-                        }
-
+                        var actions = await ReadMultipleRowsAsync(reader);
                         result["Actions"] = actions;
 
-                        //HISTORY
                         await reader.NextResultAsync();
-
-                        var history = new List<Dictionary<string, object>>();
-
-                        while (await reader.ReadAsync())
-                        {
-                            var row = new Dictionary<string, object>();
-
-                            for (int i = 0; i < reader.FieldCount; i++)
-                            {
-                                var value = reader.GetValue(i);
-                                row[reader.GetName(i)] = value == DBNull.Value ? null : value;
-                            }
-
-                            EncodeIds(row); // ✅ FIXED
-                            history.Add(row);
-                        }
-
+                        var history = await ReadMultipleRowsAsync(reader);
+                        FormatHistoryData(history);
                         result["History"] = history;
                     }
                 }
             }
 
             return result;
+
         }
+        
 
         public async Task<byte[]> ExportVehicleTripsExcel(
     string? search,
@@ -985,6 +909,257 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
             return await ExcelExportHelper.ExportToExcelAsync(data, columns, "Emission Report");
         }
 
+      
+        //private void EncodeIds(Dictionary<string, object> data)
+        //{
+        //    if (data == null) return;
+
+        //    var keys = data.Keys.ToList();
+
+        //    foreach (var key in keys)
+        //    {
+        //        if (key.EndsWith("Id") && data[key] != null)
+        //        {
+        //            if (int.TryParse(data[key].ToString(), out int id))
+        //            {
+        //                data[key] = _idEncoder.Encode(id);
+        //            }
+        //        }
+        //    }
+        //}
+        private async Task<Dictionary<string, object>> ReadSingleRowAsync(SqlDataReader reader)
+        {
+            var row = new Dictionary<string, object>();
+
+            if (await reader.ReadAsync())
+            {
+                for (int i = 0; i < reader.FieldCount; i++)
+                {
+                    var value = reader.GetValue(i);
+                    row[reader.GetName(i)] = value == DBNull.Value ? null : value;
+                }
+
+                EncodeIds(row);
+            }
+
+            return row;
+        }
+        private async Task<List<Dictionary<string, object>>> ReadMultipleRowsAsync(SqlDataReader reader)
+        {
+            var list = new List<Dictionary<string, object>>();
+
+            while (await reader.ReadAsync())
+            {
+                var row = new Dictionary<string, object>();
+
+                for (int i = 0; i < reader.FieldCount; i++)
+                {
+                    var value = reader.GetValue(i);
+                    row[reader.GetName(i)] = value == DBNull.Value ? null : value;
+                }
+
+                EncodeIds(row);
+                list.Add(row);
+            }
+
+            return list;
+        }
+        private void FormatHistoryData(List<Dictionary<string, object>> history)
+        {
+            foreach (var row in history)
+            {
+                row["FullName"] = $"{row.GetValueOrDefault("FullName")}".Trim();
+                row["UserName"] = row.GetValueOrDefault("UserName") ?? "-";
+                row["Email"] = row.GetValueOrDefault("Email") ?? "-";
+                row["Status"] = row.GetValueOrDefault("Status") ?? "-";
+                row["ActionName"] = row.GetValueOrDefault("ActionName") ?? "-";
+            }
+        }
+        private void FormatTripData(Dictionary<string, object> trip)
+        {
+            if (trip == null || trip.Count == 0) return;
+
+            // Full Name fallback
+            trip["EntryByFullName"] =
+                $"{trip.GetValueOrDefault("EntryByFullName")}".Trim();
+
+            // Safe string conversions
+            trip["vehicle_number"] = trip.GetValueOrDefault("vehicle_number") ?? "-";
+            trip["FromCity"] = trip.GetValueOrDefault("FromCity") ?? "-";
+            trip["ToCity"] = trip.GetValueOrDefault("ToCity") ?? "-";
+            trip["Status"] = trip.GetValueOrDefault("Status") ?? "-";
+
+            // Numeric formatting
+            trip["DistanceKm"] = trip.GetValueOrDefault("DistanceKm") ?? 0;
+            trip["FuelConsumedLtr"] = trip.GetValueOrDefault("FuelConsumedLtr") ?? 0;
+
+            // Emission formatting
+            trip["TotalEmission"] = trip.GetValueOrDefault("TotalEmission") ?? 0;
+        }
+
+        public async Task<byte[]> GenerateVehicleTripPdf(string tripId)
+        {
+            int roleId = _userContext.Role.Contains("Corporate") ? 3 : 5;
+            var data = await GetByHashIdAsyncPDF(tripId, roleId);
+
+            var trip = data["Trip"] as Dictionary<string, object> ?? new();
+            var history = data["History"] as List<Dictionary<string, object>> ?? new();
+
+            string GetString(string key) =>
+                trip.ContainsKey(key) && trip[key] != null ? trip[key].ToString() : "-";
+
+            decimal GetDecimal(string key) =>
+                trip.ContainsKey(key) && trip[key] != null ? Convert.ToDecimal(trip[key]) : 0;
+
+            DateTime? GetDate(string key) =>
+                trip.ContainsKey(key) && trip[key] != null ? Convert.ToDateTime(trip[key]) : null;
+
+            var historyRows = new StringBuilder();
+
+            foreach (var h in history)
+            {
+                var actionDate = h.ContainsKey("ActionDate") && h["ActionDate"] != null
+                    ? Convert.ToDateTime(h["ActionDate"]).ToString("dd-MMM-yyyy HH:mm")
+                    : "-";
+
+                historyRows.Append($@"
+<tr>
+ <td>{actionDate}</td>
+  
+    <td>{GetValue(h, "ActionName")}</td>
+    <td>{GetValue(h, "ActionByRole")}</td>
+    <td>{GetValue(h, "FullName")}</td>
+  
+   
+</tr>");
+            }
+
+
+            string templateDir = @"C:\Users\Jenisha Dhodia\Documents\GitHub\Carbon360\Backend\ProjectApp.API\Template\VehicleTrip";
+
+            string css = await File.ReadAllTextAsync(Path.Combine(templateDir, "styles.css"));
+            string contentHtml = await File.ReadAllTextAsync(Path.Combine(templateDir, "VehicleTripReport.html"));
+            string headerHtml = await File.ReadAllTextAsync(Path.Combine(templateDir, "header.html"));
+            string footerHtml = await File.ReadAllTextAsync(Path.Combine(templateDir, "footer.html"));
+
+            string cssTag = $"<style>{css}</style>";
+
+            contentHtml = contentHtml.Replace("</head>", $"{cssTag}</head>");
+            headerHtml = headerHtml.Replace("</head>", $"{cssTag}</head>");
+            footerHtml = footerHtml.Replace("</head>", $"{cssTag}</head>");
+
+            contentHtml = contentHtml.Replace("{{EntryByFullName}}", GetString("EntryByFullName"));
+            contentHtml = contentHtml.Replace("{{EntryByUserName}}", GetString("EntryByUserName"));
+            contentHtml = contentHtml.Replace("{{EntryByEmail}}", GetString("EntryByEmail"));
+            contentHtml = contentHtml.Replace("{{status}}", GetString("Status"));
+
+            contentHtml = contentHtml.Replace("{{vehicle}}", GetString("vehicle_number"));
+            contentHtml = contentHtml.Replace("{{VehicleType}}", GetString("VehicleType"));
+            contentHtml = contentHtml.Replace("{{fuelType}}", GetString("FuelTypeName"));
+            contentHtml = contentHtml.Replace("{{fromCity}}", GetString("FromCity"));
+            contentHtml = contentHtml.Replace("{{toCity}}", GetString("ToCity"));
+            contentHtml = contentHtml.Replace("{{distance}}", GetDecimal("DistanceKm").ToString("0.##"));
+            contentHtml = contentHtml.Replace("{{fuel}}", GetDecimal("FuelConsumedLtr").ToString("0.##"));
+            var fuel = GetDecimal("FuelConsumedLtr");
+
+            var co2Factor = GetDecimal("CO2Factor");
+            var no2Factor = GetDecimal("NO2Factor");
+            var ch4Factor = GetDecimal("CH4Factor");
+
+            var co2 = fuel * co2Factor;
+            var no2 = fuel * no2Factor;
+            var ch4 = fuel * ch4Factor;
+
+            var total = co2 + (ch4 * 28) + (no2 * 265);
+
+            contentHtml = contentHtml.Replace("{{co2Factor}}", co2Factor.ToString("0.########"));
+            contentHtml = contentHtml.Replace("{{no2Factor}}", no2Factor.ToString("0.########"));
+            contentHtml = contentHtml.Replace("{{ch4Factor}}", ch4Factor.ToString("0.########"));
+
+            contentHtml = contentHtml.Replace("{{co2}}", co2.ToString("0.##"));
+            contentHtml = contentHtml.Replace("{{no2}}", no2.ToString("0.######"));
+            contentHtml = contentHtml.Replace("{{ch4}}", ch4.ToString("0.######"));
+
+            contentHtml = contentHtml.Replace("{{total}}", total.ToString("0.##"));
+            contentHtml = contentHtml.Replace("{{tripstartdate}}",
+    GetDate("TripStartDateTime")?.ToString("dd-MMM-yyyy HH:mm") ?? "-");
+
+            contentHtml = contentHtml.Replace("{{tripenddate}}",
+                GetDate("TripEndDateTime")?.ToString("dd-MMM-yyyy HH:mm") ?? "-");
+            contentHtml = contentHtml.Replace("{{co2Factor}}", GetDecimal("CO2").ToString());
+            contentHtml = contentHtml.Replace("{{no2Factor}}", GetDecimal("NO2").ToString());
+            contentHtml = contentHtml.Replace("{{ch4Factor}}", GetDecimal("CH4").ToString());
+            contentHtml = contentHtml.Replace("{{GWP_CH4}}", "28");
+            contentHtml = contentHtml.Replace("{{GWP_N2O}}", "265");
+            contentHtml = contentHtml.Replace("{{total}}", GetDecimal("TotalEmission").ToString("0.##"));
+
+            var start = GetDate("TripStartDateTime");
+            var end = GetDate("TripEndDateTime");
+
+            string duration = "-";
+
+            if (start != null && end != null)
+            {
+                var diff = end.Value - start.Value;
+
+                int totalHours = (int)diff.TotalHours;
+                int minutes = diff.Minutes;
+
+                duration = $"{totalHours} hrs {minutes} mins";
+            }
+
+            contentHtml = contentHtml.Replace("{{tripduration}}", duration);
+
+            contentHtml = contentHtml.Replace("{{historyRows}}", historyRows.ToString());
+
+            headerHtml = headerHtml.Replace("{{ReportTitle}}", "Vehicle Trip Emission Report");
+            footerHtml = footerHtml.Replace("{{generatedDate}}", DateTime.Now.ToString("dd-MMM-yyyy HH:mm"));
+
+            //PUPPETEER SETUP
+            await new BrowserFetcher().DownloadAsync();
+
+            using var browser = await Puppeteer.LaunchAsync(new LaunchOptions
+            {
+                Headless = true,
+                Args = new[] { "--no-sandbox" }
+            });
+
+            using var page = await browser.NewPageAsync();
+
+            await page.SetContentAsync(contentHtml, new PuppeteerSharp.NavigationOptions
+            {
+                WaitUntil = new[] { WaitUntilNavigation.Networkidle0 }
+            });
+
+            var pdf = await page.PdfDataAsync(new PdfOptions
+            {
+                Format = PaperFormat.A4,
+                PrintBackground = true,
+                DisplayHeaderFooter = true,
+                HeaderTemplate = headerHtml,
+                FooterTemplate = footerHtml,
+                MarginOptions = new MarginOptions
+                {
+                    //Top = "60px",
+                    //Bottom = "60px",
+                    //Left = "20px",
+                    //Right = "20px"
+
+                    Top = "70px",
+                    Bottom = "70px",
+                    Left = "25px",
+                    Right = "25px"
+                }
+            });
+
+            await browser.CloseAsync();
+            return pdf;
+            string GetValue(Dictionary<string, object> dict, string key)
+            {
+                return dict.ContainsKey(key) && dict[key] != null ? dict[key].ToString() : "-";
+            }
+
+        }
     }
 
 }
