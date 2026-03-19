@@ -334,6 +334,13 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
                     LoadFactor = reader.IsDBNull(reader.GetOrdinal("LoadFactor")) ? 0 : reader.GetDecimal(reader.GetOrdinal("LoadFactor")),
                     PowerOutputKWH = reader.IsDBNull(reader.GetOrdinal("PowerOutputKWH")) ? 0 : reader.GetDecimal(reader.GetOrdinal("PowerOutputKWH")),
                     FuelConsumedLiters = reader.IsDBNull(reader.GetOrdinal("FuelConsumedLiters")) ? 0 : reader.GetDecimal(reader.GetOrdinal("FuelConsumedLiters")),
+                    CO2 = reader.IsDBNull(reader.GetOrdinal("CO2_KG")) ? null : reader.GetDecimal(reader.GetOrdinal("CO2_KG")),
+                    NO2 = reader.IsDBNull(reader.GetOrdinal("NO2_KG")) ? null : reader.GetDecimal(reader.GetOrdinal("NO2_KG")),
+                    CH4 = reader.IsDBNull(reader.GetOrdinal("CH4_KG")) ? null : reader.GetDecimal(reader.GetOrdinal("CH4_KG")),
+                    TotalCO2 = reader.IsDBNull(reader.GetOrdinal("Total_CO2_KG")) ? 0 : reader.GetDecimal(reader.GetOrdinal("Total_CO2_KG")),
+                    TotalNO2 = reader.IsDBNull(reader.GetOrdinal("Total_NO2_KG")) ? 0 : reader.GetDecimal(reader.GetOrdinal("Total_NO2_KG")),
+                    TotalCH4 = reader.IsDBNull(reader.GetOrdinal("Total_CH4_KG")) ? 0 : reader.GetDecimal(reader.GetOrdinal("Total_CH4_KG")),
+                    TotalEmission = reader.IsDBNull(reader.GetOrdinal("Total_CO2E_KG")) ? 0 : reader.GetDecimal(reader.GetOrdinal("Total_CO2E_KG")),
                     StatusId = reader.IsDBNull(reader.GetOrdinal("StatusId")) ? 0 : reader.GetInt32(reader.GetOrdinal("StatusId")),
                     EntryBy = reader.IsDBNull(reader.GetOrdinal("EntryBy")) ? 0 : reader.GetInt32(reader.GetOrdinal("EntryBy")),
                     EntryDate = reader.IsDBNull(reader.GetOrdinal("EntryDate")) ? DateTime.MinValue : reader.GetDateTime(reader.GetOrdinal("EntryDate"))
