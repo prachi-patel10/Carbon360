@@ -148,17 +148,16 @@ namespace ProjectApp.API.Controllers.Account.GeneratorOperation
 
         [HttpGet("search")]
         public async Task<IActionResult> Search(
-    string search,
-    string generatorName,
-    [FromQuery] List<string> fuelTypes,   // ?fuelTypes=Diesel&fuelTypes=Petrol
-    DateTime? startDate,
-    DateTime? endDate,
-    int? statusId,
+    string? search = null,
+    string? generatorName = null,
+    [FromQuery] List<string>? fuelTypes = null,
+    DateTime? startDate = null,
+    DateTime? endDate = null,
+    int? statusId = null,
     int pageNumber = 1,
     int pageSize = 10)
         {
-            // Join list into comma-separated string; pass null if empty
-            string fuelTypesString = fuelTypes != null && fuelTypes.Any()
+            string? fuelTypesString = fuelTypes != null && fuelTypes.Any()
                 ? string.Join(",", fuelTypes)
                 : null;
 
