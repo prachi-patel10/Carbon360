@@ -33,6 +33,7 @@ interface VehicleEmissionDisplay {
   templateUrl: './search-vehicle.html',
   styleUrls: ['./search-vehicle.css'],
 })
+
 export class SearchVehicle implements OnInit {
 
   emissions = signal<VehicleEmissionDisplay[]>([]);

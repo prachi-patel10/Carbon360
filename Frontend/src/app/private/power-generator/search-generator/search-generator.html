@@ -100,7 +100,7 @@
               <td>{{ e.entryDate | date:'dd-MMM-yyyy' }}</td>
               <td>{{ e.startTime | date:'dd-MMM-yyyy' }}</td>
               <td>{{ e.endTime | date:'dd-MMM-yyyy' }}</td>
-              <td>{{ e.loadFactor }}%</td>
+              <td>{{ e.loadFactor }}</td>
               <td>{{ e.fuelConsumedLiters }}</td>
               <td class="emission-value">{{ e.totalEmission }}   <i class="fas fa-leaf leaf-icon"></i>  </td>              <td>
                 <button class="btn btn-sm btn-open" (click)="goToDetail(e.operationId)">

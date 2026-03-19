@@ -1,15 +1,7 @@
 <div class="charts-container">
-  <!-- Bar Chart -->
-  <div class="chart-row">
-    <div class="chart-left">
-      <h3>Bar Chart</h3>
-      <p>This chart shows monthly sales from January to May.</p>
-      <canvas id="barChart"></canvas>
-    </div>
-  </div>
 
-  <!-- Line Chart -->
-  <div class="chart-row">
+  <!-- Line Chart (unchanged) -->
+  <div class="chart-row single-chart">
     <div class="chart-left">
       <h3>Line Chart</h3>
       <p>This chart displays daily visitors trend across the week.</p>
@@ -17,12 +9,50 @@
     </div>
   </div>
 
-  <!-- Pie Chart -->
+  <!-- Pie + Bar Chart Row (unchanged) -->
   <div class="chart-row">
     <div class="chart-left">
       <h3>Pie Chart</h3>
       <p>This chart represents browser market share distribution.</p>
       <canvas id="pieChart"></canvas>
     </div>
+    <div class="chart-right">
+      <h3>Bar Chart</h3>
+      <p>This chart shows monthly sales from January to May.</p>
+      <canvas id="barChart"></canvas>
+    </div>
   </div>
+
+  <!-- ── NEW: Dynamic Bar Chart Row ─────────────────────────── -->
+  <div class="chart-row single-chart">
+    <div class="chart-left dynamic-chart-wrapper">
+
+      <div class="dynamic-chart-header">
+        <div>
+          <h3>Dynamic Bar Chart</h3>
+          <p>Select a dataset to update the chart instantly.</p>
+        </div>
+
+        <!-- Dropdown to switch datasets -->
+        <div class="dropdown-wrapper">
+          <label for="datasetSelect">Select Dataset</label>
+          <select
+            id="datasetSelect"
+            [(ngModel)]="selectedDataset"
+            (change)="onDatasetChange($event)"
+          >
+            <option value="fuelPerVehicle">Fuel Per Vehicle (Litres)</option>
+            <option value="co2PerGenerator">CO₂ Per Generator (kg)</option>
+            <option value="tripsPerCity">Trips Per City (count)</option>
+            <option value="runHoursPerGenerator">Run Hours Per Generator</option>
+          </select>
+        </div>
+      </div>
+
+      <canvas id="dynamicBarChart"></canvas>
+
+    </div>
+  </div>
+  <!-- ── END Dynamic Bar Chart ──────────────────────────────── -->
+
 </div>

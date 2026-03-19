@@ -135,15 +135,32 @@ namespace ProjectApp.API.Controllers.Account.VehicleTripEmission
 
         [HttpGet("search")]
         public async Task<IActionResult> Search(
+    string? search = null,
+    string? vehicleNumber = null,
+    [FromQuery] List<string>? fuelType = null,   // ✅ MULTI SELECT
+    string? vehicleType = null,
+    DateTime? startDate = null,
+    DateTime? endDate = null,
+    int? statusId = null,
     int pageNumber = 1,
     int pageSize = 10,
     string sortColumn = "tripstartdatetime",
     string sortDirection = "DESC")
         {
+            // ✅ Convert list → CSV
+            string fuelTypeCsv = (fuelType != null && fuelType.Any())
+                ? string.Join(",", fuelType)
+                : null;
+
             var (data, totalRecords) = await _service.SearchVehicleTrips(
-                null, null, null, null,
-                null, null,
-                null, null,
+                search,
+                vehicleNumber,
+                fuelTypeCsv,   // ✅ PASS CSV
+                vehicleType,
+                startDate,
+                endDate,
+                statusId,
+                null,
                 pageNumber,
                 pageSize,
                 sortColumn,
@@ -154,12 +171,11 @@ namespace ProjectApp.API.Controllers.Account.VehicleTripEmission
             {
                 success = true,
                 data = data,
-                totalRecords = totalRecords,
-                pageNumber = pageNumber,
-                pageSize = pageSize
+                totalRecords,
+                pageNumber,
+                pageSize
             });
         }
-
 
         //        [HttpGet("my-actions")]
         //        public async Task<IActionResult> GetMyActions(int pageNumber = 1, int pageSize = 10, string sortColumn = "fromCity",
