@@ -47,7 +47,7 @@
   <ul class="menu">
 
     <!-- ================= CONFIGURATION ================= -->
-    <li class="menu-parent">
+    <li class="menu-parent" *ngIf="isAdmin() " >
       <div class="menu-title" (click)="toggleConfigMenu('configuration')">
         <i class="fas fa-cogs"></i>
         <span>Configuration</span>
@@ -57,7 +57,7 @@
       <ul class="submenu" *ngIf="isConfigMenuOpen('configuration')">
 
         <!-- ===== ADMINISTRATION ===== -->
-        <li class="menu-parent">
+        <li class="menu-parent" >
           <div class="menu-title" (click)="toggleSubMenu('admin')">
             <i class="fas fa-user-cog"></i>
             <span>Administration</span>
@@ -135,7 +135,7 @@
     </li>
 
     <!-- ================= FLEET ================= -->
-    <li class="menu-parent">
+    <li class="menu-parent" *ngIf="isReporter() || isCorporate()">
       <div class="menu-title" (click)="toggleMainMenu('fleet')">
         <i class="fas fa-shipping-fast"></i>
         <span>Fleet & Transport</span>
@@ -143,7 +143,7 @@
       </div>
 
       <ul class="submenu" *ngIf="isMainMenuOpen('fleet')">
-        <li *ngIf="isAdmin() || isReporter() || isCorporate()" (click)="goTo('vehicle')" [class.active-link]="isActive('/vehicle')">
+        <li *ngIf="isAdmin() || isReporter()" (click)="goTo('vehicle')" [class.active-link]="isActive('/vehicle')">
           <i class="fas fa-file-alt"></i> <span> Report</span>
         </li>
  <li *ngIf="isAdmin() || isReporter() || isCorporate()"(click)="goTo('searchVehicle')" [class.active-link]="isActive('/searchVehicle')">
@@ -157,7 +157,7 @@
     </li>
 
     <!-- ================= POWER ================= -->
-    <li class="menu-parent">
+    <li class="menu-parent" *ngIf="isReporter() || isCorporate()">
       <div class="menu-title" (click)="toggleMainMenu('power')">
         <i class="fas fa-charging-station"></i>
         <span>Power Generation</span>
@@ -165,7 +165,7 @@
       </div>
 
       <ul class="submenu" *ngIf="isMainMenuOpen('power')">
-        <li *ngIf="isAdmin() || isReporter() || isCorporate()" (click)="goTo('generator-ec')" [class.active-link]="isActive('/generator-ec')">
+        <li *ngIf="isAdmin() || isReporter() " (click)="goTo('generator-ec')" [class.active-link]="isActive('/generator-ec')">
           <i class="fas fa-chart-bar"></i> <span> Report</span>
         </li>
         <li *ngIf="isAdmin() || isReporter() || isCorporate()" (click)="goTo('searchGenerator')" [class.active-link]="isActive('/searchGenerator')">

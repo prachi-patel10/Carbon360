@@ -1,72 +1,70 @@
 <div class="range-wrapper">
 
-  <!-- Button -->
-  <div class="range-input" (click)="togglePicker()">
+  <!-- Trigger -->
+  <div class="range-input" [class.active]="showPicker" (click)="togglePicker()">
     <i class="fas fa-calendar"></i>
-    <span *ngIf="rangeForm.value.startDate && rangeForm.value.endDate; else placeholder">
-      {{ rangeForm.value.startDate | date:'dd MMM yyyy' }} -
-      {{ rangeForm.value.endDate | date:'dd MMM yyyy' }}
-    </span>
-    <ng-template #placeholder>
-      Select Date Range
+    <ng-container *ngIf="selectedStart && selectedEnd; else emptyPlaceholder">
+      <span class="date-display">
+        {{ selectedStart | date:'dd MMM yyyy' }} &mdash;
+        {{ selectedEnd | date:'dd MMM yyyy' }}
+      </span>
+      <span class="clear-x" (click)="$event.stopPropagation(); clearRange()">✕</span>
+    </ng-container>
+    <ng-template #emptyPlaceholder>
+      <span class="placeholder-text">Select date range</span>
+      <span class="cal-arrow">&#9660;</span>
     </ng-template>
   </div>
 
   <!-- Popup -->
-  <div *ngIf="showPicker()">
-    <div class="range-popup">
-      <form [formGroup]="rangeForm">
+  <div class="range-popup" *ngIf="showPicker">
 
-        <div class="calendar-container">
+    <div class="popup-header">
+      <span>Select date range</span>
+      <span class="close-x" (click)="pickerState.close()">✕</span>
+    </div>
 
-          <!-- FROM -->
-          <div class="calendar-box">
-            <label>From</label>
-            <input type="date"
-                   class="form-control"
-                   formControlName="startDate"
-                   [max]="today">
-          </div>
+    <div class="popup-body">
 
-          <!-- ICON -->
-          <i class="bi bi-arrow-right arrow"></i>
-
-          <!-- TO -->
-          <div class="calendar-box">
-            <label>To</label>
-            <input type="date"
-                   class="form-control"
-                   formControlName="endDate"
-                   [max]="today">
-          </div>
-
+      <!-- Date inputs -->
+      <div class="date-fields">
+        <div class="date-field">
+          <label>From</label>
+          <input type="date" [max]="today" [value]="fromValue"
+            (change)="onFromChange($event)" />
         </div>
-
-        <!-- VALIDATION MESSAGES -->
-        <div class="error" *ngIf="rangeForm.hasError('invalidRange') && (rangeForm.touched || rangeForm.dirty)">
-          From date must be earlier than To date
+        <div class="date-field">
+          <label>To</label>
+          <input type="date" [max]="today" [value]="toValue"
+            (change)="onToChange($event)" />
         </div>
+      </div>
 
-        <div class="error" *ngIf="rangeForm.get('startDate')?.touched && rangeForm.get('startDate')?.errors?.['required']">
-          Start date is required
-        </div>
+      <!-- Quick ranges -->
+      <div class="divider-row">
+        <div class="divider-line"></div>
+        <span class="divider-label">quick select</span>
+        <div class="divider-line"></div>
+      </div>
 
-        <div class="error" *ngIf="rangeForm.get('endDate')?.touched && rangeForm.get('endDate')?.errors?.['required']">
-          End date is required
-        </div>
+      <div class="quick-ranges">
+        <button type="button" class="qr-btn"
+          [class.active]="activeQuick === 'today'"
+          (click)="setQuickRange('today')">Today</button>
+        <button type="button" class="qr-btn"
+          [class.active]="activeQuick === 'week'"
+          (click)="setQuickRange('week')">This week</button>
+        <button type="button" class="qr-btn"
+          [class.active]="activeQuick === 'month'"
+          (click)="setQuickRange('month')">This month</button>
+        <button type="button" class="qr-btn"
+          [class.active]="activeQuick === 'quarter'"
+          (click)="setQuickRange('quarter')">Last 3 months</button>
+        <button type="button" class="qr-btn"
+          [class.active]="activeQuick === 'year'"
+          (click)="setQuickRange('year')">This year</button>
+      </div>
 
-        <!-- ACTIONS -->
-        <div class="actions">
-          <button type="button" class="btn btn-secondary" (click)="cancel()">Cancel</button>
-          <button type="button"
-                  class="btn btn-primary"
-                  (click)="apply()"
-                  [disabled]="rangeForm.invalid">
-            Apply
-          </button>
-        </div>
-
-      </form>
     </div>
   </div>
 

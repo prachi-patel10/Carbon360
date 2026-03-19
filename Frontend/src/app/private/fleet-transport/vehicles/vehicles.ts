@@ -270,25 +270,28 @@ export class Vehicles implements OnInit {
 
   // ----------------- SORT -----------------
   sort(column: string) {
-    const columnMap: any = {
-      'engine': 'engine_capacity',
-      'emission': 'emission_standard',
-      'vehicle_type': 'vehicle_type_name',
-      'fuel': 'fuel_name',
-      'department': 'department_name',
-      'status': 'isActive'
-    };
-    const backendColumn = columnMap[column] || column;
 
-    if (this.sortColumn() === backendColumn) {
-      this.sortDirection.set(this.sortDirection() === 'asc' ? 'desc' : 'asc');
-    } else {
-      this.sortColumn.set(backendColumn);
-      this.sortDirection.set('asc');
-    }
-    this.loadVehicles();
+  const columnMap: any = {
+    vehicle_number: 'vehicle_number',
+    vehicle_type_name: 'vehicle_type_name',
+    fuel_name: 'fuel_name',
+    department_name: 'department_name'   ,// ✅ CORRECT
+    engine_capacity: 'engine_capacity',
+    emission_standard: 'emission_standard',
+    isActive: 'isActive'
+  };
+
+  const backendColumn = columnMap[column] || column;
+
+  if (this.sortColumn() === backendColumn) {
+    this.sortDirection.set(this.sortDirection() === 'asc' ? 'desc' : 'asc');
+  } else {
+    this.sortColumn.set(backendColumn);
+    this.sortDirection.set('asc');
   }
-
+console.log('SORT:', this.sortColumn(), this.sortDirection());
+  this.loadVehicles();
+}
   // ----------------- CREATE / UPDATE -----------------
   saveVehicle() {
 

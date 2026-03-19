@@ -193,6 +193,28 @@ th {
 th:last-child {
   text-align: center;
 }
+.sortable {
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.sort-icons {
+  margin-left: 5px;
+  font-size: 10px;
+  display: inline-flex;
+  flex-direction: column;
+  line-height: 8px;
+}
+
+.sort-icons span {
+  color: #ccc;
+}
+
+.sort-icons span.active {
+  color: #1b5e20; /* green active arrow */
+  font-weight: bold;
+}
 td.actions {
   display: flex;
   gap: 8px;

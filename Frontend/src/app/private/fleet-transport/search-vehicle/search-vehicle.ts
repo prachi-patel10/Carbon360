@@ -1,7 +1,5 @@
-import { Component, OnInit, signal } from '@angular/core';
-import { VehicleService } from '../vehicles/vehicle-service';
-import { TripService } from '../vehicle-ec/vehicle-service-ec';
-import { FueltypeService } from '../../masters/fueltype/fueltype-service'; // Added FueltypeService
+import { Component, HostListener, OnInit, ViewChild, signal } from '@angular/core';
+import { FueltypeService } from '../../masters/fueltype/fueltype-service';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { SearchVehcileService } from './search-vehcile-service';
@@ -19,7 +17,6 @@ interface VehicleEmissionDisplay {
   tripEndDateTime: string;
   statusId: number;
   entryDate: string;
-
   totalCO2: number;
   totalNO2: number;
   totalCH4: number;
@@ -33,14 +30,20 @@ interface VehicleEmissionDisplay {
   templateUrl: './search-vehicle.html',
   styleUrls: ['./search-vehicle.css'],
 })
-
 export class SearchVehicle implements OnInit {
+
+  @ViewChild('opDatePicker') opDatePicker!: DateRangePickerComponent;
+  @ViewChild('entryDatePicker') entryDatePicker!: DateRangePickerComponent;
 
   emissions = signal<VehicleEmissionDisplay[]>([]);
   filteredData = signal<VehicleEmissionDisplay[]>([]);
 
   searchText = signal<string>('');
-  selectedFuelType: string = 'All';
+
+  // Fuel multi-select
+  fuelTypes: any[] = [];
+  selectedFuels: string[] = [];
+  fuelDropdownOpen = false;
 
   // Operation Date Range
   operationStartDate = signal<string | null>(null);
@@ -50,34 +53,26 @@ export class SearchVehicle implements OnInit {
   entryStartDate = signal<string | null>(null);
   entryEndDate = signal<string | null>(null);
 
-  // --- Added fuelTypes property ---
-  fuelTypes: any[] = [];
-
   totalRecordsCount = signal<number>(0);
-
-  filterStartDate = signal<string | null>(null);
-  filterEndDate = signal<string | null>(null);
-  pageSizeOptions = [5, 10, 15, 20];
   pageSize = 10;
   sortColumn = 'entryDate';
   sortDirection = 'DESC';
   currentPage = signal<number>(1);
   totalPages = signal<number>(1);
 
-  selectedRecord: VehicleEmissionDisplay | null = null;
-
   constructor(
     private service: SearchVehcileService,
-    private fuelService: FueltypeService, // <-- Inject FueltypeService
+    private fuelService: FueltypeService,
     private router: Router
   ) { }
 
   ngOnInit(): void {
     this.loadTrips();
-    this.loadFuelTypes(); // <-- load fuel types on init
+    this.loadFuelTypes();
   }
 
-  // --- Added method to fetch fuel types ---
+  // ─── Data Loading ─────────────────────────────────────────────
+
   loadFuelTypes() {
     this.fuelService.getAll().subscribe({
       next: (res: any) => {
@@ -87,18 +82,6 @@ export class SearchVehicle implements OnInit {
     });
   }
 
-  /*SORTING*/
-  sort(column: string) {
-    if (this.sortColumn === column) {
-      this.sortDirection = this.sortDirection === 'ASC' ? 'DESC' : 'ASC';
-    } else {
-      this.sortColumn = column;
-      this.sortDirection = 'ASC';
-    }
-    this.loadTrips();
-  }
-
-  /*LOAD DATA*/
   loadTrips() {
     this.service.searchTrips(
       this.currentPage(),
@@ -124,7 +107,6 @@ export class SearchVehicle implements OnInit {
           totalEmission: e.totalEmission ?? 0
         }));
 
-        // Sort by entryDate descending
         const sorted = mapped.sort((a, b) =>
           new Date(b.entryDate).getTime() - new Date(a.entryDate).getTime()
         );
@@ -133,52 +115,97 @@ export class SearchVehicle implements OnInit {
         this.filteredData.set(sorted);
         this.totalPages.set(Math.ceil(res.totalRecords / res.pageSize));
         this.totalRecordsCount.set(res.totalRecords);
-
         this.applyFilters();
       },
       error: err => console.error('Error loading vehicle trips', err)
     });
   }
 
-  /*FILTER EVENTS*/
+  // ─── Fuel Multi-Select ────────────────────────────────────────
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(e: MouseEvent) {
+    if (!(e.target as HTMLElement).closest('.fuel-multiselect'))
+      this.fuelDropdownOpen = false;
+  }
+
+  toggleFuelDropdown() {
+    this.fuelDropdownOpen = !this.fuelDropdownOpen;
+  }
+
+  toggleFuel(name: string) {
+    const idx = this.selectedFuels.indexOf(name);
+    if (idx > -1) this.selectedFuels.splice(idx, 1);
+    else this.selectedFuels.push(name);
+    this.applyFilters();
+  }
+
+  isFuelSelected(name: string): boolean {
+    return this.selectedFuels.includes(name);
+  }
+
+  toggleSelectAll() {
+    if (this.selectedFuels.length === this.fuelTypes.length)
+      this.selectedFuels = [];
+    else
+      this.selectedFuels = this.fuelTypes.map((f: any) => f.fuel_name);
+    this.applyFilters();
+  }
+
+  clearFuels() {
+    this.selectedFuels = [];
+    this.applyFilters();
+  }
+
+  // ─── Search ───────────────────────────────────────────────────
+
   onSearch(event: any) {
     this.searchText.set(event.target.value);
     this.applyFilters();
   }
 
-  onFuelTypeChange(event: any) {
-    this.selectedFuelType = event.target.value;
-    this.applyFilters();
-  }
+  // ─── Date Range ───────────────────────────────────────────────
 
-  onStartDateChange(event: any) {
-    this.filterStartDate.set(event.target.value || null);
-    this.applyFilters();
-  }
-
-  onEndDateChange(event: any) {
-    this.filterEndDate.set(event.target.value || null);
-    this.applyFilters();
-  }
-
-  onTripDateRangeSelected(event: any) {
-    this.filterStartDate.set(event.startDate || null);
-    this.filterEndDate.set(event.endDate || null);
+  onOperationDateRangeSelected(range: { startDate: Date | null, endDate: Date | null }) {
+    this.operationStartDate.set(range.startDate ? range.startDate.toISOString() : null);
+    this.operationEndDate.set(range.endDate ? range.endDate.toISOString() : null);
     this.currentPage.set(1);
     this.applyFilters();
   }
 
-  /*APPLY FILTER*/
+  onEntryDateRangeSelected(range: { startDate: Date | null, endDate: Date | null }) {
+    this.entryStartDate.set(range.startDate ? range.startDate.toISOString() : null);
+    this.entryEndDate.set(range.endDate ? range.endDate.toISOString() : null);
+    this.currentPage.set(1);
+    this.applyFilters();
+  }
+
+  // ─── Reset ────────────────────────────────────────────────────
+
+  resetFilters() {
+    this.selectedFuels = [];
+    this.fuelDropdownOpen = false;
+    this.searchText.set('');
+    this.operationStartDate.set(null);
+    this.operationEndDate.set(null);
+    this.entryStartDate.set(null);
+    this.entryEndDate.set(null);
+    this.currentPage.set(1);
+    this.opDatePicker?.reset();
+    this.entryDatePicker?.reset();
+    this.filteredData.set(this.emissions());
+  }
+
+  // ─── Filters ──────────────────────────────────────────────────
+
   applyFilters() {
     const sText = this.searchText().toLowerCase();
-    const fuel = this.selectedFuelType;
 
     const opStart = this.operationStartDate();
     const opEnd = this.operationEndDate();
     const enStart = this.entryStartDate();
     const enEnd = this.entryEndDate();
 
-    // Convert end dates to include full day
     const opStartDate = opStart ? new Date(opStart) : null;
     const opEndDate = opEnd ? new Date(opEnd) : null;
     if (opEndDate) opEndDate.setHours(23, 59, 59, 999);
@@ -194,60 +221,57 @@ export class SearchVehicle implements OnInit {
         e.fuelType.toLowerCase().includes(sText);
 
       const matchesFuel =
-        fuel === 'All' || e.fuelType.toLowerCase() === fuel.toLowerCase();
+        this.selectedFuels.length === 0 ||
+        this.selectedFuels.map(f => f.toLowerCase())
+          .includes(e.fuelType.toLowerCase());
 
-      // Operation Date Filter
       let matchesOperationDate = true;
       const tripStart = new Date(e.tripStartDateTime);
       const tripEnd = new Date(e.tripEndDateTime);
-
-      // Trip overlaps selected operation range
       if (opStartDate && tripEnd < opStartDate) matchesOperationDate = false;
       if (opEndDate && tripStart > opEndDate) matchesOperationDate = false;
 
-      // Entry Date Filter
       let matchesEntryDate = true;
       const entryDate = new Date(e.entryDate);
-
       if (enStartDate && entryDate < enStartDate) matchesEntryDate = false;
       if (enEndDate && entryDate > enEndDate) matchesEntryDate = false;
 
       return matchesSearch && matchesFuel && matchesOperationDate && matchesEntryDate;
     });
 
-    // this.totalPages.set(Math.ceil(filtered.length / this.pageSize));
     this.filteredData.set(filtered);
   }
 
+  // ─── Pagination ───────────────────────────────────────────────
 
-  /*================= PAGINATION =================*/
-  paginatedData() {
-    return this.filteredData();
-  }
-
-  totalRecords() {
-  return this.totalRecordsCount();
-}
+  paginatedData() { return this.filteredData(); }
+  totalRecords() { return this.totalRecordsCount(); }
 
   goToPage(page: number) {
-  if (page < 1 || page > this.totalPages()) return;
-  this.currentPage.set(page);
-  this.loadTrips();
-}
-
-  nextPage() {
-  if (this.currentPage() < this.totalPages()) {
-    this.currentPage.update(v => v + 1);
+    if (page < 1 || page > this.totalPages()) return;
+    this.currentPage.set(page);
     this.loadTrips();
   }
-}
 
-  previousPage() {
-  if (this.currentPage() > 1) {
-    this.currentPage.update(v => v - 1);
+  changePageSize(event: any) {
+    this.pageSize = Number(event.target.value);
+    this.currentPage.set(1);
     this.loadTrips();
   }
-}
+
+  // ─── Sort ─────────────────────────────────────────────────────
+
+  sort(column: string) {
+    if (this.sortColumn === column)
+      this.sortDirection = this.sortDirection === 'ASC' ? 'DESC' : 'ASC';
+    else {
+      this.sortColumn = column;
+      this.sortDirection = 'ASC';
+    }
+    this.loadTrips();
+  }
+
+  // ─── Navigation ───────────────────────────────────────────────
 
   openTrip(tripId: string) {
     if (!tripId) return;
@@ -255,33 +279,5 @@ export class SearchVehicle implements OnInit {
       ['/dashboard/vehicle-ec', tripId],
       { queryParams: { source: 'search' } }
     );
-  }
-
-  getPages(): number[] {
-    const pages = [];
-    for (let i = 1; i <= this.totalPages(); i++) {
-      pages.push(i);
-    }
-    return pages;
-  }
-
-  changePageSize(event: any) {
-  this.pageSize = Number(event.target.value);
-  this.currentPage.set(1); // reset to first page
-  this.loadTrips(); // reload API with new size
-}
-
-  onOperationDateRangeSelected(event: any) {
-    this.operationStartDate.set(event.startDate || null);
-    this.operationEndDate.set(event.endDate || null);
-    this.currentPage.set(1);
-    this.applyFilters();
-  }
-
-  onEntryDateRangeSelected(event: any) {
-    this.entryStartDate.set(event.startDate || null);
-    this.entryEndDate.set(event.endDate || null);
-    this.currentPage.set(1);
-    this.applyFilters();
   }
 }

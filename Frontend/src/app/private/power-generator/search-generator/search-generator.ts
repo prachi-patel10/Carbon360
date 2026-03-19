@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, ViewChild, HostListener } from '@angular/core';
 import { GeneratorOperation, SearchGeneratorService } from './search-generator-service';
 import { FueltypeService } from '../../masters/fueltype/fueltype-service';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -21,23 +21,28 @@ interface GeneratorOperationDisplay extends GeneratorOperation {
 })
 export class SearchGenerator implements OnInit {
 
+  @ViewChild('opDatePicker') opDatePicker!: DateRangePickerComponent;
+  @ViewChild('entryDatePicker') entryDatePicker!: DateRangePickerComponent;
+
   emissions = signal<GeneratorOperationDisplay[]>([]);
   filteredData = signal<GeneratorOperationDisplay[]>([]);
 
   fuelTypes: any[] = [];
-  selectedFuelType: string = 'All';
+  selectedFuels: string[] = [];
+  fuelDropdownOpen = false;
 
   searchText = signal<string>('');
 
-  //  Unified date range filter
   selectedDateRange: { startDate: Date | null; endDate: Date | null } = {
     startDate: null,
     endDate: null
   };
 
-  selectedEntryDateRange: { startDate: Date | null; endDate: Date | null } = { startDate: null, endDate: null };
+  selectedEntryDateRange: { startDate: Date | null; endDate: Date | null } = {
+    startDate: null,
+    endDate: null
+  };
 
-  //  Pagination state
   currentPage = signal<number>(1);
   pageSize = signal<number>(10);
 
@@ -55,6 +60,8 @@ export class SearchGenerator implements OnInit {
     this.loadEmissions();
     this.loadFuelTypes();
   }
+
+  // ─── Data Loading ────────────────────────────────────────────
 
   loadEmissions() {
     this.service.getEmissions().subscribe({
@@ -86,47 +93,81 @@ export class SearchGenerator implements OnInit {
     });
   }
 
-  onFuelTypeChange(event: any) {
-    this.selectedFuelType = event.target.value;
+  // ─── Fuel Multi-Select ───────────────────────────────────────
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(e: MouseEvent) {
+    if (!(e.target as HTMLElement).closest('.fuel-multiselect'))
+      this.fuelDropdownOpen = false;
+  }
+
+  toggleFuelDropdown() {
+    this.fuelDropdownOpen = !this.fuelDropdownOpen;
+  }
+
+  toggleFuel(name: string) {
+    const idx = this.selectedFuels.indexOf(name);
+    if (idx > -1) this.selectedFuels.splice(idx, 1);
+    else this.selectedFuels.push(name);
     this.applyFilters();
   }
 
-  onDateRangeChange(event: any) {
-    const value = event.target.value;
-    if (!value) {
-      this.selectedDateRange = { startDate: null, endDate: null };
-      this.applyFilters();
-      return;
-    }
+  isFuelSelected(name: string): boolean {
+    return this.selectedFuels.includes(name);
+  }
 
-    const [from, to] = value.split(' to ');
-    if (from && to) {
-      const startDate = new Date(from);
-      startDate.setHours(0, 0, 0, 0);
-      const endDate = new Date(to);
-      endDate.setHours(23, 59, 59, 999);
-
-      this.selectedDateRange = { startDate, endDate };
-
-      console.log("▶ Start Date sent:", startDate.toISOString());
-      console.log("▶ End Date sent:", endDate.toISOString());
-    }
-
+  toggleSelectAll() {
+    if (this.selectedFuels.length === this.fuelTypes.length)
+      this.selectedFuels = [];
+    else
+      this.selectedFuels = this.fuelTypes.map((f: any) => f.fuel_name);
     this.applyFilters();
   }
+
+  clearFuels() {
+    this.selectedFuels = [];
+    this.applyFilters();
+  }
+
+  // ─── Search ──────────────────────────────────────────────────
 
   onSearch(event: any) {
     this.searchText.set(event.target.value);
     this.applyFilters();
   }
 
+  // ─── Date Range ──────────────────────────────────────────────
+
+  onDateRangeSelected(range: { startDate: Date | null; endDate: Date | null }) {
+    this.selectedDateRange = range;
+    this.applyFilters();
+  }
+
+  onEntryDateRangeSelected(range: { startDate: Date | null; endDate: Date | null }) {
+    this.selectedEntryDateRange = range;
+    this.applyFilters();
+  }
+
+  // ─── Reset ───────────────────────────────────────────────────
+
+  resetFilters() {
+    this.selectedFuels = [];
+    this.fuelDropdownOpen = false;
+    this.searchText.set('');
+    this.selectedDateRange = { startDate: null, endDate: null };
+    this.selectedEntryDateRange = { startDate: null, endDate: null };
+    this.currentPage.set(1);
+    this.filteredData.set(this.emissions());
+    this.opDatePicker?.reset();
+    this.entryDatePicker?.reset();
+  }
+
+  // ─── Filters ─────────────────────────────────────────────────
+
   applyFilters() {
     const sText = this.searchText().toLowerCase();
-    const fFuel = this.selectedFuelType;
-
     const opStartRange = this.selectedDateRange.startDate;
     const opEndRange = this.selectedDateRange.endDate;
-
     const entryStartRange = this.selectedEntryDateRange.startDate;
     const entryEndRange = this.selectedEntryDateRange.endDate;
 
@@ -137,10 +178,10 @@ export class SearchGenerator implements OnInit {
         (e.fuelType || '').toLowerCase().includes(sText);
 
       const matchesFuel =
-        fFuel === 'All' ||
-        (e.fuelType || '').toLowerCase() === fFuel.toLowerCase();
+        this.selectedFuels.length === 0 ||
+        this.selectedFuels.map(f => f.toLowerCase())
+          .includes((e.fuelType || '').toLowerCase());
 
-      // Filter by Operation Date / Start-End time
       let matchesOperationDate = true;
       if (opStartRange && opEndRange) {
         const opStart = new Date(e.startTime);
@@ -148,11 +189,9 @@ export class SearchGenerator implements OnInit {
         matchesOperationDate = opEnd >= opStartRange && opStart <= opEndRange;
       }
 
-      // Filter by EntryDate range
       let matchesEntryDate = true;
       if (entryStartRange && entryEndRange) {
         const entryDate = new Date(e.entryDate);
-        // Normalize times to ensure inclusive comparison
         entryDate.setHours(0, 0, 0, 0);
         const start = new Date(entryStartRange);
         start.setHours(0, 0, 0, 0);
@@ -165,10 +204,11 @@ export class SearchGenerator implements OnInit {
     });
 
     this.filteredData.set(filtered);
-    this.currentPage.set(1); // reset to first page
+    this.currentPage.set(1);
   }
 
-  /* ================= Pagination Helpers ================= */
+  // ─── Pagination ──────────────────────────────────────────────
+
   totalRecords() { return this.filteredData().length; }
   totalPages() { return Math.ceil(this.totalRecords() / this.pageSize()); }
 
@@ -178,15 +218,16 @@ export class SearchGenerator implements OnInit {
   }
 
   goToPage(page: number) {
-    if (page >= 1 && page <= this.totalPages()) {
+    if (page >= 1 && page <= this.totalPages())
       this.currentPage.set(page);
-    }
   }
 
   changePageSize(event: any) {
     this.pageSize.set(+event.target.value);
     this.currentPage.set(1);
   }
+
+  // ─── Navigation ──────────────────────────────────────────────
 
   goToDetail(operationId: string) {
     this.router.navigate(
@@ -195,19 +236,19 @@ export class SearchGenerator implements OnInit {
     );
   }
 
+  // ─── Sort ────────────────────────────────────────────────────
+
   sortBy(column: string) {
-    if (this.sortColumn === column) {
+    if (this.sortColumn === column)
       this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
-    } else {
+    else {
       this.sortColumn = column;
       this.sortDirection = 'asc';
     }
 
     const sorted = [...this.filteredData()].sort((a: any, b: any) => {
-      let valueA = a[column];
-      let valueB = b[column];
-      if (valueA == null) valueA = '';
-      if (valueB == null) valueB = '';
+      let valueA = a[column] ?? '';
+      let valueB = b[column] ?? '';
       if (typeof valueA === 'string') valueA = valueA.toLowerCase();
       if (typeof valueB === 'string') valueB = valueB.toLowerCase();
       if (valueA < valueB) return this.sortDirection === 'asc' ? -1 : 1;
@@ -216,48 +257,5 @@ export class SearchGenerator implements OnInit {
     });
 
     this.filteredData.set(sorted);
-  }
-
-
-  // Called when user selects From Date
-  onFromDateChange(event: any) {
-    const value = event.target.value;
-    if (value) {
-      const startDate = new Date(value);
-      startDate.setHours(0, 0, 0, 0); // always 00:00
-      this.selectedDateRange.startDate = startDate;
-      console.log("▶ From Date sent:", startDate.toISOString());
-    } else {
-      this.selectedDateRange.startDate = null;
-    }
-    this.applyFilters();
-  }
-
-  onToDateChange(event: any) {
-    const value = event.target.value;
-    if (value) {
-      const endDate = new Date(value);
-      endDate.setHours(23, 59, 59, 999); // always 23:59
-      this.selectedDateRange.endDate = endDate;
-      console.log("▶ To Date sent:", endDate.toISOString());
-    } else {
-      this.selectedDateRange.endDate = null;
-    }
-    this.applyFilters();
-  }
-
-  onDateRangeSelected(range: { startDate: Date | null, endDate: Date | null }) {
-
-    this.selectedDateRange.startDate = range.startDate;
-    this.selectedDateRange.endDate = range.endDate;
-
-    this.applyFilters();
-  }
-
-  onEntryDateRangeSelected(range: { startDate: Date | null, endDate: Date | null }) {
-    this.selectedEntryDateRange = range;
-    console.log("▶ Entry Start Date:", range.startDate?.toISOString());
-    console.log("▶ Entry End Date:", range.endDate?.toISOString());
-    this.applyFilters();
   }
 }

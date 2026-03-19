@@ -1,75 +1,120 @@
-import { Component, EventEmitter, inject, Output, signal } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
+import { Component, EventEmitter, HostListener, Input, Output, signal } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
+import { DatePickerStateServiceTs } from './date-picker-state.service.ts'; // adjust path
 
 @Component({
   selector: 'app-date-range-picker-component',
   standalone: true,
-  imports: [ReactiveFormsModule, CommonModule, DatePipe],
+  imports: [CommonModule, DatePipe],
   templateUrl: './date-range-picker-component.html',
-  styleUrls: ['./date-range-picker-component.css'],
+  styleUrls: ['./date-range-picker-component.css']
 })
 export class DateRangePickerComponent {
 
-  showPicker = signal(false);
-  private fb = inject(FormBuilder);
-
-  today = new Date().toISOString().split('T')[0]; 
-
+  @Input() pickerId: string = 'default'; // unique id per instance
   @Output() rangeSelected = new EventEmitter<{ startDate: Date | null, endDate: Date | null }>();
 
-  rangeForm: FormGroup;
+  today = new Date().toISOString().split('T')[0];
 
-  constructor() {
-    this.rangeForm = this.fb.group({
-      startDate: [null, Validators.required],
-      endDate: [null, Validators.required]
-    }, { validators: this.dateRangeValidator });
+  selectedStart: Date | null = null;
+  selectedEnd: Date | null = null;
+  fromValue: string = '';
+  toValue: string = '';
+  activeQuick: string = '';
+
+  constructor(public pickerState: DatePickerStateServiceTs) {}
+
+  get showPicker(): boolean {
+    return this.pickerState.isOpen(this.pickerId);
   }
 
   togglePicker() {
-    this.showPicker.update(v => !v);
+    if (this.pickerState.isOpen(this.pickerId)) {
+      this.pickerState.close();
+    } else {
+      // Reset inputs on open
+      this.fromValue = '';
+      this.toValue = '';
+      this.activeQuick = '';
+      this.pickerState.open(this.pickerId); // closes any other open picker
+    }
   }
 
-  apply() {
-    // Mark all controls as touched to trigger validation messages
-    this.rangeForm.markAllAsTouched();
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(e: MouseEvent) {
+    if (!(e.target as HTMLElement).closest('app-date-range-picker-component'))
+      this.pickerState.close();
+  }
 
-    if (this.rangeForm.invalid) return;
+  onFromChange(event: any) {
+    this.fromValue = event.target.value;
+    this.activeQuick = '';
+    this.tryEmit();
+  }
 
-    const { startDate, endDate } = this.rangeForm.value;
+  onToChange(event: any) {
+    this.toValue = event.target.value;
+    this.activeQuick = '';
+    this.tryEmit();
+  }
 
-    let start: Date | null = startDate ? new Date(startDate) : null;
-    let end: Date | null = endDate ? new Date(endDate) : null;
-
-    if (start) start.setHours(0, 0, 0, 0);
-    if (end) end.setHours(23, 59, 59, 999);
-
-    console.log('Start:', start);
-    console.log('End:', end);
-
+  tryEmit() {
+    if (!this.fromValue || !this.toValue) return;
+    const start = new Date(this.fromValue);
+    const end = new Date(this.toValue);
+    if (start > end) return;
+    start.setHours(0, 0, 0, 0);
+    end.setHours(23, 59, 59, 999);
+    this.selectedStart = start;
+    this.selectedEnd = end;
     this.rangeSelected.emit({ startDate: start, endDate: end });
-    this.showPicker.set(false);
+    this.pickerState.close();
   }
 
-  cancel() {
-    this.showPicker.set(false);
-  }
+  setQuickRange(type: string) {
+    const now = new Date();
+    let start = new Date();
+    let end = new Date();
 
-  // Custom validator
-  dateRangeValidator(control: AbstractControl): ValidationErrors | null {
-    const start = control.get('startDate')?.value;
-    const end = control.get('endDate')?.value;
-
-    if (!start || !end) return null;
-
-    const startDate = new Date(start);
-    const endDate = new Date(end);
-
-    if (startDate > endDate) {
-      return { invalidRange: true };
+    if (type === 'today') {
+      start = end = new Date();
+    } else if (type === 'week') {
+      const day = now.getDay();
+      start = new Date(now);
+      start.setDate(now.getDate() - day + (day === 0 ? -6 : 1));
+      end = new Date();
+    } else if (type === 'month') {
+      start = new Date(now.getFullYear(), now.getMonth(), 1);
+      end = new Date();
+    } else if (type === 'quarter') {
+      start = new Date();
+      start.setMonth(start.getMonth() - 3);
+      end = new Date();
+    } else if (type === 'year') {
+      start = new Date(now.getFullYear(), 0, 1);
+      end = new Date();
     }
 
-    return null;
+    this.activeQuick = type;
+    start.setHours(0, 0, 0, 0);
+    end.setHours(23, 59, 59, 999);
+    this.selectedStart = start;
+    this.selectedEnd = end;
+    this.rangeSelected.emit({ startDate: start, endDate: end });
+    this.pickerState.close();
+  }
+
+  clearRange() {
+    this.selectedStart = null;
+    this.selectedEnd = null;
+    this.fromValue = '';
+    this.toValue = '';
+    this.activeQuick = '';
+    this.rangeSelected.emit({ startDate: null, endDate: null });
+  }
+
+  reset() {
+    this.clearRange();
+    this.pickerState.close();
   }
 }
