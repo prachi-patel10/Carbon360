@@ -239,5 +239,35 @@ namespace ProjectApp.API.Controllers.Account.VehicleTripEmission
                 : Ok(data);
 
         }
+
+        [HttpGet("export-excel")]
+        public async Task<IActionResult> ExportExcel(
+   string? search,
+   string? fuelType,
+   DateTime? startDate,
+   DateTime? endDate,
+   DateTime? entryStartDate,
+   DateTime? entryEndDate,
+   string sortColumn = "entrydate",
+   string sortDirection = "DESC")
+        {
+            var fileBytes = await _service.ExportVehicleTripsExcel(
+                search,
+                fuelType,
+                startDate,
+                endDate,
+                entryStartDate,
+                entryEndDate,
+                sortColumn,
+                sortDirection
+            );
+
+            return File(
+                fileBytes,
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                "VehicleTripEmission.xlsx"
+            );
+        }
+
     }
 }

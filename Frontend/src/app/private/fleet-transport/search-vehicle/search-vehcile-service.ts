@@ -52,4 +52,11 @@ searchTrips(
         map(res => res.data)
       );
     }
+
+    exportExcel(params: any) {
+  return this.http.get(`${this.apiUrl}/export-excel`, {
+    params,
+    responseType: 'blob'
+  });
+}
 }

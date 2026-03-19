@@ -1,0 +1,154 @@
+/* Background + Font */
+body {
+    background-color: #f0f2f5;
+    font-family: 'Inter', 'Segoe UI', Roboto, sans-serif;
+    color: #1b5e20;
+}
+
+/* Container */
+.vehicle-search-container {
+    min-height: 100vh;
+}
+
+/* Cards */
+.filter-card, .table-card {
+    border: none;
+    border-radius: 12px;
+    background: #ffffff;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+/* Labels */
+.form-label {
+    font-size: 0.85rem;
+    color: #1b5e20;
+    margin-bottom: 6px;
+}
+
+/* Icons */
+.icon-addon {
+    color: #1b5e20;
+    margin-right: 4px;
+}
+
+/* Inputs */
+.form-control, .form-select {
+    border: 1px solid #e2e8f0;
+    padding: 0.6rem 0.75rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #1b5e20;
+    box-shadow: 0 0 0 3px rgba(11, 90, 23, 0.1);
+}
+
+/* Table Header */
+.vehicle-table th {
+    background-color: #0f5132;
+    color: white;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 1.1rem 1rem;
+    border-bottom: 2px solid #f1f5f9;
+}
+
+.vehicle-table th.sortable {
+    cursor: pointer;
+}
+
+/* Table Body */
+.vehicle-table tbody td {
+    padding: 1rem;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+/* Hover effect */
+.vehicle-table tbody tr > * {
+    transition: background-color 0.2s ease;
+}
+
+.vehicle-table.table-hover tbody tr:hover > * {
+    background-color: #f0fdf4 !important;
+}
+
+/* Emission */
+.emission-value {
+    font-weight: 700;
+    color: #1b5e20;
+}
+
+.leaf-icon {
+    color: #1b5e20;
+    margin-right: 5px;
+}
+
+/* Date Picker */
+app-date-range-picker-component {
+    width: 100%;
+    display: block;
+}
+
+/* Footer */
+.table-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    border-top: 1px solid #e5e7eb;
+    background: #f9fafb;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+/* Total Records */
+.table-footer div {
+    font-size: 0.9rem;
+    color: #374151;
+}
+
+/* Pagination */
+.pagination {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Buttons */
+.pagination button {
+    border: none;
+    padding: 6px 14px;
+    background: #1b5e20;
+    color: white;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.85rem;
+}
+
+/* Hover */
+.pagination button:hover:not(:disabled) {
+    background: #166534;
+    transform: translateY(-1px);
+}
+
+/* Disabled */
+.pagination button:disabled {
+    background: #cbd5e1;
+    cursor: not-allowed;
+}
+
+/* Page Text */
+.pagination span {
+    font-weight: 500;
+    color: #374151;
+    font-size: 0.9rem;
+}
+
+/* Click effect */
+.pagination button:active {
+    transform: scale(0.95);
+}

@@ -941,8 +941,52 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
 
             return result;
         }
+
+        public async Task<byte[]> ExportVehicleTripsExcel(
+    string? search,
+    string? fuelType,
+    DateTime? startDate,
+    DateTime? endDate,
+    DateTime? entryStartDate,
+    DateTime? entryEndDate,
+    string sortColumn,
+    string sortDirection)
+        {
+            // ✅ CALL SAME METHOD BUT WITH LARGE PAGE SIZE
+            var (data, total) = await SearchVehicleTrips(
+                search,
+                null,
+                fuelType,
+                null,
+                startDate,
+                endDate,
+                null,
+                null,
+                1,
+                100000, // 🔥 IMPORTANT (ALL DATA)
+                sortColumn,
+                sortDirection
+            );
+
+            // ✅ COLUMN MAPPING
+            var columns = new Dictionary<string, string>
+            {
+                {"Vehicle No", "VehicleNumber"},
+                {"Vehicle Type", "VehicleType"},
+                {"Fuel Type", "FuelType"},
+                {"Entry Date", "EntryDate"},
+                {"Distance (KM)", "DistanceKm"},
+                {"Fuel Used (Ltr)", "FuelConsumedLtr"},
+                {"Start Date", "TripStartDateTime"},
+                {"End Date", "TripEndDateTime"},
+                {"Total Emission", "TotalEmission"}
+            };
+
+            return await ExcelExportHelper.ExportToExcelAsync(data, columns, "Emission Report");
+        }
+
     }
-    
+
 }
     
 

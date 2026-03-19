@@ -53,6 +53,8 @@ export class SearchVehicle implements OnInit {
   entryStartDate = signal<string | null>(null);
   entryEndDate = signal<string | null>(null);
 
+  selectedFuelType: string = 'All';
+
   totalRecordsCount = signal<number>(0);
   pageSize = 10;
   sortColumn = 'entryDate';
@@ -83,14 +85,9 @@ export class SearchVehicle implements OnInit {
   }
 
   loadTrips() {
-  this.service.searchTrips(
-    this.currentPage(),
-    this.pageSize,
-    'entryDate',   // always load by entryDate desc from server
-    'DESC'
-  ).subscribe({
+  this.service.searchTrips(1, 10000, 'entryDate', 'DESC').subscribe({ // large pageSize
     next: (res: any) => {
-      const mapped: VehicleEmissionDisplay[] = res.data.map((e: any) => ({
+      const mapped = res.data.map((e: any) => ({
         tripId: e.tripId,
         vehicleNumber: e.vehicleNumber,
         vehicleType: e.vehicleType,
@@ -107,19 +104,49 @@ export class SearchVehicle implements OnInit {
         totalEmission: e.totalEmission ?? 0
       }));
 
-      const sorted = mapped.sort((a, b) =>
-        new Date(b.entryDate).getTime() - new Date(a.entryDate).getTime()
-      );
-
-      this.emissions.set(sorted);
-      this.filteredData.set(sorted);
-      this.totalPages.set(Math.ceil(res.totalRecords / res.pageSize));
-      this.totalRecordsCount.set(res.totalRecords);
-      this.applyFilters();
-    },
-    error: err => console.error('Error loading vehicle trips', err)
+      this.emissions.set(mapped);
+      this.applyFilters(); // apply filters on full dataset
+    }
   });
 }
+//   loadTrips() {
+//   this.service.searchTrips(
+//     this.currentPage(),
+//     this.pageSize,
+//     'entryDate',   // always load by entryDate desc from server
+//     'DESC'
+//   ).subscribe({
+//     next: (res: any) => {
+//       const mapped: VehicleEmissionDisplay[] = res.data.map((e: any) => ({
+//         tripId: e.tripId,
+//         vehicleNumber: e.vehicleNumber,
+//         vehicleType: e.vehicleType,
+//         fuelType: e.fuelType,
+//         entryDate: e.entryDate,
+//         distanceKm: e.distanceKm ?? 0,
+//         fuelConsumedLtr: e.fuelConsumedLtr ?? 0,
+//         statusId: e.statusId,
+//         tripStartDateTime: e.tripStartDateTime,
+//         tripEndDateTime: e.tripEndDateTime,
+//         totalCO2: e.totalCO2 ?? 0,
+//         totalNO2: e.totalNO2 ?? 0,
+//         totalCH4: e.totalCH4 ?? 0,
+//         totalEmission: e.totalEmission ?? 0
+//       }));
+
+//       const sorted = mapped.sort((a, b) =>
+//         new Date(b.entryDate).getTime() - new Date(a.entryDate).getTime()
+//       );
+
+//       this.emissions.set(sorted);
+//       this.filteredData.set(sorted);
+//       this.totalPages.set(Math.ceil(res.totalRecords / res.pageSize));
+//       this.totalRecordsCount.set(res.totalRecords);
+//       this.applyFilters();
+//     },
+//     error: err => console.error('Error loading vehicle trips', err)
+//   });
+// }
 
   // ─── Fuel Multi-Select ────────────────────────────────────────
 
@@ -197,67 +224,161 @@ export class SearchVehicle implements OnInit {
   }
 
   // ─── Filters ──────────────────────────────────────────────────
+    applyFilters() {
+  const sText = this.searchText().toLowerCase();
+  const opStartDate = this.operationStartDate() ? new Date(this.operationStartDate()!) : null;
+  const opEndDate = this.operationEndDate() ? new Date(this.operationEndDate()!) : null;
+  if (opEndDate) opEndDate.setHours(23,59,59,999);
+  const enStartDate = this.entryStartDate() ? new Date(this.entryStartDate()!) : null;
+  const enEndDate = this.entryEndDate() ? new Date(this.entryEndDate()!) : null;
+  if (enEndDate) enEndDate.setHours(23,59,59,999);
 
-  applyFilters() {
-    const sText = this.searchText().toLowerCase();
+  const filtered = this.emissions().filter(e => {
+    const matchesSearch =
+      e.vehicleNumber.toLowerCase().includes(sText) ||
+      e.vehicleType.toLowerCase().includes(sText) ||
+      e.fuelType.toLowerCase().includes(sText);
 
-    const opStart = this.operationStartDate();
-    const opEnd = this.operationEndDate();
-    const enStart = this.entryStartDate();
-    const enEnd = this.entryEndDate();
+    const matchesFuel =
+      this.selectedFuels.length === 0 ||
+      this.selectedFuels.map(f => f.toLowerCase()).includes(e.fuelType.toLowerCase());
 
-    const opStartDate = opStart ? new Date(opStart) : null;
-    const opEndDate = opEnd ? new Date(opEnd) : null;
-    if (opEndDate) opEndDate.setHours(23, 59, 59, 999);
+    const tripStart = new Date(e.tripStartDateTime);
+    const tripEnd = new Date(e.tripEndDateTime);
+    let matchesOperation = true;
+    if(opStartDate && tripEnd < opStartDate) matchesOperation = false;
+    if(opEndDate && tripStart > opEndDate) matchesOperation = false;
 
-    const enStartDate = enStart ? new Date(enStart) : null;
-    const enEndDate = enEnd ? new Date(enEnd) : null;
-    if (enEndDate) enEndDate.setHours(23, 59, 59, 999);
+    const entry = new Date(e.entryDate);
+    let matchesEntry = true;
+    if(enStartDate && entry < enStartDate) matchesEntry = false;
+    if(enEndDate && entry > enEndDate) matchesEntry = false;
 
-    const filtered = this.emissions().filter(e => {
-      const matchesSearch =
-        e.vehicleNumber.toLowerCase().includes(sText) ||
-        e.vehicleType.toLowerCase().includes(sText) ||
-        e.fuelType.toLowerCase().includes(sText);
+    return matchesSearch && matchesFuel && matchesOperation && matchesEntry;
+  });
 
-      const matchesFuel =
-        this.selectedFuels.length === 0 ||
-        this.selectedFuels.map(f => f.toLowerCase())
-          .includes(e.fuelType.toLowerCase());
+  this.filteredData.set(filtered);
+  this.totalRecordsCount.set(filtered.length);
+  this.totalPages.set(Math.ceil(filtered.length / this.pageSize));
+  this.currentPage.set(1);
+}
+//   applyFilters() {
+//   const sText = this.searchText().toLowerCase();
+//   const opStartDate = this.operationStartDate() ? new Date(this.operationStartDate()!) : null;
+//   const opEndDate = this.operationEndDate() ? new Date(this.operationEndDate()!) : null;
+//   if(opEndDate) opEndDate.setHours(23,59,59,999);
+//   const enStartDate = this.entryStartDate() ? new Date(this.entryStartDate()!) : null;
+//   const enEndDate = this.entryEndDate() ? new Date(this.entryEndDate()!) : null;
+//   if(enEndDate) enEndDate.setHours(23,59,59,999);
 
-      let matchesOperationDate = true;
-      const tripStart = new Date(e.tripStartDateTime);
-      const tripEnd = new Date(e.tripEndDateTime);
-      if (opStartDate && tripEnd < opStartDate) matchesOperationDate = false;
-      if (opEndDate && tripStart > opEndDate) matchesOperationDate = false;
+//   const filtered = this.emissions().filter(e => {
+//     const matchesSearch =
+//       e.vehicleNumber.toLowerCase().includes(sText) ||
+//       e.vehicleType.toLowerCase().includes(sText) ||
+//       e.fuelType.toLowerCase().includes(sText);
 
-      let matchesEntryDate = true;
-      const entryDate = new Date(e.entryDate);
-      if (enStartDate && entryDate < enStartDate) matchesEntryDate = false;
-      if (enEndDate && entryDate > enEndDate) matchesEntryDate = false;
+//     const matchesFuel =
+//       this.selectedFuels.length === 0 ||
+//       this.selectedFuels.map(f => f.toLowerCase()).includes(e.fuelType.toLowerCase());
 
-      return matchesSearch && matchesFuel && matchesOperationDate && matchesEntryDate;
-    });
+//     const tripStart = new Date(e.tripStartDateTime);
+//     const tripEnd = new Date(e.tripEndDateTime);
+//     let matchesOperation = true;
+//     if(opStartDate && tripEnd < opStartDate) matchesOperation = false;
+//     if(opEndDate && tripStart > opEndDate) matchesOperation = false;
 
-    this.filteredData.set(filtered);
-  }
+//     const entry = new Date(e.entryDate);
+//     let matchesEntry = true;
+//     if(enStartDate && entry < enStartDate) matchesEntry = false;
+//     if(enEndDate && entry > enEndDate) matchesEntry = false;
+
+//     return matchesSearch && matchesFuel && matchesOperation && matchesEntry;
+//   });
+
+//   this.filteredData.set(filtered);
+//   this.totalRecordsCount.set(filtered.length); // ✅ Update total records
+//   this.totalPages.set(Math.ceil(filtered.length / this.pageSize)); // ✅ Update total pages
+//   this.currentPage.set(1);
+// }
+
+  // applyFilters() {
+  //   const sText = this.searchText().toLowerCase();
+  //   const fuel = this.selectedFuelType;
+  //   const opStart = this.operationStartDate();
+  //   const opEnd = this.operationEndDate();
+  //   const enStart = this.entryStartDate();
+  //   const enEnd = this.entryEndDate();
+
+  //   const opStartDate = opStart ? new Date(opStart) : null;
+  //   const opEndDate = opEnd ? new Date(opEnd) : null;
+  //   if (opEndDate) opEndDate.setHours(23, 59, 59, 999);
+
+  //   const enStartDate = enStart ? new Date(enStart) : null;
+  //   const enEndDate = enEnd ? new Date(enEnd) : null;
+  //   if (enEndDate) enEndDate.setHours(23, 59, 59, 999);
+
+  //   const filtered = this.emissions().filter(e => {
+  //     const matchesSearch =
+  //       e.vehicleNumber.toLowerCase().includes(sText) ||
+  //       e.vehicleType.toLowerCase().includes(sText) ||
+  //       e.fuelType.toLowerCase().includes(sText);
+
+  //     const matchesFuel =
+  //       this.selectedFuels.length === 0 ||
+  //       this.selectedFuels.map(f => f.toLowerCase())
+  //         .includes(e.fuelType.toLowerCase());
+
+  //     let matchesOperationDate = true;
+  //     const tripStart = new Date(e.tripStartDateTime);
+  //     const tripEnd = new Date(e.tripEndDateTime);
+  //     if (opStartDate && tripEnd < opStartDate) matchesOperationDate = false;
+  //     if (opEndDate && tripStart > opEndDate) matchesOperationDate = false;
+
+  //     let matchesEntryDate = true;
+  //     const entryDate = new Date(e.entryDate);
+  //     if (enStartDate && entryDate < enStartDate) matchesEntryDate = false;
+  //     if (enEndDate && entryDate > enEndDate) matchesEntryDate = false;
+
+  //     return matchesSearch && matchesFuel && matchesOperationDate && matchesEntryDate;
+  //   });
+
+  //   this.filteredData.set(filtered);
+  // }
 
   // ─── Pagination ───────────────────────────────────────────────
 
-  paginatedData() { return this.filteredData(); }
+  //paginatedData() { return this.filteredData(); }
+  paginatedData() {
+  const start = (this.currentPage() - 1) * this.pageSize;
+  const end = start + this.pageSize;
+  return this.filteredData().slice(start, end);
+}
+  
   totalRecords() { return this.totalRecordsCount(); }
 
+  // goToPage(page: number) {
+  //   if (page < 1 || page > this.totalPages()) return;
+  //   this.currentPage.set(page);
+  //   this.loadTrips();
+  // }
+
   goToPage(page: number) {
-    if (page < 1 || page > this.totalPages()) return;
-    this.currentPage.set(page);
-    this.loadTrips();
-  }
+  if (page < 1 || page > this.totalPages()) return;
+  this.currentPage.set(page);
+}
+  
+
+  // changePageSize(event: any) {
+  //   this.pageSize = Number(event.target.value);
+  //   this.currentPage.set(1);
+  //   this.loadTrips();
+  // }
 
   changePageSize(event: any) {
-    this.pageSize = Number(event.target.value);
-    this.currentPage.set(1);
-    this.loadTrips();
-  }
+  this.pageSize = Number(event.target.value);
+  this.currentPage.set(1);
+  this.totalPages.set(Math.ceil(this.filteredData().length / this.pageSize));
+}
 
   // ─── Sort ─────────────────────────────────────────────────────
 
@@ -303,4 +424,64 @@ getSortIcon(column: string): string {
       { queryParams: { source: 'search' } }
     );
   }
+
+
+      exportExcel() {
+
+    const params: any = {};
+
+if (this.searchText()) {
+  params.search = this.searchText();
+}
+
+if (this.selectedFuelType !== 'All') {
+  params.fuelType = this.selectedFuelType;
+}
+
+if (this.operationStartDate()) {
+  params.startDate = this.operationStartDate();
+}
+
+if (this.operationEndDate()) {
+  params.endDate = this.operationEndDate();
+}
+
+if (this.entryStartDate()) {
+  params.entryStartDate = this.entryStartDate();
+}
+
+if (this.entryEndDate()) {
+  params.entryEndDate = this.entryEndDate();
+}
+
+params.sortColumn = this.sortColumn;
+params.sortDirection = this.sortDirection;
+
+  // const params: any = {
+  //   search: this.searchText(),
+  //   fuelType: this.selectedFuelType !== 'All' ? this.selectedFuelType : null,
+  //   startDate: this.operationStartDate(),
+  //   endDate: this.operationEndDate(),
+  //   entryStartDate: this.entryStartDate(),
+  //   entryEndDate: this.entryEndDate(),
+  //   sortColumn: this.sortColumn,
+  //   sortDirection: this.sortDirection
+  // };
+
+  this.service.exportExcel(params).subscribe(blob => {
+
+    const file = new Blob([blob], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    });
+
+    const url = window.URL.createObjectURL(file);
+    const a = document.createElement('a');
+
+    a.href = url;
+    a.download = 'VehicleTripEmission.xlsx';
+    a.click();
+
+    window.URL.revokeObjectURL(url);
+  });
+}
 }

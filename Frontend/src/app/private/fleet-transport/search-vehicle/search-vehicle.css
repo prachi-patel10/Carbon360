@@ -265,3 +265,16 @@ body {
   border-radius: 16px;
 }
 
+.filter-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* <- important */
+  gap: 8px;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e8f5e9;
+}
+
+.export-btn-container {
+  margin-left: auto; /* push button to the right */
+}

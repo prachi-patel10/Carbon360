@@ -49,6 +49,16 @@ namespace ProjectApp.Repository.Interfaces.VehicleTripEmission
         Task<List<WorkflowActionDTO>> GetWorkflowActionsAsync(string encryptedId);
 
         Task<Dictionary<string, object>> GetByHashIdAsyncPDF(string hashId, int roleId);
+
+        Task<byte[]> ExportVehicleTripsExcel(
+        string? search,
+        string? fuelType,
+        DateTime? startDate,
+        DateTime? endDate,
+        DateTime? entryStartDate,
+        DateTime? entryEndDate,
+        string sortColumn,
+        string sortDirection);
     }
 
 
