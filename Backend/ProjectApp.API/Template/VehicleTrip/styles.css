@@ -132,8 +132,11 @@ body {
 
 .section-workflow {
     background: #f4fffa;
+   
 }
-
+    .section-workflow table {
+        margin-top: 12px;
+    }
 /* ================= GRID ROWS ================= */
 .row {
     width: 100%;

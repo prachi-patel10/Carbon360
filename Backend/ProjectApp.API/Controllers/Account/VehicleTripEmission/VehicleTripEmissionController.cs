@@ -268,7 +268,6 @@ namespace ProjectApp.API.Controllers.Account.VehicleTripEmission
                 "VehicleTripEmission.xlsx"
             );
         }
-
         [HttpGet("trip-pdf/{tripId}")]
         public async Task<IActionResult> DownloadTripPdf(string tripId)
         {
@@ -277,14 +276,15 @@ namespace ProjectApp.API.Controllers.Account.VehicleTripEmission
                 var pdf = await _service.GenerateVehicleTripPdf(tripId);
 
                 if (pdf == null || pdf.Length == 0)
-                    return NotFound("Trip PDF could not be generated");
+                    return BadRequest("PDF generation returned empty content.");
 
+                // ✅ Return with explicit headers
                 return File(pdf, "application/pdf", $"VehicleTrip_{tripId}.pdf");
             }
             catch (Exception ex)
             {
-
-                return StatusCode(500, $"Internal server error: {ex.Message}");
+                Console.WriteLine($"PDF ERROR: {ex}"); // log full stack trace
+                return StatusCode(500, new { message = ex.Message, detail = ex.StackTrace });
             }
         }
 

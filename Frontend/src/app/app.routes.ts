@@ -24,6 +24,7 @@ import { authGuard } from './core/guards/auth-guard';
 import { SearchVehicle } from './private/fleet-transport/search-vehicle/search-vehicle';
 import { ChartsComponent } from './public/charts-component/charts-component';
 import { ExportExcel } from './private/export-excel/export-excel';
+import { VehiclePdf } from './private/fleet-transport/vehicle-pdf/vehicle-pdf';
 export const routes: Routes = [
 
     // Default Redirect
@@ -74,7 +75,7 @@ export const routes: Routes = [
                 path: 'dashboard/generator-review/:id',
                 component: GeneratorOperationComponent
             },
-             
+             {path:'vehiclepdf',component:VehiclePdf}
 
         ]
     },

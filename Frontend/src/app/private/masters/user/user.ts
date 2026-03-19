@@ -37,6 +37,7 @@ export class MasterUserComponent implements OnInit {
 
   // ================= SIGNALS =================
   users = signal<any[]>([]);
+  allUsers = signal<any[]>([]);
   //roles = signal<any[]>([]);
   rolesList = signal<any[]>([]);
   departments = signal<any[]>([]);
@@ -251,7 +252,6 @@ resetUserFilter() {
   // }
 
     loadUsers() {
-
   const filter = this.userFilter();
 
   this.service.getPaged(
@@ -260,21 +260,19 @@ resetUserFilter() {
     this.searchText(),
     this.onlyActive(),
     filter.department_id.length ? filter.department_id.join(',') : '',
-    filter.role_id.length ? filter.role_id.join(',') : ''
+    filter.role_id.length ? filter.role_id.join(',') : '',
+    this.sortColumn,      // ← NOW PASSED
+    this.sortDirection    // ← NOW PASSED
   ).subscribe((res: any) => {
-
     const data: User[] = res.data.data;
-
     this.totalRecords.set(res.data.totalRecords);
     this.totalPages.set(res.data.totalPages);
-
     this.users.set(
       data.map((u: User) => ({
         ...u,
         RoleNames: u.roles.join(', ')
       }))
     );
-
   });
 }
   // loadUsers() {
@@ -586,40 +584,24 @@ getSelectedRoleNames(): string {
       .join(', ');
   }
   /* ================= SORT ================= */
-  sort(column: string) {
-    if (this.sortColumn === column) {
-      this.sortDirection = this.sortDirection === 'ASC' ? 'DESC' : 'ASC';
-    } else {
-      this.sortColumn = column;
-      this.sortDirection = 'ASC';
-    }
-    this.currentPage.set(1);
+ sort(column: string) {
+  if (this.sortColumn === column)
+    this.sortDirection = this.sortDirection === 'ASC' ? 'DESC' : 'ASC';
+  else {
+    this.sortColumn = column;
+    this.sortDirection = 'ASC';
   }
+  this.currentPage.set(1);
+  this.loadUsers();
+}
+
+
 getSortIcon(column: string): string {
   if (this.sortColumn !== column) return '↕';
   return this.sortDirection === 'ASC' ? '↑' : '↓';
 }
-  get sortedUsers() {
-    const column = this.sortColumn;
-    const direction = this.sortDirection;
 
-    return [...this.users()].sort((a: any, b: any) => {
-      let valueA = a[column];
-      let valueB = b[column];
-
-      if (valueA == null) valueA = '';
-      if (valueB == null) valueB = '';
-
-      if (typeof valueA === 'string') {
-        valueA = valueA.toLowerCase();
-        valueB = valueB.toLowerCase();
-      }
-
-      if (valueA > valueB) return direction === 'ASC' ? 1 : -1;
-      if (valueA < valueB) return direction === 'ASC' ? -1 : 1;
-      return 0;
-    });
-  }
+ 
 
   applyFilter() {
   this.currentPage.set(1);

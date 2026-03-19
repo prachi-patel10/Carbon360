@@ -1003,6 +1003,11 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
             var data = await GetByHashIdAsyncPDF(tripId, roleId);
 
             var trip = data["Trip"] as Dictionary<string, object> ?? new();
+            // ✅ ADD THIS — if trip is empty, Puppeteer renders a blank page
+            if (trip == null || trip.Count == 0)
+                throw new Exception($"No trip data found for tripId: {tripId}");
+
+            Console.WriteLine($"Trip keys: {string.Join(", ", trip.Keys)}"); // debug
             var history = data["History"] as List<Dictionary<string, object>> ?? new();
 
             string GetString(string key) =>
@@ -1035,8 +1040,8 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
             }
 
 
-            string templateDir = @"C:\Users\Jenisha Dhodia\Documents\GitHub\Carbon360\Backend\ProjectApp.API\Template\VehicleTrip";
-
+            //  string templateDir = @"C:\Users\Jenisha Dhodia\Documents\GitHub\Carbon360\Backend\ProjectApp.API\Template\VehicleTrip";
+            string templateDir = Path.Combine(AppContext.BaseDirectory, "Template", "VehicleTrip");
             string css = await File.ReadAllTextAsync(Path.Combine(templateDir, "styles.css"));
             string contentHtml = await File.ReadAllTextAsync(Path.Combine(templateDir, "VehicleTripReport.html"));
             string headerHtml = await File.ReadAllTextAsync(Path.Combine(templateDir, "header.html"));
@@ -1072,6 +1077,15 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
 
             var total = co2 + (ch4 * 28) + (no2 * 265);
 
+            //contentHtml = contentHtml.Replace("{{co2Factor}}", co2Factor.ToString("0.########"));
+            //contentHtml = contentHtml.Replace("{{no2Factor}}", no2Factor.ToString("0.########"));
+            //contentHtml = contentHtml.Replace("{{ch4Factor}}", ch4Factor.ToString("0.########"));
+
+            //contentHtml = contentHtml.Replace("{{co2}}", co2.ToString("0.##"));
+            //contentHtml = contentHtml.Replace("{{no2}}", no2.ToString("0.######"));
+            //contentHtml = contentHtml.Replace("{{ch4}}", ch4.ToString("0.######"));
+
+            //contentHtml = contentHtml.Replace("{{total}}", total.ToString("0.##"));
             contentHtml = contentHtml.Replace("{{co2Factor}}", co2Factor.ToString("0.########"));
             contentHtml = contentHtml.Replace("{{no2Factor}}", no2Factor.ToString("0.########"));
             contentHtml = contentHtml.Replace("{{ch4Factor}}", ch4Factor.ToString("0.########"));
@@ -1086,12 +1100,13 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
 
             contentHtml = contentHtml.Replace("{{tripenddate}}",
                 GetDate("TripEndDateTime")?.ToString("dd-MMM-yyyy HH:mm") ?? "-");
-            contentHtml = contentHtml.Replace("{{co2Factor}}", GetDecimal("CO2").ToString());
-            contentHtml = contentHtml.Replace("{{no2Factor}}", GetDecimal("NO2").ToString());
-            contentHtml = contentHtml.Replace("{{ch4Factor}}", GetDecimal("CH4").ToString());
+            //contentHtml = contentHtml.Replace("{{co2Factor}}", GetDecimal("CO2").ToString());
+            //contentHtml = contentHtml.Replace("{{no2Factor}}", GetDecimal("NO2").ToString());
+            //contentHtml = contentHtml.Replace("{{ch4Factor}}", GetDecimal("CH4").ToString());
+
             contentHtml = contentHtml.Replace("{{GWP_CH4}}", "28");
             contentHtml = contentHtml.Replace("{{GWP_N2O}}", "265");
-            contentHtml = contentHtml.Replace("{{total}}", GetDecimal("TotalEmission").ToString("0.##"));
+            // contentHtml = contentHtml.Replace("{{total}}", GetDecimal("TotalEmission").ToString("0.##"));
 
             var start = GetDate("TripStartDateTime");
             var end = GetDate("TripEndDateTime");
@@ -1115,13 +1130,12 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
             headerHtml = headerHtml.Replace("{{ReportTitle}}", "Vehicle Trip Emission Report");
             footerHtml = footerHtml.Replace("{{generatedDate}}", DateTime.Now.ToString("dd-MMM-yyyy HH:mm"));
 
-            //PUPPETEER SETUP
-            await new BrowserFetcher().DownloadAsync();
+
 
             using var browser = await Puppeteer.LaunchAsync(new LaunchOptions
             {
                 Headless = true,
-                Args = new[] { "--no-sandbox" }
+                Args = new[] { "--no-sandbox", "--disable-setuid-sandbox" }
             });
 
             using var page = await browser.NewPageAsync();
@@ -1145,7 +1159,7 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
                     //Left = "20px",
                     //Right = "20px"
 
-                    Top = "70px",
+                    Top = "90px",
                     Bottom = "70px",
                     Left = "25px",
                     Right = "25px"

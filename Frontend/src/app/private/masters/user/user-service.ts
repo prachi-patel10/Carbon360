@@ -19,43 +19,32 @@ export class UserService {
   }
 
   /* ================= GET PAGED ================= */
-  getPaged(
-    pageNumber: number,
-    pageSize: number,
-    searchText?: string,
-    onlyActive?: boolean,
-    sortColumn?: string,
-    sortDirection?: string
-  ) {
-    const token = localStorage.getItem('token');
+ getPaged(
+  pageNumber: number,
+  pageSize: number,
+  searchText?: string,
+  onlyActive?: boolean,
+  departmentIds?: string,   // ← ADD
+  roleIds?: string,          // ← ADD
+  sortColumn?: string,
+  sortDirection?: string
+) {
+  const token = localStorage.getItem('token');
+  const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
 
-    const headers = new HttpHeaders({
-      Authorization: `Bearer ${token}`
-    });
+  let params = new HttpParams()
+    .set('pageNumber', pageNumber)
+    .set('pageSize', pageSize);
 
-    let params = new HttpParams()
-      .set('pageNumber', pageNumber)
-      .set('pageSize', pageSize);
+  if (searchText) params = params.set('searchText', searchText);
+  if (onlyActive === true) params = params.set('isActive', true);
+  if (departmentIds) params = params.set('departmentIds', departmentIds);
+  if (roleIds) params = params.set('roleIds', roleIds);
+  if (sortColumn) params = params.set('sortColumn', sortColumn);
+  if (sortDirection) params = params.set('sortDirection', sortDirection);
 
-    if (searchText)
-      params = params.set('searchText', searchText);
-
-
-    if (onlyActive === true) {
-      params = params.set('isActive', true);
-    }
-
-    if (sortColumn)
-      params = params.set('sortColumn', sortColumn);
-
-    if (sortDirection)
-      params = params.set('sortDirection', sortDirection);
-
-    return this.http.get<any>(
-      `${this.apiUrl}/Search`,
-      { headers, params }
-    );
-  }
+  return this.http.get<any>(`${this.apiUrl}/Search`, { headers, params });
+}
   /* ================= CREATE ================= */
   create(data: any) {
     return this.http.post(

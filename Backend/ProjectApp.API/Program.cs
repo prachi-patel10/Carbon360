@@ -8,6 +8,7 @@ using ProjectApp.Core.Models;
 using ProjectApp.Repository.Interfaces.User;
 using ProjectApp.Repository.Services.User;
 using System.Text;
+using PuppeteerSharp;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -97,6 +98,9 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+
+await new BrowserFetcher().DownloadAsync();
+Console.WriteLine("✅ Chromium ready.");
 
 if (app.Environment.IsDevelopment())
 {

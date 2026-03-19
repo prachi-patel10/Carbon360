@@ -281,27 +281,50 @@ previousPage() {
 loadingTrips: Record<string, boolean> = {}; // track loading per trip
 
   downloadTrip(tripId: string) {
-    if (!tripId) return;
+  if (!tripId) return;
+  this.loadingTrips[tripId] = true;
 
-    this.loadingTrips[tripId] = true; // mark as loading
+  const token = localStorage.getItem('token'); // or wherever you store it
 
-    fetch(`http://localhost:5236/api/VehicleTripEmission/trip-pdf/${tripId}`, {
-      method: 'GET',
-    })
-      .then(res => res.blob())
-      .then(blob => {
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `Trip-${tripId}.pdf`;
-        link.click();
-        window.URL.revokeObjectURL(url);
-      })
-      .catch(err => console.error('Error downloading trip PDF:', err))
-      .finally(() => {
-        this.loadingTrips[tripId] = false; // reset loading
+  fetch(`http://localhost:5236/api/VehicleTripEmission/trip-pdf/${tripId}`, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
+  })
+  .then(res => {
+    // ✅ ADD THIS — check if response is actually a PDF
+    if (!res.ok) {
+      return res.text().then(text => {
+        throw new Error(`Server error ${res.status}: ${text}`);
       });
-  }
+    }
+    const contentType = res.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/pdf')) {
+      return res.text().then(text => {
+        throw new Error(`Expected PDF but got: ${contentType} — ${text}`);
+      });
+    }
+    return res.blob();
+  })
+  .then(blob => {
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `Trip-${tripId}.pdf`;
+    document.body.appendChild(link); // ✅ required in some browsers
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  })
+  .catch(err => {
+    console.error('PDF download error:', err);
+    alert('PDF generation failed: ' + err.message); // ✅ show the actual error
+  })
+  .finally(() => {
+    this.loadingTrips[tripId] = false;
+  });
+}
 
   isLoading(tripId: string): boolean {
     return !!this.loadingTrips[tripId];

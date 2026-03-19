@@ -150,20 +150,20 @@
     <th (click)="sort('Email')" class="sortable">
       Email <span class="sort-icon">{{ getSortIcon('Email') }}</span>
     </th>
-    <th (click)="sort('DepartmentName')" class="sortable">
-      Department <span class="sort-icon">{{ getSortIcon('DepartmentName') }}</span>
-    </th>
-    <th (click)="sort('RoleNames')" class="sortable">
-      Roles <span class="sort-icon">{{ getSortIcon('RoleNames') }}</span>
-    </th>
-    <th (click)="sort('IsActive')" class="sortable">
-      Status <span class="sort-icon">{{ getSortIcon('IsActive') }}</span>
+   <th >
+  Department 
+</th>
+<th >
+  Roles
+</th>
+    <th>
+      Status 
     </th>
     <th>Actions</th>
   </tr>
 </thead>
         <tbody>
-          <tr *ngFor="let u of users()">
+         <tr *ngFor="let u of users()">
             <td>{{ u.fName }}</td>
             <td>{{ u.lName }}</td>
             <td>{{ u.userName }}</td>
