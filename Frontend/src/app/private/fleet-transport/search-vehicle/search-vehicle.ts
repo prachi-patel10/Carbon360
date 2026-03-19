@@ -83,43 +83,43 @@ export class SearchVehicle implements OnInit {
   }
 
   loadTrips() {
-    this.service.searchTrips(
-      this.currentPage(),
-      this.pageSize,
-      this.sortColumn,
-      this.sortDirection
-    ).subscribe({
-      next: (res: any) => {
-        const mapped: VehicleEmissionDisplay[] = res.data.map((e: any) => ({
-          tripId: e.tripId,
-          vehicleNumber: e.vehicleNumber,
-          vehicleType: e.vehicleType,
-          fuelType: e.fuelType,
-          entryDate: e.entryDate,
-          distanceKm: e.distanceKm ?? 0,
-          fuelConsumedLtr: e.fuelConsumedLtr ?? 0,
-          statusId: e.statusId,
-          tripStartDateTime: e.tripStartDateTime,
-          tripEndDateTime: e.tripEndDateTime,
-          totalCO2: e.totalCO2 ?? 0,
-          totalNO2: e.totalNO2 ?? 0,
-          totalCH4: e.totalCH4 ?? 0,
-          totalEmission: e.totalEmission ?? 0
-        }));
+  this.service.searchTrips(
+    this.currentPage(),
+    this.pageSize,
+    'entryDate',   // always load by entryDate desc from server
+    'DESC'
+  ).subscribe({
+    next: (res: any) => {
+      const mapped: VehicleEmissionDisplay[] = res.data.map((e: any) => ({
+        tripId: e.tripId,
+        vehicleNumber: e.vehicleNumber,
+        vehicleType: e.vehicleType,
+        fuelType: e.fuelType,
+        entryDate: e.entryDate,
+        distanceKm: e.distanceKm ?? 0,
+        fuelConsumedLtr: e.fuelConsumedLtr ?? 0,
+        statusId: e.statusId,
+        tripStartDateTime: e.tripStartDateTime,
+        tripEndDateTime: e.tripEndDateTime,
+        totalCO2: e.totalCO2 ?? 0,
+        totalNO2: e.totalNO2 ?? 0,
+        totalCH4: e.totalCH4 ?? 0,
+        totalEmission: e.totalEmission ?? 0
+      }));
 
-        const sorted = mapped.sort((a, b) =>
-          new Date(b.entryDate).getTime() - new Date(a.entryDate).getTime()
-        );
+      const sorted = mapped.sort((a, b) =>
+        new Date(b.entryDate).getTime() - new Date(a.entryDate).getTime()
+      );
 
-        this.emissions.set(sorted);
-        this.filteredData.set(sorted);
-        this.totalPages.set(Math.ceil(res.totalRecords / res.pageSize));
-        this.totalRecordsCount.set(res.totalRecords);
-        this.applyFilters();
-      },
-      error: err => console.error('Error loading vehicle trips', err)
-    });
-  }
+      this.emissions.set(sorted);
+      this.filteredData.set(sorted);
+      this.totalPages.set(Math.ceil(res.totalRecords / res.pageSize));
+      this.totalRecordsCount.set(res.totalRecords);
+      this.applyFilters();
+    },
+    error: err => console.error('Error loading vehicle trips', err)
+  });
+}
 
   // ─── Fuel Multi-Select ────────────────────────────────────────
 
@@ -261,16 +261,39 @@ export class SearchVehicle implements OnInit {
 
   // ─── Sort ─────────────────────────────────────────────────────
 
-  sort(column: string) {
-    if (this.sortColumn === column)
-      this.sortDirection = this.sortDirection === 'ASC' ? 'DESC' : 'ASC';
-    else {
-      this.sortColumn = column;
-      this.sortDirection = 'ASC';
-    }
-    this.loadTrips();
+sort(column: string) {
+  if (this.sortColumn === column)
+    this.sortDirection = this.sortDirection === 'ASC' ? 'DESC' : 'ASC';
+  else {
+    this.sortColumn = column;
+    this.sortDirection = 'ASC';
   }
 
+  const sorted = [...this.filteredData()].sort((a: any, b: any) => {
+    let valA = a[column] ?? '';
+    let valB = b[column] ?? '';
+
+    // Handle dates
+    if (column === 'entryDate' || column === 'tripStartDateTime' || column === 'tripEndDateTime') {
+      valA = new Date(valA).getTime();
+      valB = new Date(valB).getTime();
+    } else if (typeof valA === 'string') {
+      valA = valA.toLowerCase();
+      valB = valB.toLowerCase();
+    }
+
+    if (valA < valB) return this.sortDirection === 'ASC' ? -1 : 1;
+    if (valA > valB) return this.sortDirection === 'ASC' ? 1 : -1;
+    return 0;
+  });
+
+  this.filteredData.set(sorted);
+}
+
+getSortIcon(column: string): string {
+  if (this.sortColumn !== column) return '↕';
+  return this.sortDirection === 'ASC' ? '↑' : '↓';
+}
   // ─── Navigation ───────────────────────────────────────────────
 
   openTrip(tripId: string) {

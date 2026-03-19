@@ -234,7 +234,21 @@ body {
 .fuel-option.selected { background: #e8f5e9; }
 .fuel-option input[type=checkbox] { accent-color: #0f5132; width: 15px; height: 15px; }
 .select-all-option { border-bottom: 1px solid #f0f0f0; font-weight: 600; font-size: 12px; color: #1b5e20; }
+.vehicle-table th.sortable {
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+}
 
+.vehicle-table th.sortable:hover {
+  background-color: #0a3d22;
+}
+
+.sort-icon {
+  font-size: 11px;
+  opacity: 0.6;
+  margin-left: 4px;
+}
 /* ── Responsive ──────────────────────────────── */
 @media (max-width: 991px) {
   .filter-row-fields { grid-template-columns: 1fr 1fr; }

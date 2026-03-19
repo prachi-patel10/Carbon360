@@ -369,6 +369,22 @@ body {
   animation: slideUp 0.3s ease-out;
 }
 
+.table thead th.sortable {
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.table thead th.sortable:hover {
+  background-color: #0a3d22;
+}
+
+.sort-icon {
+  font-size: 11px;
+  opacity: 0.6;
+  margin-left: 4px;
+}
+
 @keyframes slideUp {
   from { transform: translateY(20px); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }

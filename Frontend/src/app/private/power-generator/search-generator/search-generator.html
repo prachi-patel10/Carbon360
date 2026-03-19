@@ -89,7 +89,7 @@
     <div class="search-wrap">
       <i class="fas fa-search search-icon"></i>
       <input type="text" class="search-input"
-        placeholder="Quick search by generator, fuel type..."
+        placeholder="Quick search"
         [value]="searchText()"
         (input)="onSearch($event)" />
     </div>
@@ -109,19 +109,31 @@
       <div class="table-responsive">
         <table class="table  align-middle mb-0">
           <thead>
-            <tr>
-              <th (click)="sortBy('generatorName')" class="sortable">Generator</th>
-              <th (click)="sortBy('entryDate')" class="sortable">Reported Date</th>
-              <th (click)="sortBy('startTime')" class="sortable">Start Date</th>
-              <th (click)="sortBy('endTime')" class="sortable">End Date</th>
-              <th (click)="sortBy('loadFactor')" class="sortable">Load Factor (%)</th>
-              <th (click)="sortBy('fuelConsumedLiters')" class="sortable">Fuel (L)</th>
-<th (click)="sortBy('totalEmission')" class="sortable emission-header">
- Emission (kg CO₂e)
-</th>
-             <th>Action</th>
-            </tr>
-          </thead>
+  <tr>
+    <th (click)="sortBy('generatorName')" class="sortable">
+      Generator <span class="sort-icon">{{ getSortIcon('generatorName') }}</span>
+    </th>
+    <th (click)="sortBy('entryDate')" class="sortable">
+      Reported Date <span class="sort-icon">{{ getSortIcon('entryDate') }}</span>
+    </th>
+    <th (click)="sortBy('startTime')" class="sortable">
+      Start Date <span class="sort-icon">{{ getSortIcon('startTime') }}</span>
+    </th>
+    <th (click)="sortBy('endTime')" class="sortable">
+      End Date <span class="sort-icon">{{ getSortIcon('endTime') }}</span>
+    </th>
+    <th (click)="sortBy('loadFactor')" class="sortable">
+      Load Factor (%) <span class="sort-icon">{{ getSortIcon('loadFactor') }}</span>
+    </th>
+    <th (click)="sortBy('fuelConsumedLiters')" class="sortable">
+      Fuel (L) <span class="sort-icon">{{ getSortIcon('fuelConsumedLiters') }}</span>
+    </th>
+    <th (click)="sortBy('totalEmission')" class="sortable emission-header">
+      Emission (kg CO₂e) <span class="sort-icon">{{ getSortIcon('totalEmission') }}</span>
+    </th>
+    <th>Action</th>
+  </tr>
+</thead>
           <tbody>
             <tr *ngFor="let e of paginatedData()">
               <td>{{ e.generatorName }}</td>

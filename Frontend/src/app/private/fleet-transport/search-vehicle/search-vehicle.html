@@ -89,7 +89,7 @@
             <div class="search-wrap">
               <i class="fas fa-search search-icon"></i>
               <input type="text" class="search-input"
-                placeholder="Quick search by vehicle number, fuel type..."
+                placeholder="Quick search "
                 [value]="searchText()"
                 (input)="onSearch($event)" />
             </div>
@@ -106,20 +106,39 @@
     <div class="card table-card">
       <div class="table-responsive">
       <table class="table align-middle mb-0 vehicle-table">
-          <thead>
-            <tr>
-              <th (click)="sort('vehicleNumber')" class="sortable">Vehicle No.</th>
-              <th (click)="sort('vehicleType')" class="sortable">Type</th>
-              <th (click)="sort('fuelType')" class="sortable">Fuel</th>
-              <th (click)="sort('entryDate')" class="sortable">Entry Date</th>
-              <th (click)="sort('distanceKm')" class="sortable">Distance (km)</th>
-              <th (click)="sort('fuelConsumedLtr')" class="sortable">Fuel Used (L)</th>
-              <th (click)="sort('tripStartDateTime')" class="sortable">Start Date</th>
-              <th (click)="sort('tripEndDateTime')" class="sortable">End Date</th>
-              <th>Total Emission (kg CO₂e)</th>
-              <th>Action</th>
-            </tr>
-          </thead>
+          
+             <thead>
+  <tr>
+    <th (click)="sort('vehicleNumber')" class="sortable">
+      Vehicle No. <span class="sort-icon">{{ getSortIcon('vehicleNumber') }}</span>
+    </th>
+    <th (click)="sort('vehicleType')" class="sortable">
+      Type <span class="sort-icon">{{ getSortIcon('vehicleType') }}</span>
+    </th>
+    <th (click)="sort('fuelType')" class="sortable">
+      Fuel Type<span class="sort-icon">{{ getSortIcon('fuelType') }}</span>
+    </th>
+    <th (click)="sort('entryDate')" class="sortable">
+      Reported Date<span class="sort-icon">{{ getSortIcon('entryDate') }}</span>
+    </th>
+    <th (click)="sort('distanceKm')" class="sortable">
+      Distance (km) <span class="sort-icon">{{ getSortIcon('distanceKm') }}</span>
+    </th>
+    <th (click)="sort('fuelConsumedLtr')" class="sortable">
+      Fuel(L) <span class="sort-icon">{{ getSortIcon('fuelConsumedLtr') }}</span>
+    </th>
+    <th (click)="sort('tripStartDateTime')" class="sortable">
+      Start Date <span class="sort-icon">{{ getSortIcon('tripStartDateTime') }}</span>
+    </th>
+    <th (click)="sort('tripEndDateTime')" class="sortable">
+      End Date <span class="sort-icon">{{ getSortIcon('tripEndDateTime') }}</span>
+    </th>
+    <th (click)="sort('totalEmission')" class="sortable">
+      Total Emission (kg CO₂e) <span class="sort-icon">{{ getSortIcon('totalEmission') }}</span>
+    </th>
+    <th>Action</th>
+  </tr>
+</thead>
           <tbody>
             <tr *ngFor="let e of paginatedData()">
               <td>{{ e.vehicleNumber }}</td>

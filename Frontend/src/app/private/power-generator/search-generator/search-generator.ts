@@ -258,4 +258,8 @@ export class SearchGenerator implements OnInit {
 
     this.filteredData.set(sorted);
   }
+  getSortIcon(column: string): string {
+  if (this.sortColumn !== column) return '↕';
+  return this.sortDirection === 'asc' ? '↑' : '↓';
+}
 }
