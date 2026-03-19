@@ -84,16 +84,28 @@
     <div class="table-wrapper">
       <table>
         <thead>
-          <tr>
-            <th (click)="sort('siteName')">Site Name</th>
-            <th (click)="sort('buildingName')">Building Name</th>
-            <th (click)="sort('city')">City</th>
-            <th (click)="sort('state')">State</th>
-            <th (click)="sort('shortCode')">Short Code</th>
-            <th (click)="sort('isActive')">Status</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
+  <tr>
+    <th (click)="sort('siteName')" class="sortable">
+      Site Name <span class="sort-icon">{{ getSortIcon('siteName') }}</span>
+    </th>
+    <th (click)="sort('buildingName')" class="sortable">
+      Building Name <span class="sort-icon">{{ getSortIcon('buildingName') }}</span>
+    </th>
+    <th (click)="sort('city')" class="sortable">
+      City <span class="sort-icon">{{ getSortIcon('city') }}</span>
+    </th>
+    <th (click)="sort('state')" class="sortable">
+      State <span class="sort-icon">{{ getSortIcon('state') }}</span>
+    </th>
+    <th (click)="sort('shortCode')" class="sortable">
+      Short Code <span class="sort-icon">{{ getSortIcon('shortCode') }}</span>
+    </th>
+    <th (click)="sort('isActive')" class="sortable">
+      Status <span class="sort-icon">{{ getSortIcon('isActive') }}</span>
+    </th>
+    <th>Actions</th>
+  </tr>
+</thead>
         <tbody>
           <tr *ngFor="let site of siteList()">
             <td>{{ site.siteName }}</td>

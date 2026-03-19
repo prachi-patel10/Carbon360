@@ -90,7 +90,10 @@ pageSize = 5;
       this.totalPages = Math.ceil(this.totalRecords / this.pageSize);
     });
   }
-
+getSortIcon(column: string): string {
+  if (this.sortColumn() !== column) return '↕';
+  return this.sortDirection() === 'asc' ? '↑' : '↓';
+}
 
   submit() {
     if (this.generatorForm.invalid) {

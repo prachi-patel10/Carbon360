@@ -330,6 +330,8 @@ console.log('SORT:', this.sortColumn(), this.sortDirection());
     isActive: raw.isActive ?? true
   };
 
+  
+
     // const payload = this.isEditMode()
     //   ? {
     //     vehicle_id: raw.vehicle_id!,
@@ -380,6 +382,10 @@ console.log('SORT:', this.sortColumn(), this.sortDirection());
       department_id: vehicle.department_id?.toString() || null
     });
   }
+  getSortIcon(column: string): string {
+  if (this.sortColumn() !== column) return '↕';
+  return this.sortDirection() === 'asc' ? '↑' : '↓';
+}
 
   resetForm() {
     this.isEditMode.set(false);

@@ -77,13 +77,15 @@
     <!-- Table -->
     <div class="table-wrapper">
       <table>
-        <thead>
-          <tr>
-            <th>Department Name</th>
-            <th>Status</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
+       <thead>
+  <tr>
+    <th (click)="sort('DepartmentName')" class="sortable">
+      Department Name <span class="sort-icon">{{ getSortIcon('DepartmentName') }}</span>
+    </th>
+    <th>Status</th>
+    <th>Actions</th>
+  </tr>
+</thead>
 
         <tbody>
           <tr *ngFor="let d of departments()">

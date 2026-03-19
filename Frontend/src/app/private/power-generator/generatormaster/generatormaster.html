@@ -128,28 +128,28 @@
     <div class="table-wrapper">
       <table>
         <thead>
-          <tr>
-            <th class="sortable" (click)="sort('generatorName')">
-              <div class="th-content">Name</div>
-            </th>
-            <th class="sortable" (click)="sort('ratedCapacityKW')">
-              <div class="th-content">Rated KW</div>
-            </th>
-            <th class="sortable" (click)="sort('fuelName')">
-              <div class="th-content">Fuel Type</div>
-            </th>
-            <th class="sortable" (click)="sort('siteName')">
-              <div class="th-content">Site Location</div>
-            </th>
-            <th class="sortable" (click)="sort('departmentName')">
-              <div class="th-content">Department</div>
-            </th>
-            <th class="sortable" (click)="sort('isActive')">
-              <div class="th-content">Status</div>
-            </th>
-            <th>Actions</th>
-          </tr>
-        </thead>
+  <tr>
+    <th class="sortable" (click)="sort('generatorName')">
+      Name <span class="sort-icon">{{ getSortIcon('generatorName') }}</span>
+    </th>
+    <th class="sortable" (click)="sort('ratedCapacityKW')">
+      Rated KW <span class="sort-icon">{{ getSortIcon('ratedCapacityKW') }}</span>
+    </th>
+    <th class="sortable" (click)="sort('fuelName')">
+      Fuel Type <span class="sort-icon">{{ getSortIcon('fuelName') }}</span>
+    </th>
+    <th class="sortable" (click)="sort('siteName')">
+      Site Location <span class="sort-icon">{{ getSortIcon('siteName') }}</span>
+    </th>
+    <th class="sortable" (click)="sort('departmentName')">
+      Department <span class="sort-icon">{{ getSortIcon('departmentName') }}</span>
+    </th>
+    <th class="sortable" (click)="sort('isActive')">
+      Status <span class="sort-icon">{{ getSortIcon('isActive') }}</span>
+    </th>
+    <th>Actions</th>
+  </tr>
+</thead>
         <tbody>
           <tr *ngFor="let gen of generators()">
             <td>{{ gen?.generatorName }}</td>

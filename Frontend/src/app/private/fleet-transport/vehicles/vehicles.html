@@ -153,73 +153,29 @@
     <div class="table-wrapper">
       <table>
         <thead>
-          <tr>
-      <th (click)="sort('vehicle_number')" class="sortable">
-  Vehicle No
-  <i 
-    class="fa-solid"
-    [ngClass]="{
-      'fa-sort': sortColumn() !== 'vehicle_number',
-      'fa-arrow-up': sortColumn() === 'vehicle_number' && sortDirection() === 'asc',
-      'fa-arrow-down': sortColumn() === 'vehicle_number' && sortDirection() === 'desc'
-    }">
-  </i>
-</th>
-
-            <th (click)="sort('vehicle_type_name')" class="sortable">
-      Type
-      <i class="fa-solid"
-         [ngClass]="{
-           'fa-sort': sortColumn() !== 'vehicle_type_name',
-           'fa-arrow-up': sortColumn() === 'vehicle_type_name' && sortDirection() === 'asc',
-           'fa-arrow-down': sortColumn() === 'vehicle_type_name' && sortDirection() === 'desc'
-         }"></i>
+  <tr>
+    <th (click)="sort('vehicle_number')" class="sortable">
+      Vehicle No <span class="sort-icon">{{ getSortIcon('vehicle_number') }}</span>
     </th>
-
+    <th (click)="sort('vehicle_type_name')" class="sortable">
+      Type <span class="sort-icon">{{ getSortIcon('vehicle_type_name') }}</span>
+    </th>
     <th (click)="sort('fuel_name')" class="sortable">
-      Fuel
-      <i class="fa-solid"
-         [ngClass]="{
-           'fa-sort': sortColumn() !== 'fuel_name',
-           'fa-arrow-up': sortColumn() === 'fuel_name' && sortDirection() === 'asc',
-           'fa-arrow-down': sortColumn() === 'fuel_name' && sortDirection() === 'desc'
-         }"></i>
+      Fuel <span class="sort-icon">{{ getSortIcon('fuel_name') }}</span>
     </th>
-
     <th (click)="sort('department_name')" class="sortable">
-      Department
-      <i class="fa-solid"
-         [ngClass]="{
-           'fa-sort': sortColumn() !== 'department_name',
-           'fa-arrow-up': sortColumn() === 'department_name' && sortDirection() === 'asc',
-           'fa-arrow-down': sortColumn() === 'department_name' && sortDirection() === 'desc'
-         }"></i>
+      Department <span class="sort-icon">{{ getSortIcon('department_name') }}</span>
     </th>
-
     <th (click)="sort('engine_capacity')" class="sortable">
-      Engine
-      <i class="fa-solid"
-         [ngClass]="{
-           'fa-sort': sortColumn() !== 'engine_capacity',
-           'fa-arrow-up': sortColumn() === 'engine_capacity' && sortDirection() === 'asc',
-           'fa-arrow-down': sortColumn() === 'engine_capacity' && sortDirection() === 'desc'
-         }"></i>
+      Engine <span class="sort-icon">{{ getSortIcon('engine_capacity') }}</span>
     </th>
-
     <th (click)="sort('emission_standard')" class="sortable">
-      Emission
-      <i class="fa-solid"
-         [ngClass]="{
-           'fa-sort': sortColumn() !== 'emission_standard',
-           'fa-arrow-up': sortColumn() === 'emission_standard' && sortDirection() === 'asc',
-           'fa-arrow-down': sortColumn() === 'emission_standard' && sortDirection() === 'desc'
-         }"></i>
+      Emission <span class="sort-icon">{{ getSortIcon('emission_standard') }}</span>
     </th>
-
     <th>Status</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
+    <th>Actions</th>
+  </tr>
+</thead>
         <tbody>
           <tr *ngFor="let v of vehicles()">
             <td>{{ v.vehicle_number }}</td>

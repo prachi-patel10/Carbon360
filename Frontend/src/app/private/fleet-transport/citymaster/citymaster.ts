@@ -81,6 +81,11 @@ export class Citymaster implements OnInit {
      this.loadAllFilterData();
   }
 
+  getSortIcon(column: string): string {
+  if (this.sortColumn() !== column) return '↕';
+  return this.sortDirection() === 'asc' ? '↑' : '↓';
+}
+
   sort(column: string) {
 
   if (this.sortColumn() === column) {

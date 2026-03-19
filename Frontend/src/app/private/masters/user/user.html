@@ -136,18 +136,32 @@
 
     <div class="table-wrapper">
       <table>
-        <thead>
-          <tr>
-            <th (click)="sort('Fname')" class="sortable">First Name</th>
-            <th (click)="sort('Lname')" class="sortable">Last Name</th>
-            <th (click)="sort('UserName')" class="sortable">User Name</th>
-            <th (click)="sort('Email')" class="sortable">Email</th>
-            <th (click)="sort('DepartmentName')" class="sortable">Department</th>
-            <th (click)="sort('RoleNames')" class="sortable">Roles</th>
-            <th (click)="sort('IsActive')" class="sortable">Status</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
+       <thead>
+  <tr>
+    <th (click)="sort('Fname')" class="sortable">
+      First Name <span class="sort-icon">{{ getSortIcon('Fname') }}</span>
+    </th>
+    <th (click)="sort('Lname')" class="sortable">
+      Last Name <span class="sort-icon">{{ getSortIcon('Lname') }}</span>
+    </th>
+    <th (click)="sort('UserName')" class="sortable">
+      User Name <span class="sort-icon">{{ getSortIcon('UserName') }}</span>
+    </th>
+    <th (click)="sort('Email')" class="sortable">
+      Email <span class="sort-icon">{{ getSortIcon('Email') }}</span>
+    </th>
+    <th (click)="sort('DepartmentName')" class="sortable">
+      Department <span class="sort-icon">{{ getSortIcon('DepartmentName') }}</span>
+    </th>
+    <th (click)="sort('RoleNames')" class="sortable">
+      Roles <span class="sort-icon">{{ getSortIcon('RoleNames') }}</span>
+    </th>
+    <th (click)="sort('IsActive')" class="sortable">
+      Status <span class="sort-icon">{{ getSortIcon('IsActive') }}</span>
+    </th>
+    <th>Actions</th>
+  </tr>
+</thead>
         <tbody>
           <tr *ngFor="let u of users()">
             <td>{{ u.fName }}</td>

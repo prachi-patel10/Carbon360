@@ -22,7 +22,8 @@ export class DepartmentComponent implements OnInit {
 
   departmentForm!: FormGroup;
   searchForm!: FormGroup;
-
+sortColumn = 'DepartmentName';
+sortDirection: 'asc' | 'desc' = 'asc';
   // Signals
   departments = signal<Department[]>([]);
   totalRecords = signal(0);
@@ -75,6 +76,31 @@ toggleDepartmentFilter(id: string) {
     this.selectedDepartmentIds.push(id);
   }
 
+}
+sort(column: string) {
+  if (this.sortColumn === column)
+    this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+  else {
+    this.sortColumn = column;
+    this.sortDirection = 'asc';
+  }
+
+  const sorted = [...this.departments()].sort((a: any, b: any) => {
+    let valA = a[column] ?? '';
+    let valB = b[column] ?? '';
+    if (typeof valA === 'string') valA = valA.toLowerCase();
+    if (typeof valB === 'string') valB = valB.toLowerCase();
+    if (valA < valB) return this.sortDirection === 'asc' ? -1 : 1;
+    if (valA > valB) return this.sortDirection === 'asc' ? 1 : -1;
+    return 0;
+  });
+
+  this.departments.set(sorted);
+}
+
+getSortIcon(column: string): string {
+  if (this.sortColumn !== column) return '↕';
+  return this.sortDirection === 'asc' ? '↑' : '↓';
 }
 
 applyDepartmentFilter() {

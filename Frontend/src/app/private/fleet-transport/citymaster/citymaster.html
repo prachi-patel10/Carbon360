@@ -79,30 +79,20 @@
 
       <table>
         <thead>
-          <tr>
-            <th (click)="sort('CityName')" class="sortable">
-  City
-  <span *ngIf="sortColumn() === 'CityName'">
-    {{ sortDirection() === 'asc' ? '▲' : '▼' }}
-  </span>
-</th>
-        <th (click)="sort('StateName')" class="sortable">
-  State
-  <span *ngIf="sortColumn() === 'StateName'">
-    {{ sortDirection() === 'asc' ? '▲' : '▼' }}
-  </span>
-</th>
-
-<th (click)="sort('ShortCode')" class="sortable">
-  Short Code
-  <span *ngIf="sortColumn() === 'ShortCode'">
-    {{ sortDirection() === 'asc' ? '▲' : '▼' }}
-  </span>
-</th>
-            <th>Status</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
+  <tr>
+    <th (click)="sort('CityName')" class="sortable">
+      City <span class="sort-icon">{{ getSortIcon('CityName') }}</span>
+    </th>
+    <th (click)="sort('StateName')" class="sortable">
+      State <span class="sort-icon">{{ getSortIcon('StateName') }}</span>
+    </th>
+    <th (click)="sort('ShortCode')" class="sortable">
+      Short Code <span class="sort-icon">{{ getSortIcon('ShortCode') }}</span>
+    </th>
+    <th>Status</th>
+    <th>Actions</th>
+  </tr>
+</thead>
 
         <tbody>
           <tr *ngFor="let c of cities()">

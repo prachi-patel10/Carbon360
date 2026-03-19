@@ -311,11 +311,12 @@ siteList = signal<any[]>([]);  cityList: any[] = [];
     this.search();
   }
 
-  getSortArrow(column: string): string {
-    if (this.sortColumnName === column) return this.sortDir === 'asc' ? '▲' : '▼';
-    return '';
-  }
 
+// If signals:
+getSortIcon(column: string): string {
+  if (this.sortColumnName !== column) return '↕';
+  return this.sortDir === 'asc' ? '↑' : '↓';
+}
   // ================= FILTER MODAL =================
   openFilterModal() { this.filterModalOpen.set(true); }
   closeFilter() { this.filterModalOpen.set(false); }

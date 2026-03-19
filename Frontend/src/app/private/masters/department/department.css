@@ -53,7 +53,7 @@
   padding: 8px 16px;
   border-radius: 5px;
   border: none;
-  background-color: #1b5e20;
+  background-color: #0f5132;
   color: #fff;
   cursor: pointer;
   font-size: 14px;
@@ -113,7 +113,7 @@
 }
 
 input:checked+.slider {
-  background-color: #1b5e20;
+  background-color: #0f5132;
 }
 
 input:checked+.slider:before {
@@ -126,7 +126,7 @@ input:checked+.slider:before {
   justify-content: space-between;
   align-items: center;
   gap: 10px;
-  margin-bottom: 10px;
+
   flex-wrap: wrap;
 }
 
@@ -152,6 +152,7 @@ input:checked+.slider:before {
 /* ================= TABLE ================= */
 .table-wrapper {
   overflow-x: auto;
+  margin-top: 16px;
 }
 
 table {
@@ -160,17 +161,46 @@ table {
   font-size: 14px;
 }
 
-th,
-td {
-  padding: 10px 8px;
+th {
+  position: relative;
   text-align: left;
-  border-bottom: 1px solid #ddd;
+  text-transform: uppercase;
+  background-color: #0f5132;
+  color: white;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  padding: 1.1rem 1rem;
+  user-select: none;
 }
 
-th {
+th.sortable {
   cursor: pointer;
-  user-select: none;
-  position: relative;
+  white-space: nowrap;
+}
+
+th.sortable:hover {
+  background-color: #0a3d22;
+}
+
+th:last-child {
+  text-align: left;
+}
+
+th span.sort-icon {
+  font-size: 11px;
+  opacity: 0.8;
+  margin-left: 4px;
+  color: white;
+}
+
+td {
+  padding: 1rem;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: middle;
+}
+
+tbody tr:hover td {
+  background-color: #f0fdf4;
 }
 
 td.actions {
@@ -193,53 +223,62 @@ td.actions button {
   background-color: #d0ebff;
   color: #0369a1;
 }
-
-.edit-btn:hover {
-  background-color: #a5d8ff;
-}
+.edit-btn:hover { background-color: #a5d8ff; }
 
 .delete-btn {
   background-color: #ffe3e3;
   color: #c92a2a;
 }
+.delete-btn:hover { background-color: #ffc9c9; }
 
-.delete-btn:hover {
-  background-color: #ffc9c9;
-}
 
 /* ================= PAGINATION ================= */
-
 .pagination-info {
   display: flex;
-  justify-content: space-between; /* Isse text left aur buttons right mein jayenge */
+  justify-content: space-between;
   align-items: center;
-  margin-top: 15px;
+  margin-top: 0;
   flex-wrap: wrap;
   font-size: 14px;
   color: #333;
+  padding: 12px 16px;
+  border-top: 1px solid #e5e7eb;
+  background: #f9fafb;
 }
 
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
 
 .pagination-controls button {
-  padding: 5px 10px;
-  margin: 0 5px;
-  border-radius: 5px;
-  border: 1px solid #ccc;
-  background-color: #f5f5f5;
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: none;
+  background-color: #0f5132;
+  color: white;
   cursor: pointer;
-  color: black;
+  transition: 0.2s;
+  margin: 0;
 }
 
-.pagination-controls button:hover {
-  background-color: #e0e0e0;
+.pagination-controls button:hover:not(:disabled) {
+  background-color: #166534;
+}
+
+.pagination-controls button:disabled {
+  background-color: #cbd5e1;
+  cursor: not-allowed;
 }
 
 .pagination-controls select {
-  margin-left: 5px;
-  padding: 3px 6px;
+  padding: 4px 6px;
   font-size: 14px;
   border-radius: 5px;
   border: 1px solid #ccc;
+  margin-left: 5px;
+  width: auto;
 }
 /* ================= MODAL ================= */
 .modal {

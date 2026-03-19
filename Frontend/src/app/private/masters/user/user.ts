@@ -595,7 +595,10 @@ getSelectedRoleNames(): string {
     }
     this.currentPage.set(1);
   }
-
+getSortIcon(column: string): string {
+  if (this.sortColumn !== column) return '↕';
+  return this.sortDirection === 'ASC' ? '↑' : '↓';
+}
   get sortedUsers() {
     const column = this.sortColumn;
     const direction = this.sortDirection;

@@ -691,6 +691,10 @@ export class Vehicletype implements OnInit {
   });
 }
 
+getSortIcon(column: string): string {
+  if (this.sortColumn() !== column) return '↕';
+  return this.sortDirection() === 'asc' ? '↑' : '↓';
+}
   previousPage() {
     if (this.currentPage() > 1)
       this.currentPage.set(this.currentPage() - 1);

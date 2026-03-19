@@ -54,7 +54,7 @@
   padding: 8px 16px;
   border-radius: 5px;
   border: none;
-  background-color: #1b5e20;
+  background-color: #0f5132;
   color: #fff;
   cursor: pointer;
   font-size: 14px;
@@ -118,7 +118,7 @@
 }
 
 input:checked + .slider {
-  background-color: #1b5e20;
+  background-color: #0f5132;
 }
 
 input:checked + .slider:before {
@@ -161,58 +161,82 @@ input:checked + .slider:before {
 
 /* ✅ ACTIVE STATE */
 .toggle-switch input:checked + .toggle-slider {
-  background-color: #1b5e20;
+  background-color: #0f5132;
 }
 
 .toggle-switch input:checked + .toggle-slider:before {
   transform: translateX(20px);
 }
 /* ================= TABLE ================= */
-.table-card table {
+/* ================= TABLE ================= */
+.table-wrapper {
+  overflow-x: auto;
+  margin-top: 16px;
+}
+
+table {
   width: 100%;
   border-collapse: collapse;
   font-size: 14px;
 }
 
-.table-card th,
-.table-card td {
-  padding: 10px 8px;
+th {
+  position: relative;
   text-align: left;
-  border-bottom: 1px solid #ddd;
-}
-
-.table-card th,
-.table-card td {
-  text-align: left;
-}
-
-.table-card th:last-child {
-  text-align: center;
-}
-
-.actions-header {
-  text-align: center;
-  width: 140px; /* 🔥 important for alignment */
+  text-transform: uppercase;
+  background-color: #0f5132;
+  color: white;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  padding: 1.1rem 1rem;
+  user-select: none;
 }
 
 th:last-child {
-  text-align: center;
+  text-align: left;
 }
 
+td {
+  padding: 1rem;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: middle;
+}
+
+tbody tr:hover td {
+  background-color: #f0fdf4;
+}
+
+/* Fix action button class names to match your HTML */
 .action-buttons {
   display: flex;
   gap: 8px;
-  justify-content: center;
 }
 
 .btn-edit {
   background-color: #d0ebff;
   color: #0369a1;
+  border: none;
   padding: 6px 12px;
   border-radius: 6px;
-  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease-in-out;
 }
+.btn-edit:hover { background-color: #a5d8ff; }
 
+.btn-delete {
+  background-color: #ffe3e3;
+  color: #c92a2a;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease-in-out;
+}
+.btn-delete:hover { background-color: #ffc9c9; }
 .reset-btn {
   background: #ccc;
   border: none;
@@ -223,13 +247,7 @@ th:last-child {
 }
 
 
-.btn-delete {
-  background-color: #ffe3e3;
-  color: #c92a2a;
-  padding: 6px 12px;
-  border-radius: 6px;
-  border: none;
-}
+
 
 .form-group select {
   color: #000; /* default = black */

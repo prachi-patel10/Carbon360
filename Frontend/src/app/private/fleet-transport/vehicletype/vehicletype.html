@@ -83,14 +83,21 @@
       <table>
 
         <thead>
-          <tr>
-            <th (click)="sort('vehicle_type_name')">Name</th>
-            <th (click)="sort('categoryName')">Category</th>
-            <th (click)="sort('description')">Description</th>
-            <th>Status</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
+       <tr>
+    <th (click)="sort('vehicle_type_name')" class="sortable">
+      Name <span class="sort-icon">{{ getSortIcon('vehicle_type_name') }}</span>
+    </th>
+    <th (click)="sort('categoryName')" class="sortable">
+      Category <span class="sort-icon">{{ getSortIcon('categoryName') }}</span>
+    </th>
+    <th (click)="sort('description')" class="sortable">
+      Description <span class="sort-icon">{{ getSortIcon('description') }}</span>
+    </th>
+    <th>Status</th>
+    <th>Actions</th>
+  </tr>
+</thead>
+           
 
         <tbody>
           <tr *ngFor="let v of vehicleTypes()">
