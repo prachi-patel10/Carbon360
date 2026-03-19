@@ -148,36 +148,38 @@ namespace ProjectApp.API.Controllers.Account.GeneratorOperation
 
         [HttpGet("search")]
         public async Task<IActionResult> Search(
-     string? search,
-     string? fuelType,
-     string? generatorName,
-     DateTime? startDate,
-     DateTime? endDate,
-     int? statusId,
-     int pageNumber = 1,
-     int pageSize = 10)
+    string search,
+    string generatorName,
+    [FromQuery] List<string> fuelTypes,   // ?fuelTypes=Diesel&fuelTypes=Petrol
+    DateTime? startDate,
+    DateTime? endDate,
+    int? statusId,
+    int pageNumber = 1,
+    int pageSize = 10)
         {
-            var pagedResult = await _service.SearchAsync(
-                search, fuelType, generatorName, startDate, endDate, statusId, pageNumber, pageSize);
+            // Join list into comma-separated string; pass null if empty
+            string fuelTypesString = fuelTypes != null && fuelTypes.Any()
+                ? string.Join(",", fuelTypes)
+                : null;
 
-            var response = new
+            var result = await _service.SearchAsync(
+                search,
+                fuelTypesString,
+                generatorName,
+                startDate,
+                endDate,
+                statusId,
+                pageNumber,
+                pageSize
+            );
+
+            return Ok(new
             {
                 status = true,
                 statusCode = 200,
-                data = new
-                {
-                    records = pagedResult.Data, // ✅ Use Data, not Records
-                    totalRecords = pagedResult.TotalRecords,
-                    pageNumber = pagedResult.PageNumber,
-                    pageSize = pagedResult.PageSize
-                },
-                errors = Array.Empty<string>(),
-                message = ""
-            };
-
-            return Ok(response);
+                data = result
+            });
         }
-
 
         // GET /api/generator
         [HttpGet("allgenerator")]

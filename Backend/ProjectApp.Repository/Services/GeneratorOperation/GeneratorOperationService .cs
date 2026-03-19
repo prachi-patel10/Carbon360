@@ -269,18 +269,18 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
         }
 
         // ================= SEARCH =================
+
         public async Task<GeneratorOperationPagedResponseDTO> SearchAsync(
-     string? search = null,
-     string? fuelType = null,
-     string? generatorName = null,
-     DateTime? startDate = null,
-     DateTime? endDate = null,
-     int? statusId = null,
-     int pageNumber = 1,
-     int pageSize = 10)
+     string search,
+     string fuelTypes,       // already comma-separated string e.g. "Diesel,Petrol"
+     string generatorName,
+     DateTime? startDate,
+     DateTime? endDate,
+     int? statusId,
+     int pageNumber,
+     int pageSize)
         {
-            int userId = GetCurrentUserId();
-            string role = _userContext.Role;
+            var result = new GeneratorOperationPagedResponseDTO();
 
             await using var connection = _context.Database.GetDbConnection();
             await using var command = connection.CreateCommand();
@@ -288,66 +288,65 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
             command.CommandText = "USP_CB_SearchGeneratorOperation";
             command.CommandType = CommandType.StoredProcedure;
 
-            command.Parameters.Add(new SqlParameter("@Search", (object?)search ?? DBNull.Value));
-            command.Parameters.Add(new SqlParameter("@GeneratorName", (object?)generatorName ?? DBNull.Value));
-            command.Parameters.Add(new SqlParameter("@FuelType", (object?)fuelType ?? DBNull.Value));
-            command.Parameters.Add(new SqlParameter("@StartDate", (object?)startDate ?? DBNull.Value));
-            command.Parameters.Add(new SqlParameter("@EndDate", (object?)endDate ?? DBNull.Value));
-            command.Parameters.Add(new SqlParameter("@StatusId", (object?)statusId ?? DBNull.Value));
-            command.Parameters.Add(new SqlParameter("@UserId", userId));
-            command.Parameters.Add(new SqlParameter("@UserRole", role));
+            command.Parameters.Add(new SqlParameter("@Search", (object)search ?? DBNull.Value));
+            command.Parameters.Add(new SqlParameter("@GeneratorName", (object)generatorName ?? DBNull.Value));
+            command.Parameters.Add(new SqlParameter("@FuelTypes", (object)fuelTypes ?? DBNull.Value));  // pass as-is
+            command.Parameters.Add(new SqlParameter("@StartDate", (object)startDate ?? DBNull.Value));
+            command.Parameters.Add(new SqlParameter("@EndDate", (object)endDate ?? DBNull.Value));
+            command.Parameters.Add(new SqlParameter("@EntryStartDate", DBNull.Value));
+            command.Parameters.Add(new SqlParameter("@EntryEndDate", DBNull.Value));
+            command.Parameters.Add(new SqlParameter("@StatusId", (object)statusId ?? DBNull.Value));
+            command.Parameters.Add(new SqlParameter("@UserId", GetCurrentUserId()));
+            command.Parameters.Add(new SqlParameter("@UserRole", _userContext.Role ?? "Reporter"));
             command.Parameters.Add(new SqlParameter("@PageNumber", pageNumber));
             command.Parameters.Add(new SqlParameter("@PageSize", pageSize));
-            var totalRecordsParam = new SqlParameter("@TotalRecords", SqlDbType.Int)
+
+            var totalParam = new SqlParameter("@TotalRecords", SqlDbType.Int)
             {
                 Direction = ParameterDirection.Output
             };
-
-            command.Parameters.Add(totalRecordsParam);
+            command.Parameters.Add(totalParam);
 
             if (connection.State != ConnectionState.Open)
                 await connection.OpenAsync();
 
-            var list = new List<GeneratorOperationResponseDTO>();
-
             await using var reader = await command.ExecuteReaderAsync();
+            var records = new List<GeneratorOperationResponseDTO>();
 
             while (await reader.ReadAsync())
             {
-                list.Add(new GeneratorOperationResponseDTO
+                records.Add(new GeneratorOperationResponseDTO
                 {
                     OperationId = _idEncoder.Encode(reader.GetInt32(reader.GetOrdinal("OperationId"))),
                     GeneratorId = _idEncoder.Encode(reader.GetInt32(reader.GetOrdinal("GeneratorId"))),
+                    GeneratorName = reader["GeneratorName"]?.ToString(),
+                    FuelType = reader["FuelType"]?.ToString(),
                     SiteId = reader.IsDBNull(reader.GetOrdinal("SiteId"))
                         ? null
                         : _idEncoder.Encode(reader.GetInt32(reader.GetOrdinal("SiteId"))),
-
-                    SiteName = reader["SiteName"]?.ToString(),
-                    GeneratorName = reader["GeneratorName"]?.ToString(),
-                    FuelType = reader["FuelType"]?.ToString(),
+                    SiteName = reader.IsDBNull(reader.GetOrdinal("SiteName"))
+                        ? null
+                        : reader.GetString(reader.GetOrdinal("SiteName")),
                     OperationDate = DateOnly.FromDateTime(reader.GetDateTime(reader.GetOrdinal("OperationDate"))),
+                    StartTime = reader.GetDateTime(reader.GetOrdinal("StartTime")),
+                    EndTime = reader.GetDateTime(reader.GetOrdinal("EndTime")),
                     RunHours = reader.IsDBNull(reader.GetOrdinal("RunHours")) ? 0 : reader.GetDecimal(reader.GetOrdinal("RunHours")),
                     LoadFactor = reader.IsDBNull(reader.GetOrdinal("LoadFactor")) ? 0 : reader.GetDecimal(reader.GetOrdinal("LoadFactor")),
                     PowerOutputKWH = reader.IsDBNull(reader.GetOrdinal("PowerOutputKWH")) ? 0 : reader.GetDecimal(reader.GetOrdinal("PowerOutputKWH")),
                     FuelConsumedLiters = reader.IsDBNull(reader.GetOrdinal("FuelConsumedLiters")) ? 0 : reader.GetDecimal(reader.GetOrdinal("FuelConsumedLiters")),
-                    StatusId = reader.IsDBNull(reader.GetOrdinal("StatusId")) ? 0 : reader.GetInt32(reader.GetOrdinal("StatusId"))
+                    StatusId = reader.IsDBNull(reader.GetOrdinal("StatusId")) ? 0 : reader.GetInt32(reader.GetOrdinal("StatusId")),
+                    EntryBy = reader.IsDBNull(reader.GetOrdinal("EntryBy")) ? 0 : reader.GetInt32(reader.GetOrdinal("EntryBy")),
+                    EntryDate = reader.IsDBNull(reader.GetOrdinal("EntryDate")) ? DateTime.MinValue : reader.GetDateTime(reader.GetOrdinal("EntryDate"))
                 });
             }
 
+            // Close reader BEFORE reading output parameter
             await reader.CloseAsync();
 
-            int totalRecords = totalRecordsParam.Value != DBNull.Value
-                ? Convert.ToInt32(totalRecordsParam.Value)
-                : 0;
+            result.Records = records;
+            result.TotalRecords = totalParam.Value != DBNull.Value ? (int)totalParam.Value : 0;
 
-            // ✅ Return using Data property
-            return new GeneratorOperationPagedResponseDTO
-            {
-                Data = list,
-                PageNumber = pageNumber,
-                PageSize = pageSize,
-                TotalRecords = totalRecords
-            };
+            return result;
         }
 
         public async Task<List<GeneratorResponseDTO>> GetBySiteIdAsync(int siteId)

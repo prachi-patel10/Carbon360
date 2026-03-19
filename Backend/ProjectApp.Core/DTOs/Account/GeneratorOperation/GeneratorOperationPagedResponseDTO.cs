@@ -8,10 +8,11 @@ namespace ProjectApp.Core.DTOs.Account.GeneratorOperation
 {
     public class GeneratorOperationPagedResponseDTO
     {
-        public List<GeneratorOperationResponseDTO> Data { get; set; } = new();
-        public int TotalRecords { get; set; }
-        public int PageNumber { get; set; }
-        public int PageSize { get; set; }
+        // List of generator operations
+        public List<GeneratorOperationResponseDTO> Records { get; set; } = new List<GeneratorOperationResponseDTO>();
+
+        // Total number of records for pagination
+        public int TotalRecords { get; set; } = 0;
     }
 }
 

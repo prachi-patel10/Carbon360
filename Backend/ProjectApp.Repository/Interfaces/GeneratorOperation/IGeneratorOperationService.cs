@@ -27,20 +27,17 @@ namespace ProjectApp.Repository.Interfaces.GenerationOperation
         Task<bool> UpdateStatusAsync(string encryptedId, int statusId);
 
         Task<GeneratorOperationPagedResponseDTO> SearchAsync(
-    string search = null,
-    string fuelType = null,
-    string generatorName = null,
-    DateTime? startDate = null,
-    DateTime? endDate = null,
-    int? statusId = null,
-    int pageNumber = 1,
-    int pageSize = 10
-);
+    string search,
+    string fuelTypes,        // ← change List<string> to string
+    string generatorName,
+    DateTime? startDate,
+    DateTime? endDate,
+    int? statusId,
+    int pageNumber,
+    int pageSize);
         Task<List<WorkflowActionDTO>> GetWorkflowActionsAsync(string encryptedId);
 
         Task<List<GeneratorOperationResponseDTO>> GetMyActionRecordsAsync();
 
     }
-
-
 }
