@@ -135,27 +135,27 @@ namespace ProjectApp.API.Controllers.Account.VehicleTripEmission
 
         [HttpGet("search")]
         public async Task<IActionResult> Search(
-    string? search = null,
-    string? vehicleNumber = null,
-    [FromQuery] List<string>? fuelType = null,   // ✅ MULTI SELECT
-    string? vehicleType = null,
-    DateTime? startDate = null,
-    DateTime? endDate = null,
-    int? statusId = null,
-    int pageNumber = 1,
-    int pageSize = 10,
-    string sortColumn = "tripstartdatetime",
-    string sortDirection = "DESC")
+           string? search = null,
+           string? vehicleNumber = null,
+           [FromQuery] List<string>? fuelType = null,
+           string? vehicleType = null,
+           DateTime? startDate = null,
+           DateTime? endDate = null,
+           int? statusId = null,
+           int pageNumber = 1,
+           int pageSize = 10,
+           string sortColumn = "tripstartdatetime",
+           string sortDirection = "DESC")
         {
-            // ✅ Convert list → CSV
-            string fuelTypeCsv = (fuelType != null && fuelType.Any())
+            // Convert list to CSV e.g. "Petrol,CNG" — SP handles splitting via CB_SplitString
+            string? fuelTypeCsv = (fuelType != null && fuelType.Any())
                 ? string.Join(",", fuelType)
                 : null;
 
             var (data, totalRecords) = await _service.SearchVehicleTrips(
                 search,
                 vehicleNumber,
-                fuelTypeCsv,   // ✅ PASS CSV
+                fuelTypeCsv,
                 vehicleType,
                 startDate,
                 endDate,
@@ -170,7 +170,7 @@ namespace ProjectApp.API.Controllers.Account.VehicleTripEmission
             return Ok(new
             {
                 success = true,
-                data = data,
+                data,
                 totalRecords,
                 pageNumber,
                 pageSize

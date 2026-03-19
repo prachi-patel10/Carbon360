@@ -30,18 +30,18 @@ namespace ProjectApp.Repository.Interfaces.VehicleTripEmission
         //int pageSize = 10);
 
         Task<(IEnumerable<SearchVehicleTripEmissionDTO>, int)> SearchVehicleTrips(
-        string? search,
-        string? vehicleNumber,
-        string? fuelType,
-        string? vehicleType,
-        DateTime? startDate,
-        DateTime? endDate,
-        int? statusId,
-        string? userRole,
-        int pageNumber = 1,
-        int pageSize = 10,
-        string sortColumn = "entrydate",
-        string sortDirection = "DESC");
+           string? search,
+           string? vehicleNumber,
+           string? fuelType,
+           string? vehicleType,
+           DateTime? startDate,
+           DateTime? endDate,
+           int? statusId,
+           string? userRole,
+           int pageNumber = 1,
+           int pageSize = 10,
+           string sortColumn = "entrydate",
+           string sortDirection = "DESC");
 
         //Task<PageResult> GetMyActionTripsAsync(int pageNumber, int pageSize);
         Task<PageResult> GetMyActionTripsAsync(int pageNumber, int pageSize, string sortColumn = "EntryDate", string sortDirection = "ASC");
