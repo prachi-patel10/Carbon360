@@ -57,7 +57,7 @@ export const routes: Routes = [
             { path: 'vehiclemaster', component: Vehicles },// create/import VehicleComponent
             { path: 'fueltype', component: Fueltype },
             { path: 'emissionFactors', component: EmissionFactorComponent },
-            { path: 'vehicletypeservice', component: Vehicletype },
+            { path: 'Vehicletype', component: Vehicletype },
             { path: 'generator', component: Generatormaster },
             // { path: 'waste', component: WasteComponent },           // create/import WasteComponent
             { path: 'generator-ec', component: GeneratorOperationComponent },   // create/import GeneratorComponent

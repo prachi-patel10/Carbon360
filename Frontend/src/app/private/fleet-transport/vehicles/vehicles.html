@@ -1,83 +1,78 @@
 <div class="container">
-
   <!-- ================= CREATE / EDIT VEHICLE FORM ================= -->
   <div class="card">
     <form class="form-grid">
-
       <!-- Vehicle Number -->
       <div class="form-group">
         <label>Vehicle Number</label>
-        
-        <input type="text" name="vehicle_number" [(ngModel)]="newVehicle().vehicle_number"
-          (ngModelChange)="onVehicleNumberChange($event)" placeholder="Enter Vehicle Number"/>
+
+        <input
+          type="text"
+          name="vehicle_number"
+          [(ngModel)]="newVehicle().vehicle_number"
+          (ngModelChange)="onVehicleNumberChange($event)"
+          placeholder="Enter Vehicle Number"
+        />
         <small class="error-text" *ngIf="vehicleNumberError()">
           {{ vehicleNumberError() }}
         </small>
       </div>
 
-<div class="form-group">
-  <label>Vehicle Type</label>
+      <div class="form-group">
+        <label>Vehicle Type</label>
 
-  <select name="vehicle_type_id"
+        <select
+          name="vehicle_type_id"
           [(ngModel)]="newVehicle().vehicle_type_id"
-          [style.color]="!newVehicle().vehicle_type_id ? '#999' : '#000'">
+          [style.color]="!newVehicle().vehicle_type_id ? '#999' : '#000'"
+        >
+          <!-- Placeholder -->
+          <option [ngValue]="null" disabled>Select Vehicle Type</option>
 
-    <!-- Placeholder -->
-    <option [ngValue]="null" disabled>
-      Select Vehicle Type
-    </option>
-
-    <!-- Options -->
-    <option *ngFor="let vt of vehicleTypes()" 
+          <!-- Options -->
+          <option
+            *ngFor="let vt of vehicleTypes()"
             [ngValue]="vt.vehicle_type_id"
-            style="color: #000;">
-      {{ vt.vehicle_type_name }}
-    </option>
+            style="color: #000"
+          >
+            {{ vt.vehicle_type_name }}
+          </option>
+        </select>
+      </div>
 
-  </select>
-</div>
+      <div class="form-group">
+        <label>Fuel</label>
 
-     <div class="form-group">
-  <label>Fuel</label>
-
-  <select name="fuel_id"
+        <select
+          name="fuel_id"
           [(ngModel)]="newVehicle().fuel_id"
-          [style.color]="!newVehicle().fuel_id ? '#999' : '#000'">
+          [style.color]="!newVehicle().fuel_id ? '#999' : '#000'"
+        >
+          <option [ngValue]="null" disabled>Select Fuel</option>
 
-    <option [ngValue]="null" disabled>
-      Select Fuel
-    </option>
-
-    <option *ngFor="let f of fuelTypes()" 
-            [ngValue]="f.fuel_id"
-            style="color: #000;">
-      {{ f.fuel_name }}
-    </option>
-
-  </select>
-</div>
+          <option *ngFor="let f of fuelTypes()" [ngValue]="f.fuel_id" style="color: #000">
+            {{ f.fuel_name }}
+          </option>
+        </select>
+      </div>
 
       <!-- Department -->
-    <div class="form-group">
-  <label>Department</label>
+      <div class="form-group">
+        <label>Department</label>
 
-  <select name="department_id"
+        <select
+          name="department_id"
           [(ngModel)]="newVehicle().department_id"
-          [style.color]="!newVehicle().department_id ? '#999' : '#000'">
+          [style.color]="!newVehicle().department_id ? '#999' : '#000'"
+        >
+          <option [ngValue]="null" disabled>Select Department</option>
 
-    <option [ngValue]="null" disabled>
-      Select Department
-    </option>
-
-    <option *ngFor="let d of departments()" 
-            [ngValue]="d.department_id"
-            style="color: #000;">
-      {{ d.department_name }}
-    </option>
-
-  </select>
-</div>
-        <!-- <select name="department_id" [(ngModel)]="newVehicle().department_id" class="form-control">
+          <option *ngFor="let d of departments()" [ngValue]="d.department_id" style="color: #000">
+            {{ d.department_name }}
+          </option>
+        </select>
+      </div>
+      <!-- <select name="department_id" [(ngModel)]="newVehicle().department_id" class="form-control">
           <option [ngValue]="null" disabled hidden>Select Department...</option>
           <option *ngFor="let d of departments()" [ngValue]="d.department_id">
             {{ d.department_name }}
@@ -87,39 +82,45 @@
       <!-- Engine Capacity -->
       <div class="form-group">
         <label>Engine Capacity</label>
-        <input type="number" [(ngModel)]="newVehicle().engine_capacity" name="engineCapacity"
-          placeholder="Engine Capacity" />
+        <input
+          type="number"
+          [(ngModel)]="newVehicle().engine_capacity"
+          name="engineCapacity"
+          placeholder="Engine Capacity"
+        />
       </div>
 
       <!-- Emission Standard -->
       <div class="form-group">
-  <label>Emission Standard</label>
+        <label>Emission Standard</label>
 
-  <select name="emissionStandard"
+        <select
+          name="emissionStandard"
           [(ngModel)]="newVehicle().emission_standard"
-          [style.color]="!newVehicle().emission_standard ? '#999' : '#000'">
+          [style.color]="!newVehicle().emission_standard ? '#999' : '#000'"
+        >
+          <!-- Placeholder -->
+          <option [ngValue]="null" disabled>Select Emission Standard</option>
 
-    <!-- Placeholder -->
-    <option [ngValue]="null" disabled>
-      Select Emission Standard
-    </option>
-
-    <!-- Options -->
-    <option value="BS4" style="color:#000;">BS4</option>
-    <option value="BS6" style="color:#000;">BS6</option>
-
-  </select>
-</div>
+          <!-- Options -->
+          <option value="BS4" style="color: #000">BS4</option>
+          <option value="BS6" style="color: #000">BS6</option>
+        </select>
+      </div>
 
       <!-- Status + Save Button -->
       <div class="form-actions">
-        <div class="active-toggle"> <span>Active Only</span> <label class="switch"> <input type="checkbox"
-              [(ngModel)]="activeFilter" (change)="search()" /> <span class="slider"></span> </label> </div>
+        <div class="status-toggle">
+          <span>Active</span>
+          <label class="switch">
+            <input type="checkbox" [(ngModel)]="activeFilter" (change)="search()" />
+            <span class="slider"></span>
+          </label>
+        </div>
         <button type="button" class="save-btn" (click)="saveVehicle()">
           {{ isEditMode() ? 'Update' : 'Save' }}
         </button>
-      <button class="btn-reset" (click)="resetForm()">Reset</button>
-
+        <button class="btn-reset" (click)="resetForm()">Reset</button>
       </div>
     </form>
   </div>
@@ -127,55 +128,60 @@
   <!-- ================= SEARCH + VEHICLE LIST ================= -->
   <div class="card">
     <div class="search-row">
-
       <div class="search-left">
-        <input type="text" class="search-input"         placeholder="Quick Search"
- [(ngModel)]="searchText"
-          (input)="search()" />
+        <input
+          type="text"
+          class="search-input"
+          placeholder="Quick Search"
+          [(ngModel)]="searchText"
+          (input)="search()"
+        />
       </div>
 
       <div class="search-right">
         <!-- Single Active Only toggle BEFORE filter button -->
-        <div class="active-toggle">
+        <div class="status-toggle">
           <span>Active Only</span>
           <label class="switch">
-            <input type="checkbox" [checked]="activeFilter()"
-              (change)="activeFilter.set($event.target.checked); search()" />
+            <input
+              type="checkbox"
+              [checked]="activeFilter()"
+              (change)="activeFilter.set($event.target.checked); search()"
+            />
             <span class="slider"></span>
           </label>
         </div>
 
         <button class="filter-btn" (click)="openVehicleFilter()">Filter</button>
       </div>
-
     </div>
 
     <div class="table-wrapper">
       <table>
         <thead>
-  <tr>
-    <th (click)="sort('vehicle_number')" class="sortable">
-      Vehicle No <span class="sort-icon">{{ getSortIcon('vehicle_number') }}</span>
-    </th>
-    <th (click)="sort('vehicle_type_name')" class="sortable">
-      Type <span class="sort-icon">{{ getSortIcon('vehicle_type_name') }}</span>
-    </th>
-    <th (click)="sort('fuel_name')" class="sortable">
-      Fuel <span class="sort-icon">{{ getSortIcon('fuel_name') }}</span>
-    </th>
-    <th (click)="sort('department_name')" class="sortable">
-      Department <span class="sort-icon">{{ getSortIcon('department_name') }}</span>
-    </th>
-    <th (click)="sort('engine_capacity')" class="sortable">
-      Engine <span class="sort-icon">{{ getSortIcon('engine_capacity') }}</span>
-    </th>
-    <th (click)="sort('emission_standard')" class="sortable">
-      Emission <span class="sort-icon">{{ getSortIcon('emission_standard') }}</span>
-    </th>
-    <th>Status</th>
-    <th>Actions</th>
-  </tr>
-</thead>
+          <tr>
+            <th (click)="sort('vehicle_number')" class="sortable">
+              Vehicle No <span class="sort-icon">{{ getSortIcon('vehicle_number') }}</span>
+            </th>
+            <th (click)="sort('vehicle_type_name')" class="sortable">
+              Type <span class="sort-icon">{{ getSortIcon('vehicle_type_name') }}</span>
+            </th>
+            <th (click)="sort('fuel_name')" class="sortable">
+              Fuel <span class="sort-icon">{{ getSortIcon('fuel_name') }}</span>
+            </th>
+            <th (click)="sort('department_name')" class="sortable">
+              Department <span class="sort-icon">{{ getSortIcon('department_name') }}</span>
+            </th>
+            <th (click)="sort('engine_capacity')" class="sortable">
+              Engine <span class="sort-icon">{{ getSortIcon('engine_capacity') }}</span>
+            </th>
+            <th (click)="sort('emission_standard')" class="sortable">
+              Emission <span class="sort-icon">{{ getSortIcon('emission_standard') }}</span>
+            </th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
         <tbody>
           <tr *ngFor="let v of vehicles()">
             <td>{{ v.vehicle_number }}</td>
@@ -216,7 +222,6 @@
   <!-- ================= FILTER MODAL ================= -->
   <div class="filter-overlay" *ngIf="vehicleFilterModalOpen()">
     <div class="filter-modal">
-
       <!-- Header -->
       <div class="filter-header">
         <h3>Filter Vehicles</h3>
@@ -226,15 +231,17 @@
       <!-- Body -->
       <div class="filter-body">
         <div class="form-grid">
-
           <!-- Fuel Type -->
           <div class="form-group">
             <label>Fuel Type</label>
             <div class="multi-select-container">
               <div *ngFor="let fuel of fuelTypesList">
                 <label>
-                  <input type="checkbox" [checked]="selectedFuelIds.includes(fuel.fuel_id)"
-                    (change)="toggleFuel(fuel.fuel_id)" />
+                  <input
+                    type="checkbox"
+                    [checked]="selectedFuelIds.includes(fuel.fuel_id)"
+                    (change)="toggleFuel(fuel.fuel_id)"
+                  />
                   {{ fuel.fuel_name }}
                 </label>
               </div>
@@ -247,24 +254,26 @@
             <div class="multi-select-container">
               <div *ngFor="let vt of vehicleTypesList">
                 <label>
-                  <input type="checkbox" [checked]="selectedVehicleTypeIds.includes(vt.vehicle_type_id)"
-                    (change)="toggleVehicleType(vt.vehicle_type_id)" />
+                  <input
+                    type="checkbox"
+                    [checked]="selectedVehicleTypeIds.includes(vt.vehicle_type_id)"
+                    (change)="toggleVehicleType(vt.vehicle_type_id)"
+                  />
                   {{ vt.vehicle_type_name }}
                 </label>
               </div>
             </div>
           </div>
-
         </div>
 
         <!-- Footer -->
         <div class="filter-footer">
           <button type="button" class="reset-btn" (click)="resetVehicleFilter()">Reset</button>
-          <button type="button" class="apply-btn" (click)="applyVehicleFilter()">Apply Filter</button>
+          <button type="button" class="apply-btn" (click)="applyVehicleFilter()">
+            Apply Filter
+          </button>
         </div>
       </div>
-
     </div>
   </div>
-
 </div>

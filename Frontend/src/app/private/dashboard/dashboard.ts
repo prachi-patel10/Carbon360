@@ -83,6 +83,9 @@ if (savedState) {
   else if (url.includes('MyActionGenerator')) this.pageTitle = ' Actions Power Generator';
   else if (url.includes('MyActionVehicle')) this.pageTitle = 'Actions Fleet & Transport';
   else if (url.includes('searchVehicle')) this.pageTitle = 'Search Fleet & Transport';
+  else if (url.includes('Vehicletype')) this.pageTitle = 'Vehicle Type';
+
+  //vehicletypeservice
   else this.pageTitle = 'Dashboard';
 }
 

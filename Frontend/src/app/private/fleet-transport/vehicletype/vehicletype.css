@@ -3,7 +3,7 @@
   max-width: 1200px;
   margin: 0 auto;
   padding: 15px;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  /* font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; */
 }
 
 .card {
@@ -199,10 +199,21 @@ tbody tr:hover td {
 
 
 /* ================= SWITCH (MODERN) ================= */
+.status-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.status-toggle span {
+  font-weight: 500;
+  font-size: 14px;
+}
+
 .switch {
   position: relative;
   display: inline-block;
-  width: 38px;
+  width: 40px;
   height: 20px;
 }
 
@@ -217,19 +228,19 @@ tbody tr:hover td {
   cursor: pointer;
   inset: 0;
   background-color: #ccc;
-  transition: .4s;
+  transition: 0.3s;
   border-radius: 20px;
 }
 
 .slider:before {
-  position: absolute;
   content: "";
+  position: absolute;
   height: 14px;
   width: 14px;
   left: 3px;
   bottom: 3px;
   background-color: white;
-  transition: .4s;
+  transition: 0.3s;
   border-radius: 50%;
 }
 
@@ -238,9 +249,8 @@ input:checked + .slider {
 }
 
 input:checked + .slider:before {
-  transform: translateX(18px);
+  transform: translateX(20px);
 }
-
 /* ================= PAGINATION ================= */
 .pagination-info {
   display: flex;

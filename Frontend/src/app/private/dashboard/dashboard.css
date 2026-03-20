@@ -1,213 +1,306 @@
+/* ============================================================
+   CARBON360 — App Layout Styles
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+* { box-sizing: border-box; }
+
 /* ================= TOPBAR ================= */
 .topbar {
   width: 100%;
-  height: 70px;
-  background: linear-gradient(90deg, #0f5132, #1b7d55);
+  height: 64px;
+  background: linear-gradient(135deg, #0a3d26 0%, #0f5132 60%, #1a6b44 100%);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 30px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  padding: 0 28px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.2);
   position: fixed;
   top: 0;
   z-index: 1000;
   color: white;
-  font-family: 'Segoe UI', sans-serif;
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
 }
 
-.topbar .brand {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-.topbar .brand h1 {
-  margin: 0;
-  font-size: 22px;
-  font-weight: 700;
-  line-height: 1;
-}
-.topbar .brand span {
-  color: #c5f2d7;
-}
-.topbar .brand p {
-  margin: 0;
-  font-size: 12px;
-  color: #e0f2f1;
-}
+.topbar .brand { display: flex; flex-direction: column; gap: 2px; }
+.topbar .brand h1 { margin: 0; font-size: 20px; font-weight: 700; line-height: 1; letter-spacing: 0.5px; color: #fff; }
+.topbar .brand h1 span { color: #6ee7a0; }
+.topbar .brand p { margin: 0; font-size: 9px; color: rgba(255,255,255,0.45); letter-spacing: 1.8px; text-transform: uppercase; font-weight: 500; }
 
-.page-title {
-  flex: 1;
-  text-align: center;
-  font-size: 18px;
-  font-weight: 600;
-  color: #ffffff;
-}
+.page-title { flex: 1; text-align: center; font-size: 15px; font-weight: 500; color: rgba(255,255,255,0.9); }
+.right { display: flex; align-items: center; }
 
-.right {
-  display: flex;
-  align-items: center;
-}
-
+/* ================= AVATAR & DROPDOWN ================= */
 .admin-wrapper { position: relative; }
+
 .admin-avatar {
-  width: 42px;
-  height: 42px;
-  background: linear-gradient(135deg, #1b7d55, #0f5132);
+  width: 38px; height: 38px;
+  background: rgba(255,255,255,0.12);
+  border: 1.5px solid rgba(255,255,255,0.25);
   border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 600;
-  font-size: 16px;
-  cursor: pointer;
-  transition: 0.3s;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 600; font-size: 14px; cursor: pointer;
+  transition: background 0.2s, transform 0.2s;
+  color: #fff; text-transform: uppercase;
 }
-.admin-avatar:hover { transform: scale(1.05); }
+.admin-avatar:hover { background: rgba(255,255,255,0.2); transform: scale(1.05); }
 
 .admin-dropdown {
-  position: absolute;
-  right: 0;
-  top: 55px;
-  width: 230px;
-  background: white;
-  border-radius: 12px;
-  padding: 15px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-  z-index: 999;
+  position: absolute; right: 0; top: calc(100% + 10px);
+  width: 220px; background: #fff; border-radius: 12px; padding: 16px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.14);
+  z-index: 1100; border: 1px solid rgba(0,0,0,0.07);
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+  animation: fadeDown 0.18s ease;
 }
 
-
-
-.user-name{
-  font-size:12px;
-  color:#777;
-
+@keyframes fadeDown {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-.user-role{
-  font-size:12px;
-  color:#777;
-}
-
-.name{
-    font-size:12px;
-  color:#1b7d55;
-}
-
-
-.divider{
-  height:1px;
-  background:#eee;
-  margin:10px 0;
-}
-
-
-.role-select2 {
-  width: 100%; padding: 8px 70px; border-radius: 6px; border: 1px solid #ccc; font-size: 14px;
-}
+.user-role-block, .role-switch-block { display: flex; flex-direction: column; gap: 4px; }
+.role-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: #9ca3af; }
+.role-value { font-size: 13px; font-weight: 600; color: #0f5132; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 6px; padding: 5px 10px; }
 
 .role-select {
-  width: 100%; padding: 8px 10px; border-radius: 6px; border: 1px solid #ccc; font-size: 14px;
+  width: 100%; padding: 8px 10px; border-radius: 7px; border: 1px solid #d1d5db;
+  font-size: 13px; color: #374151; background: #fff; cursor: pointer; outline: none;
+  font-family: 'Inter', 'Segoe UI', sans-serif; transition: border-color 0.2s;
 }
+.role-select:focus { border-color: #0f5132; box-shadow: 0 0 0 3px rgba(15,81,50,0.1); }
 
-
-.role-select:focus { border-color: #1b7d55; box-shadow: 0 0 0 2px rgba(27,125,85,0.2); }
+.divider { height: 1px; background: #f3f4f6; margin: 12px 0; }
 
 .logout-btn {
-  width: 100%; padding: 10px; background: #1b7d55; color: white; border: none; border-radius: 8px;
-  cursor: pointer; font-weight: 600; transition: 0.3s ease;
+  width: 100%; padding: 9px 12px; background: #0f5132; color: white;
+  border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 13px;
+  font-family: 'Inter', 'Segoe UI', sans-serif; transition: background 0.2s, transform 0.15s;
+  display: flex; align-items: center; justify-content: center; gap: 7px;
 }
-.logout-btn:hover { background: #0f5132; transform: translateY(-2px); }
+.logout-btn:hover { background: #0a3d26; transform: translateY(-1px); }
 
 /* ================= LAYOUT ================= */
-.layout-container { display: flex; margin-top: 70px; height: calc(100vh - 70px); font-family: 'Segoe UI', sans-serif; overflow: hidden; }
+.layout-container {
+  display: flex;
+  margin-top: 64px;
+  height: calc(100vh - 64px);
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+  overflow: hidden;
+}
 
 /* ================= SIDEBAR ================= */
 .sidebar {
   position: fixed;
-  top: 70px; /* below topbar */
-  left: 0;
+  top: 64px; left: 0;
   width: 260px;
-  height: calc(100vh - 70px);
-  background: #0f5132;
+  height: calc(100vh - 64px);
+  background: linear-gradient(180deg, #0a3d26 0%, #0f5132 100%);
   color: white;
-  padding: 20px 10px;
+  padding: 14px 8px 24px;
   overflow-y: auto;
-  transition: width 0.3s ease;
+  overflow-x: hidden;
+  transition: width 0.28s cubic-bezier(0.4,0,0.2,1);
   z-index: 900;
+  border-right: 1px solid rgba(255,255,255,0.06);
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.15) transparent;
 }
+.sidebar::-webkit-scrollbar { width: 4px; }
+.sidebar::-webkit-scrollbar-track { background: transparent; }
+.sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 4px; }
 
-.sidebar.closed {
-  width: 70px;
-}
-
+/* COLLAPSED */
+.sidebar.closed { width: 62px; }
 .sidebar.closed .menu-title span,
-.sidebar.closed .submenu,
-.sidebar.closed .arrow { display: none; }
+.sidebar.closed .arrow,
+.sidebar.closed .section-label { display: none !important; }
+.sidebar.closed ul.submenu,
+.sidebar.closed ul.deep-submenu { display: none !important; }
+.sidebar.closed .menu-title { justify-content: center; padding: 11px 8px; }
 
-.sidebar.closed .menu-title { justify-content: center; }
-
-.sidebar ul { padding-left: 0; }
-
+/* TOGGLE BUTTON */
 .menu-btn {
-  background: #1b7d55;
-  border: none;
-  color: white;
-  font-size: 20px;
-  margin-bottom: 20px;
-  cursor: pointer;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: white; cursor: pointer;
+  width: 40px; height: 40px; padding: 0;
+  border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.2s;
+  margin: 0 0 16px 4px;
+}
+.menu-btn:hover { background: rgba(255,255,255,0.16); }
+
+/* SECTION LABEL */
+.section-label {
+  font-size: 9px; font-weight: 700;
+  letter-spacing: 1.8px; text-transform: uppercase;
+  color: rgba(255,255,255,0.28);
+  padding: 14px 10px 4px;
+  white-space: nowrap;
+  display: block;
+}
+
+/* =====================================================
+   MENU STRUCTURE — All levels flow top-to-bottom
+   ===================================================== */
+
+/* Reset all ul/li so nothing floats or goes inline */
+.menu,
+.menu ul,
+.menu li {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: block;   /* CRITICAL — block so children stack vertically */
   width: 100%;
-  padding: 12px;
-  border-radius: 8px;
-  text-align: left;
-  transition: 0.3s;
 }
-.menu-btn:hover { background: #0f5132; }
 
-.menu-parent { list-style: none; margin-bottom: 8px; }
+/* Level 0 — top menu items */
+.menu > .menu-parent {
+  margin-bottom: 2px;
+}
 
+/* MENU TITLE ROW — the clickable header for each group */
 .menu-title {
-  display: flex; align-items: center; gap: 12px;
-  padding: 14px; cursor: pointer; border-radius: 8px;
-  font-weight: 600; transition: 0.3s;
+  display: flex;           /* row for icon + label + arrow */
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  cursor: pointer;
+  border-radius: 9px;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: rgba(255,255,255,0.78);
+  transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+  user-select: none;
+  width: 100%;
 }
-.menu-title:hover { background: rgba(255,255,255,0.15); }
+.menu-title:hover { background: rgba(255,255,255,0.1); color: #fff; }
 
-.arrow { margin-left: auto; transition: 0.3s; }
+/* Nested group title (Administration / Vehicle / Generator) */
+.nested-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(255,255,255,0.65);
+  padding: 9px 12px 9px 12px;
+}
+.nested-title:hover { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.9); }
+
+.menu-icon { flex-shrink: 0; opacity: 0.82; }
+.item-icon  { flex-shrink: 0; opacity: 0.68; }
+
+.arrow {
+  margin-left: auto;
+  flex-shrink: 0;
+  transition: transform 0.22s ease;
+  opacity: 0.5;
+}
 .arrow.rotate { transform: rotate(180deg); }
 
-.submenu { list-style: none; padding-left: 25px; margin-top: 5px; }
-
-.submenu li {
-  padding: 10px 12px;
-  border-radius: 6px;
-  font-size: 14px;
-  cursor: pointer;
-  transition: 0.2s;
+/* -------------------------------------------------------
+   LEVEL 1 SUBMENU
+   e.g. Configuration > [Administration, Vehicle, Generator]
+   e.g. Fleet > [Report, Search, My Action]
+   ------------------------------------------------------- */
+ul.submenu {
+  display: block;
+  width: 100%;
+  padding-top: 2px;
+  padding-bottom: 4px;
+  padding-left: 14px;      /* indent from left edge */
+  padding-right: 0;
+  margin-top: 2px;
+  margin-left: 0;
+  border-left: 2px solid rgba(255,255,255,0.1);
+  margin-left: 22px;       /* aligns accent line under parent icon */
 }
-.submenu li:hover { background: rgba(255,255,255,0.1); }
 
-.active-link { background: white; color: #0f5132; font-weight: 600; }
+/* -------------------------------------------------------
+   LEVEL 2 DEEP SUBMENU
+   e.g. Administration > [User Admin, Org Units, ...]
+   e.g. Vehicle > [Vehicles, Cities, Vehicle Type]
+   ------------------------------------------------------- */
+ul.deep-submenu {
+  display: block;
+  width: 100%;
+  padding-top: 2px;
+  padding-bottom: 2px;
+  padding-left: 10px;
+  padding-right: 0;
+  margin-top: 1px;
+  margin-left: 16px;
+  border-left: 2px solid rgba(255,255,255,0.07);
+}
 
-/* Nested Submenu */
-.menu-parent .submenu .menu-parent { padding-left: 10px; }
-.menu-parent .submenu .submenu li { padding-left: 20px; font-size: 13px; }
-
-.main-section {
-  margin-left: 260px; 
-  flex: 1;
+/* -------------------------------------------------------
+   ALL LI ITEMS inside submenus
+   ------------------------------------------------------- */
+ul.submenu > li,
+ul.submenu > .menu-parent,
+ul.deep-submenu > li {
   display: flex;
-  flex-direction: column;
-  min-height: calc(100vh - 70px);
-  transition: margin-left 0.3s ease;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 25px;
+  border-radius: 7px;
+  font-size: 12.5px;
+  font-weight: 400;
+  color: rgba(255,255,255,0.6);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, padding-left 0.12s;
+  white-space: nowrap;
+  margin-bottom: 1px;
+  width: 100%;
 }
 
-/* Adjust when sidebar is collapsed */
-.sidebar.closed + .main-section {
-  margin-left: 70px;
+/* IMPORTANT: nested menu-parent li must be block, not flex,
+   so its own children (nested-title + deep-submenu) stack vertically */
+ul.submenu > .menu-parent {
+  display: block !important;
+  padding: 10 !important;
+  background: none !important;
 }
+
+ul.submenu > li:hover,
+ul.deep-submenu > li:hover {
+  background: rgba(255,255,255,0.09);
+  color: rgba(255,255,255,0.92);
+  padding-left: 14px;
+}
+
+/* ACTIVE */
+.active-link {
+  background: rgba(110,231,160,0.14) !important;
+  color: #6ee7a0 !important;
+  font-weight: 500 !important;
+}
+.active-link .item-icon { opacity: 1; }
+
+/* ================= MAIN SECTION ================= */
+.main-section {
+  margin-left: 260px;
+  flex: 1;
+  display: flex; flex-direction: column;
+  min-height: calc(100vh - 64px);
+  transition: margin-left 0.28s cubic-bezier(0.4,0,0.2,1);
+  background: #f5f7f6;
+}
+.sidebar.closed ~ .main-section { margin-left: 62px; }
+
 .page-content {
   flex: 1;
-  padding: 30px;
+  padding: 28px 32px;
   overflow-y: auto;
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+  scrollbar-width: thin;
+  scrollbar-color: #d1d5db transparent;
 }
+.page-content::-webkit-scrollbar { width: 5px; }
+.page-content::-webkit-scrollbar-track { background: transparent; }
+.page-content::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 4px; }
+.page-content::-webkit-scrollbar-thumb:hover { background: #9ca3af; }

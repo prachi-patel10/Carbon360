@@ -3,7 +3,7 @@
   max-width: 1200px;
   margin: 0 auto;
   padding: 15px;
-  font-family: Arial, sans-serif;
+  /* font-family: Arial, sans-serif; */
 }
 
 /* ================= CARD ================= */
@@ -150,6 +150,17 @@
 
 
 /* ================= SWITCH ================= */
+.status-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.status-toggle span {
+  font-weight: 500;
+  font-size: 14px;
+}
+
 .switch {
   position: relative;
   display: inline-block;
@@ -190,11 +201,6 @@ input:checked + .slider {
 
 input:checked + .slider:before {
   transform: translateX(20px);
-}
-
-.active-sort {
-  font-weight: bold;
-  color: #1b5e20; /* just an example */
 }
 /* ================= SEARCH ================= */
 .search-row {
@@ -239,7 +245,7 @@ input:checked + .slider:before {
 .search-right {
   display: flex;
   align-items: center;
-  gap: 1px; /* spacing between toggle and button */
+  gap: 8px; /* spacing between toggle and button */
 }
 
 .filter-btn {
