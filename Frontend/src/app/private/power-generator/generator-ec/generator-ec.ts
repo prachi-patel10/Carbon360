@@ -59,6 +59,7 @@ export class GeneratorOperationComponent implements OnInit {
   generators: any[] = [];
   sites: any[] = [];
   operations: any[] = [];
+  tripHistory: any[] = [];
   operation: any = {};
 
   pageSource: 'myaction' | 'search' = 'search';
@@ -305,6 +306,16 @@ this.ratedCapacityKW =
     });
 
   }
+
+ loadTripHistory(tripId: string) {
+  this.service.getTripFullDetails(tripId).subscribe((res: any) => {
+    console.log('Full Details Response:', res);  
+    if (res && res.History) {
+      this.service = res.History;
+      console.log('Trip History:', this.service);  
+    }
+  });
+}
 
   loadGenerators() {
     this.service.getGenerators().subscribe({

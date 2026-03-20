@@ -63,8 +63,8 @@ export class GeneratorecService {
   return this.http.get(`${this.apiUrl}/${operationId}/actions`);
 }
 
-downloadTripPdf(tripId: string) {
-    return this.http.get(`${this.apiUrl}/generate-pdf/${tripId}`, {
+downloadTripPdf(operationId: string) {
+    return this.http.get(`${this.apiUrl}/generate-pdf/${operationId}`, {
       responseType: 'blob'  
     });
   }
