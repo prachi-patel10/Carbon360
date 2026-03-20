@@ -230,14 +230,12 @@ namespace ProjectApp.API.Controllers.Account.VehicleTripEmission
         }
 
         [HttpGet("pdf/{hashId}")]
-        public async Task<IActionResult> GetTripDetailsForPDF(string hashId, int roleId)
+        public async Task<IActionResult> GetTripDetailsForPDF(string hashId)
         {
-            var data = await _service.GetByHashIdAsyncPDF(hashId, roleId);
-
+            var data = await _service.GetByHashIdAsyncPDF(hashId);
             return data == null || data.Count == 0
                 ? NotFound("Trip not found")
                 : Ok(data);
-
         }
 
         [HttpGet("export-excel")]
@@ -278,7 +276,6 @@ namespace ProjectApp.API.Controllers.Account.VehicleTripEmission
                 if (pdf == null || pdf.Length == 0)
                     return BadRequest("PDF generation returned empty content.");
 
-                // ✅ Return with explicit headers
                 return File(pdf, "application/pdf", $"VehicleTrip_{tripId}.pdf");
             }
             catch (Exception ex)

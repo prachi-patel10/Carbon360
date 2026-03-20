@@ -68,6 +68,12 @@ updateTrip(tripId: string, data: any): Observable<any> {
       responseType: 'blob'  
     });
   }
+
+  getTripFullDetails(hashId: string): Observable<any> {
+ return this.http.get(
+      `${this.apiUrl}/VehicleTripEmission/pdf/${hashId}`
+    );
+}
 // updateTrip(hashId: string, data: any): Observable<any> {
 //   return this.http.put(
 //     `${this.apiUrl}/VehicleTripEmission/${hashId}`,

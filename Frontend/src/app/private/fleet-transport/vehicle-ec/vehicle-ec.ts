@@ -23,6 +23,7 @@ export class TripComponent implements OnInit {
   cities: any[] = [];
   fuels: any[] = [];
   workflowActions: any[] = [];
+  tripHistory: any[] = [];
   totalCO2: number = 0;
   totalNO2: number = 0;
   totalCH4: number = 0;
@@ -198,6 +199,7 @@ export class TripComponent implements OnInit {
 
       // Load buttons
       this.loadWorkflowActions(id);
+       this.loadTripHistory(id);
 
     });
 
@@ -248,6 +250,16 @@ export class TripComponent implements OnInit {
     });
 
   }
+
+ loadTripHistory(tripId: string) {
+  this.tripService.getTripFullDetails(tripId).subscribe((res: any) => {
+    console.log('Full Details Response:', res);  
+    if (res && res.History) {
+      this.tripHistory = res.History;
+      console.log('Trip History:', this.tripHistory);  
+    }
+  });
+}
 
   setupVehicleChangeListener() {
     this.tripForm.get('vehicle_id')?.valueChanges.subscribe(selectedVehicleId => {

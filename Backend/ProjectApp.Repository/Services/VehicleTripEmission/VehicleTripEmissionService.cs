@@ -827,45 +827,6 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
             }
         }
 
-        public async Task<Dictionary<string, object>> GetByHashIdAsyncPDF(string hashId, int roleId)
-        {
-            int tripId = _idEncoder.Decode(hashId);
-
-            var result = new Dictionary<string, object>();
-
-            using (SqlConnection conn = new SqlConnection(_context.Database.GetConnectionString()))
-            {
-                await conn.OpenAsync();
-
-                using (SqlCommand cmd = new SqlCommand("USP_CB_GetVehicleTripFullDetails", conn))
-                {
-                    cmd.CommandType = CommandType.StoredProcedure;
-                    cmd.Parameters.AddWithValue("@TripId", tripId);
-                    cmd.Parameters.AddWithValue("@RoleId", roleId);
-
-                    using (SqlDataReader reader = await cmd.ExecuteReaderAsync())
-                    {
-                        var trip = await ReadSingleRowAsync(reader);
-                        FormatTripData(trip);
-                        result["Trip"] = trip;
-
-                        await reader.NextResultAsync();
-                        var actions = await ReadMultipleRowsAsync(reader);
-                        result["Actions"] = actions;
-
-                        await reader.NextResultAsync();
-                        var history = await ReadMultipleRowsAsync(reader);
-                        FormatHistoryData(history);
-                        result["History"] = history;
-                    }
-                }
-            }
-
-            return result;
-
-        }
-        
-
         public async Task<byte[]> ExportVehicleTripsExcel(
     string? search,
     string? fuelType,
@@ -876,7 +837,7 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
     string sortColumn,
     string sortDirection)
         {
-            // ✅ CALL SAME METHOD BUT WITH LARGE PAGE SIZE
+         
             var (data, total) = await SearchVehicleTrips(
                 search,
                 null,
@@ -887,12 +848,11 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
                 null,
                 null,
                 1,
-                100000, // 🔥 IMPORTANT (ALL DATA)
+                100000, 
                 sortColumn,
                 sortDirection
             );
 
-            // ✅ COLUMN MAPPING
             var columns = new Dictionary<string, string>
             {
                 {"Vehicle No", "VehicleNumber"},
@@ -1000,10 +960,9 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
         public async Task<byte[]> GenerateVehicleTripPdf(string tripId)
         {
             int roleId = _userContext.Role.Contains("Corporate") ? 3 : 5;
-            var data = await GetByHashIdAsyncPDF(tripId, roleId);
+            var data = await GetByHashIdAsyncPDF(tripId);
 
             var trip = data["Trip"] as Dictionary<string, object> ?? new();
-            // ✅ ADD THIS — if trip is empty, Puppeteer renders a blank page
             if (trip == null || trip.Count == 0)
                 throw new Exception($"No trip data found for tripId: {tripId}");
 
@@ -1057,6 +1016,7 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
             contentHtml = contentHtml.Replace("{{EntryByUserName}}", GetString("EntryByUserName"));
             contentHtml = contentHtml.Replace("{{EntryByEmail}}", GetString("EntryByEmail"));
             contentHtml = contentHtml.Replace("{{status}}", GetString("Status"));
+            contentHtml = contentHtml.Replace("{{tripId}}", tripId);
 
             contentHtml = contentHtml.Replace("{{vehicle}}", GetString("vehicle_number"));
             contentHtml = contentHtml.Replace("{{VehicleType}}", GetString("VehicleType"));
@@ -1172,6 +1132,44 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
             {
                 return dict.ContainsKey(key) && dict[key] != null ? dict[key].ToString() : "-";
             }
+
+        }
+
+        public async Task<Dictionary<string, object>> GetByHashIdAsyncPDF(string hashId)
+        {
+            int tripId = _idEncoder.Decode(hashId);
+            int roleId = _userContext.Role.Contains("Corporate") ? 3 : 5;
+            var result = new Dictionary<string, object>();
+
+            using (SqlConnection conn = new SqlConnection(_context.Database.GetConnectionString()))
+            {
+                await conn.OpenAsync();
+
+                using (SqlCommand cmd = new SqlCommand("USP_CB_GetVehicleTripFullDetails", conn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@TripId", tripId);
+                    cmd.Parameters.AddWithValue("@RoleId", roleId);
+
+                    using (SqlDataReader reader = await cmd.ExecuteReaderAsync())
+                    {
+                        var trip = await ReadSingleRowAsync(reader);
+                        FormatTripData(trip);
+                        result["Trip"] = trip;
+
+                        await reader.NextResultAsync();
+                        var actions = await ReadMultipleRowsAsync(reader);
+                        result["Actions"] = actions;
+
+                        await reader.NextResultAsync();
+                        var history = await ReadMultipleRowsAsync(reader);
+                        FormatHistoryData(history);
+                        result["History"] = history;
+                    }
+                }
+            }
+
+            return result;
 
         }
     }

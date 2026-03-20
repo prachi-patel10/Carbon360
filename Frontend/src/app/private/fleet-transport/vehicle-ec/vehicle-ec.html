@@ -140,14 +140,14 @@
         </div>
 
         <div class="form-group" *ngIf="shouldShowDuration()">
-  <label>Trip Duration</label>
+          <label>Trip Duration</label>
 
-  <input type="text" [value]="tripDuration" readonly />
+          <input type="text" [value]="tripDuration" readonly />
 
-  <small class="error" *ngIf="tripForm.get('tripEndDateTime')?.errors?.['endBeforeStart']">
-    Trip duration cannot be calculated because end date is before start date
-  </small>
-</div>
+          <small class="error" *ngIf="tripForm.get('tripEndDateTime')?.errors?.['endBeforeStart']">
+            Trip duration cannot be calculated because end date is before start date
+          </small>
+        </div>
 
       </div>
 
@@ -271,7 +271,28 @@
     </div>
   </div>
 
-
+  <!-- HISTORY SECTION -->
+  <div class="card history-card" *ngIf="tripHistory && tripHistory.length > 0">
+    <h5 class="section-title">Workflow History</h5>
+    <ul class="history-list">
+      <li *ngFor="let h of tripHistory" class="history-item">
+        <span class="history-dot"></span>
+        <div class="history-content">
+          <span>
+            On <strong>{{ h.ActionDate | date:'dd MMM yyyy HH:mm' }}</strong>
+            <span class="history-role">{{ h.ActionByRole }} - {{ h.FullName }}</span>
+            has performed
+            <span [ngClass]="{
+                'action-submit':   h.ActionName === 'Submit',
+                'action-approve':  h.ActionName === 'Approve',
+                'action-reject':   h.ActionName === 'Reject',
+                'action-resubmit': h.ActionName === 'Resubmit'
+              }">{{ h.ActionName }}</span>
+          </span>
+        </div>
+      </li>
+    </ul>
+  </div>
 </div>
 
 <!-- </div> -->
