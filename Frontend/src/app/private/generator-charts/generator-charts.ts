@@ -367,6 +367,7 @@ export class GeneratorCharts implements OnInit, AfterViewInit, OnChanges, OnDest
   }
 
   // ── Render: Doughnut (Run Hours) ──────────────────────────────
+  // ── Render: Doughnut (Run Hours) with external HTML tooltip ───
   private renderRunHoursChart(data: GeneratorRunHoursChartResponse): void {
     const canvas = this.runHoursCanvasRef?.nativeElement;
     if (!canvas || canvas.offsetParent === null || canvas.offsetWidth === 0) {
@@ -377,6 +378,35 @@ export class GeneratorCharts implements OnInit, AfterViewInit, OnChanges, OnDest
       this.runHoursError.set('No run hours data for this year.'); return;
     }
 
+    // Remove any old tooltip element before re-render
+    const oldTip = canvas.parentNode?.querySelector('#rh-tooltip');
+    if (oldTip) oldTip.remove();
+
+    // External HTML tooltip — real DOM element, never blends with canvas colours
+    const getOrCreateTooltip = (chart: Chart): HTMLDivElement => {
+      let el = chart.canvas.parentNode?.querySelector<HTMLDivElement>('#rh-tooltip');
+      if (!el) {
+        el = document.createElement('div');
+        el.id = 'rh-tooltip';
+        Object.assign(el.style, {
+          position:      'absolute',
+          pointerEvents: 'none',
+          transition:    'opacity 0.15s ease',
+          opacity:       '0',
+          background:    '#1e293b',
+          border:        '2px solid #38bdf8',
+          borderRadius:  '10px',
+          padding:       '12px 16px',
+          minWidth:      '190px',
+          boxShadow:     '0 8px 28px rgba(0,0,0,0.5)',
+          zIndex:        '9999',
+        });
+        (chart.canvas.parentNode as HTMLElement).style.position = 'relative';
+        chart.canvas.parentNode?.appendChild(el);
+      }
+      return el;
+    };
+
     this.runHoursChart = new Chart(canvas, {
       type: 'doughnut',
       data: {
@@ -386,7 +416,7 @@ export class GeneratorCharts implements OnInit, AfterViewInit, OnChanges, OnDest
           backgroundColor: data.colors,
           borderColor:     '#ffffff',
           borderWidth:     2,
-          hoverOffset:     8
+          hoverOffset:     10
         }]
       },
       options: {
@@ -394,20 +424,36 @@ export class GeneratorCharts implements OnInit, AfterViewInit, OnChanges, OnDest
         plugins: {
           legend: { display: false },
           tooltip: {
-            backgroundColor: '#1e293b', titleColor: '#94a3b8',
-            bodyColor: '#e2e8f0', borderColor: '#334155', borderWidth: 1, padding: 12,
-            callbacks: {
-              label: (ctx: TooltipItem<'doughnut'>) => {
-                const idx   = ctx.dataIndex;
-                const hrs   = ctx.parsed;
-                const total = (data.data ?? []).reduce((a, b) => a + b, 0);
-                const pct   = total > 0 ? ((hrs / total) * 100).toFixed(1) : '0';
-                return [
-                  ` ${Number(hrs).toLocaleString()} hrs (${pct}%)`,
-                  ` Site: ${data.siteNames?.[idx] ?? '-'}`,
-                  ` Fuel: ${Number(data.fuelConsumed?.[idx] ?? 0).toLocaleString()} L`
-                ];
-              }
+            enabled: false,   // disable built-in canvas tooltip
+            external: (context) => {
+              const { chart, tooltip } = context;
+              const el = getOrCreateTooltip(chart);
+
+              if (tooltip.opacity === 0) { el.style.opacity = '0'; return; }
+
+              const idx   = tooltip.dataPoints?.[0]?.dataIndex ?? 0;
+              const hrs   = (data.data   ?? [])[idx] ?? 0;
+              const total = (data.data   ?? []).reduce((a, b) => a + b, 0);
+              const pct   = total > 0 ? ((hrs / total) * 100).toFixed(1) : '0';
+              const site  = (data.siteNames   ?? [])[idx] ?? '-';
+              const fuel  = (data.fuelConsumed ?? [])[idx] ?? 0;
+              const color = (data.colors      ?? [])[idx] ?? '#888';
+              const name  = (data.labels      ?? [])[idx] ?? '';
+
+              el.innerHTML = `
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:9px;">
+                  <span style="display:inline-block;width:11px;height:11px;border-radius:50%;background:${color};flex-shrink:0;box-shadow:0 0 0 2px rgba(255,255,255,0.3);"></span>
+                  <span style="font-size:13px;font-weight:700;color:#f1f5f9;font-family:Inter,sans-serif;">${name}</span>
+                </div>
+                <div style="font-size:12px;font-family:Inter,sans-serif;line-height:2;">
+                  <div style="color:#94a3b8;">Run Hours &nbsp;<span style="color:#38bdf8;font-weight:600;">${Number(hrs).toLocaleString()} hrs</span> &nbsp;<span style="color:#64748b;">(${pct}%)</span></div>
+                  <div style="color:#94a3b8;">Site &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#e2e8f0;">${site}</span></div>
+                  <div style="color:#94a3b8;">Fuel &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#e2e8f0;">${Number(fuel).toLocaleString()} L</span></div>
+                </div>`;
+
+              el.style.opacity = '1';
+              el.style.left    = `${tooltip.caretX + 16}px`;
+              el.style.top     = `${tooltip.caretY - 20}px`;
             }
           }
         },
@@ -417,6 +463,7 @@ export class GeneratorCharts implements OnInit, AfterViewInit, OnChanges, OnDest
   }
 
   // ── Render: Multi-line (Load Factor) ─────────────────────────
+  // ── Render: Multi-line Load Factor with external HTML tooltip ─
   private renderLoadFactorChart(data: GeneratorLoadFactorChartResponse): void {
     const canvas = this.loadFactorCanvasRef?.nativeElement;
     if (!canvas || canvas.offsetParent === null || canvas.offsetWidth === 0) {
@@ -426,6 +473,37 @@ export class GeneratorCharts implements OnInit, AfterViewInit, OnChanges, OnDest
     const ds = data?.datasets ?? [];
     if (!ds.length) { this.loadFactorError.set('No load factor data for this year.'); return; }
 
+    // Remove stale tooltip
+    const oldTip = canvas.parentNode?.querySelector('#lf-tooltip');
+    if (oldTip) oldTip.remove();
+
+    // External HTML tooltip creator
+    const getOrCreateTooltip = (chart: Chart): HTMLDivElement => {
+      let el = chart.canvas.parentNode?.querySelector<HTMLDivElement>('#lf-tooltip');
+      if (!el) {
+        el = document.createElement('div');
+        el.id = 'lf-tooltip';
+        Object.assign(el.style, {
+          position:      'absolute',
+          pointerEvents: 'none',
+          transition:    'opacity 0.15s ease',
+          opacity:       '0',
+          background:    '#0f172a',
+          border:        '1px solid #334155',
+          borderRadius:  '12px',
+          padding:       '0',
+          minWidth:      '220px',
+          maxWidth:      '300px',
+          boxShadow:     '0 10px 32px rgba(0,0,0,0.5)',
+          zIndex:        '9999',
+          overflow:      'hidden',
+        });
+        (chart.canvas.parentNode as HTMLElement).style.position = 'relative';
+        chart.canvas.parentNode?.appendChild(el);
+      }
+      return el;
+    };
+
     const datasets = ds.map(d => ({
       label:            d.generatorName,
       data:             d.avgData,
@@ -433,7 +511,7 @@ export class GeneratorCharts implements OnInit, AfterViewInit, OnChanges, OnDest
       backgroundColor:  d.color + '18',
       borderWidth:      2.5,
       pointRadius:      4,
-      pointHoverRadius: 6,
+      pointHoverRadius: 7,
       tension:          0.4,
       fill:             false as const
     }));
@@ -443,29 +521,74 @@ export class GeneratorCharts implements OnInit, AfterViewInit, OnChanges, OnDest
       data: { labels: data.labels, datasets },
       options: {
         responsive: true, maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
         plugins: {
           legend: { display: false },
           tooltip: {
-            mode: 'index', intersect: false,
-            backgroundColor: '#0f172a', titleColor: '#94a3b8',
-            bodyColor: '#e2e8f0', borderColor: '#334155', borderWidth: 1, padding: 12,
-            callbacks: {
-              title: (items: TooltipItem<'line'>[]) => items[0]?.label ?? '',
-              label: (ctx: TooltipItem<'line'>) => {
-                const val    = ctx.parsed.y as number;
-                const dsData = data.datasets[ctx.datasetIndex];
-                const ops    = dsData?.opCountData?.[ctx.dataIndex] ?? 0;
-                const max    = dsData?.maxData?.[ctx.dataIndex]     ?? 0;
-                const min    = dsData?.minData?.[ctx.dataIndex]     ?? 0;
-                return [
-                  ` ${ctx.dataset.label}: ${val.toFixed(1)}% avg`,
-                  `   Max: ${(max as number).toFixed(1)}%  Min: ${(min as number).toFixed(1)}%`,
-                  `   Operations: ${ops}`
-                ];
-              }
+            enabled: false,   // disable built-in canvas tooltip
+            external: (context) => {
+              const { chart, tooltip } = context;
+              const el = getOrCreateTooltip(chart);
+
+              if (tooltip.opacity === 0) { el.style.opacity = '0'; return; }
+
+              const monthLabel = tooltip.dataPoints?.[0]?.label ?? '';
+              const monthIdx   = tooltip.dataPoints?.[0]?.dataIndex ?? 0;
+
+              // Build rows for ALL generators — even zero ones shown as dashes
+              const rows = ds.map((d, i) => {
+                const avg  = d.avgData?.[monthIdx]    ?? 0;
+                const max  = d.maxData?.[monthIdx]    ?? 0;
+                const min  = d.minData?.[monthIdx]    ?? 0;
+                const ops  = d.opCountData?.[monthIdx] ?? 0;
+
+                // Zone badge colour
+                let zoneBg = '#334155'; let zoneLabel = '—';
+                if (ops > 0) {
+                  if      (avg >= 75 && avg <= 90) { zoneBg = '#166534'; zoneLabel = 'Optimal'; }
+                  else if (avg > 90)               { zoneBg = '#7c2d12'; zoneLabel = 'Overload'; }
+                  else if (avg >= 30)              { zoneBg = '#713f12'; zoneLabel = 'Warning'; }
+                  else                             { zoneBg = '#7f1d1d'; zoneLabel = 'Critical'; }
+                }
+
+                return `
+                  <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 14px;border-bottom:1px solid #1e293b;">
+                    <div style="display:flex;align-items:center;gap:7px;min-width:0;">
+                      <span style="width:9px;height:9px;border-radius:50%;background:${d.color};flex-shrink:0;"></span>
+                      <span style="font-size:11.5px;color:#e2e8f0;font-family:Inter,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:110px;"
+                            title="${d.generatorName}">${d.generatorName}</span>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
+                      ${ops > 0
+                        ? `<span style="font-size:12px;font-weight:700;color:#f8fafc;font-family:Inter,sans-serif;">${avg.toFixed(1)}%</span>
+                           <span style="font-size:9px;padding:1px 5px;border-radius:4px;background:${zoneBg};color:#fff;font-family:Inter,sans-serif;">${zoneLabel}</span>`
+                        : `<span style="font-size:11px;color:#475569;font-family:Inter,sans-serif;">No data</span>`
+                      }
+                    </div>
+                  </div>`;
+              }).join('');
+
+              el.innerHTML = `
+                <div style="padding:10px 14px 8px;border-bottom:1px solid #1e293b;background:#1e293b;">
+                  <span style="font-size:12px;font-weight:700;color:#94a3b8;font-family:Inter,sans-serif;letter-spacing:.05em;">
+                    📅 ${monthLabel}
+                  </span>
+                </div>
+                ${rows}`;
+
+              // Position: right of cursor, flip left if near right edge
+              const parentW = (chart.canvas.parentNode as HTMLElement).offsetWidth;
+              const tipW    = 240;
+              const x       = tooltip.caretX;
+              const y       = Math.max(0, tooltip.caretY - 40);
+
+              el.style.opacity = '1';
+              el.style.top     = `${y}px`;
+              el.style.left    = x + tipW + 20 < parentW
+                ? `${x + 16}px`
+                : `${x - tipW - 10}px`;
             }
           }
-          // ✅ No 'annotation' property — removed, was causing TS2353
         },
         scales: {
           x: {
@@ -485,12 +608,10 @@ export class GeneratorCharts implements OnInit, AfterViewInit, OnChanges, OnDest
         },
         animation: { duration: 500, easing: 'easeInOutQuart' }
       },
-      // Zone background bands drawn via inline plugin
       plugins: [this.loadFactorZonePlugin()]
     });
   }
 
-  // ── Custom inline plugin: zone background bands ───────────────
   private loadFactorZonePlugin() {
     return {
       id: 'loadFactorZones',

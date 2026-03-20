@@ -233,8 +233,8 @@
   <div class="main-section">
     <div class="page-content">
 
-      <!-- ===== DASHBOARD CHART SECTION (Admin only) ===== -->
-      <div class="dash-chart-section" [class.hidden]="!isDashboardRoot() || !isAdmin()">
+      <!-- ===== DASHBOARD CHART SECTION (All roles) ===== -->
+      <div class="dash-chart-section" [class.hidden]="!isDashboardRoot()">
 
         <!-- ── Banner ── -->
         <div class="dash-banner">

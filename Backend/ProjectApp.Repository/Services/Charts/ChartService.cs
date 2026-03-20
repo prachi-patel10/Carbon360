@@ -50,6 +50,14 @@ namespace ProjectApp.Repository.Services.Charts
             { "CH4",   "#D4537E" },
         };
 
+        // Colour palette for vehicle type bars
+        private static readonly string[] _vehicleTypeColors =
+{
+    "#378ADD", "#1D9E75", "#EF9F27", "#D4537E",
+    "#534AB7", "#D85A30", "#06b6d4", "#8b5cf6",
+    "#ec4899", "#14b8a6", "#f97316", "#84cc16"
+};
+
         public ChartService(CBContext context)
         {
             _context = context;
@@ -245,5 +253,67 @@ namespace ProjectApp.Repository.Services.Charts
             };
         }
 
-    }   // ← class closing brace
-}       // ← namespace closing brace
+
+        public async Task<VehicleTypeDistancePivotDto> GetVehicleTypeWiseDistanceAsync(int year)
+        {
+            var rows = await _context.Set<VehicleTypeDistanceRawDto>()
+                .FromSqlInterpolated($"EXEC USP_CB_VehicleTypeWiseDistance {year}")
+                .ToListAsync();
+
+            // All unique vehicle types (column headers), sorted alphabetically
+            var vehicleTypes = rows
+                .Select(r => r.VehicleTypeName)
+                .Distinct()
+                .OrderBy(n => n)
+                .ToList();
+
+            var colors = vehicleTypes
+                .Select((_, i) => _vehicleTypeColors[i % _vehicleTypeColors.Length])
+                .ToList();
+
+            // Build 12 × N matrices (month rows, type columns)
+            var distMatrix = new List<List<decimal>>();
+            var tripsMatrix = new List<List<int>>();
+            var fuelMatrix = new List<List<decimal>>();
+            var monthTotals = new List<decimal>();
+
+            for (int m = 1; m <= 12; m++)
+            {
+                var distRow = new List<decimal>();
+                var tripsRow = new List<int>();
+                var fuelRow = new List<decimal>();
+
+                foreach (var vt in vehicleTypes)
+                {
+                    var cell = rows.FirstOrDefault(r => r.MonthNumber == m && r.VehicleTypeName == vt);
+                    distRow.Add(cell?.TotalDistanceKM ?? 0m);
+                    tripsRow.Add(cell?.TotalTrips ?? 0);
+                    fuelRow.Add(cell?.TotalFuelConsumed ?? 0m);
+                }
+
+                distMatrix.Add(distRow);
+                tripsMatrix.Add(tripsRow);
+                fuelMatrix.Add(fuelRow);
+                monthTotals.Add(distRow.Sum());
+            }
+
+            // Column totals — sum across all 12 months per type
+            var typeTotals = vehicleTypes.Select((_, ti) =>
+                distMatrix.Sum(row => row[ti])
+            ).ToList();
+
+            return new VehicleTypeDistancePivotDto
+            {
+                MonthLabels = _monthNames.ToList(),
+                VehicleTypes = vehicleTypes,
+                Colors = colors,
+                DistanceMatrix = distMatrix,
+                TripsMatrix = tripsMatrix,
+                FuelMatrix = fuelMatrix,
+                MonthTotals = monthTotals,
+                TypeTotals = typeTotals,
+                GrandTotal = monthTotals.Sum()
+            };
+        }
+    }
+}      

@@ -47,6 +47,20 @@ export interface GeneratorLoadFactorChartResponse {
   datasets: LoadFactorLineDataset[];
 }
 
+
+// ── NEW: Vehicle Type Wise Distance (pivot) ──────────────────
+export interface VehicleTypeDistancePivotResponse {
+  monthLabels:    string[];           // Jan–Dec
+  vehicleTypes:   string[];           // column headers
+  colors:         string[];           // one per vehicle type
+  distanceMatrix: number[][];         // [monthIdx][typeIdx]
+  tripsMatrix:    number[][];
+  fuelMatrix:     number[][];
+  monthTotals:    number[];           // row totals
+  typeTotals:     number[];           // column totals
+  grandTotal:     number;
+}
+
 export interface ApiResponse<T> { status: boolean; data: T; }
 
 // ── Color map ─────────────────────────────────────────────────
@@ -63,7 +77,7 @@ function transformFuelRows(rows: FuelMonthlyRawRow[], source: 'Vehicle' | 'Gener
     const baseColor = FUEL_COLORS[ft] ?? DEFAULT_COLOR;
     const data = new Array<number>(12).fill(0);
     rows.filter(r => r.fuelType === ft).forEach(r => { data[r.monthNumber - 1] += Number(r.totalFuelConsumed); });
-    return { label: `${ft} (${source})`, fuelType: ft, source, color: baseColor, data };
+    return { label: ft, fuelType: ft, source, color: baseColor, data };
   });
   return { labels: MONTH_LABELS, datasets };
 }
@@ -106,5 +120,12 @@ export class DashboardService {
   // ── NEW ───────────────────────────────────────────────────────
   getGeneratorLoadFactor(year: number): Observable<ApiResponse<GeneratorLoadFactorChartResponse>> {
     return this.http.get<ApiResponse<GeneratorLoadFactorChartResponse>>(`${this.base}/Chart/GeneratorLoadFactor?year=${year}`);
+  }
+
+  // ── NEW: Vehicle Type Wise Distance ──────────────────────────
+  getVehicleTypeWiseDistance(year: number): Observable<ApiResponse<VehicleTypeDistancePivotResponse>> {
+    return this.http.get<ApiResponse<VehicleTypeDistancePivotResponse>>(
+      `${this.base}/Chart/VehicleTypeDistance?year=${year}`
+    );
   }
 }

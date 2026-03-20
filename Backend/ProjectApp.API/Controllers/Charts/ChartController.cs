@@ -68,10 +68,19 @@ namespace ProjectApp.API.Controllers.Charts
             return Ok(new { status = true, data });
         }
 
+        //Generator LoadFactorwise
         [HttpGet("GeneratorLoadFactor")]
         public async Task<IActionResult> GeneratorLoadFactor([FromQuery] int year)
         {
             var data = await _service.GetGeneratorLoadFactorMonthlyAsync(year);
+            return Ok(new { status = true, data });
+        }
+
+        // GET VehicleTypeDistance?year=2026
+        [HttpGet("VehicleTypeDistance")]
+        public async Task<IActionResult> VehicleTypeDistance([FromQuery] int year)
+        {
+            var data = await _service.GetVehicleTypeWiseDistanceAsync(year);
             return Ok(new { status = true, data });
         }
     }

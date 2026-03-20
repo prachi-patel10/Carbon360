@@ -140,14 +140,6 @@
           <span class="pie-centre-label">Total hrs</span>
         </div>
       </div>
-      <div class="pie-pill-legend">
-        @for (item of runHoursLegend(); track item.name) {
-          <div class="pie-pill">
-            <span class="pie-dot" [style.background]="item.color"></span>
-            <span>{{ item.name }} — {{ formatNum(item.hours) }} hrs ({{ item.pct }}%)</span>
-          </div>
-        }
-      </div>
     </div>
   </div>
 
@@ -179,15 +171,6 @@
     </div>
     <div class="canvas-wrap" [class.hidden]="!showLoadFactorCanvas()">
       <canvas #generatorLoadFactorCanvas></canvas>
-    </div>
-    <!-- Generator line legend -->
-    <div class="fuel-legend" [class.hidden]="!showLoadFactorCanvas()">
-      @for (item of loadFactorLegend(); track item.name) {
-        <div class="legend-item">
-          <span class="legend-line-swatch" [style.background]="item.color"></span>
-          <span class="legend-label">{{ item.name }}</span>
-        </div>
-      }
     </div>
   </div>
 

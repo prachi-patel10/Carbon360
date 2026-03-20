@@ -401,7 +401,13 @@ public partial class CBContext : DbContext
         modelBuilder.Entity<GeneratorLoadFactorRawDto>()
     .HasNoKey()
     .ToView(null);
+
+        modelBuilder.Entity<VehicleTypeDistanceRawDto>()
+    .HasNoKey()
+    .ToView(null);
     }
+
+
 
     partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
 }

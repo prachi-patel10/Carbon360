@@ -11,7 +11,8 @@ import {
   DashboardService,
   FuelCombinedChartResponse,
   MonthlyEmissionChartResponse,
-  VehicleDistanceChartResponse
+  VehicleDistanceChartResponse,
+  VehicleTypeDistancePivotResponse
 } from '../dashboard/dashboard-service';
 
 Chart.register(...registerables);
@@ -49,9 +50,19 @@ export class VehicleCharts implements OnInit, AfterViewInit, OnChanges, OnDestro
   totalDistanceKM = signal(0);
   totalTrips      = signal(0);
 
+  isVtypeLoading        = signal(false);
+  vtypeError            = signal('');
+  vtypeTableRows        = signal<VehicleTypeDistancePivotResponse | null>(null);
+
   showFuelCanvas     = computed(() => !this.isFuelLoading()     && !this.fuelError());
   showEmissionCanvas = computed(() => !this.isEmissionLoading() && !this.emissionError());
   showDistanceCanvas = computed(() => !this.isDistanceLoading() && !this.distanceError());
+  showVtypeTable     = computed(() => !this.isVtypeLoading()    && !this.vtypeError());
+
+  // ── Vtype footer totals (computed to avoid arrow fns in template) ───────
+  vtypeTotalDist  = computed(() => (this.vtypeTableRows()?.grandTotal ?? 0));
+  vtypeTotalTrips = computed(() => (this.vtypeTableRows()?.tripsMatrix ?? []).reduce((sum: number, row: number[]) => sum + row.reduce((a: number, b: number) => a + b, 0), 0));
+  vtypeTotalFuel  = computed(() => (this.vtypeTableRows()?.fuelMatrix ?? []).reduce((sum: number, row: number[]) => sum + row.reduce((a: number, b: number) => a + b, 0), 0));
 
   private fuelChart:     Chart | null = null;
   private emissionChart: Chart | null = null;
@@ -61,10 +72,12 @@ export class VehicleCharts implements OnInit, AfterViewInit, OnChanges, OnDestro
 
   private _lastFuelData:     FuelCombinedChartResponse    | null = null;
   private _lastEmissionData: MonthlyEmissionChartResponse | null = null;
-  private _lastDistanceData: VehicleDistanceChartResponse | null = null;
+  private _lastDistanceData: VehicleDistanceChartResponse         | null = null;
+  private _lastVtypeData:    VehicleTypeDistancePivotResponse   | null = null;
   private pendingFuel:     FuelCombinedChartResponse    | null = null;
   private pendingEmission: MonthlyEmissionChartResponse | null = null;
-  private pendingDistance: VehicleDistanceChartResponse | null = null;
+  private pendingDistance: VehicleDistanceChartResponse        | null = null;
+  private pendingVtype:    VehicleTypeDistancePivotResponse  | null = null;
 
   constructor(private svc: DashboardService) {}
 
@@ -75,6 +88,7 @@ export class VehicleCharts implements OnInit, AfterViewInit, OnChanges, OnDestro
     if (this.pendingFuel)     { this.deferRenderFuel(this.pendingFuel);         this.pendingFuel     = null; }
     if (this.pendingEmission) { this.deferRenderEmission(this.pendingEmission); this.pendingEmission = null; }
     if (this.pendingDistance) { this.deferRenderDistance(this.pendingDistance); this.pendingDistance = null; }
+    if (this.pendingVtype)    { this.deferRenderVtype(this.pendingVtype);       this.pendingVtype    = null; }
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -87,18 +101,21 @@ export class VehicleCharts implements OnInit, AfterViewInit, OnChanges, OnDestro
     this.fuelChart?.destroy();
     this.emissionChart?.destroy();
     this.distanceChart?.destroy();
+
   }
 
   loadAll(): void {
     this.loadFuelChart();
     this.loadEmissionChart();
     this.loadDistanceChart();
+    this.loadVtypeChart();
   }
 
   refreshCharts(): void {
     this.deferRenderFuel(null);
     this.deferRenderEmission(null);
     this.deferRenderDistance(null);
+    this.deferRenderVtype(null);
   }
 
   // ── Load: Fuel ────────────────────────────────────────────────────────────
@@ -145,7 +162,7 @@ export class VehicleCharts implements OnInit, AfterViewInit, OnChanges, OnDestro
   loadDistanceChart(): void {
     this.isDistanceLoading.set(true);
     this.distanceError.set('');
-    this.distanceChart?.destroy(); this.distanceChart = null;
+    this.distanceChart?.destroy();
 
     this.svc.getVehicleDistanceMonthly(this.year)
       .pipe(takeUntil(this.destroy$), finalize(() => this.isDistanceLoading.set(false)))
@@ -322,7 +339,7 @@ export class VehicleCharts implements OnInit, AfterViewInit, OnChanges, OnDestro
     if (canvas.offsetParent === null || canvas.offsetWidth === 0) {
       requestAnimationFrame(() => this.renderDistanceChart(data)); return;
     }
-    this.distanceChart?.destroy(); this.distanceChart = null;
+    this.distanceChart?.destroy();
     if (!(data?.distanceData ?? []).some(v => v > 0)) { this.distanceError.set('No distance data for this year.'); return; }
 
     this.distanceChart = new Chart(canvas, {
@@ -372,6 +389,42 @@ export class VehicleCharts implements OnInit, AfterViewInit, OnChanges, OnDestro
         animation: { duration: 400, easing: 'easeInOutQuart' }
       }
     });
+  }
+
+  // ── Load: Vehicle Type Wise Distance ─────────────────────────
+  loadVtypeChart(): void {
+    this.isVtypeLoading.set(true);
+    this.vtypeError.set('');
+    this.vtypeTableRows.set(null);
+
+    this.svc.getVehicleTypeWiseDistance(this.year)
+      .pipe(takeUntil(this.destroy$), finalize(() => this.isVtypeLoading.set(false)))
+      .subscribe({
+        next: res => {
+          if (!res.status || !res.data) { this.vtypeError.set('No data returned.'); return; }
+          this.vtypeTableRows.set(res.data);
+          if (this.viewReady) this.deferRenderVtype(res.data);
+          else this.pendingVtype = res.data;
+        },
+        error: err => this.vtypeError.set(err?.message || 'Failed to load vehicle type chart.')
+      });
+  }
+
+  // ── Deferred render: Vtype ────────────────────────────────────
+  private deferRenderVtype(data: VehicleTypeDistancePivotResponse | null): void {
+    if (data) this._lastVtypeData = data;
+    if (!this._lastVtypeData) return;
+    const snap = this._lastVtypeData;
+    setTimeout(() => this.renderVtypeChart(snap), 0);
+  }
+
+  // ── Render: Horizontal Bar + Table (Vehicle Type Distance) ────
+  private renderVtypeChart(data: VehicleTypeDistancePivotResponse): void {
+    // Table is rendered purely via Angular template using vtypeTableRows signal.
+    // No Chart.js canvas needed — data already set in loadVtypeChart via vtypeTableRows.set()
+    if (!data?.vehicleTypes?.length) {
+      this.vtypeError.set('No vehicle type data for this year.');
+    }
   }
 
   formatNum(value: number): string {

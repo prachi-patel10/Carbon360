@@ -24,6 +24,9 @@ namespace ProjectApp.Repository.Interfaces.Charts
 
         // Vehicle Total Distance Monthly Bar Chart
         Task<VehicleDistanceChartResponseDto> GetVehicleTotalDistanceMonthlyAsync(int year);
+
+        //VehicleTypeWise vs Distance
+        Task<VehicleTypeDistancePivotDto> GetVehicleTypeWiseDistanceAsync(int year);
     }
 }
 
