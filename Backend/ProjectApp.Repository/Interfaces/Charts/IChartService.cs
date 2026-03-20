@@ -9,10 +9,14 @@ namespace ProjectApp.Repository.Interfaces.Charts
 {
     public interface IChartService
     {
+        //fuel consumption
         Task<List<FuelTypeMonthlyConsumptionDto>> GetVehicleFuelMonthlyConsumptionAsync(int year);
         Task<List<FuelTypeMonthlyConsumptionDto>> GetGeneratorFuelMonthlyConsumptionAsync(int year);
-
         Task<FuelCombinedChartResponseDto> GetCombinedFuelChartAsync(int year);
+
+        // separate emission charts
+        Task<MonthlyEmissionChartResponseDto> GetVehicleEmissionChartAsync(int year);
+        Task<MonthlyEmissionChartResponseDto> GetGeneratorEmissionChartAsync(int year);
     }
 }
 

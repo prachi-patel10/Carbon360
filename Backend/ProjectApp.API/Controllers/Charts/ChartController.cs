@@ -31,12 +31,25 @@ namespace ProjectApp.API.Controllers.Charts
             return Ok(new { status = true, data });
         }
 
-        // GET api/Chart/CombinedFuelChart?year=2024
-        //[HttpGet("CombinedFuelChart")]
-        //public async Task<IActionResult> CombinedFuelChart([FromQuery] int year)
-        //{
-        //    var data = await _service.GetCombinedFuelChartAsync(year);
-        //    return Ok(new { status = true, data });
-        //}
+        [HttpGet("CombinedFuelChart")]
+        public async Task<IActionResult> CombinedFuelChart([FromQuery] int year)
+        {
+            var data = await _service.GetCombinedFuelChartAsync(year);
+            return Ok(new { status = true, data });
+        }
+
+        [HttpGet("VehicleEmissionChart")]
+        public async Task<IActionResult> VehicleEmissionChart([FromQuery] int year)
+        {
+            var data = await _service.GetVehicleEmissionChartAsync(year);
+            return Ok(new { status = true, data });
+        }
+
+        [HttpGet("GeneratorEmissionChart")]
+        public async Task<IActionResult> GeneratorEmissionChart([FromQuery] int year)
+        {
+            var data = await _service.GetGeneratorEmissionChartAsync(year);
+            return Ok(new { status = true, data });
+        }
     }
 }

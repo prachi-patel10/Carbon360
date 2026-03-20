@@ -28,10 +28,12 @@ namespace ProjectApp.Repository.Interfaces.GenerationOperation
 
         Task<GeneratorOperationPagedResponseDTO> SearchAsync(
     string search,
-    string fuelTypes,        // ← change List<string> to string
+    string fuelTypes,        
     string generatorName,
     DateTime? startDate,
     DateTime? endDate,
+    DateTime? entryStartDate,   
+    DateTime? entryEndDate,
     int? statusId,
     int pageNumber,
     int pageSize);

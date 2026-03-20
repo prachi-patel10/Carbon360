@@ -276,6 +276,8 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
      string generatorName,
      DateTime? startDate,
      DateTime? endDate,
+      DateTime? entryStartDate,   
+    DateTime? entryEndDate,
      int? statusId,
      int pageNumber,
      int pageSize)
@@ -293,8 +295,8 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
             command.Parameters.Add(new SqlParameter("@FuelTypes", (object)fuelTypes ?? DBNull.Value));  // pass as-is
             command.Parameters.Add(new SqlParameter("@StartDate", (object)startDate ?? DBNull.Value));
             command.Parameters.Add(new SqlParameter("@EndDate", (object)endDate ?? DBNull.Value));
-            command.Parameters.Add(new SqlParameter("@EntryStartDate", DBNull.Value));
-            command.Parameters.Add(new SqlParameter("@EntryEndDate", DBNull.Value));
+            command.Parameters.Add(new SqlParameter("@EntryStartDate", (object)entryStartDate ?? DBNull.Value));
+            command.Parameters.Add(new SqlParameter("@EntryEndDate", (object)entryEndDate ?? DBNull.Value));
             command.Parameters.Add(new SqlParameter("@StatusId", (object)statusId ?? DBNull.Value));
             command.Parameters.Add(new SqlParameter("@UserId", GetCurrentUserId()));
             command.Parameters.Add(new SqlParameter("@UserRole", _userContext.Role ?? "Reporter"));

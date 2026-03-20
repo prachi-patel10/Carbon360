@@ -35,6 +35,8 @@ public partial class CBContext : DbContext
     // ✅ ADD THIS — required for SP result mapping
     public virtual DbSet<FuelTypeMonthlyConsumptionDto> FuelTypeMonthlyConsumption { get; set; }
 
+    public virtual DbSet<MonthlyEmissionRawDto> MonthlyEmissionRaw { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<CB_Department>(entity =>
@@ -377,7 +379,12 @@ public partial class CBContext : DbContext
             .HasNoKey()
             .ToView(null);
 
+
         OnModelCreatingPartial(modelBuilder);
+
+        modelBuilder.Entity<MonthlyEmissionRawDto>()
+    .HasNoKey()
+    .ToView(null);
     }
 
     partial void OnModelCreatingPartial(ModelBuilder modelBuilder);

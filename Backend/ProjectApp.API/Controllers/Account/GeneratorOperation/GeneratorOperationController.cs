@@ -154,6 +154,8 @@ namespace ProjectApp.API.Controllers.Account.GeneratorOperation
     [FromQuery] List<string>? fuelTypes = null,
     DateTime? startDate = null,
     DateTime? endDate = null,
+    DateTime? entryStartDate = null,  
+    DateTime? entryEndDate = null,
     int? statusId = null,
     int pageNumber = 1,
     int pageSize = 10)
@@ -168,6 +170,8 @@ namespace ProjectApp.API.Controllers.Account.GeneratorOperation
                 generatorName,
                 startDate,
                 endDate,
+                 entryStartDate,   
+                entryEndDate,
                 statusId,
                 pageNumber,
                 pageSize
