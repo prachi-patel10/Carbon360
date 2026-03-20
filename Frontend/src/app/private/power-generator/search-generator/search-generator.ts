@@ -247,7 +247,7 @@ downloadTrip(operationId: string) {
 
   const token = localStorage.getItem('token');
 
-  fetch(`http://localhost:5236/api/GeneratorEmission/operation-pdf/${operationId}`, {
+  fetch(`http://localhost:5236/api/GeneratorOperation/generate-pdf/${operationId}`, {
     method: 'GET',
     headers: { 'Authorization': `Bearer ${token}` }
   })
