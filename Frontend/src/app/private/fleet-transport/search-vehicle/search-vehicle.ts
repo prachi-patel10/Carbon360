@@ -425,48 +425,36 @@ getSortIcon(column: string): string {
     );
   }
 
+  exportExcel() {
 
-      exportExcel() {
+  const params: any = {};
 
-    const params: any = {};
+  if (this.searchText()) {
+    params.search = this.searchText();
+  }
 
-if (this.searchText()) {
-  params.search = this.searchText();
-}
+  if (this.selectedFuelType !== 'All') {
+    params.fuelType = this.selectedFuelType;
+  }
 
-if (this.selectedFuelType !== 'All') {
-  params.fuelType = this.selectedFuelType;
-}
+  if (this.operationStartDate()) {
+    params.startDate = this.operationStartDate();
+  }
 
-if (this.operationStartDate()) {
-  params.startDate = this.operationStartDate();
-}
+  if (this.operationEndDate()) {
+    params.endDate = this.operationEndDate();
+  }
 
-if (this.operationEndDate()) {
-  params.endDate = this.operationEndDate();
-}
+  if (this.entryStartDate()) {
+    params.entryStartDate = this.entryStartDate();
+  }
 
-if (this.entryStartDate()) {
-  params.entryStartDate = this.entryStartDate();
-}
+  if (this.entryEndDate()) {
+    params.entryEndDate = this.entryEndDate();
+  }
 
-if (this.entryEndDate()) {
-  params.entryEndDate = this.entryEndDate();
-}
-
-params.sortColumn = this.sortColumn;
-params.sortDirection = this.sortDirection;
-
-  // const params: any = {
-  //   search: this.searchText(),
-  //   fuelType: this.selectedFuelType !== 'All' ? this.selectedFuelType : null,
-  //   startDate: this.operationStartDate(),
-  //   endDate: this.operationEndDate(),
-  //   entryStartDate: this.entryStartDate(),
-  //   entryEndDate: this.entryEndDate(),
-  //   sortColumn: this.sortColumn,
-  //   sortDirection: this.sortDirection
-  // };
+  params.sortColumn = this.sortColumn;
+  params.sortDirection = this.sortDirection;
 
   this.service.exportExcel(params).subscribe(blob => {
 
@@ -477,11 +465,103 @@ params.sortDirection = this.sortDirection;
     const url = window.URL.createObjectURL(file);
     const a = document.createElement('a');
 
+    // ✅ TIMESTAMP GENERATE
+    // const now = new Date();
+    // const timestamp = now.getFullYear() +
+    //   ('0' + (now.getMonth() + 1)).slice(-2) +
+    //   ('0' + now.getDate()).slice(-2) + '_' +
+    //   ('0' + now.getHours()).slice(-2) +
+    //   ('0' + now.getMinutes()).slice(-2) +
+    //   ('0' + now.getSeconds()).slice(-2);
+
+    const now = new Date();
+
+const day = ('0' + now.getDate()).slice(-2);
+const month = ('0' + (now.getMonth() + 1)).slice(-2);
+const year = now.getFullYear();
+
+// ⏰ TIME (24-hour format with seconds)
+const hours = ('0' + now.getHours()).slice(-2);
+const minutes = ('0' + now.getMinutes()).slice(-2);
+const seconds = ('0' + now.getSeconds()).slice(-2);
+
+// ❌ DON'T use ":" in file name (Windows issue)
+// ✅ use "-"
+const formattedTime = `${hours}-${minutes}-${seconds}`;
+
+// 📅 FINAL
+const formattedDateTime = `${day}-${month}-${year}_${formattedTime}`;
+
+a.download = `Search_Fleet&Transport_${formattedDateTime}.xlsx`;
+
+    // ✅ FINAL FILE NAME
+    //a.download = `Search_Fleet&Transport_${timestamp}.xlsx`;
+    //a.download = `Search_Fleet&Transport_${formattedDate}.xlsx`;
+
     a.href = url;
-    a.download = 'VehicleTripEmission.xlsx';
     a.click();
 
     window.URL.revokeObjectURL(url);
   });
 }
+
+
+//       exportExcel() {
+
+//     const params: any = {};
+
+// if (this.searchText()) {
+//   params.search = this.searchText();
+// }
+
+// if (this.selectedFuelType !== 'All') {
+//   params.fuelType = this.selectedFuelType;
+// }
+
+// if (this.operationStartDate()) {
+//   params.startDate = this.operationStartDate();
+// }
+
+// if (this.operationEndDate()) {
+//   params.endDate = this.operationEndDate();
+// }
+
+// if (this.entryStartDate()) {
+//   params.entryStartDate = this.entryStartDate();
+// }
+
+// if (this.entryEndDate()) {
+//   params.entryEndDate = this.entryEndDate();
+// }
+
+// params.sortColumn = this.sortColumn;
+// params.sortDirection = this.sortDirection;
+
+//   // const params: any = {
+//   //   search: this.searchText(),
+//   //   fuelType: this.selectedFuelType !== 'All' ? this.selectedFuelType : null,
+//   //   startDate: this.operationStartDate(),
+//   //   endDate: this.operationEndDate(),
+//   //   entryStartDate: this.entryStartDate(),
+//   //   entryEndDate: this.entryEndDate(),
+//   //   sortColumn: this.sortColumn,
+//   //   sortDirection: this.sortDirection
+//   // };
+
+//   this.service.exportExcel(params).subscribe(blob => {
+
+//     const file = new Blob([blob], {
+//       type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+//     });
+
+//     const url = window.URL.createObjectURL(file);
+//     const a = document.createElement('a');
+
+//     a.href = url;
+//     a.download = 'VehicleTripEmission.xlsx';
+//     a.click();
+
+//     window.URL.revokeObjectURL(url);
+//   });
+// }
 }
