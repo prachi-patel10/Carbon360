@@ -62,4 +62,16 @@ export class GeneratorecService {
   getWorkflowActions(operationId: string) {
   return this.http.get(`${this.apiUrl}/${operationId}/actions`);
 }
+
+downloadTripPdf(tripId: string) {
+    return this.http.get(`${this.apiUrl}/generate-pdf/${tripId}`, {
+      responseType: 'blob'  
+    });
+  }
+
+  getTripFullDetails(hashId: string): Observable<any> {
+ return this.http.get(
+      `${this.apiUrl}/GeneratorOperation/pdf/${hashId}`
+    );
+}
 }

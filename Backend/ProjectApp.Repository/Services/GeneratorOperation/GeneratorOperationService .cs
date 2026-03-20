@@ -777,7 +777,7 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
 
             string templateDir = Path.Combine(AppContext.BaseDirectory, "Template", "GeneratorOperation");
             string css = await File.ReadAllTextAsync(Path.Combine(templateDir, "styles.css"));
-            string contentHtml = await File.ReadAllTextAsync(Path.Combine(templateDir, "GeneratorOperationReport.html"));
+            string contentHtml = await File.ReadAllTextAsync(Path.Combine(templateDir, "GeneratorReport.html"));
             string headerHtml = await File.ReadAllTextAsync(Path.Combine(templateDir, "header.html"));
             string footerHtml = await File.ReadAllTextAsync(Path.Combine(templateDir, "footer.html"));
 

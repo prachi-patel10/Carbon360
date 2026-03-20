@@ -276,7 +276,7 @@ namespace ProjectApp.API.Controllers.Account.VehicleTripEmission
                 if (pdf == null || pdf.Length == 0)
                     return BadRequest("PDF generation returned empty content.");
 
-                return File(pdf, "application/pdf", $"VehicleTrip_{tripId}.pdf");
+                return File(pdf, "application/pdf", $"Search_Fleet&TransportReport_{DateTime.Now:ddMMyyyy}.pdf");
             }
             catch (Exception ex)
             {

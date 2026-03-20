@@ -1,25 +1,27 @@
 ﻿* {
     box-sizing: border-box;
+    margin: 0;
+    padding: 0;
 }
 
 /* ================= BODY ================= */
 body {
     font-family: Arial, sans-serif;
     font-size: 12px;
-    color: #333;
-    margin: 0;
-    padding: 0 24px 24px 24px;
+    color: #1a2e1a;
+    background: #fff;
     line-height: 1.5;
+    padding: 0;
+    margin: 0;
 }
 
 /* ================= HEADER ================= */
 .header {
     width: 100%;
     display: table;
+    table-layout: fixed;
     background: #fff;
-    color: #0f5132;
-    border-bottom: 2px solid #155f40;
-    margin-bottom: 4px;
+    border-bottom: 2px solid #0d4a28;
 }
 
 .header-logo,
@@ -27,7 +29,7 @@ body {
 .header-right {
     display: table-cell;
     vertical-align: middle;
-    padding: 10px 14px;
+    padding: 10px 16px;
 }
 
 .header-logo {
@@ -37,7 +39,7 @@ body {
 .logo-text {
     font-size: 18px;
     font-weight: bold;
-    color: #0f5132;
+    color: #0d4a28;
 }
 
     .logo-text span {
@@ -45,31 +47,49 @@ body {
     }
 
 .logo-sub {
-    font-size: 10px;
+    font-size: 9px;
     color: #888;
     margin-top: 2px;
+    letter-spacing: 0.5px;
 }
 
 .header-title {
     text-align: center;
-    font-size: 16px;
+    font-size: 15px;
     font-weight: bold;
-    color: #0f5132;
+    color: #0d4a28;
 }
 
 .header-right {
     width: 200px;
+    text-align: right;
+    padding-right: 16px;
+}
+
+.header-date-label {
+    font-size: 8px;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 2px;
+}
+
+.header-date-value {
+    font-size: 13px;
+    font-weight: bold;
+    color: #0d4a28;
 }
 
 /* ================= FOOTER ================= */
 .footer {
     width: 100%;
     display: table;
+    table-layout: fixed;
     font-size: 9px;
-    background: #0f5132;
+    background: #0d4a28;
     color: #fff;
-    border-top: 2px solid #155f40;
-    padding: 6px 14px;
+    border-top: 2px solid #d4a017;
+    padding: 6px 16px;
 }
 
 .footer-left,
@@ -86,6 +106,8 @@ body {
 .footer-center {
     width: 34%;
     text-align: center;
+    font-weight: bold;
+    color: #c5f2d7;
 }
 
 .footer-right {
@@ -94,247 +116,410 @@ body {
 }
 
 .footer span {
-    color: #c5f2d7;
+    color: #f0c040;
     font-weight: bold;
+}
+
+/* ================= STATUS BAR ================= */
+.status-bar {
+    background: #edf8f0;
+    border-top: 3px solid #0d4a28;
+    border-bottom: 3px solid #0d4a28;
+    margin-left: -24px;
+    margin-right: -24px;
+    padding: 10px 24px;
+    display: table;
+    width: calc(100% + 48px);
+    table-layout: fixed;
+}
+
+.status-bar-left,
+.status-bar-right {
+    display: table-cell;
+    vertical-align: middle;
+    font-size: 11px;
+    color: #333;
+    padding-left: 20px;
+}
+
+    .status-bar-left strong {
+        color: #0d4a28;
+        font-size: 12px;
+    }
+
+.status-bar-right {
+    text-align: right;
+    color: #333;
+    padding-right: 20px;
+}
+
+.status-pill {
+    background: #d6f5e3;
+    border: 1px solid #7ed4a4;
+    color: #0a5c2a;
+    font-weight: bold;
+    padding: 3px 14px;
+    border-radius: 20px;
+    font-size: 10px;
+    display: inline-block;
+}
+
+/* ================= BODY WRAPPER ================= */
+.body {
+    padding: 0 0 24px 0;
 }
 
 /* ================= SECTION ================= */
-.section {
-    margin-top: 18px;
-    border: 1px solid #b2dfce;
-    border-radius: 4px;
-    background: #ffffff;
+.sec {
+    margin-top: 16px;
+    border: 1px solid #b8e4cc;
+    border-radius: 6px;
     overflow: hidden;
 }
 
-.section-first {
-    background: #f4fffa;
-}
-
-.section-title {
-    background: #0f5132;
-    padding: 8px 14px;
+.sec-head {
+    background: #0d4a28;
+    padding: 7px 14px;
+    font-size: 11px;
     font-weight: bold;
-    font-size: 13px;
-    border-bottom: 1px solid #0a3d26;
     color: #ffffff;
     letter-spacing: 0.3px;
+    display: table;
+    width: 100%;
 }
 
-.section-trip {
-    background: #f0faf5;
+.sec-icon {
+    display: table-cell;
+    width: 22px;
+    vertical-align: middle;
 }
 
-/* FIX 1: removed background from emission section — now plain white */
-.section-emission {
+.sec-icon-box {
+    width: 16px;
+    height: 16px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 3px;
+    text-align: center;
+    font-size: 8px;
+    color: #f0c040;
+    line-height: 16px;
+    font-weight: bold;
+}
+
+.sec-title {
+    display: table-cell;
+    vertical-align: middle;
+}
+
+.sec-body {
+    padding: 14px;
     background: #ffffff;
 }
 
-.section-workflow {
-    background: #f4fffa;
-   
-}
-    .section-workflow table {
-        margin-top: 12px;
-    }
-/* ================= GRID ROWS ================= */
-.row {
-    width: 100%;
-    display: table;
-    table-layout: fixed;
-    padding: 6px 14px;
-}
-
-.col {
-    display: table-cell;
-    width: 33.33%;
-    vertical-align: top;
-    padding: 4px 6px;
-    word-wrap: break-word;
-    font-size: 12px;
-    line-height: 1.6;
-}
-
-/* ================= TABLE ================= */
-table {
+/* ================= FIELD GRID ================= */
+.fgrid {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 0;
 }
 
-    /* FIX 2: lighter green header for workflow table */
-    table th {
-        background: #52a875;
-        color: #ffffff;
-        padding: 8px 10px;
-        font-size: 11px;
-        text-align: left;
-        letter-spacing: 0.3px;
+    .fgrid td {
+        padding: 8px 12px;
+        border: 1px solid #c8e4d4;
+        background: #ffffff;
+        vertical-align: top;
+        width: 33.33%;
     }
 
-    table td {
-        padding: 7px 10px;
-        border: 1px solid #c5f2d7;
-        font-size: 11px;
-        line-height: 1.5;
-        background: #f4fffa;
+    .fgrid tr:nth-child(even) td {
+        background: #f7fdf9;
     }
 
-    table tr:nth-child(even) td {
-        background: #e8f8f0;
-    }
-
-/* ================= TEXT ================= */
-.bold {
-    font-weight: bold;
-}
-
-/* ================= EMISSION SECTION ================= */
-.section-body {
-    padding: 12px 14px;
-}
-
-.formula-section-title {
-    font-weight: bold;
-    font-size: 11px;
-    color: #0f5132;
-    text-transform: uppercase;
+.fcell-lbl {
+    font-size: 9px;
+    color: #5a8a6a;
     letter-spacing: 0.5px;
-    margin: 10px 0 8px 0;
-    border-bottom: 1px dashed #a8dfc0;
-    padding-bottom: 4px;
+    text-transform: uppercase;
+    margin-bottom: 3px;
 }
 
-/* ── Factors Grid ── */
+.fcell-val {
+    font-size: 12px;
+    font-weight: bold;
+    color: #1a2e1a;
+}
+
+/* ================= EMISSION FACTORS ================= */
+.sub-title {
+    font-size: 9px;
+    font-weight: bold;
+    color: #0d4a28;
+    letter-spacing: 0.8px;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+}
+
 .factors-grid {
     width: 100%;
     display: table;
     table-layout: fixed;
     border-collapse: separate;
     border-spacing: 6px;
-    margin-bottom: 4px;
 }
 
 .factor-cell {
     display: table-cell;
-    width: 20%;
-    border: 1px solid #b2dfce;
+    border: 1px solid #c8e4d4;
+    border-radius: 5px;
     padding: 8px 10px;
-    background: #f4fffa;
-    border-radius: 4px;
+    background: #f7fdf9;
     vertical-align: top;
 }
 
-.factor-label {
-    font-size: 10px;
-    color: #777;
-    margin-bottom: 4px;
+.factor-lbl {
+    font-size: 9px;
+    color: #5a8a6a;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin-bottom: 3px;
 }
 
-.factor-value {
-    font-weight: bold;
+.factor-val {
     font-size: 13px;
-    color: #0f5132;
+    font-weight: bold;
+    color: #0d4a28;
 }
 
-/* ── Formula Cards ── */
+/* ================= FORMULA CARDS ================= */
+.emission-divider {
+    font-size: 9px;
+    font-weight: bold;
+    color: #0d4a28;
+    letter-spacing: 0.8px;
+    margin: 14px 0 8px;
+    text-transform: uppercase;
+    border-top: 1px dashed #b8e4cc;
+    padding-top: 10px;
+}
+
 .formula-grid {
     width: 100%;
     display: table;
     table-layout: fixed;
     border-collapse: separate;
     border-spacing: 8px;
-    margin-top: 4px;
 }
 
-.formula-card {
+.f-card {
     display: table-cell;
     width: 25%;
     vertical-align: top;
 }
 
-.formula-inner {
-    border: 1px solid #b2dfce;
-    border-top: 4px solid #0f5132;
-    border-radius: 0 0 4px 4px;
+.f-card-inner {
+    border: 1px solid #c8e4d4;
+    border-top: 3px solid #0d4a28;
+    border-radius: 0 0 5px 5px;
     padding: 10px;
-    background: #f4fffa;
-    font-size: 11px;
-    line-height: 1.7;
-    min-height: 100px;
+    background: #f7fdf9;
 }
 
-    .formula-inner.total-card {
-        border-top-color: #0a3d26;
-        background: #dff2e8;
+    .f-card-inner.total {
+        border-top-color: #d4a017;
+        background: #fdf8ec;
     }
 
-.formula-gas {
-    font-weight: bold;
+.f-gas {
     font-size: 13px;
-    color: #0f5132;
-    margin-bottom: 4px;
-}
-
-    .formula-gas.red {
-        color: #0a3d26;
-    }
-
-.formula-line,
-.formula-eq {
-    color: #555;
-    font-size: 10.5px;
-}
-
-.formula-result {
-    margin-top: 8px;
     font-weight: bold;
+    color: #0d4a28;
+    margin-bottom: 5px;
+}
+
+.f-card-inner.total .f-gas {
+    color: #7a5200;
+}
+
+.f-line {
+    font-size: 9.5px;
+    color: #555555;
+    line-height: 1.7;
+}
+
+.f-result {
+    margin-top: 8px;
+    padding-top: 6px;
+    border-top: 1px solid #c8e4d4;
     font-size: 12px;
-    color: #333;
-    border-top: 1px solid #b2dfce;
-    padding-top: 5px;
+    font-weight: bold;
+    color: #0d4a28;
 }
 
-    .formula-result.red {
-        color: #0a3d26;
-    }
+.f-card-inner.total .f-result {
+    color: #7a5200;
+}
 
-/* ── Total Box ── */
+/* ================= TOTAL BOX ================= */
 .total-box {
-    width: 100%;
-    display: table;
-    table-layout: fixed;
-    border: 1px solid #0f5132;
-    border-left: 5px solid #0f5132;
-    border-radius: 4px;
-    background: #dff2e8;
     margin-top: 14px;
+    border: 1px solid #0d4a28;
+    border-left: 4px solid #0d4a28;
+    border-radius: 5px;
+    background: #edf8f0;
+    display: table;
+    width: 100%;
+    table-layout: fixed;
 }
 
-.total-box-left {
+.total-left {
     display: table-cell;
     width: 60%;
-    padding: 12px 14px;
+    padding: 12px 16px;
     font-size: 11px;
-    line-height: 1.6;
+    color: #444444;
     vertical-align: middle;
+    line-height: 1.6;
 }
 
-.total-box-right {
+    .total-left strong {
+        color: #1a2e1a;
+    }
+
+.total-right {
     display: table-cell;
     width: 40%;
-    padding: 12px 14px;
+    padding: 12px 16px;
     text-align: right;
-    font-size: 18px;
+    font-size: 20px;
     font-weight: bold;
-    color: #0f5132;
+    color: #0d4a28;
     vertical-align: middle;
 }
 
 .total-formula {
     display: block;
-    font-size: 9.5px;
-    color: #777;
-    margin-top: 4px;
+    font-size: 9px;
+    color: #777777;
     font-weight: normal;
+    margin-top: 3px;
+}
+
+/* ================= WORKFLOW HISTORY TIMELINE ================= */
+.timeline {
+    padding: 4px 0;
+}
+
+.timeline-item {
+    display: table;
+    width: 100%;
+    table-layout: fixed;
+    padding: 10px 0;
+    border-bottom: 1px solid #edf8f0;
+}
+
+    .timeline-item:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+
+.timeline-dot-col {
+    display: table-cell;
+    width: 28px;
+    vertical-align: top;
+    padding-top: 2px;
+}
+
+.timeline-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #1d9e75;
+    border: 2px solid #fff;
+    outline: 2px solid #1d9e75;
+    display: inline-block;
+    margin-top: 2px;
+}
+
+.timeline-content {
+    display: table-cell;
+    vertical-align: top;
+    font-size: 11px;
+    color: #333;
+    line-height: 1.7;
+}
+
+.timeline-date {
+    font-weight: bold;
+    color: #1a2e1a;
+    font-size: 11px;
+}
+
+.timeline-role {
+    color: #1d6fa8;
+    font-weight: bold;
+}
+
+.timeline-user {
+    color: #1d6fa8;
+}
+
+.timeline-action-approve {
+    color: #0a7c3e;
+    font-weight: bold;
+}
+
+.timeline-action-reject {
+    color: #c0392b;
+    font-weight: bold;
+}
+
+.timeline-action-submit {
+    color: #1d6fa8;
+    font-weight: bold;
+}
+
+.timeline-action-default {
+    color: #555;
+    font-weight: bold;
+}
+/* ================= GENERATOR — CALC ROW (Run Hours + Power Output) ================= */
+.calc-row {
+    width: 100%;
+    display: table;
+    table-layout: fixed;
+    border-collapse: separate;
+    border-spacing: 8px;
+    margin-bottom: 4px;
+}
+
+.calc-card {
+    display: table-cell;
+    width: 50%;
+    vertical-align: top;
+    border: 1px solid #c8e4d4;
+    border-top: 3px solid #1d6fa8;
+    border-radius: 0 0 5px 5px;
+    padding: 10px;
+    background: #f0f7fd;
+}
+
+.calc-label {
+    font-size: 13px;
+    font-weight: bold;
+    color: #1d4f7a;
+    margin-bottom: 5px;
+}
+
+.calc-line {
+    font-size: 9.5px;
+    color: #555555;
+    line-height: 1.7;
+}
+
+.calc-result {
+    margin-top: 8px;
+    padding-top: 6px;
+    border-top: 1px solid #b8d4e8;
+    font-size: 12px;
+    font-weight: bold;
+    color: #1d4f7a;
 }

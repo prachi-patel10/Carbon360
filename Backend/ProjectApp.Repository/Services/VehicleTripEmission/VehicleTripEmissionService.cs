@@ -980,22 +980,37 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
 
             var historyRows = new StringBuilder();
 
+
             foreach (var h in history)
             {
                 var actionDate = h.ContainsKey("ActionDate") && h["ActionDate"] != null
                     ? Convert.ToDateTime(h["ActionDate"]).ToString("dd-MMM-yyyy HH:mm")
                     : "-";
 
+                var actionName = GetValue(h, "ActionName");
+                var actionRole = GetValue(h, "ActionByRole");
+                var fullName = GetValue(h, "FullName");
+
+                // Pick action CSS class based on action name
+                string actionClass = actionName.ToLower() switch
+                {
+                    var a when a.Contains("approve") => "timeline-action-approve",
+                    var a when a.Contains("reject") => "timeline-action-reject",
+                    var a when a.Contains("submit") => "timeline-action-submit",
+                    _ => "timeline-action-default"
+                };
+
                 historyRows.Append($@"
-<tr>
- <td>{actionDate}</td>
-  
-    <td>{GetValue(h, "ActionName")}</td>
-    <td>{GetValue(h, "ActionByRole")}</td>
-    <td>{GetValue(h, "FullName")}</td>
-  
-   
-</tr>");
+<div class=""timeline-item"">
+    <div class=""timeline-dot-col"">
+        <span class=""timeline-dot""></span>
+    </div>
+    <div class=""timeline-content"">
+        On <span class=""timeline-date"">{actionDate}</span>
+        &nbsp;<span class=""timeline-role"">{actionRole} - <span class=""timeline-user"">{fullName}</span></span>
+        &nbsp;has performed <span class=""{actionClass}"">{actionName}</span>
+    </div>
+</div>");
             }
 
 
@@ -1007,7 +1022,8 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
             string footerHtml = await File.ReadAllTextAsync(Path.Combine(templateDir, "footer.html"));
 
             string cssTag = $"<style>{css}</style>";
-
+            // Add this with the other header replacements
+            headerHtml = headerHtml.Replace("{{EntryDate}}", GetDate("EntryDate")?.ToString("dd-MMM-yyyy HH:mm") ?? DateTime.Now.ToString("dd-MMM-yyyy HH:mm"));
             contentHtml = contentHtml.Replace("</head>", $"{cssTag}</head>");
             headerHtml = headerHtml.Replace("</head>", $"{cssTag}</head>");
             footerHtml = footerHtml.Replace("</head>", $"{cssTag}</head>");
@@ -1087,7 +1103,7 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
 
             contentHtml = contentHtml.Replace("{{historyRows}}", historyRows.ToString());
 
-            headerHtml = headerHtml.Replace("{{ReportTitle}}", "Vehicle Trip Emission Report");
+            headerHtml = headerHtml.Replace("{{ReportTitle}}", "Report Fleet & Transport");
             footerHtml = footerHtml.Replace("{{generatedDate}}", DateTime.Now.ToString("dd-MMM-yyyy HH:mm"));
 
 

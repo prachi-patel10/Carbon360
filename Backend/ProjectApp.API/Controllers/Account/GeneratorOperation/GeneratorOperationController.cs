@@ -232,7 +232,7 @@ namespace ProjectApp.API.Controllers.Account.GeneratorOperation
                 if (pdf == null || pdf.Length == 0)
                     return BadRequest("PDF generation returned empty content.");
 
-                return File(pdf, "application/pdf", $"GeneratorOperation_{operationId}.pdf");
+                return File(pdf, "application/pdf", $"Search_PowerGeneratorReport_{DateTime.Now:ddMMyyyy}.pdf");
             }
             catch (Exception ex)
             {

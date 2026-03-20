@@ -19,22 +19,22 @@
     <!-- ══ BODY ══ -->
     <div class="body">
 
-        <!-- ── TRIP DETAILS ── -->
+        <!-- ── GENERATOR DETAILS ── -->
         <div class="sec">
             <div class="sec-head">
                 <div class="sec-icon"><div class="sec-icon-box">&#9654;</div></div>
-                <div class="sec-title">Trip Details</div>
+                <div class="sec-title">Generator Details</div>
             </div>
             <div class="sec-body">
                 <table class="fgrid">
                     <tr>
                         <td>
-                            <div class="fcell-lbl">Vehicle</div>
-                            <div class="fcell-val">{{vehicle}}</div>
+                            <div class="fcell-lbl">Generator Name</div>
+                            <div class="fcell-val">{{generatorName}}</div>
                         </td>
                         <td>
-                            <div class="fcell-lbl">Vehicle Type</div>
-                            <div class="fcell-val">{{VehicleType}}</div>
+                            <div class="fcell-lbl">Site Location</div>
+                            <div class="fcell-val">{{siteName}}</div>
                         </td>
                         <td>
                             <div class="fcell-lbl">Fuel Type</div>
@@ -43,39 +43,45 @@
                     </tr>
                     <tr>
                         <td>
-                            <div class="fcell-lbl">From City</div>
-                            <div class="fcell-val">{{fromCity}}</div>
+                            <div class="fcell-lbl">Operation Date</div>
+                            <div class="fcell-val">{{operationDate}}</div>
                         </td>
                         <td>
-                            <div class="fcell-lbl">To City</div>
-                            <div class="fcell-val">{{toCity}}</div>
+                            <div class="fcell-lbl">Start Date &amp; Time</div>
+                            <div class="fcell-val">{{startTime}}</div>
                         </td>
                         <td>
-                            <div class="fcell-lbl">Distance (KM)</div>
-                            <div class="fcell-val">{{distance}}</div>
+                            <div class="fcell-lbl">End Date &amp; Time</div>
+                            <div class="fcell-val">{{endTime}}</div>
                         </td>
                     </tr>
                     <tr>
                         <td>
-                            <div class="fcell-lbl">Fuel (Ltr)</div>
-                            <div class="fcell-val">{{fuel}}</div>
+                            <div class="fcell-lbl">Run Hours</div>
+                            <div class="fcell-val">{{runHours}} hrs</div>
                         </td>
                         <td>
-                            <div class="fcell-lbl">Trip Start Date</div>
-                            <div class="fcell-val">{{tripstartdate}}</div>
+                            <div class="fcell-lbl">Duration</div>
+                            <div class="fcell-val">{{duration}}</div>
                         </td>
                         <td>
-                            <div class="fcell-lbl">Trip End Date</div>
-                            <div class="fcell-val">{{tripenddate}}</div>
+                            <div class="fcell-lbl">Rated Capacity (kW)</div>
+                            <div class="fcell-val">{{ratedCapacity}}</div>
                         </td>
                     </tr>
                     <tr>
                         <td>
-                            <div class="fcell-lbl">Trip Duration</div>
-                            <div class="fcell-val">{{tripduration}}</div>
+                            <div class="fcell-lbl">Load Factor (%)</div>
+                            <div class="fcell-val">{{loadFactor}}%</div>
                         </td>
-                        <td></td>
-                        <td></td>
+                        <td>
+                            <div class="fcell-lbl">Fuel Consumed (L)</div>
+                            <div class="fcell-val">{{fuelConsumed}}</div>
+                        </td>
+                        <td>
+                            <div class="fcell-lbl">Power Output (kWh)</div>
+                            <div class="fcell-val">{{powerOutputKWH}}</div>
+                        </td>
                     </tr>
                 </table>
             </div>
@@ -114,14 +120,32 @@
                 </div>
 
                 <div class="emission-divider">Emission Calculation</div>
-                <div class="formula-grid">
+
+                <!-- Run Hours + Power Output row -->
+                <div class="calc-row">
+                    <div class="calc-card">
+                        <div class="calc-label">Run Hours</div>
+                        <div class="calc-line">= End Time &minus; Start Time</div>
+                        <div class="calc-line">= {{startTime}} &rarr; {{endTime}}</div>
+                        <div class="calc-result">= {{runHours}} hrs</div>
+                    </div>
+                    <div class="calc-card">
+                        <div class="calc-label">Power Output</div>
+                        <div class="calc-line">= Rated Capacity &times; Load Factor &times; Run Hours</div>
+                        <div class="calc-line">= {{ratedCapacity}} &times; ({{loadFactor}}/100) &times; {{runHours}}</div>
+                        <div class="calc-result">= {{powerOutputKWH}} kWh</div>
+                    </div>
+                </div>
+
+                <!-- Gas formula cards -->
+                <div class="formula-grid" style="margin-top:10px;">
 
                     <div class="f-card">
                         <div class="f-card-inner">
                             <div class="f-gas">CO&#8322;</div>
                             <div class="f-line">
                                 = Fuel &times; CO&#8322; Factor<br>
-                                = {{fuel}} &times; {{co2Factor}}
+                                = {{fuelConsumed}} &times; {{co2Factor}}
                             </div>
                             <div class="f-result">= {{co2}} kg</div>
                         </div>
@@ -132,7 +156,7 @@
                             <div class="f-gas">NO&#8322;</div>
                             <div class="f-line">
                                 = Fuel &times; NO&#8322; Factor<br>
-                                = {{fuel}} &times; {{no2Factor}}
+                                = {{fuelConsumed}} &times; {{no2Factor}}
                             </div>
                             <div class="f-result">= {{no2}} kg</div>
                         </div>
@@ -143,7 +167,7 @@
                             <div class="f-gas">CH&#8324;</div>
                             <div class="f-line">
                                 = Fuel &times; CH&#8324; Factor<br>
-                                = {{fuel}} &times; {{ch4Factor}}
+                                = {{fuelConsumed}} &times; {{ch4Factor}}
                             </div>
                             <div class="f-result">= {{ch4}} kg</div>
                         </div>
@@ -162,6 +186,7 @@
 
                 </div>
 
+                <!-- Total Summary Box -->
                 <div class="total-box">
                     <div class="total-left">
                         <strong>Total Emission (CO&#8322; Equivalent)</strong><br>

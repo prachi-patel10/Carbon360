@@ -132,6 +132,7 @@
       Emission (kg CO₂e) <span class="sort-icon">{{ getSortIcon('totalEmission') }}</span>
     </th>
     <th>Action</th>
+    <th>Download</th>
   </tr>
 </thead>
           <tbody>
@@ -142,11 +143,20 @@
               <td>{{ e.endTime | date:'dd-MMM-yyyy' }}</td>
               <td>{{ e.loadFactor }}</td>
               <td>{{ e.fuelConsumedLiters }}</td>
-              <td class="emission-value">{{ e.totalEmission }}   <i class="fas fa-leaf leaf-icon"></i>  </td>              <td>
+              <td class="emission-value">{{ e.totalEmission }}   </td>              <td>
                 <button class="btn btn-sm btn-open" (click)="goToDetail(e.operationId)">
                   <i class="fas fa-eye"></i>
                 </button>
               </td>
+              <td>
+  <button class="btn-pdf-download"
+          (click)="downloadTrip(e.operationId)"
+          [disabled]="isLoading(e.operationId)"
+          [title]="isLoading(e.operationId) ? 'Generating...' : 'Download PDF'">
+    <i *ngIf="!isLoading(e.operationId)" class="fas fa-file-pdf"></i>
+    <i *ngIf="isLoading(e.operationId)" class="fas fa-spinner fa-spin"></i>
+  </button>
+</td>
             </tr>
             <tr *ngIf="paginatedData().length === 0">
               <td colspan="8" class="text-center py-4 text-muted">

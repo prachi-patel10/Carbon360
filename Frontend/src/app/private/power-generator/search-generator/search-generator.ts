@@ -47,7 +47,7 @@ export class SearchGenerator implements OnInit {
 
   sortColumn: string = 'entryDate';
   sortDirection: 'asc' | 'desc' = 'desc';
-
+loadingTrips: Record<string, boolean> = {};
   constructor(
     private service: SearchGeneratorService,
     private fuelService: FueltypeService,
@@ -235,4 +235,52 @@ export class SearchGenerator implements OnInit {
       { queryParams: { mode: 'view', page: 'search' } }
     );
   }
+
+
+  isLoading(operationId: string): boolean {
+  return !!this.loadingTrips[operationId];
+}
+
+downloadTrip(operationId: string) {
+  if (!operationId) return;
+  this.loadingTrips[operationId] = true;
+
+  const token = localStorage.getItem('token');
+
+  fetch(`http://localhost:5236/api/GeneratorEmission/operation-pdf/${operationId}`, {
+    method: 'GET',
+    headers: { 'Authorization': `Bearer ${token}` }
+  })
+  .then(res => {
+    if (!res.ok) {
+      return res.text().then(text => {
+        throw new Error(`Server error ${res.status}: ${text}`);
+      });
+    }
+    const contentType = res.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/pdf')) {
+      return res.text().then(text => {
+        throw new Error(`Expected PDF but got: ${contentType} — ${text}`);
+      });
+    }
+    return res.blob();
+  })
+  .then((blob: any) => {
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `Generator-${operationId}.pdf`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  })
+  .catch(err => {
+    console.error('PDF download error:', err);
+    alert('PDF generation failed: ' + err.message);
+  })
+  .finally(() => {
+    this.loadingTrips[operationId] = false;
+  });
+}
 }

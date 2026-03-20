@@ -54,6 +54,7 @@ export class SearchVehicle implements OnInit {
   entryEndDate = signal<string | null>(null);
 
   selectedFuelType: string = 'All';
+loadingTrips: Record<string, boolean> = {};
 
   totalRecordsCount = signal<number>(0);
   pageSize = 10;
@@ -107,6 +108,69 @@ export class SearchVehicle implements OnInit {
       this.emissions.set(mapped);
       this.applyFilters(); // apply filters on full dataset
     }
+  });
+}
+
+getEmissionClass(value: number): string {
+  if (value <= 100)        return 'emission-low';
+  if (value <= 500)        return 'emission-moderate';
+  if (value <= 1000)       return 'emission-high';
+  if (value <= 5000)       return 'emission-very-high';
+  return                          'emission-critical';
+}
+getEmissionLabel(value: number): string {
+  if (value <= 100)  return '🟢 Low Emission';
+  if (value <= 500)  return '🟡 Moderate Emission';
+  if (value <= 1000) return '🟠 High Emission';
+  if (value <= 5000) return '🔴 Very High Emission';
+  return                    '🔴 Critical Emission';
+}
+isLoading(tripId: string): boolean {
+  return !!this.loadingTrips[tripId];
+}
+
+downloadTrip(tripId: string) {
+  if (!tripId) return;
+  this.loadingTrips[tripId] = true;
+
+  const token = localStorage.getItem('token');
+
+  fetch(`http://localhost:5236/api/VehicleTripEmission/trip-pdf/${tripId}`, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
+  })
+  .then(res => {
+    if (!res.ok) {
+      return res.text().then(text => {
+        throw new Error(`Server error ${res.status}: ${text}`);
+      });
+    }
+    const contentType = res.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/pdf')) {
+      return res.text().then(text => {
+        throw new Error(`Expected PDF but got: ${contentType} — ${text}`);
+      });
+    }
+    return res.blob();
+  })
+  .then((blob: any) => {
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `Trip-${tripId}.pdf`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  })
+  .catch(err => {
+    console.error('PDF download error:', err);
+    alert('PDF generation failed: ' + err.message);
+  })
+  .finally(() => {
+    this.loadingTrips[tripId] = false;
   });
 }
 //   loadTrips() {
