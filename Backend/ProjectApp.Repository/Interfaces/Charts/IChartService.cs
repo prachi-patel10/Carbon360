@@ -17,6 +17,14 @@ namespace ProjectApp.Repository.Interfaces.Charts
         // separate emission charts
         Task<MonthlyEmissionChartResponseDto> GetVehicleEmissionChartAsync(int year);
         Task<MonthlyEmissionChartResponseDto> GetGeneratorEmissionChartAsync(int year);
+
+        // Generator Run Hours Pie Chart 
+        Task<GeneratorRunHoursChartResponseDto> GetGeneratorRunHoursByBaseAsync(int year);
+        Task<GeneratorLoadFactorChartResponseDto> GetGeneratorLoadFactorMonthlyAsync(int year);
+
+        // Vehicle Total Distance Monthly Bar Chart
+        Task<VehicleDistanceChartResponseDto> GetVehicleTotalDistanceMonthlyAsync(int year);
     }
 }
+
 

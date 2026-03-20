@@ -31,6 +31,10 @@ public partial class CBContext : DbContext
     public virtual DbSet<CB_UserRoleMapping> CB_UserRoleMappings { get; set; }
     public virtual DbSet<CB_VehicleTripEmission> CB_VehicleTripEmissions { get; set; }
     public virtual DbSet<CB_VehicleTypeCategory> CB_VehicleTypeCategories { get; set; }
+    public virtual DbSet<GeneratorRunHoursRawDto> GeneratorRunHoursRaw { get; set; }
+    public virtual DbSet<VehicleDistanceMonthlyRawDto> VehicleDistanceMonthlyRaw { get; set; }
+
+    public virtual DbSet<GeneratorLoadFactorRawDto> GeneratorLoadFactorRaw { get; set; }
 
     // ✅ ADD THIS — required for SP result mapping
     public virtual DbSet<FuelTypeMonthlyConsumptionDto> FuelTypeMonthlyConsumption { get; set; }
@@ -383,6 +387,18 @@ public partial class CBContext : DbContext
         OnModelCreatingPartial(modelBuilder);
 
         modelBuilder.Entity<MonthlyEmissionRawDto>()
+    .HasNoKey()
+    .ToView(null);
+
+        modelBuilder.Entity<GeneratorRunHoursRawDto>()
+    .HasNoKey()
+    .ToView(null);
+
+        modelBuilder.Entity<VehicleDistanceMonthlyRawDto>()
+            .HasNoKey()
+            .ToView(null);
+
+        modelBuilder.Entity<GeneratorLoadFactorRawDto>()
     .HasNoKey()
     .ToView(null);
     }

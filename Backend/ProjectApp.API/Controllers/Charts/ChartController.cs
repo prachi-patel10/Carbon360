@@ -51,5 +51,29 @@ namespace ProjectApp.API.Controllers.Charts
             var data = await _service.GetGeneratorEmissionChartAsync(year);
             return Ok(new { status = true, data });
         }
+
+        // Generator Run Hours Pie Chart
+        [HttpGet("GeneratorRunHours")]
+        public async Task<IActionResult> GeneratorRunHours([FromQuery] int year)
+        {
+            var data = await _service.GetGeneratorRunHoursByBaseAsync(year);
+            return Ok(new { status = true, data });
+        }
+
+        // NEW: Vehicle Total Distance Monthly Bar Chart 
+        [HttpGet("VehicleDistanceMonthly")]
+        public async Task<IActionResult> VehicleDistanceMonthly([FromQuery] int year)
+        {
+            var data = await _service.GetVehicleTotalDistanceMonthlyAsync(year);
+            return Ok(new { status = true, data });
+        }
+
+        [HttpGet("GeneratorLoadFactor")]
+        public async Task<IActionResult> GeneratorLoadFactor([FromQuery] int year)
+        {
+            var data = await _service.GetGeneratorLoadFactorMonthlyAsync(year);
+            return Ok(new { status = true, data });
+        }
     }
 }
+

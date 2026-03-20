@@ -9,39 +9,39 @@
     <div class="admin-wrapper">
       <div class="admin-avatar" (click)="toggleProfile($event)">{{ loggedInUser.charAt(0) }}</div>
 
-      @if (showProfileCard) {
-        <div class="admin-dropdown" (click)="$event.stopPropagation()">
+      @if (showProfileCard()) {
+      <div class="admin-dropdown" (click)="$event.stopPropagation()">
 
-          @if (roles && roles.length === 1) {
-            <div class="user-role-block">
-              <span class="role-label">Role</span>
-              <span class="role-value">{{ selectedRole }}</span>
-            </div>
-          }
-
-          @if (roles && roles.length > 1) {
-            <div class="role-switch-block">
-              <span class="role-label">Switch Role</span>
-              <select [(ngModel)]="selectedRole" (change)="onRoleChange()" class="role-select">
-                @for (role of roles; track role) {
-                  <option [value]="role">{{ role }}</option>
-                }
-              </select>
-            </div>
-          }
-
-          <div class="divider"></div>
-          <button class="logout-btn" (click)="logout()">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-              <polyline points="16 17 21 12 16 7"/>
-              <line x1="21" y1="12" x2="9" y2="12"/>
-            </svg>
-            Logout
-          </button>
+        @if (roles && roles.length === 1) {
+        <div class="user-role-block">
+          <span class="role-label">Role</span>
+          <span class="role-value">{{ selectedRole }}</span>
         </div>
-      }
+        }
 
+        @if (roles && roles.length > 1) {
+        <div class="role-switch-block">
+          <span class="role-label">Switch Role</span>
+          <select [(ngModel)]="selectedRole" (change)="onRoleChange()" class="role-select">
+            @for (role of roles; track role) {
+              <option [value]="role">{{ role }}</option>
+            }
+          </select>
+        </div>
+        }
+
+        <div class="divider"></div>
+        <button class="logout-btn" (click)="logout()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+            <polyline points="16 17 21 12 16 7"/>
+            <line x1="21" y1="12" x2="9" y2="12"/>
+          </svg>
+          Logout
+        </button>
+      </div>
+      }
     </div>
   </div>
 </header>
@@ -64,225 +64,166 @@
 
       <!-- ============ CONFIGURATION (Admin only) ============ -->
       @if (isAdmin()) {
-        <li class="menu-parent">
-          <span class="section-label">System</span>
+      <li class="menu-parent">
+        <span class="section-label">System</span>
+        <div class="menu-title" (click)="toggleConfigMenu('configuration')">
+          <svg class="menu-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+          </svg>
+          <span>Configuration</span>
+          <svg class="arrow" [class.rotate]="isConfigMenuOpen('configuration')" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
+        </div>
 
-          <div class="menu-title" (click)="toggleConfigMenu('configuration')">
-            <svg class="menu-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="3"/>
-              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-            </svg>
-            <span>Configuration</span>
-            <svg class="arrow" [class.rotate]="isConfigMenuOpen('configuration')" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
-          </div>
+        @if (isConfigMenuOpen('configuration')) {
+        <ul class="submenu">
 
-          @if (isConfigMenuOpen('configuration')) {
-            <ul class="submenu">
-
-              <!-- ---- ADMINISTRATION ---- -->
-              <li class="menu-parent">
-                <div class="menu-title nested-title" (click)="toggleSubMenu('admin')">
-                  <svg class="menu-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                    <circle cx="9" cy="7" r="4"/>
-                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-                  </svg>
-                  <span>Administration</span>
-                  <svg class="arrow" [class.rotate]="isSubMenuOpen('admin')" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
-                </div>
-
-                @if (isSubMenuOpen('admin')) {
-                  <ul class="deep-submenu">
-                    <li (click)="goTo('user')" [class.active-link]="isActive('/user')">
-                      <svg class="item-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                      <span>User Administration</span>
-                    </li>
-                    <li (click)="goTo('department')" [class.active-link]="isActive('/department')">
-                      <svg class="item-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg>
-                      <span>Organizational Units</span>
-                    </li>
-                    <li (click)="goTo('emissionFactors')" [class.active-link]="isActive('/emissionFactors')">
-                      <svg class="item-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>
-                      <span>Emission Factors</span>
-                    </li>
-                    <li (click)="goTo('fueltype')" [class.active-link]="isActive('/fueltype')">
-                      <svg class="item-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 2v6l2 2v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V10l2-2V2"/><line x1="8" y1="2" x2="16" y2="2"/><line x1="9" y1="11" x2="15" y2="11"/></svg>
-                      <span>Fuel Management</span>
-                    </li>
-                  </ul>
-                }
+          <!-- Administration -->
+          <li class="menu-parent">
+            <div class="menu-title nested-title" (click)="toggleSubMenu('admin')">
+              <svg class="menu-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+              </svg>
+              <span>Administration</span>
+              <svg class="arrow" [class.rotate]="isSubMenuOpen('admin')" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+            @if (isSubMenuOpen('admin')) {
+            <ul class="deep-submenu">
+              <li (click)="goTo('user')" [class.active-link]="isActive('/user')">
+                <svg class="item-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                <span>User Administration</span>
               </li>
-
-              <!-- ---- VEHICLE ---- -->
-              <li class="menu-parent">
-                <div class="menu-title nested-title" (click)="toggleSubMenu('vehicle')">
-                  <svg class="menu-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13" rx="2"/><path d="M16 8h4l3 5v3h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
-                  <span>Vehicle</span>
-                  <svg class="arrow" [class.rotate]="isSubMenuOpen('vehicle')" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
-                </div>
-
-                @if (isSubMenuOpen('vehicle')) {
-                  <ul class="deep-submenu">
-                    <li (click)="goTo('vehiclemaster')" [class.active-link]="isActive('/vehiclemaster')">
-                      <svg class="item-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13" rx="2"/><path d="M16 8h4l3 5v3h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
-                      <span>Vehicles</span>
-                    </li>
-                    <li (click)="goTo('citymaster')" [class.active-link]="isActive('/citymaster')">
-                      <svg class="item-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                      <span>Cities</span>
-                    </li>
-                    <li (click)="goTo('Vehicletype')" [class.active-link]="isActive('/Vehicletype')">
-                      <svg class="item-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
-                      <span>Vehicle Type</span>
-                    </li>
-                  </ul>
-                }
+              <li (click)="goTo('department')" [class.active-link]="isActive('/department')">
+                <svg class="item-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg>
+                <span>Organizational Units</span>
               </li>
-
-              <!-- ---- GENERATOR ---- -->
-              <li class="menu-parent">
-                <div class="menu-title nested-title" (click)="toggleSubMenu('generator')">
-                  <svg class="menu-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-                  <span>Generator</span>
-                  <svg class="arrow" [class.rotate]="isSubMenuOpen('generator')" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
-                </div>
-
-                @if (isSubMenuOpen('generator')) {
-                  <ul class="deep-submenu">
-                    <li (click)="goTo('generator')" [class.active-link]="isActive('/generator')">
-                      <svg class="item-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-                      <span>Generators</span>
-                    </li>
-                    <li (click)="goTo('sitelocation')" [class.active-link]="isActive('/sitelocation')">
-                      <svg class="item-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                      <span>Site Location</span>
-                    </li>
-                  </ul>
-                }
+              <li (click)="goTo('emissionFactors')" [class.active-link]="isActive('/emissionFactors')">
+                <svg class="item-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>
+                <span>Emission Factors</span>
               </li>
-
+              <li (click)="goTo('fueltype')" [class.active-link]="isActive('/fueltype')">
+                <svg class="item-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 2v6l2 2v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V10l2-2V2"/><line x1="8" y1="2" x2="16" y2="2"/><line x1="9" y1="11" x2="15" y2="11"/></svg>
+                <span>Fuel Management</span>
+              </li>
             </ul>
-          }
-        </li>
+            }
+          </li>
+
+          <!-- Vehicle -->
+          <li class="menu-parent">
+            <div class="menu-title nested-title" (click)="toggleSubMenu('vehicle')">
+              <svg class="menu-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13" rx="2"/><path d="M16 8h4l3 5v3h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+              <span>Vehicle</span>
+              <svg class="arrow" [class.rotate]="isSubMenuOpen('vehicle')" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+            @if (isSubMenuOpen('vehicle')) {
+            <ul class="deep-submenu">
+              <li (click)="goTo('vehiclemaster')" [class.active-link]="isActive('/vehiclemaster')">
+                <svg class="item-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13" rx="2"/><path d="M16 8h4l3 5v3h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+                <span>Vehicles</span>
+              </li>
+              <li (click)="goTo('citymaster')" [class.active-link]="isActive('/citymaster')">
+                <svg class="item-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                <span>Cities</span>
+              </li>
+              <li (click)="goTo('Vehicletype')" [class.active-link]="isActive('/Vehicletype')">
+                <svg class="item-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+                <span>Vehicle Type</span>
+              </li>
+            </ul>
+            }
+          </li>
+
+          <!-- Generator -->
+          <li class="menu-parent">
+            <div class="menu-title nested-title" (click)="toggleSubMenu('generator')">
+              <svg class="menu-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+              <span>Generator</span>
+              <svg class="arrow" [class.rotate]="isSubMenuOpen('generator')" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+            @if (isSubMenuOpen('generator')) {
+            <ul class="deep-submenu">
+              <li (click)="goTo('generator')" [class.active-link]="isActive('/generator')">
+                <svg class="item-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                <span>Generators</span>
+              </li>
+              <li (click)="goTo('sitelocation')" [class.active-link]="isActive('/sitelocation')">
+                <svg class="item-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                <span>Site Location</span>
+              </li>
+            </ul>
+            }
+          </li>
+
+        </ul>
+        }
+      </li>
       }
 
-      <!-- ============================================================
-           FLEET & TRANSPORT
-           Parent  → Admin + Reporter + Corporate
-           Report  → Reporter ONLY
-           Search  → Admin + Reporter + Corporate
-           MyAction→ Reporter ONLY
-      ============================================================ -->
+      <!-- ============ FLEET & TRANSPORT ============ -->
       @if (isAdmin() || isReporter() || isCorporate()) {
-        <li class="menu-parent">
-          <span class="section-label">Operations</span>
-
-          <div class="menu-title" (click)="toggleMainMenu('fleet')">
-            <svg class="menu-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="1" y="3" width="15" height="13" rx="2"/>
-              <path d="M16 8h4l3 5v3h-7V8z"/>
-              <circle cx="5.5" cy="18.5" r="2.5"/>
-              <circle cx="18.5" cy="18.5" r="2.5"/>
-            </svg>
-            <span>Fleet &amp; Transport</span>
-            <svg class="arrow" [class.rotate]="isMainMenuOpen('fleet')" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
-          </div>
-
-          @if (isMainMenuOpen('fleet')) {
-            <ul class="submenu">
-
-              @if (isReporter()) {
-                <li (click)="goTo('vehicle')" [class.active-link]="isActive('/vehicle')">
-                  <svg class="item-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                    <polyline points="14 2 14 8 20 8"/>
-                    <line x1="16" y1="13" x2="8" y2="13"/>
-                    <line x1="16" y1="17" x2="8" y2="17"/>
-                  </svg>
-                  <span>Report</span>
-                </li>
-              }
-
-              <li (click)="goTo('searchVehicle')" [class.active-link]="isActive('/searchVehicle')">
-                <svg class="item-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="11" cy="11" r="8"/>
-                  <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-                </svg>
-                <span>Search</span>
-              </li>
-
-              @if (isReporter() || isCorporate()) {
-                <li (click)="goTo('MyActionVehicle')" routerLinkActive="active-link">
-                  <svg class="item-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M9 11l3 3L22 4"/>
-                    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
-                  </svg>
-                  <span>My Action</span>
-                </li>
-              }
-
-            </ul>
+      <li class="menu-parent">
+        <span class="section-label">Operations</span>
+        <div class="menu-title" (click)="toggleMainMenu('fleet')">
+          <svg class="menu-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13" rx="2"/><path d="M16 8h4l3 5v3h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+          <span>Fleet &amp; Transport</span>
+          <svg class="arrow" [class.rotate]="isMainMenuOpen('fleet')" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        @if (isMainMenuOpen('fleet')) {
+        <ul class="submenu">
+          @if (isReporter()) {
+          <li (click)="goTo('vehicle')" [class.active-link]="isActive('/vehicle')">
+            <svg class="item-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            <span>Report</span>
+          </li>
           }
-        </li>
+          <li (click)="goTo('searchVehicle')" [class.active-link]="isActive('/searchVehicle')">
+            <svg class="item-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <span>Search</span>
+          </li>
+          @if (isReporter() || isCorporate()) {
+          <li (click)="goTo('MyActionVehicle')" [class.active-link]="isActive('/MyActionVehicle')">
+            <svg class="item-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+            <span>My Action</span>
+          </li>
+          }
+        </ul>
+        }
+      </li>
       }
 
-      <!-- ============================================================
-           POWER GENERATION
-           Parent  → Admin + Reporter + Corporate
-           Report  → Reporter ONLY
-           Search  → Admin + Reporter + Corporate
-           MyAction→ Reporter ONLY
-      ============================================================ -->
+      <!-- ============ POWER GENERATION ============ -->
       @if (isAdmin() || isReporter() || isCorporate()) {
-        <li class="menu-parent">
-
-          <div class="menu-title" (click)="toggleMainMenu('power')">
-            <svg class="menu-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M5 12.55a11 11 0 0 1 14.08 0"/>
-              <path d="M1.42 9a16 16 0 0 1 21.16 0"/>
-              <path d="M8.53 16.11a6 6 0 0 1 6.95 0"/>
-              <line x1="12" y1="20" x2="12.01" y2="20"/>
-            </svg>
-            <span>Power Generation</span>
-            <svg class="arrow" [class.rotate]="isMainMenuOpen('power')" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
-          </div>
-
-          @if (isMainMenuOpen('power')) {
-            <ul class="submenu">
-
-              @if (isReporter()) {
-                <li (click)="goTo('generator-ec')" [class.active-link]="isActive('/generator-ec')">
-                  <svg class="item-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="18" y1="20" x2="18" y2="10"/>
-                    <line x1="12" y1="20" x2="12" y2="4"/>
-                    <line x1="6" y1="20" x2="6" y2="14"/>
-                  </svg>
-                  <span>Report</span>
-                </li>
-              }
-
-              <li (click)="goTo('searchGenerator')" [class.active-link]="isActive('/searchGenerator')">
-                <svg class="item-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="11" cy="11" r="8"/>
-                  <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-                </svg>
-                <span>Search</span>
-              </li>
-
-              @if (isReporter()|| isCorporate()) {
-                <li (click)="goTo('MyActionGenerator')" [class.active-link]="isActive('/MyActionGenerator')">
-                  <svg class="item-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M9 11l3 3L22 4"/>
-                    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
-                  </svg>
-                  <span>My Action</span>
-                </li>
-              }
-
-            </ul>
+      <li class="menu-parent">
+        <div class="menu-title" (click)="toggleMainMenu('power')">
+          <svg class="menu-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>
+          <span>Power Generation</span>
+          <svg class="arrow" [class.rotate]="isMainMenuOpen('power')" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        @if (isMainMenuOpen('power')) {
+        <ul class="submenu">
+          @if (isReporter()) {
+          <li (click)="goTo('generator-ec')" [class.active-link]="isActive('/generator-ec')">
+            <svg class="item-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            <span>Report</span>
+          </li>
           }
-        </li>
+          <li (click)="goTo('searchGenerator')" [class.active-link]="isActive('/searchGenerator')">
+            <svg class="item-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <span>Search</span>
+          </li>
+          @if (isReporter() || isCorporate()) {
+          <li (click)="goTo('MyActionGenerator')" [class.active-link]="isActive('/MyActionGenerator')">
+            <svg class="item-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+            <span>My Action</span>
+          </li>
+          }
+        </ul>
+        }
+      </li>
       }
 
     </ul>
@@ -291,6 +232,88 @@
   <!-- ================= MAIN SECTION ================= -->
   <div class="main-section">
     <div class="page-content">
+
+      <!-- ===== DASHBOARD CHART SECTION (Admin only) ===== -->
+      <div class="dash-chart-section" [class.hidden]="!isDashboardRoot() || !isAdmin()">
+
+        <!-- ── Banner ── -->
+        <div class="dash-banner">
+          <div class="banner-left">
+            <div class="banner-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+              </svg>
+            </div>
+            <div>
+              <h2 class="banner-title">Emission &amp; Consumption Overview</h2>
+              <p class="banner-sub">Viewing data for <strong>{{ selectedYear() }}</strong></p>
+            </div>
+          </div>
+
+          <!-- ── Year Picker ── -->
+          <div class="year-picker-wrap">
+            <button class="year-picker-btn" (click)="toggleYearPicker($event)">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+              </svg>
+              <span>{{ selectedYear() }}</span>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" [class.rotate]="showYearPicker()">
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
+            </button>
+
+            <!-- Year grid dropdown -->
+            @if (showYearPicker()) {
+            <div class="year-dropdown" (click)="$event.stopPropagation()">
+              <div class="year-dropdown-header">
+                <button class="yd-nav" (click)="shiftDecade(-1)">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+                </button>
+                <span class="yd-range">{{ decadeStart() }} — {{ decadeStart() + 11 }}</span>
+                <button class="yd-nav" (click)="shiftDecade(1)" [disabled]="decadeStart() + 12 > currentYear()">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+                </button>
+              </div>
+              <div class="year-grid">
+                @for (y of decadeYears(); track y) {
+                  <button
+                    class="year-cell"
+                    [class.active]="y === selectedYear()"
+                    [class.future]="y > currentYear()"
+                    [disabled]="y > currentYear()"
+                    (click)="selectYear(y)">
+                    {{ y }}
+                  </button>
+                }
+              </div>
+            </div>
+            }
+          </div>
+        </div>
+
+        <!-- ── Module Tab Bar ── -->
+        <div class="module-tab-bar">
+          <button class="module-tab" [class.active]="activeTab() === 'vehicle'" (click)="setTab('vehicle')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13" rx="2"/><path d="M16 8h4l3 5v3h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+            <span>Fleet &amp; Transport</span>
+          </button>
+          <button class="module-tab" [class.active]="activeTab() === 'generator'" (click)="setTab('generator')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            <span>Power Generation</span>
+          </button>
+        </div>
+
+        <!-- ── Chart Components ── -->
+        <div [class.hidden]="activeTab() !== 'vehicle'">
+          <app-vehicle-charts [year]="selectedYear()"></app-vehicle-charts>
+        </div>
+        <div [class.hidden]="activeTab() !== 'generator'">
+          <app-generator-charts [year]="selectedYear()"></app-generator-charts>
+        </div>
+
+      </div>
+      <!-- /dash-chart-section -->
+
       <router-outlet></router-outlet>
     </div>
   </div>

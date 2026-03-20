@@ -1,218 +1,223 @@
-import { Component, HostListener } from '@angular/core';
-import { Router, NavigationEnd, ActivatedRoute,RouterOutlet } from '@angular/router';
+import {
+  Component, ElementRef, HostListener, ViewChild,
+  signal, computed, OnInit, AfterViewInit, OnDestroy
+} from '@angular/core';
+import { Router, NavigationEnd, ActivatedRoute, RouterOutlet } from '@angular/router';
 import { AuthService } from '../../core/guards/auth-service';
 import { filter } from 'rxjs/operators';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LoaderService } from '../../core/loader/loader-service';
+import { Subject } from 'rxjs';
+import { VehicleCharts }   from '../vehicle-charts/vehicle-charts';
+import { GeneratorCharts } from '../generator-charts/generator-charts';
 
 @Component({
   selector: 'app-dashboard',
   templateUrl: './dashboard.html',
-   imports: [
-    CommonModule,
-    FormsModule,  
-    RouterOutlet 
-  ],
+  standalone: true,
+  imports: [CommonModule, FormsModule, RouterOutlet, VehicleCharts, GeneratorCharts],
   styleUrls: ['./dashboard.css']
 })
-export class DashboardComponent {
+export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
+  // ── Non-signal properties ─────────────────────────────────
   loggedInUser: string = '';
-  roles: string[] = [];
+  roles: string[]      = [];
   selectedRole: string = '';
-  showProfileCard: boolean = false;
   sidebarOpen: boolean = true;
-  pageTitle: string = '';
-  openedConfigMenu: string | null = null;  // Configuration -> admin/vehicle/generator/waste
-  openedSubMenu: string | null = null;     // For submenus inside configuration
-  openedMainMenu: string | null = null;    // Fleet / Waste / Power
+  pageTitle: string    = '';
+  openedConfigMenu: string | null = null;
+  openedSubMenu:    string | null = null;
+  openedMainMenu:   string | null = null;
+
+  @ViewChild(VehicleCharts)   vehicleChartsRef!: VehicleCharts;
+  @ViewChild(GeneratorCharts) generatorChartsRef!: GeneratorCharts;
+
+  // ── All UI state as signals ───────────────────────────────
+  showProfileCard = signal(false);
+  selectedYear    = signal<number>(new Date().getFullYear());
+  activeTab       = signal<'vehicle' | 'generator'>('vehicle');
+  showYearPicker  = signal(false);
+  decadeStart     = signal<number>(
+    Math.floor(new Date().getFullYear() / 12) * 12
+  );
+
+  // ── Computed ──────────────────────────────────────────────
+  currentYear = computed(() => new Date().getFullYear());
+
+  decadeYears = computed<number[]>(() => {
+    const start = this.decadeStart();
+    return Array.from({ length: 12 }, (_, i) => start + i);
+  });
+
+  private destroy$ = new Subject<void>();
 
   constructor(
     private authService: AuthService,
-    private router: Router,
+    public router: Router,
     private route: ActivatedRoute,
-      private loader: LoaderService   // ✅ ADD THIS
-
+    private loader: LoaderService
   ) {}
 
-ngOnInit() {
-  const user = this.authService.getLoggedInUser();
-  if (!user) {
-    this.router.navigate(['/login']);
-    return;
+  ngOnInit(): void {
+    const user = this.authService.getLoggedInUser();
+    if (!user) { this.router.navigate(['/login']); return; }
+
+    this.loggedInUser = user.name;
+    this.roles        = user.roles ?? [];
+    this.selectedRole = user.currentRole ?? '';
+
+    this.setPageTitle(this.router.url);
+    this.router.events
+      .pipe(filter(e => e instanceof NavigationEnd))
+      .subscribe(() => this.setPageTitle(this.router.url));
+
+    const saved = localStorage.getItem('sidebarState');
+    if (saved) {
+      const s = JSON.parse(saved);
+      this.openedConfigMenu = s.config;
+      this.openedSubMenu    = s.sub;
+      this.openedMainMenu   = s.main;
+    }
   }
 
-  this.loggedInUser = user.name;
-  this.roles = user.roles ?? [];
-  this.selectedRole = user.currentRole ?? '';
+  ngAfterViewInit(): void {}
 
-  // ✅ FIX: set title on page reload
-  this.setPageTitle(this.router.url);
-
-  // Existing logic
-  this.router.events
-    .pipe(filter(event => event instanceof NavigationEnd))
-    .subscribe(() => {
-      this.setPageTitle(this.router.url);
-    });
-
-    const savedState = localStorage.getItem('sidebarState');
-if (savedState) {
-  const state = JSON.parse(savedState);
-  this.openedConfigMenu = state.config;
-  this.openedSubMenu = state.sub;
-  this.openedMainMenu = state.main;
-}
-}
-
-  setPageTitle(url: string) {
-  if (url.includes('user')) this.pageTitle = 'User Administration';
-  else if (url.includes('department')) this.pageTitle = 'Organizational Units';
-  else if (url.includes('vehiclereport')) this.pageTitle = 'Fleet Report';
-  else if (url.includes('waste')) this.pageTitle = 'Waste Management';
-  else if (url.includes('vehiclemaster')) this.pageTitle = 'Vehicles';
-  else if (url.includes('fueltype')) this.pageTitle = 'Fuel Management';
-  else if (url.includes('vehicle')) this.pageTitle = 'Report Fleet & Transport';
-  else if (url.includes('emissionFactors')) this.pageTitle = ' Emission Factors ';
-  else if (url.includes('generator-ec')) this.pageTitle = ' Report Power Generation ';
-  else if (url.includes('citymaster')) this.pageTitle = ' Cities ';
-  else if (url.includes('sitelocation')) this.pageTitle = ' Site Location ';
-  else if (url.includes('generator')) this.pageTitle = ' Generators ';
-  else if (url.includes('searchGenerator')) this.pageTitle = ' Search Power Generator';
-  else if (url.includes('MyActionGenerator')) this.pageTitle = ' Actions Power Generator';
-  else if (url.includes('MyActionVehicle')) this.pageTitle = 'Actions Fleet & Transport';
-  else if (url.includes('searchVehicle')) this.pageTitle = 'Search Fleet & Transport';
-  else if (url.includes('Vehicletype')) this.pageTitle = 'Vehicle Type';
-
-  //vehicletypeservice
-  else this.pageTitle = 'Dashboard';
-}
-
-  goTo(path: string) {
-    this.router.navigate([path], { relativeTo: this.route });
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
-  isActive(path: string): boolean {
-    return this.router.url.includes(path);
-  }
-
-  /* Dropdown */
-  toggleProfile(event: Event) {
+  // ── Year picker ───────────────────────────────────────────
+  toggleYearPicker(event: Event): void {
     event.stopPropagation();
-    this.showProfileCard = !this.showProfileCard;
+    this.showYearPicker.update(v => !v);
+  }
+
+  selectYear(y: number): void {
+    if (y > this.currentYear()) return;
+    this.selectedYear.set(y);
+    this.showYearPicker.set(false);
+  }
+
+  shiftDecade(dir: 1 | -1): void {
+    this.decadeStart.update(s => s + dir * 12);
+  }
+
+  // ── Tab switch ────────────────────────────────────────────
+  setTab(tab: 'vehicle' | 'generator'): void {
+    this.activeTab.set(tab);
+    setTimeout(() => {
+      if (tab === 'vehicle') this.vehicleChartsRef?.refreshCharts();
+      else                   this.generatorChartsRef?.refreshCharts();
+    }, 0);
+  }
+
+  // ── Profile dropdown ──────────────────────────────────────
+  toggleProfile(event: Event): void {
+    event.stopPropagation();
+    this.showProfileCard.update(v => !v);
   }
 
   @HostListener('document:click')
-  closeDropdown() {
-    this.showProfileCard = false;
+  onDocClick(): void {
+    this.showProfileCard.set(false);
+    this.showYearPicker.set(false);
   }
 
-  /* Sidebar */
-  toggleSidebar() {
-    this.sidebarOpen = !this.sidebarOpen;
+  // ── Helpers ───────────────────────────────────────────────
+  isDashboardRoot(): boolean {
+    return this.router.url === '/dashboard' || this.router.url === '/dashboard/';
   }
 
-  logout() {
+  setPageTitle(url: string): void {
+    if      (url.includes('user'))              this.pageTitle = 'User Administration';
+    else if (url.includes('department'))        this.pageTitle = 'Organizational Units';
+    else if (url.includes('vehiclereport'))     this.pageTitle = 'Fleet Report';
+    else if (url.includes('vehiclemaster'))     this.pageTitle = 'Vehicles';
+    else if (url.includes('fueltype'))          this.pageTitle = 'Fuel Management';
+    else if (url.includes('vehicle'))           this.pageTitle = 'Report Fleet & Transport';
+    else if (url.includes('emissionFactors'))   this.pageTitle = 'Emission Factors';
+    else if (url.includes('generator-ec'))      this.pageTitle = 'Report Power Generation';
+    else if (url.includes('citymaster'))        this.pageTitle = 'Cities';
+    else if (url.includes('sitelocation'))      this.pageTitle = 'Site Location';
+    else if (url.includes('generator'))         this.pageTitle = 'Generators';
+    else if (url.includes('searchGenerator'))   this.pageTitle = 'Search Power Generator';
+    else if (url.includes('MyActionGenerator')) this.pageTitle = 'Actions Power Generator';
+    else if (url.includes('MyActionVehicle'))   this.pageTitle = 'Actions Fleet & Transport';
+    else if (url.includes('searchVehicle'))     this.pageTitle = 'Search Fleet & Transport';
+    else if (url.includes('Vehicletype'))       this.pageTitle = 'Vehicle Type';
+    else                                        this.pageTitle = 'Dashboard';
+  }
+
+  goTo(path: string): void { this.router.navigate([path], { relativeTo: this.route }); }
+  isActive(path: string): boolean { return this.router.url.includes(path); }
+
+  toggleSidebar(): void { this.sidebarOpen = !this.sidebarOpen; }
+
+  logout(): void {
     this.authService.logout();
     this.router.navigate(['/login']);
   }
 
-goToDashboard() {
-  // ✅ Reset sidebar state
-  this.openedConfigMenu = null;
-  this.openedSubMenu = null;
-  this.openedMainMenu = null;
-
-  localStorage.removeItem('sidebarState'); // optional clean reset
-
-  this.router.navigate(['/dashboard']);
-}
-  /* Role Switch */
-onRoleChange() {
-  this.loader.show();
-
-  this.authService.switchRole(this.selectedRole).subscribe({
-    next: (res: any) => {
-      const updatedUser = {
-        name: res.userName,
-        roles: res.roles,
-        currentRole: res.currentRole,
-        token: res.token
-      };
-
-      localStorage.setItem('user', JSON.stringify(updatedUser));
-      localStorage.setItem('token', res.token);
-
-      // ✅ CLOSE PROFILE DROPDOWN
-      this.showProfileCard = false;
-
-      // ✅ RESET SIDEBAR STATE (IMPORTANT)
-      this.openedConfigMenu = null;
-      this.openedSubMenu = null;
-      this.openedMainMenu = null;
-
-      // ✅ CLEAR SAVED SIDEBAR STATE
-      localStorage.removeItem('sidebarState');
-this.loader.hide(); 
-      // ✅ NAVIGATE TO DASHBOARD
-      this.router.navigate(['/dashboard']);
-    }
-  });
-}
-
-toggleConfigMenu(menu: string) {
-  this.openedConfigMenu = this.openedConfigMenu === menu ? null : menu;
-  this.openedMainMenu = null;
-  this.openedSubMenu = null;
-
-  this.saveSidebarState(); // ✅ save
-}
-
-toggleSubMenu(submenu: string) {
-  this.openedSubMenu = this.openedSubMenu === submenu ? null : submenu;
-
-  this.saveSidebarState(); // ✅ save
-}
-
-toggleMainMenu(menu: string) {
-  this.openedMainMenu = this.openedMainMenu === menu ? null : menu;
-  this.openedConfigMenu = null;
-  this.openedSubMenu = null;
-
-  this.saveSidebarState(); // ✅ save
-}
-
-saveSidebarState() {
-  const state = {
-    config: this.openedConfigMenu,
-    sub: this.openedSubMenu,
-    main: this.openedMainMenu
-  };
-  localStorage.setItem('sidebarState', JSON.stringify(state));
-}
-  isConfigMenuOpen(menu: string): boolean {
-    return this.openedConfigMenu === menu;
+  goToDashboard(): void {
+    this.openedConfigMenu = null;
+    this.openedSubMenu    = null;
+    this.openedMainMenu   = null;
+    localStorage.removeItem('sidebarState');
+    this.router.navigate(['/dashboard']);
   }
 
-  isSubMenuOpen(submenu: string): boolean {
-    return this.openedSubMenu === submenu;
+  onRoleChange(): void {
+    this.loader.show();
+    this.authService.switchRole(this.selectedRole).subscribe({
+      next: (res: any) => {
+        const updatedUser = { name: res.userName, roles: res.roles, currentRole: res.currentRole, token: res.token };
+        localStorage.setItem('user',  JSON.stringify(updatedUser));
+        localStorage.setItem('token', res.token);
+        this.showProfileCard.set(false);
+        this.openedConfigMenu = null;
+        this.openedSubMenu    = null;
+        this.openedMainMenu   = null;
+        localStorage.removeItem('sidebarState');
+        this.loader.hide();
+        this.router.navigate(['/dashboard']);
+      }
+    });
   }
 
-  isMainMenuOpen(menu: string): boolean {
-    return this.openedMainMenu === menu;
+  toggleConfigMenu(menu: string): void {
+    this.openedConfigMenu = this.openedConfigMenu === menu ? null : menu;
+    this.openedMainMenu   = null;
+    this.openedSubMenu    = null;
+    this.saveSidebarState();
   }
 
-  isAdmin(): boolean {
-    return this.selectedRole === 'Admin';
+  toggleSubMenu(submenu: string): void {
+    this.openedSubMenu = this.openedSubMenu === submenu ? null : submenu;
+    this.saveSidebarState();
   }
 
-  isCorporate(): boolean {
-    return this.selectedRole === 'Corporate';
+  toggleMainMenu(menu: string): void {
+    this.openedMainMenu   = this.openedMainMenu === menu ? null : menu;
+    this.openedConfigMenu = null;
+    this.openedSubMenu    = null;
+    this.saveSidebarState();
   }
 
-  isReporter(): boolean {
-    return this.selectedRole === 'Reporter';
+  saveSidebarState(): void {
+    localStorage.setItem('sidebarState', JSON.stringify({
+      config: this.openedConfigMenu,
+      sub:    this.openedSubMenu,
+      main:   this.openedMainMenu
+    }));
   }
 
+  isConfigMenuOpen(menu: string): boolean  { return this.openedConfigMenu === menu; }
+  isSubMenuOpen(submenu: string): boolean  { return this.openedSubMenu    === submenu; }
+  isMainMenuOpen(menu: string): boolean    { return this.openedMainMenu   === menu; }
+  isAdmin(): boolean     { return this.selectedRole === 'Admin'; }
+  isCorporate(): boolean { return this.selectedRole === 'Corporate'; }
+  isReporter(): boolean  { return this.selectedRole === 'Reporter'; }
 }

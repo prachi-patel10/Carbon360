@@ -25,6 +25,9 @@ import { SearchVehicle } from './private/fleet-transport/search-vehicle/search-v
 import { ChartsComponent } from './public/charts-component/charts-component';
 import { ExportExcel } from './private/export-excel/export-excel';
 import { VehiclePdf } from './private/fleet-transport/vehicle-pdf/vehicle-pdf';
+import { VehicleCharts } from './private/vehicle-charts/vehicle-charts';
+import { GeneratorCharts } from './private/generator-charts/generator-charts';
+
 export const routes: Routes = [
 
     // Default Redirect
@@ -69,6 +72,10 @@ export const routes: Routes = [
             { path: 'MyActionGenerator', component: MyactionGenerator },
             { path: 'generator-ec/:id', component: GeneratorOperationComponent },
             { path: 'chart', component: ChartsComponent },
+            { path: 'Vehiclechart', component: VehicleCharts },
+            { path: 'Generatorchart', component: GeneratorCharts },
+
+
             // { path: 'generator-review/:id', component: GeneratorReviewComponent },
             { path: 'vehicle-ec/:id', component: TripComponent },
             {

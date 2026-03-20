@@ -1,0 +1,147 @@
+<!-- ═══ KPI STRIP ═══ -->
+<div class="module-kpi-grid">
+  <div class="mkpi-card mkpi-blue">
+    <div class="mkpi-icon"><i class="fas fa-fire"></i></div>
+    <div class="mkpi-body">
+      <div class="mkpi-label">Total Fuel</div>
+      <div class="mkpi-value">{{ formatNum(vehicleTotal()) }} <span>L</span></div>
+    </div>
+  </div>
+  <div class="mkpi-card mkpi-green">
+    <div class="mkpi-icon"><i class="fas fa-gas-pump"></i></div>
+    <div class="mkpi-body">
+      <div class="mkpi-label">Top Fuel</div>
+      <div class="mkpi-value small">{{ topFuelType() }}</div>
+      <div class="mkpi-sub">{{ formatNum(topFuelAmount()) }} L</div>
+    </div>
+  </div>
+  <div class="mkpi-card mkpi-teal">
+    <div class="mkpi-icon"><i class="fas fa-leaf"></i></div>
+    <div class="mkpi-body">
+      <div class="mkpi-label">Total CO2e</div>
+      <div class="mkpi-value">{{ formatNum(totalCO2e()) }} <span>kg</span></div>
+    </div>
+  </div>
+  <div class="mkpi-card mkpi-indigo">
+    <div class="mkpi-icon"><i class="fas fa-road"></i></div>
+    <div class="mkpi-body">
+      <div class="mkpi-label">Total Distance</div>
+      <div class="mkpi-value">{{ formatNum(totalDistanceKM()) }} <span>km</span></div>
+    </div>
+  </div>
+  <div class="mkpi-card mkpi-violet">
+    <div class="mkpi-icon"><i class="fas fa-truck-moving"></i></div>
+    <div class="mkpi-body">
+      <div class="mkpi-label">Total Trips</div>
+      <div class="mkpi-value">{{ formatNum(totalTrips()) }}</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ ROW 1: Fuel (left) + Emission (right) ═══ -->
+<div class="charts-row">
+
+  <!-- 1. Fuel Type Wise Stacked Bar -->
+  <div class="chart-card">
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="chart-icon-wrap vehicle-bg"><i class="fas fa-chart-bar"></i></div>
+        <div>
+          <h3>Fuel Type Wise Monthly Consumption</h3>
+          <p>Stacked by fuel type</p>
+        </div>
+      </div>
+    </div>
+    <div class="chart-loader" [class.hidden]="!isFuelLoading()">
+      <div class="dot-loader vehicle-dots"><span></span><span></span><span></span></div>
+      <p>Loading...</p>
+    </div>
+    <div class="chart-error" [class.hidden]="!(fuelError() && !isFuelLoading())">
+      <i class="fas fa-exclamation-triangle"></i>
+      <span>{{ fuelError() }}</span>
+      <button (click)="loadFuelChart()">Retry</button>
+    </div>
+    <div class="canvas-wrap" [class.hidden]="!showFuelCanvas()">
+      <canvas #vehicleFuelCanvas></canvas>
+    </div>
+    <div class="fuel-legend" [class.hidden]="!showFuelCanvas()">
+      @for (item of fuelLegend(); track item.fuelType) {
+        <div class="legend-item">
+          <span class="legend-swatch" [style.background]="item.color"></span>
+          <span class="legend-label">{{ item.fuelType }}</span>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- 2. Monthly Emission Line -->
+  <div class="chart-card">
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="chart-icon-wrap emission-bg"><i class="fas fa-chart-line"></i></div>
+        <div>
+          <h3>Monthly Emission Trend</h3>
+          <p>CO2e, CO2, NO2 &amp; CH4 (kg)</p>
+        </div>
+      </div>
+    </div>
+    <div class="chart-loader" [class.hidden]="!isEmissionLoading()">
+      <div class="dot-loader vehicle-dots"><span></span><span></span><span></span></div>
+      <p>Loading...</p>
+    </div>
+    <div class="chart-error" [class.hidden]="!(emissionError() && !isEmissionLoading())">
+      <i class="fas fa-exclamation-triangle"></i>
+      <span>{{ emissionError() }}</span>
+      <button (click)="loadEmissionChart()">Retry</button>
+    </div>
+    <div class="canvas-wrap" [class.hidden]="!showEmissionCanvas()">
+      <canvas #vehicleEmissionCanvas></canvas>
+    </div>
+    <div class="fuel-legend" [class.hidden]="!showEmissionCanvas()">
+      @for (item of emissionLegend(); track item.label) {
+        <div class="legend-item">
+          <span class="legend-line-swatch" [style.background]="item.color"></span>
+          <span class="legend-label">{{ item.label }}</span>
+        </div>
+      }
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══ ROW 2: Distance full width ═══ -->
+<div class="charts-row-full">
+  <div class="chart-card">
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="chart-icon-wrap distance-bg"><i class="fas fa-route"></i></div>
+        <div>
+          <h3>Total Distance — Month Wise</h3>
+          <p>Distance (km) &amp; trip count per month</p>
+        </div>
+      </div>
+    </div>
+    <div class="chart-loader" [class.hidden]="!isDistanceLoading()">
+      <div class="dot-loader vehicle-dots"><span></span><span></span><span></span></div>
+      <p>Loading...</p>
+    </div>
+    <div class="chart-error" [class.hidden]="!(distanceError() && !isDistanceLoading())">
+      <i class="fas fa-exclamation-triangle"></i>
+      <span>{{ distanceError() }}</span>
+      <button (click)="loadDistanceChart()">Retry</button>
+    </div>
+    <div class="canvas-wrap" [class.hidden]="!showDistanceCanvas()">
+      <canvas #vehicleDistanceCanvas></canvas>
+    </div>
+    <div class="fuel-legend" [class.hidden]="!showDistanceCanvas()">
+      <div class="legend-item">
+        <span class="legend-swatch" style="background:#378ADD"></span>
+        <span class="legend-label">Distance (km)</span>
+      </div>
+      <div class="legend-item">
+        <span class="legend-line-swatch" style="background:#1D9E75"></span>
+        <span class="legend-label">Trip Count</span>
+      </div>
+    </div>
+  </div>
+</div>

@@ -73,23 +73,26 @@ export class SearchGeneratorService {
   }
 
   // ================= SEARCH API =================
-  searchEmissions(filters: {
-    startDate?: string;
-    endDate?: string;
-    startTime?: string;
-    endTime?: string;
-    fuelType?: string;
-    searchTerm?: string;
-  }): Observable<GeneratorOperation[]> {
-    let params = new HttpParams();
-    if (filters.startDate) params = params.set('startDate', filters.startDate);
-    if (filters.endDate) params = params.set('endDate', filters.endDate);
-    if (filters.startTime) params = params.set('startTime', filters.startTime);
-    if (filters.endTime) params = params.set('endTime', filters.endTime);
-    if (filters.fuelType) params = params.set('fuelType', filters.fuelType);
-    if (filters.searchTerm) params = params.set('searchTerm', filters.searchTerm);
+  searchEmissions(
+    pageNumber: number = 1,
+    pageSize: number = 10,
+    search?: string,
+    fuelTypes?: string,
+    startDate?: string,
+    endDate?: string,
+    entryStartDate?: string,
+    entryEndDate?: string
+  ): Observable<any> {
+    let params = `pageNumber=${pageNumber}&pageSize=${pageSize}`;
 
-    return this.http.get<GeneratorOperation[]>(`${this.apiUrl}/search`, { params });
+    if (search)         params += `&search=${encodeURIComponent(search)}`;
+    if (fuelTypes)      params += `&fuelTypes=${encodeURIComponent(fuelTypes)}`;
+    if (startDate)      params += `&startDate=${startDate}`;
+    if (endDate)        params += `&endDate=${endDate}`;
+    if (entryStartDate) params += `&entryStartDate=${entryStartDate}`;
+    if (entryEndDate)   params += `&entryEndDate=${entryEndDate}`;
+
+    return this.http.get<any>(`${this.apiUrl}/search?${params}`);
   }
 
 }

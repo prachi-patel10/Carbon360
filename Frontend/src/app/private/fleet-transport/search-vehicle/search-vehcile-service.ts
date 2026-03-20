@@ -18,15 +18,27 @@ export class SearchVehcileService {
 searchTrips(
   pageNumber: number = 1,
   pageSize: number = 10,
-  sortColumn: string = 'tripstartdatetime',
-  sortDirection: string = 'DESC'
+  sortColumn: string = 'entryDate',
+  sortDirection: string = 'DESC',
+  search?: string,
+  fuelType?: string,
+  startDate?: string,
+  endDate?: string,
+  entryStartDate?: string,
+  entryEndDate?: string
 ): Observable<any> {
 
-  return this.http.get<any>(
-    `${this.apiUrl}/search?pageNumber=${pageNumber}&pageSize=${pageSize}&sortColumn=${sortColumn}&sortDirection=${sortDirection}`
-  );
-}
+  let params = `pageNumber=${pageNumber}&pageSize=${pageSize}&sortColumn=${sortColumn}&sortDirection=${sortDirection}`;
 
+  if (search)         params += `&search=${encodeURIComponent(search)}`;
+  if (fuelType)       params += `&fuelType=${encodeURIComponent(fuelType)}`;
+  if (startDate)      params += `&startDate=${startDate}`;
+  if (endDate)        params += `&endDate=${endDate}`;
+  if (entryStartDate) params += `&entryStartDate=${entryStartDate}`;
+  if (entryEndDate)   params += `&entryEndDate=${entryEndDate}`;
+
+  return this.http.get<any>(`${this.apiUrl}/search?${params}`);
+}
   /*GET SINGLE TRIP BY ID*/
   getTripById(id: string): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/${id}`);

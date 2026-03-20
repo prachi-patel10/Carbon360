@@ -1,0 +1,194 @@
+<!-- ═══ KPI STRIP ═══ -->
+<div class="module-kpi-grid">
+  <div class="mkpi-card mkpi-orange">
+    <div class="mkpi-icon"><i class="fas fa-fire"></i></div>
+    <div class="mkpi-body">
+      <div class="mkpi-label">Total Fuel</div>
+      <div class="mkpi-value">{{ formatNum(generatorTotal()) }} <span>L</span></div>
+    </div>
+  </div>
+  <div class="mkpi-card mkpi-amber">
+    <div class="mkpi-icon"><i class="fas fa-gas-pump"></i></div>
+    <div class="mkpi-body">
+      <div class="mkpi-label">Top Fuel</div>
+      <div class="mkpi-value small">{{ topFuelType() }}</div>
+      <div class="mkpi-sub">{{ formatNum(topFuelAmount()) }} L</div>
+    </div>
+  </div>
+  <div class="mkpi-card mkpi-red">
+    <div class="mkpi-icon"><i class="fas fa-smog"></i></div>
+    <div class="mkpi-body">
+      <div class="mkpi-label">Total CO2e</div>
+      <div class="mkpi-value">{{ formatNum(totalCO2e()) }} <span>kg</span></div>
+    </div>
+  </div>
+  <div class="mkpi-card mkpi-teal">
+    <div class="mkpi-icon"><i class="fas fa-clock"></i></div>
+    <div class="mkpi-body">
+      <div class="mkpi-label">Run Hours</div>
+      <div class="mkpi-value">{{ formatNum(totalRunHours()) }} <span>hrs</span></div>
+    </div>
+  </div>
+  <div class="mkpi-card mkpi-purple">
+    <div class="mkpi-icon"><i class="fas fa-bolt"></i></div>
+    <div class="mkpi-body">
+      <div class="mkpi-label">Power Output</div>
+      <div class="mkpi-value">{{ formatNum(totalPowerOutput()) }} <span>kWh</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ ROW 1: Fuel (left) + Emission (right) ═══ -->
+<div class="charts-row">
+
+  <!-- 1. Fuel Type Wise Stacked Bar -->
+  <div class="chart-card">
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="chart-icon-wrap generator-bg"><i class="fas fa-chart-bar"></i></div>
+        <div>
+          <h3>Fuel Type Wise Monthly Consumption</h3>
+          <p>Stacked by fuel type</p>
+        </div>
+      </div>
+    </div>
+    <div class="chart-loader" [class.hidden]="!isFuelLoading()">
+      <div class="dot-loader generator-dots"><span></span><span></span><span></span></div>
+      <p>Loading...</p>
+    </div>
+    <div class="chart-error" [class.hidden]="!(fuelError() && !isFuelLoading())">
+      <i class="fas fa-exclamation-triangle"></i>
+      <span>{{ fuelError() }}</span>
+      <button (click)="loadFuelChart()">Retry</button>
+    </div>
+    <div class="canvas-wrap" [class.hidden]="!showFuelCanvas()">
+      <canvas #generatorFuelCanvas></canvas>
+    </div>
+    <div class="fuel-legend" [class.hidden]="!showFuelCanvas()">
+      @for (item of fuelLegend(); track item.fuelType) {
+        <div class="legend-item">
+          <span class="legend-swatch" [style.background]="item.color"></span>
+          <span class="legend-label">{{ item.fuelType }}</span>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- 2. Monthly Emission Line -->
+  <div class="chart-card">
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="chart-icon-wrap emission-gen-bg"><i class="fas fa-chart-line"></i></div>
+        <div>
+          <h3>Monthly Emission Trend</h3>
+          <p>CO2e, CO2, NO2 &amp; CH4 (kg)</p>
+        </div>
+      </div>
+    </div>
+    <div class="chart-loader" [class.hidden]="!isEmissionLoading()">
+      <div class="dot-loader generator-dots"><span></span><span></span><span></span></div>
+      <p>Loading...</p>
+    </div>
+    <div class="chart-error" [class.hidden]="!(emissionError() && !isEmissionLoading())">
+      <i class="fas fa-exclamation-triangle"></i>
+      <span>{{ emissionError() }}</span>
+      <button (click)="loadEmissionChart()">Retry</button>
+    </div>
+    <div class="canvas-wrap" [class.hidden]="!showEmissionCanvas()">
+      <canvas #generatorEmissionCanvas></canvas>
+    </div>
+    <div class="fuel-legend" [class.hidden]="!showEmissionCanvas()">
+      @for (item of emissionLegend(); track item.label) {
+        <div class="legend-item">
+          <span class="legend-line-swatch" [style.background]="item.color"></span>
+          <span class="legend-label">{{ item.label }}</span>
+        </div>
+      }
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══ ROW 2: Run Hours Pie (left) + Load Factor Line (right) ═══ -->
+<div class="charts-row">
+
+  <!-- 3. Run Hours Doughnut -->
+  <div class="chart-card">
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="chart-icon-wrap runhours-bg"><i class="fas fa-chart-pie"></i></div>
+        <div>
+          <h3>Generator Run Hours Distribution</h3>
+          <p>Total run hours per generator</p>
+        </div>
+      </div>
+    </div>
+    <div class="chart-loader" [class.hidden]="!isRunHoursLoading()">
+      <div class="dot-loader generator-dots"><span></span><span></span><span></span></div>
+      <p>Loading...</p>
+    </div>
+    <div class="chart-error" [class.hidden]="!(runHoursError() && !isRunHoursLoading())">
+      <i class="fas fa-exclamation-triangle"></i>
+      <span>{{ runHoursError() }}</span>
+      <button (click)="loadRunHoursChart()">Retry</button>
+    </div>
+    <div [class.hidden]="!showRunHoursCanvas()">
+      <div class="pie-canvas-wrap">
+        <canvas #generatorRunHoursCanvas></canvas>
+        <div class="pie-centre">
+          <span class="pie-centre-value">{{ formatNum(totalRunHours()) }}</span>
+          <span class="pie-centre-label">Total hrs</span>
+        </div>
+      </div>
+      <div class="pie-pill-legend">
+        @for (item of runHoursLegend(); track item.name) {
+          <div class="pie-pill">
+            <span class="pie-dot" [style.background]="item.color"></span>
+            <span>{{ item.name }} — {{ formatNum(item.hours) }} hrs ({{ item.pct }}%)</span>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. Load Factor Trend Line -->
+  <div class="chart-card">
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="chart-icon-wrap loadfactor-bg"><i class="fas fa-tachometer-alt"></i></div>
+        <div>
+          <h3>Load Factor Trend</h3>
+          <p>Monthly avg load factor % per generator</p>
+        </div>
+      </div>
+      <!-- Zone legend chips -->
+      <div class="zone-chips">
+        <span class="zone-chip chip-optimal">Optimal 75–90%</span>
+        <span class="zone-chip chip-warning">Warning 30–74%</span>
+        <span class="zone-chip chip-critical">Critical &lt;30%</span>
+      </div>
+    </div>
+    <div class="chart-loader" [class.hidden]="!isLoadFactorLoading()">
+      <div class="dot-loader generator-dots"><span></span><span></span><span></span></div>
+      <p>Loading...</p>
+    </div>
+    <div class="chart-error" [class.hidden]="!(loadFactorError() && !isLoadFactorLoading())">
+      <i class="fas fa-exclamation-triangle"></i>
+      <span>{{ loadFactorError() }}</span>
+      <button (click)="loadLoadFactorChart()">Retry</button>
+    </div>
+    <div class="canvas-wrap" [class.hidden]="!showLoadFactorCanvas()">
+      <canvas #generatorLoadFactorCanvas></canvas>
+    </div>
+    <!-- Generator line legend -->
+    <div class="fuel-legend" [class.hidden]="!showLoadFactorCanvas()">
+      @for (item of loadFactorLegend(); track item.name) {
+        <div class="legend-item">
+          <span class="legend-line-swatch" [style.background]="item.color"></span>
+          <span class="legend-label">{{ item.name }}</span>
+        </div>
+      }
+    </div>
+  </div>
+
+</div>

@@ -24,7 +24,6 @@ export class SearchGenerator implements OnInit {
   @ViewChild('opDatePicker') opDatePicker!: DateRangePickerComponent;
   @ViewChild('entryDatePicker') entryDatePicker!: DateRangePickerComponent;
 
-  emissions = signal<GeneratorOperationDisplay[]>([]);
   filteredData = signal<GeneratorOperationDisplay[]>([]);
 
   fuelTypes: any[] = [];
@@ -33,21 +32,21 @@ export class SearchGenerator implements OnInit {
 
   searchText = signal<string>('');
 
-  selectedDateRange: { startDate: Date | null; endDate: Date | null } = {
-    startDate: null,
-    endDate: null
-  };
+  // Operation Date Range
+  operationStartDate = signal<string | null>(null);
+  operationEndDate = signal<string | null>(null);
 
-  selectedEntryDateRange: { startDate: Date | null; endDate: Date | null } = {
-    startDate: null,
-    endDate: null
-  };
+  // Entry Date Range
+  entryStartDate = signal<string | null>(null);
+  entryEndDate = signal<string | null>(null);
 
   currentPage = signal<number>(1);
-  pageSize = signal<number>(10);
+  pageSize = 10;
+  totalRecordsCount = signal<number>(0);
+  totalPagesCount = signal<number>(1);
 
-  sortColumn: string = '';
-  sortDirection: 'asc' | 'desc' = 'asc';
+  sortColumn: string = 'entryDate';
+  sortDirection: 'asc' | 'desc' = 'desc';
 
   constructor(
     private service: SearchGeneratorService,
@@ -61,28 +60,7 @@ export class SearchGenerator implements OnInit {
     this.loadFuelTypes();
   }
 
-  // ─── Data Loading ────────────────────────────────────────────
-
-  loadEmissions() {
-    this.service.getEmissions().subscribe({
-      next: (data: any[]) => {
-        const mapped: GeneratorOperationDisplay[] = data.map((e: any) => ({
-          ...e,
-          generatorName: e.generatorName ?? 'Unknown Generator',
-          fuelType: e.fuelType ?? 'Unknown',
-          status: e.statusName ?? (e.statusId === 1 ? 'Completed' : 'Pending'),
-          totalEmission: e.totalEmission ?? 0
-        }));
-
-        const sorted = mapped.sort((a, b) =>
-          new Date(b.entryDate).getTime() - new Date(a.entryDate).getTime()
-        );
-        this.emissions.set(sorted);
-        this.filteredData.set(sorted);
-      },
-      error: (err) => console.error('Error loading emissions', err)
-    });
-  }
+  // ─── Data Loading ─────────────────────────────────────────────
 
   loadFuelTypes() {
     this.fuelService.getAll().subscribe({
@@ -93,7 +71,43 @@ export class SearchGenerator implements OnInit {
     });
   }
 
-  // ─── Fuel Multi-Select ───────────────────────────────────────
+  loadEmissions() {
+    const fuelParam = this.selectedFuels.length > 0
+      ? this.selectedFuels.join(',')
+      : undefined;
+
+    this.service.searchEmissions(
+      this.currentPage(),
+      this.pageSize,
+      this.searchText() || undefined,
+      fuelParam,
+      this.operationStartDate() ? this.operationStartDate()!.substring(0, 10) : undefined,
+      this.operationEndDate() ? this.operationEndDate()!.substring(0, 10) : undefined,
+      this.entryStartDate() ? this.entryStartDate()!.substring(0, 10) : undefined,
+      this.entryEndDate() ? this.entryEndDate()!.substring(0, 10) : undefined
+    ).subscribe({
+      next: (res: any) => {
+        // ✅ Generator API: data.records  (NOT data directly)
+        const records = res.data?.records ?? [];
+        const total = res.data?.totalRecords ?? 0;
+
+        const mapped: GeneratorOperationDisplay[] = records.map((e: any) => ({
+          ...e,
+          generatorName: e.generatorName ?? 'Unknown Generator',
+          fuelType: e.fuelType ?? 'Unknown',
+          status: e.statusName ?? (e.statusId === 1 ? 'Completed' : 'Pending'),
+          totalEmission: e.totalEmission ?? 0
+        }));
+
+        this.filteredData.set(mapped);
+        this.totalRecordsCount.set(total);
+        this.totalPagesCount.set(Math.ceil(total / this.pageSize));
+      },
+      error: (err) => console.error('Error loading emissions', err)
+    });
+  }
+
+  // ─── Fuel Multi-Select ────────────────────────────────────────
 
   @HostListener('document:click', ['$event'])
   onDocumentClick(e: MouseEvent) {
@@ -129,114 +143,73 @@ export class SearchGenerator implements OnInit {
     this.applyFilters();
   }
 
-  // ─── Search ──────────────────────────────────────────────────
+  // ─── Search ───────────────────────────────────────────────────
 
   onSearch(event: any) {
     this.searchText.set(event.target.value);
     this.applyFilters();
   }
 
-  // ─── Date Range ──────────────────────────────────────────────
+  // ─── Date Range ───────────────────────────────────────────────
 
   onDateRangeSelected(range: { startDate: Date | null; endDate: Date | null }) {
-    this.selectedDateRange = range;
+    this.operationStartDate.set(range.startDate ? range.startDate.toISOString() : null);
+    this.operationEndDate.set(range.endDate ? range.endDate.toISOString() : null);
     this.applyFilters();
   }
 
   onEntryDateRangeSelected(range: { startDate: Date | null; endDate: Date | null }) {
-    this.selectedEntryDateRange = range;
+    this.entryStartDate.set(range.startDate ? range.startDate.toISOString() : null);
+    this.entryEndDate.set(range.endDate ? range.endDate.toISOString() : null);
     this.applyFilters();
   }
 
-  // ─── Reset ───────────────────────────────────────────────────
+  // ─── Reset ────────────────────────────────────────────────────
 
   resetFilters() {
     this.selectedFuels = [];
     this.fuelDropdownOpen = false;
     this.searchText.set('');
-    this.selectedDateRange = { startDate: null, endDate: null };
-    this.selectedEntryDateRange = { startDate: null, endDate: null };
+    this.operationStartDate.set(null);
+    this.operationEndDate.set(null);
+    this.entryStartDate.set(null);
+    this.entryEndDate.set(null);
     this.currentPage.set(1);
-    this.filteredData.set(this.emissions());
     this.opDatePicker?.reset();
     this.entryDatePicker?.reset();
+    this.loadEmissions();
   }
 
-  // ─── Filters ─────────────────────────────────────────────────
+  // ─── Apply Filters (triggers server reload) ───────────────────
 
   applyFilters() {
-    const sText = this.searchText().toLowerCase();
-    const opStartRange = this.selectedDateRange.startDate;
-    const opEndRange = this.selectedDateRange.endDate;
-    const entryStartRange = this.selectedEntryDateRange.startDate;
-    const entryEndRange = this.selectedEntryDateRange.endDate;
-
-    const filtered = this.emissions().filter(e => {
-      const matchesSearch =
-        (e.operationId || '').toString().toLowerCase().includes(sText) ||
-        (e.generatorName || '').toLowerCase().includes(sText) ||
-        (e.fuelType || '').toLowerCase().includes(sText);
-
-      const matchesFuel =
-        this.selectedFuels.length === 0 ||
-        this.selectedFuels.map(f => f.toLowerCase())
-          .includes((e.fuelType || '').toLowerCase());
-
-      let matchesOperationDate = true;
-      if (opStartRange && opEndRange) {
-        const opStart = new Date(e.startTime);
-        const opEnd = new Date(e.endTime);
-        matchesOperationDate = opEnd >= opStartRange && opStart <= opEndRange;
-      }
-
-      let matchesEntryDate = true;
-      if (entryStartRange && entryEndRange) {
-        const entryDate = new Date(e.entryDate);
-        entryDate.setHours(0, 0, 0, 0);
-        const start = new Date(entryStartRange);
-        start.setHours(0, 0, 0, 0);
-        const end = new Date(entryEndRange);
-        end.setHours(23, 59, 59, 999);
-        matchesEntryDate = entryDate >= start && entryDate <= end;
-      }
-
-      return matchesSearch && matchesFuel && matchesOperationDate && matchesEntryDate;
-    });
-
-    this.filteredData.set(filtered);
     this.currentPage.set(1);
+    this.loadEmissions();
   }
 
-  // ─── Pagination ──────────────────────────────────────────────
+  // ─── Pagination ───────────────────────────────────────────────
 
-  totalRecords() { return this.filteredData().length; }
-  totalPages() { return Math.ceil(this.totalRecords() / this.pageSize()); }
-
+  // ✅ Server already returns one page — no slicing needed
   paginatedData() {
-    const start = (this.currentPage() - 1) * this.pageSize();
-    return this.filteredData().slice(start, start + this.pageSize());
+    return this.filteredData();
   }
+
+  totalRecords() { return this.totalRecordsCount(); }
+  totalPages() { return this.totalPagesCount(); }
 
   goToPage(page: number) {
-    if (page >= 1 && page <= this.totalPages())
-      this.currentPage.set(page);
+    if (page < 1 || page > this.totalPages()) return;
+    this.currentPage.set(page);
+    this.loadEmissions(); // ✅ fetch new page from server
   }
 
   changePageSize(event: any) {
-    this.pageSize.set(+event.target.value);
+    this.pageSize = Number(event.target.value);
     this.currentPage.set(1);
+    this.loadEmissions(); // ✅ reload with new page size
   }
 
-  // ─── Navigation ──────────────────────────────────────────────
-
-  goToDetail(operationId: string) {
-    this.router.navigate(
-      ['/dashboard/generator-ec', operationId],
-      { queryParams: { mode: 'view', page: 'search' } }
-    );
-  }
-
-  // ─── Sort ────────────────────────────────────────────────────
+  // ─── Sort ─────────────────────────────────────────────────────
 
   sortBy(column: string) {
     if (this.sortColumn === column)
@@ -245,21 +218,21 @@ export class SearchGenerator implements OnInit {
       this.sortColumn = column;
       this.sortDirection = 'asc';
     }
-
-    const sorted = [...this.filteredData()].sort((a: any, b: any) => {
-      let valueA = a[column] ?? '';
-      let valueB = b[column] ?? '';
-      if (typeof valueA === 'string') valueA = valueA.toLowerCase();
-      if (typeof valueB === 'string') valueB = valueB.toLowerCase();
-      if (valueA < valueB) return this.sortDirection === 'asc' ? -1 : 1;
-      if (valueA > valueB) return this.sortDirection === 'asc' ? 1 : -1;
-      return 0;
-    });
-
-    this.filteredData.set(sorted);
+    this.currentPage.set(1);
+    this.loadEmissions();
   }
+
   getSortIcon(column: string): string {
-  if (this.sortColumn !== column) return '↕';
-  return this.sortDirection === 'asc' ? '↑' : '↓';
-}
+    if (this.sortColumn !== column) return '↕';
+    return this.sortDirection === 'asc' ? '↑' : '↓';
+  }
+
+  // ─── Navigation ───────────────────────────────────────────────
+
+  goToDetail(operationId: string) {
+    this.router.navigate(
+      ['/dashboard/generator-ec', operationId],
+      { queryParams: { mode: 'view', page: 'search' } }
+    );
+  }
 }
