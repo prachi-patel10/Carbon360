@@ -12,10 +12,13 @@ using ProjectApp.Repository.Interfaces.User;
 using ProjectApp.Repository.Services.Common;
 using ProjectApp.Repository.Utilities.Auth;
 using ProjectApp.Repository.Utilities.SP;
+using PuppeteerSharp;
+using PuppeteerSharp.Media;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
@@ -163,6 +166,7 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
             var userId = GetCurrentUserId();
             int generatorId = _idEncoder.Decode(dto.GeneratorId);
             int siteId = _idEncoder.Decode(dto.SiteId);
+            int roleId = _userContext.Role.Contains("Corporate") ? 3 : 5;
 
             var parameters = new[]
             {
@@ -172,12 +176,13 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
                 new SqlParameter("@EndTime", dto.EndTime),
                 new SqlParameter("@LoadFactor", dto.LoadFactor),
                 new SqlParameter("@FuelConsumedLiters", dto.FuelConsumedLiters),
-                new SqlParameter("@UserId", userId)
+                new SqlParameter("@UserId", userId),
+                new SqlParameter("@RoleId", roleId)
             };
 
             var result = await _context.CB_GeneratorOperations
                 .FromSqlRaw(
-                    "EXEC USP_CB_GeneratorOperationInsert @GeneratorId,@SiteId,@StartTime,@EndTime,@LoadFactor,@FuelConsumedLiters,@UserId",
+                    "EXEC USP_CB_GeneratorOperationInsert @GeneratorId,@SiteId,@StartTime,@EndTime,@LoadFactor,@FuelConsumedLiters,@UserId,@RoleId",
                     parameters)
                 .ToListAsync();
 
@@ -216,7 +221,7 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
             };
         }
 
-       
+
 
         // ================= DELETE =================
         public async Task<bool> DeleteAsync(string encryptedId)
@@ -249,6 +254,7 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
         {
             int operationId = _idEncoder.Decode(encryptedId);
             int userId = GetCurrentUserId();
+            int roleId = _userContext.Role.Contains("Corporate") ? 3 : 5;
 
             await using var connection = _context.Database.GetDbConnection();
             await using var command = connection.CreateCommand();
@@ -259,6 +265,7 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
             command.Parameters.Add(new SqlParameter("@OperationId", operationId));
             command.Parameters.Add(new SqlParameter("@WorkflowId", workflowId));
             command.Parameters.Add(new SqlParameter("@UserId", SqlDbType.Int) { Value = userId });
+            command.Parameters.Add(new SqlParameter("@RoleId", SqlDbType.Int) { Value = roleId });
 
 
             if (connection.State != ConnectionState.Open)
@@ -276,7 +283,7 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
      string generatorName,
      DateTime? startDate,
      DateTime? endDate,
-      DateTime? entryStartDate,   
+      DateTime? entryStartDate,
     DateTime? entryEndDate,
      int? statusId,
      int pageNumber,
@@ -377,10 +384,10 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
         public async Task<List<WorkflowActionDTO>> GetWorkflowActionsAsync(string encryptedId)
         {
             int operationId = _idEncoder.Decode(encryptedId);
-           
+
             // :one: Get current StatusId
             int statusId = await _context.CB_GeneratorOperations
-.Where(x => x.OperationId == operationId )
+.Where(x => x.OperationId == operationId)
 .Select(x => x.StatusId)
 .FirstOrDefaultAsync();
 
@@ -610,5 +617,270 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
                 TotalRecords = totalRecords
             };
         }
+
+        private void FormatOperationData(Dictionary<string, object> operation)
+        {
+            if (operation == null || operation.Count == 0) return;
+
+            operation["EntryByFullName"] = $"{operation.GetValueOrDefault("EntryByFullName")}".Trim();
+            operation["GeneratorName"] = operation.GetValueOrDefault("GeneratorName") ?? "-";
+            operation["SiteName"] = operation.GetValueOrDefault("SiteName") ?? "-";
+            operation["FuelTypeName"] = operation.GetValueOrDefault("FuelTypeName") ?? "-";
+            operation["Status"] = operation.GetValueOrDefault("Status") ?? "-";
+            operation["FuelConsumedLiters"] = operation.GetValueOrDefault("FuelConsumedLiters") ?? 0;
+            operation["total_co2e_kg"] = operation.GetValueOrDefault("total_co2e_kg") ?? 0;
+        }
+        private void EncodeIds(Dictionary<string, object> data)
+        {
+            if (data == null) return;
+
+            var keys = data.Keys.ToList();
+
+            foreach (var key in keys)
+            {
+                if (key.EndsWith("Id") && data[key] != null)
+                {
+                    if (int.TryParse(data[key].ToString(), out int id))
+                    {
+                        data[key] = _idEncoder.Encode(id);
+                    }
+                }
+            }
+        }
+
+        private async Task<Dictionary<string, object>> ReadSingleRowAsync(SqlDataReader reader)
+        {
+            var row = new Dictionary<string, object>();
+
+            if (await reader.ReadAsync())
+            {
+                for (int i = 0; i < reader.FieldCount; i++)
+                {
+                    var value = reader.GetValue(i);
+                    row[reader.GetName(i)] = value == DBNull.Value ? null : value;
+                }
+
+                EncodeIds(row);
+            }
+
+            return row;
+        }
+
+        private async Task<List<Dictionary<string, object>>> ReadMultipleRowsAsync(SqlDataReader reader)
+        {
+            var list = new List<Dictionary<string, object>>();
+
+            while (await reader.ReadAsync())
+            {
+                var row = new Dictionary<string, object>();
+
+                for (int i = 0; i < reader.FieldCount; i++)
+                {
+                    var value = reader.GetValue(i);
+                    row[reader.GetName(i)] = value == DBNull.Value ? null : value;
+                }
+
+                EncodeIds(row);
+                list.Add(row);
+            }
+
+            return list;
+        }
+
+        private void FormatHistoryData(List<Dictionary<string, object>> history)
+        {
+            foreach (var row in history)
+            {
+                row["FullName"] = $"{row.GetValueOrDefault("FullName")}".Trim();
+                row["UserName"] = row.GetValueOrDefault("UserName") ?? "-";
+                row["Email"] = row.GetValueOrDefault("Email") ?? "-";
+                row["Status"] = row.GetValueOrDefault("Status") ?? "-";
+                row["ActionName"] = row.GetValueOrDefault("ActionName") ?? "-";
+                row["ActionByRole"] = row.GetValueOrDefault("ActionByRole") ?? "-";
+            }
+        }
+        public async Task<Dictionary<string, object>> GetByHashIdAsyncPDF(string hashId)
+        {
+            int operationId = _idEncoder.Decode(hashId);
+            int roleId = _userContext.Role.Contains("Corporate") ? 3 : 5;
+
+            var result = new Dictionary<string, object>();
+
+            using (SqlConnection conn = new SqlConnection(_context.Database.GetConnectionString()))
+            {
+                await conn.OpenAsync();
+
+                using (SqlCommand cmd = new SqlCommand("USP_CB_GetGeneratorOperationFullDetails", conn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@OperationId", operationId);
+                    cmd.Parameters.AddWithValue("@RoleId", roleId);
+
+                    using (SqlDataReader reader = await cmd.ExecuteReaderAsync())
+                    {
+                        var operation = await ReadSingleRowAsync(reader);
+                        FormatOperationData(operation);
+                        result["Operation"] = operation;
+
+                        await reader.NextResultAsync();
+                        var actions = await ReadMultipleRowsAsync(reader);
+                        result["Actions"] = actions;
+
+                        await reader.NextResultAsync();
+                        var history = await ReadMultipleRowsAsync(reader);
+                        FormatHistoryData(history);
+                        result["History"] = history;
+                    }
+                }
+            }
+
+            return result;
+        }
+
+
+        public async Task<byte[]> GenerateGeneratorOperationPdf(string operationId)
+        {
+            var data = await GetByHashIdAsyncPDF(operationId);
+
+            var operation = data["Operation"] as Dictionary<string, object> ?? new();
+            if (operation == null || operation.Count == 0)
+                throw new Exception($"No operation data found for operationId: {operationId}");
+
+            Console.WriteLine($"Operation keys: {string.Join(", ", operation.Keys)}");
+
+            var history = data["History"] as List<Dictionary<string, object>> ?? new();
+
+            string GetString(string key) =>
+                operation.ContainsKey(key) && operation[key] != null ? operation[key].ToString() : "-";
+
+            decimal GetDecimal(string key) =>
+                operation.ContainsKey(key) && operation[key] != null ? Convert.ToDecimal(operation[key]) : 0;
+
+            DateTime? GetDate(string key) =>
+                operation.ContainsKey(key) && operation[key] != null ? Convert.ToDateTime(operation[key]) : null;
+
+            var historyRows = new StringBuilder();
+            foreach (var h in history)
+            {
+                var actionDate = h.ContainsKey("ActionDate") && h["ActionDate"] != null
+                    ? Convert.ToDateTime(h["ActionDate"]).ToString("dd-MMM-yyyy HH:mm")
+                    : "-";
+
+                historyRows.Append($@"
+<tr>
+    <td>{actionDate}</td>
+    <td>{GetValue(h, "ActionName")}</td>
+    <td>{GetValue(h, "ActionByRole")}</td>
+    <td>{GetValue(h, "FullName")}</td>
+</tr>");
+            }
+
+            string templateDir = Path.Combine(AppContext.BaseDirectory, "Template", "GeneratorOperation");
+            string css = await File.ReadAllTextAsync(Path.Combine(templateDir, "styles.css"));
+            string contentHtml = await File.ReadAllTextAsync(Path.Combine(templateDir, "GeneratorOperationReport.html"));
+            string headerHtml = await File.ReadAllTextAsync(Path.Combine(templateDir, "header.html"));
+            string footerHtml = await File.ReadAllTextAsync(Path.Combine(templateDir, "footer.html"));
+
+            string cssTag = $"<style>{css}</style>";
+            contentHtml = contentHtml.Replace("</head>", $"{cssTag}</head>");
+            headerHtml = headerHtml.Replace("</head>", $"{cssTag}</head>");
+            footerHtml = footerHtml.Replace("</head>", $"{cssTag}</head>");
+
+            contentHtml = contentHtml.Replace("{{EntryByFullName}}", GetString("EntryByFullName"));
+            contentHtml = contentHtml.Replace("{{EntryByUserName}}", GetString("EntryByUserName"));
+            contentHtml = contentHtml.Replace("{{EntryByEmail}}", GetString("EntryByEmail"));
+            contentHtml = contentHtml.Replace("{{status}}", GetString("Status"));
+            contentHtml = contentHtml.Replace("{{operationId}}", operationId);
+
+            contentHtml = contentHtml.Replace("{{generatorName}}", GetString("GeneratorName"));
+            contentHtml = contentHtml.Replace("{{ratedCapacity}}", GetDecimal("RatedCapacityKW").ToString("0.##"));
+            contentHtml = contentHtml.Replace("{{fuelType}}", GetString("FuelTypeName"));
+            contentHtml = contentHtml.Replace("{{siteName}}", GetString("SiteName"));
+            contentHtml = contentHtml.Replace("{{operationDate}}",
+                GetDate("OperationDate")?.ToString("dd-MMM-yyyy") ?? "-");
+            contentHtml = contentHtml.Replace("{{startTime}}",
+                GetDate("StartTime")?.ToString("dd-MMM-yyyy HH:mm") ?? "-");
+            contentHtml = contentHtml.Replace("{{endTime}}",
+                GetDate("EndTime")?.ToString("dd-MMM-yyyy HH:mm") ?? "-");
+
+            contentHtml = contentHtml.Replace("{{runHours}}", GetDecimal("RunHours").ToString("0.##"));
+            contentHtml = contentHtml.Replace("{{loadFactor}}", GetDecimal("LoadFactor").ToString("0.##"));
+            contentHtml = contentHtml.Replace("{{powerOutputKWH}}", GetDecimal("PowerOutputKWH").ToString("0.##"));
+            contentHtml = contentHtml.Replace("{{fuelConsumed}}", GetDecimal("FuelConsumedLiters").ToString("0.##"));
+
+            var co2Factor = GetDecimal("CO2Factor");
+            var no2Factor = GetDecimal("NO2Factor");
+            var ch4Factor = GetDecimal("CH4Factor");
+            var fuelConsumed = GetDecimal("FuelConsumedLiters");
+
+            var co2 = fuelConsumed * co2Factor;
+            var no2 = fuelConsumed * no2Factor;
+            var ch4 = fuelConsumed * ch4Factor;
+            var total = co2 + (ch4 * 28) + (no2 * 265);
+
+            contentHtml = contentHtml.Replace("{{co2Factor}}", co2Factor.ToString("0.########"));
+            contentHtml = contentHtml.Replace("{{no2Factor}}", no2Factor.ToString("0.########"));
+            contentHtml = contentHtml.Replace("{{ch4Factor}}", ch4Factor.ToString("0.########"));
+            contentHtml = contentHtml.Replace("{{co2}}", co2.ToString("0.##"));
+            contentHtml = contentHtml.Replace("{{no2}}", no2.ToString("0.######"));
+            contentHtml = contentHtml.Replace("{{ch4}}", ch4.ToString("0.######"));
+            contentHtml = contentHtml.Replace("{{total}}", total.ToString("0.##"));
+            contentHtml = contentHtml.Replace("{{GWP_CH4}}", "28");
+            contentHtml = contentHtml.Replace("{{GWP_N2O}}", "265");
+
+            var start = GetDate("StartTime");
+            var end = GetDate("EndTime");
+            string duration = "-";
+            if (start != null && end != null)
+            {
+                var diff = end.Value - start.Value;
+                int totalHours = (int)diff.TotalHours;
+                int minutes = diff.Minutes;
+                duration = $"{totalHours} hrs {minutes} mins";
+            }
+            contentHtml = contentHtml.Replace("{{duration}}", duration);
+
+            contentHtml = contentHtml.Replace("{{historyRows}}", historyRows.ToString());
+
+            headerHtml = headerHtml.Replace("{{ReportTitle}}", "Generator Operation Emission Report");
+            footerHtml = footerHtml.Replace("{{generatedDate}}", DateTime.Now.ToString("dd-MMM-yyyy HH:mm"));
+
+            using var browser = await Puppeteer.LaunchAsync(new LaunchOptions
+            {
+                Headless = true,
+                Args = new[] { "--no-sandbox", "--disable-setuid-sandbox" }
+            });
+
+            using var page = await browser.NewPageAsync();
+
+            await page.SetContentAsync(contentHtml, new PuppeteerSharp.NavigationOptions
+            {
+                WaitUntil = new[] { WaitUntilNavigation.Networkidle0 }
+            });
+
+            var pdf = await page.PdfDataAsync(new PdfOptions
+            {
+                Format = PaperFormat.A4,
+                PrintBackground = true,
+                DisplayHeaderFooter = true,
+                HeaderTemplate = headerHtml,
+                FooterTemplate = footerHtml,
+                MarginOptions = new MarginOptions
+                {
+                    Top = "90px",
+                    Bottom = "70px",
+                    Left = "25px",
+                    Right = "25px"
+                }
+            });
+
+            await browser.CloseAsync();
+            return pdf;
+
+            string GetValue(Dictionary<string, object> dict, string key)
+            {
+                return dict.ContainsKey(key) && dict[key] != null ? dict[key].ToString() : "-";
+            }
+        }
     }
-    }
+}

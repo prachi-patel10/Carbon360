@@ -213,6 +213,35 @@ namespace ProjectApp.API.Controllers.Account.GeneratorOperation
             });
         }
 
+        [HttpGet("pdf/{hashId}")]
+        public async Task<IActionResult> GetFullDetails(string hashId)
+        {
+            var data = await _service.GetByHashIdAsyncPDF(hashId);
+            return data == null || data.Count == 0
+                ? NotFound("Operation not found")
+                : Ok(data);
+        }
+
+        [HttpGet("generate-pdf/{operationId}")]
+        public async Task<IActionResult> DownloadOperationPdf(string operationId)
+        {
+            try
+            {
+                var pdf = await _service.GenerateGeneratorOperationPdf(operationId);
+
+                if (pdf == null || pdf.Length == 0)
+                    return BadRequest("PDF generation returned empty content.");
+
+                return File(pdf, "application/pdf", $"GeneratorOperation_{operationId}.pdf");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"PDF ERROR: {ex}");
+                return StatusCode(500, new { message = ex.Message, detail = ex.StackTrace });
+            }
+        }
+
+
         [HttpGet("myactions")]
         public async Task<IActionResult> GetMyActions(
      [FromQuery] int pageNumber = 1,

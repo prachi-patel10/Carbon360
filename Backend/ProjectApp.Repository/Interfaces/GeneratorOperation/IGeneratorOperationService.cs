@@ -26,6 +26,10 @@ namespace ProjectApp.Repository.Interfaces.GenerationOperation
         Task<List<GeneratorResponseDTO>> GetBySiteIdAsync(int siteId);
         Task<bool> UpdateStatusAsync(string encryptedId, int statusId);
 
+        Task<Dictionary<string, object>> GetByHashIdAsyncPDF(string hashId);
+
+        Task<byte[]> GenerateGeneratorOperationPdf(string operationId);
+
         Task<GeneratorOperationPagedResponseDTO> SearchAsync(
     string search,
     string fuelTypes,        
