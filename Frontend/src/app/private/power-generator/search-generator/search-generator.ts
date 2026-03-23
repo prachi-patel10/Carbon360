@@ -21,33 +21,31 @@ interface GeneratorOperationDisplay extends GeneratorOperation {
 })
 export class SearchGenerator implements OnInit {
 
-  @ViewChild('opDatePicker') opDatePicker!: DateRangePickerComponent;
+  @ViewChild('opDatePicker')    opDatePicker!: DateRangePickerComponent;
   @ViewChild('entryDatePicker') entryDatePicker!: DateRangePickerComponent;
 
   filteredData = signal<GeneratorOperationDisplay[]>([]);
 
-  fuelTypes: any[] = [];
+  fuelTypes: any[]        = [];
   selectedFuels: string[] = [];
-  fuelDropdownOpen = false;
+  fuelDropdownOpen        = false;
 
   searchText = signal<string>('');
 
-  // Operation Date Range
   operationStartDate = signal<string | null>(null);
-  operationEndDate = signal<string | null>(null);
+  operationEndDate   = signal<string | null>(null);
+  entryStartDate     = signal<string | null>(null);
+  entryEndDate       = signal<string | null>(null);
 
-  // Entry Date Range
-  entryStartDate = signal<string | null>(null);
-  entryEndDate = signal<string | null>(null);
-
-  currentPage = signal<number>(1);
-  pageSize = 10;
+  currentPage       = signal<number>(1);
+  pageSize          = 10;
   totalRecordsCount = signal<number>(0);
-  totalPagesCount = signal<number>(1);
+  totalPagesCount   = signal<number>(1);
 
-  sortColumn: string = 'entryDate';
+  sortColumn:    string          = 'entryDate';
   sortDirection: 'asc' | 'desc' = 'desc';
-loadingTrips: Record<string, boolean> = {};
+  loadingTrips: Record<string, boolean> = {};
+
   constructor(
     private service: SearchGeneratorService,
     private fuelService: FueltypeService,
@@ -55,26 +53,32 @@ loadingTrips: Record<string, boolean> = {};
     private route: ActivatedRoute,
   ) { }
 
+  // ── ngOnInit: reads chart query params, pre-fills filters, then loads ──
   ngOnInit(): void {
-    this.loadEmissions();
     this.loadFuelTypes();
+
+    this.route.queryParams.subscribe(params => {
+      if (params['source'] === 'chart') {
+        if (params['fuelType'])  this.selectedFuels = [params['fuelType']];
+        if (params['startDate']) this.operationStartDate.set(params['startDate']);
+        if (params['endDate'])   this.operationEndDate.set(params['endDate'] + 'T23:59:59');
+        if (params['search'])    this.searchText.set(params['search']);
+      }
+      this.loadEmissions();
+    });
   }
 
   // ─── Data Loading ─────────────────────────────────────────────
 
   loadFuelTypes() {
     this.fuelService.getAll().subscribe({
-      next: (res: any) => {
-        this.fuelTypes = Array.isArray(res) ? res : res.data || [];
-      },
+      next: (res: any) => { this.fuelTypes = Array.isArray(res) ? res : res.data || []; },
       error: (err) => console.error('Error loading fuel types', err)
     });
   }
 
   loadEmissions() {
-    const fuelParam = this.selectedFuels.length > 0
-      ? this.selectedFuels.join(',')
-      : undefined;
+    const fuelParam = this.selectedFuels.length > 0 ? this.selectedFuels.join(',') : undefined;
 
     this.service.searchEmissions(
       this.currentPage(),
@@ -82,23 +86,20 @@ loadingTrips: Record<string, boolean> = {};
       this.searchText() || undefined,
       fuelParam,
       this.operationStartDate() ? this.operationStartDate()!.substring(0, 10) : undefined,
-      this.operationEndDate() ? this.operationEndDate()!.substring(0, 10) : undefined,
-      this.entryStartDate() ? this.entryStartDate()!.substring(0, 10) : undefined,
-      this.entryEndDate() ? this.entryEndDate()!.substring(0, 10) : undefined
+      this.operationEndDate()   ? this.operationEndDate()!.substring(0, 10)   : undefined,
+      this.entryStartDate()     ? this.entryStartDate()!.substring(0, 10)     : undefined,
+      this.entryEndDate()       ? this.entryEndDate()!.substring(0, 10)       : undefined
     ).subscribe({
       next: (res: any) => {
-        // ✅ Generator API: data.records  (NOT data directly)
-        const records = res.data?.records ?? [];
-        const total = res.data?.totalRecords ?? 0;
-
+        const records = res.data?.records     ?? [];
+        const total   = res.data?.totalRecords ?? 0;
         const mapped: GeneratorOperationDisplay[] = records.map((e: any) => ({
           ...e,
           generatorName: e.generatorName ?? 'Unknown Generator',
-          fuelType: e.fuelType ?? 'Unknown',
-          status: e.statusName ?? (e.statusId === 1 ? 'Completed' : 'Pending'),
+          fuelType:      e.fuelType      ?? 'Unknown',
+          status:        e.statusName    ?? (e.statusId === 1 ? 'Completed' : 'Pending'),
           totalEmission: e.totalEmission ?? 0
         }));
-
         this.filteredData.set(mapped);
         this.totalRecordsCount.set(total);
         this.totalPagesCount.set(Math.ceil(total / this.pageSize));
@@ -111,44 +112,30 @@ loadingTrips: Record<string, boolean> = {};
 
   @HostListener('document:click', ['$event'])
   onDocumentClick(e: MouseEvent) {
-    if (!(e.target as HTMLElement).closest('.fuel-multiselect'))
-      this.fuelDropdownOpen = false;
+    if (!(e.target as HTMLElement).closest('.fuel-multiselect')) this.fuelDropdownOpen = false;
   }
 
-  toggleFuelDropdown() {
-    this.fuelDropdownOpen = !this.fuelDropdownOpen;
-  }
+  toggleFuelDropdown() { this.fuelDropdownOpen = !this.fuelDropdownOpen; }
 
   toggleFuel(name: string) {
     const idx = this.selectedFuels.indexOf(name);
-    if (idx > -1) this.selectedFuels.splice(idx, 1);
-    else this.selectedFuels.push(name);
+    if (idx > -1) this.selectedFuels.splice(idx, 1); else this.selectedFuels.push(name);
     this.applyFilters();
   }
 
-  isFuelSelected(name: string): boolean {
-    return this.selectedFuels.includes(name);
-  }
+  isFuelSelected(name: string): boolean { return this.selectedFuels.includes(name); }
 
   toggleSelectAll() {
-    if (this.selectedFuels.length === this.fuelTypes.length)
-      this.selectedFuels = [];
-    else
-      this.selectedFuels = this.fuelTypes.map((f: any) => f.fuel_name);
+    if (this.selectedFuels.length === this.fuelTypes.length) this.selectedFuels = [];
+    else this.selectedFuels = this.fuelTypes.map((f: any) => f.fuel_name);
     this.applyFilters();
   }
 
-  clearFuels() {
-    this.selectedFuels = [];
-    this.applyFilters();
-  }
+  clearFuels() { this.selectedFuels = []; this.applyFilters(); }
 
   // ─── Search ───────────────────────────────────────────────────
 
-  onSearch(event: any) {
-    this.searchText.set(event.target.value);
-    this.applyFilters();
-  }
+  onSearch(event: any) { this.searchText.set(event.target.value); this.applyFilters(); }
 
   // ─── Date Range ───────────────────────────────────────────────
 
@@ -167,46 +154,33 @@ loadingTrips: Record<string, boolean> = {};
   // ─── Reset ────────────────────────────────────────────────────
 
   resetFilters() {
-    this.selectedFuels = [];
-    this.fuelDropdownOpen = false;
+    this.selectedFuels = []; this.fuelDropdownOpen = false;
     this.searchText.set('');
-    this.operationStartDate.set(null);
-    this.operationEndDate.set(null);
-    this.entryStartDate.set(null);
-    this.entryEndDate.set(null);
+    this.operationStartDate.set(null); this.operationEndDate.set(null);
+    this.entryStartDate.set(null);     this.entryEndDate.set(null);
     this.currentPage.set(1);
-    this.opDatePicker?.reset();
-    this.entryDatePicker?.reset();
+    this.opDatePicker?.reset(); this.entryDatePicker?.reset();
     this.loadEmissions();
   }
 
-  // ─── Apply Filters (triggers server reload) ───────────────────
+  // ─── Apply Filters ────────────────────────────────────────────
 
-  applyFilters() {
-    this.currentPage.set(1);
-    this.loadEmissions();
-  }
+  applyFilters() { this.currentPage.set(1); this.loadEmissions(); }
 
   // ─── Pagination ───────────────────────────────────────────────
 
-  // ✅ Server already returns one page — no slicing needed
-  paginatedData() {
-    return this.filteredData();
-  }
-
-  totalRecords() { return this.totalRecordsCount(); }
-  totalPages() { return this.totalPagesCount(); }
+  paginatedData() { return this.filteredData(); }
+  totalRecords()  { return this.totalRecordsCount(); }
+  totalPages()    { return this.totalPagesCount(); }
 
   goToPage(page: number) {
     if (page < 1 || page > this.totalPages()) return;
-    this.currentPage.set(page);
-    this.loadEmissions(); // ✅ fetch new page from server
+    this.currentPage.set(page); this.loadEmissions();
   }
 
   changePageSize(event: any) {
     this.pageSize = Number(event.target.value);
-    this.currentPage.set(1);
-    this.loadEmissions(); // ✅ reload with new page size
+    this.currentPage.set(1); this.loadEmissions();
   }
 
   // ─── Sort ─────────────────────────────────────────────────────
@@ -214,12 +188,8 @@ loadingTrips: Record<string, boolean> = {};
   sortBy(column: string) {
     if (this.sortColumn === column)
       this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
-    else {
-      this.sortColumn = column;
-      this.sortDirection = 'asc';
-    }
-    this.currentPage.set(1);
-    this.loadEmissions();
+    else { this.sortColumn = column; this.sortDirection = 'asc'; }
+    this.currentPage.set(1); this.loadEmissions();
   }
 
   getSortIcon(column: string): string {
@@ -236,114 +206,64 @@ loadingTrips: Record<string, boolean> = {};
     );
   }
 
+  // ─── PDF Download ─────────────────────────────────────────────
 
-  isLoading(operationId: string): boolean {
-  return !!this.loadingTrips[operationId];
-}
+  isLoading(operationId: string): boolean { return !!this.loadingTrips[operationId]; }
 
-exportExcel() {
-
-  const params: any = {};
-
-  if (this.searchText()) {
-    params.search = this.searchText();
+  downloadTrip(operationId: string) {
+    if (!operationId) return;
+    this.loadingTrips[operationId] = true;
+    const token = localStorage.getItem('token');
+    fetch(`http://localhost:5236/api/GeneratorOperation/generate-pdf/${operationId}`, {
+      method: 'GET',
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
+    .then(res => {
+      if (!res.ok) return res.text().then(text => { throw new Error(`Server error ${res.status}: ${text}`); });
+      const contentType = res.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/pdf'))
+        return res.text().then(text => { throw new Error(`Expected PDF but got: ${contentType} — ${text}`); });
+      return res.blob();
+    })
+    .then((blob: any) => {
+      const url  = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url; link.download = `Generator-${operationId}.pdf`;
+      document.body.appendChild(link); link.click();
+      document.body.removeChild(link); window.URL.revokeObjectURL(url);
+    })
+    .catch(err => { console.error('PDF download error:', err); alert('PDF generation failed: ' + err.message); })
+    .finally(() => { this.loadingTrips[operationId] = false; });
   }
 
-  if (this.selectedFuels.length > 0) {
-    params.fuelTypes = this.selectedFuels.join(',');
-  }
+  // ─── Export Excel ─────────────────────────────────────────────
 
-  if (this.operationStartDate()) {
-    params.startDate = this.operationStartDate();
-  }
+  exportExcel() {
+    const params: any = {};
+    if (this.searchText())            params.search       = this.searchText();
+    if (this.selectedFuels.length > 0) params.fuelTypes   = this.selectedFuels.join(',');
+    if (this.operationStartDate())    params.startDate    = this.operationStartDate();
+    if (this.operationEndDate())      params.endDate      = this.operationEndDate();
+    if (this.entryStartDate())        params.entryStartDate = this.entryStartDate();
+    if (this.entryEndDate())          params.entryEndDate   = this.entryEndDate();
+    params.isExport = true;
 
-  if (this.operationEndDate()) {
-    params.endDate = this.operationEndDate();
-  }
-
-  if (this.entryStartDate()) {
-    params.entryStartDate = this.entryStartDate();
-  }
-
-  if (this.entryEndDate()) {
-    params.entryEndDate = this.entryEndDate();
-  }
-
-  params.isExport = true; // ✅ MUST
-
-  this.service.exportExcel(params).subscribe(blob => {
-
-    const file = new Blob([blob], {
-      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    this.service.exportExcel(params).subscribe(blob => {
+      const file = new Blob([blob], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      });
+      const url = window.URL.createObjectURL(file);
+      const a   = document.createElement('a');
+      const now = new Date();
+      const day     = ('0' + now.getDate()).slice(-2);
+      const month   = ('0' + (now.getMonth() + 1)).slice(-2);
+      const year    = now.getFullYear();
+      const hours   = ('0' + now.getHours()).slice(-2);
+      const minutes = ('0' + now.getMinutes()).slice(-2);
+      const seconds = ('0' + now.getSeconds()).slice(-2);
+      const formatted = `${day}${month}${year}_${hours}${minutes}${seconds}`;
+      a.download = `Search_PowerGenerator_${formatted}.xlsx`;
+      a.href = url; a.click(); window.URL.revokeObjectURL(url);
     });
-
-    const url = window.URL.createObjectURL(file);
-    const a = document.createElement('a');
-
-    const now = new Date();
-
-    const day = ('0' + now.getDate()).slice(-2);
-    const month = ('0' + (now.getMonth() + 1)).slice(-2);
-    const year = now.getFullYear();
-
-    const hours = ('0' + now.getHours()).slice(-2);
-    const minutes = ('0' + now.getMinutes()).slice(-2);
-    const seconds = ('0' + now.getSeconds()).slice(-2);
-
-    // ✅ Final compact format
-    const formatted = `${day}${month}${year}_${hours}${minutes}${seconds}`;
-
-    // const now = new Date();
-    // const formatted = `${now.getDate()}-${now.getMonth()+1}-${now.getFullYear()}_${now.getHours()}-${now.getMinutes()}-${now.getSeconds()}`;
-
-    a.download = `Search_PowerGenerator_${formatted}.xlsx`;
-    a.href = url;
-    a.click();
-
-    window.URL.revokeObjectURL(url);
-  });
-}
-
-downloadTrip(operationId: string) {
-  if (!operationId) return;
-  this.loadingTrips[operationId] = true;
-
-  const token = localStorage.getItem('token');
-
-  fetch(`http://localhost:5236/api/GeneratorOperation/generate-pdf/${operationId}`, {
-    method: 'GET',
-    headers: { 'Authorization': `Bearer ${token}` }
-  })
-  .then(res => {
-    if (!res.ok) {
-      return res.text().then(text => {
-        throw new Error(`Server error ${res.status}: ${text}`);
-      });
-    }
-    const contentType = res.headers.get('content-type');
-    if (!contentType || !contentType.includes('application/pdf')) {
-      return res.text().then(text => {
-        throw new Error(`Expected PDF but got: ${contentType} — ${text}`);
-      });
-    }
-    return res.blob();
-  })
-  .then((blob: any) => {
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `Generator-${operationId}.pdf`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    window.URL.revokeObjectURL(url);
-  })
-  .catch(err => {
-    console.error('PDF download error:', err);
-    alert('PDF generation failed: ' + err.message);
-  })
-  .finally(() => {
-    this.loadingTrips[operationId] = false;
-  });
-}
+  }
 }

@@ -148,16 +148,18 @@
 
 /* ══════════════════════════════════════════════════════════════
    VEHICLE TYPE × MONTH PIVOT TABLE
+   Rows = Vehicle Types (left), Columns = Months (header)
 ══════════════════════════════════════════════════════════════ */
 .vtype-bg { background: linear-gradient(135deg, #0e7490, #0891b2); }
 
-/* Outer scroll wrapper — allows horizontal scroll on small screens */
+/* ── Scrollable outer wrapper ── */
 .vtype-table-wrap {
   width: 100%;
   overflow-x: auto;
-  margin-top: 6px;
-  border-radius: 10px;
+  margin-top: 8px;
+  border-radius: 12px;
   border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.05);
 }
 
 /* ── Table base ── */
@@ -167,84 +169,79 @@
   font-family: 'Inter', sans-serif;
   font-size: 12px;
   white-space: nowrap;
+  min-width: 600px;
 }
 
-/* ── Header ── */
+/* ── HEADER ── */
 .vtype-table thead tr {
-  background: #f8fafc;
-  border-bottom: 2px solid #e2e8f0;
-  position: sticky;
-  top: 0;
-  z-index: 2;
+  background: #0f5132;
 }
 
-/* Month column header */
-.th-month {
-  padding: 10px 14px;
+/* Top-left corner — Vehicle Type label */
+.th-vtype {
+  padding: 12px 16px;
   text-align: left;
   font-size: 10px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: .07em;
-  color: #64748b;
-  background: #f8fafc;
+  letter-spacing: .08em;
+  color: #a7f3d0;
+  background: #0f5132;
   position: sticky;
   left: 0;
   z-index: 3;
-  border-right: 2px solid #e2e8f0;
-  min-width: 70px;
+  border-right: 1px solid rgba(255,255,255,0.15);
+  min-width: 160px;
 }
 
-/* Vehicle type column headers */
-.th-type {
-  padding: 10px 12px;
+/* Month column headers */
+.th-month-col {
+  padding: 12px 8px;
   text-align: center;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
-  color: #64748b;
-  min-width: 110px;
-}
-
-.th-type-inner {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
+  color: #ffffff;
+  min-width: 76px;
+  letter-spacing: .03em;
+  border-left: 1px solid rgba(255,255,255,0.08);
 }
 
 /* Total column header */
-.th-total {
-  padding: 10px 14px;
+.th-total-col {
+  padding: 12px 14px;
   text-align: right;
   font-size: 10px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: .07em;
-  color: #0f5132;
-  background: #f0fdf4;
-  border-left: 2px solid #bbf7d0;
+  letter-spacing: .06em;
+  color: #6ee7a0;
+  background: #0a3d26;
+  border-left: 1px solid rgba(255,255,255,0.2);
   min-width: 90px;
 }
 
-/* ── Body rows ── */
+/* ── BODY ROWS ── */
 .data-row {
   border-bottom: 1px solid #f1f5f9;
   transition: background .1s;
 }
-.data-row:hover {
+.data-row:nth-child(even) {
   background: #f8fafc;
 }
-.data-row:hover .td-month {
-  background: #f0fdf4;
+.data-row:last-child {
+  border-bottom: none;
+}
+.data-row:hover {
+  background: #ecfdf5 !important;
+}
+.data-row:hover .td-vtype {
+  background: #d1fae5 !important;
 }
 
-/* Month label cell — sticky left */
-.td-month {
-  padding: 8px 14px;
-  font-weight: 600;
-  color: #1e293b;
-  font-size: 12px;
-  background: #fff;
+/* Vehicle type name cell — sticky left */
+.td-vtype {
+  padding: 0;
+  background: #ffffff;
   position: sticky;
   left: 0;
   border-right: 2px solid #e2e8f0;
@@ -252,56 +249,83 @@
   transition: background .1s;
 }
 
-/* Data cell — position relative for the mini bar */
-.td-cell {
-  padding: 0;
-  text-align: right;
-  vertical-align: middle;
-  position: relative;
-  cursor: default;
-  min-width: 110px;
+.vtype-name-cell {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding: 9px 14px;
 }
 
-/* Mini background bar showing proportion within the column */
-.cell-bar {
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  border-radius: 0 3px 3px 0;
-  pointer-events: none;
-  transition: width .3s ease;
+/* Coloured left accent strip */
+.vtype-color-bar {
+  width: 4px;
+  min-height: 28px;
+  border-radius: 3px;
+  flex-shrink: 0;
+  margin-right: 10px;
+  align-self: stretch;
 }
 
-/* Value text — sits above the bar */
-.cell-val {
-  position: relative;
-  display: block;
-  padding: 8px 12px;
+.vtype-name-text {
   font-size: 12px;
   font-weight: 600;
-  color: #0369a1;
-  text-align: right;
+  color: #1e293b;
+  white-space: nowrap;
+}
+
+/* ── DATA CELL ── */
+/* The cell itself uses a CSS linear-gradient background for the mini bar
+   so text always sits on top cleanly — no z-index issues */
+.td-cell {
+  text-align: center;
+  vertical-align: middle;
+  padding: 0;
+  min-width: 76px;
+  border-left: 1px solid #f1f5f9;
+}
+
+/* Value text — always visible, no positioning tricks */
+.cell-val {
+  display: block;
+  padding: 9px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #1e293b;
+  text-align: center;
+  cursor: default;
+  position: relative;
   z-index: 1;
 }
 
-/* Empty cell dash */
+/* Cells with data get a subtle gradient background acting as bar */
+.td-cell.has-data {
+  background: linear-gradient(
+    to top,
+    var(--cell-bar-color, rgba(55,138,221,0.12)) var(--cell-bar-height, 20%),
+    transparent var(--cell-bar-height, 20%)
+  );
+}
+
+.td-cell.has-data:hover {
+  background: rgba(3,105,161,0.08);
+}
+.td-cell.has-data:hover .cell-val {
+  color: #0369a1;
+}
+
+/* Empty cell */
 .cell-empty {
   display: block;
-  padding: 8px 12px;
-  color: #cbd5e1;
+  padding: 9px 8px;
+  color: #e2e8f0;
   text-align: center;
-  font-size: 13px;
+  font-size: 14px;
+  font-weight: 300;
 }
 
-/* Highlight on cells that have data */
-.td-cell.has-data:hover {
-  background: #eff6ff;
-}
-
-/* Row total cell */
+/* Row total */
 .td-row-total {
-  padding: 8px 14px;
+  padding: 9px 14px;
   text-align: right;
   font-weight: 700;
   color: #0f5132;
@@ -310,45 +334,41 @@
   font-size: 12px;
 }
 
-/* ── Footer ── */
+/* ── FOOTER ── */
 .vtype-table tfoot .total-row {
-  background: #f0fdf4;
-  border-top: 2px solid #bbf7d0;
+  background: #f0f9ff;
+  border-top: 2px solid #bae6fd;
 }
 
-.total-row .td-month {
+.footer-label {
+  font-size: 11px;
   font-weight: 700;
-  color: #0f5132;
-  background: #f0fdf4;
+  color: #0369a1;
+  padding: 10px 14px;
+  background: #f0f9ff !important;
+  border-right: 2px solid #e2e8f0;
 }
 
-/* Column total cells */
 .td-col-total {
-  padding: 9px 12px;
-  text-align: right;
+  padding: 10px 8px;
+  text-align: center;
   font-weight: 700;
   color: #0369a1;
   font-size: 12px;
+  border-left: 1px solid #e2e8f0;
 }
 
-/* Grand total cell */
 .grand-total {
   color: #0f5132 !important;
   font-size: 13px !important;
-  background: #dcfce7;
-}
-
-/* Colour dot in header */
-.vtype-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 2px;
-  flex-shrink: 0;
-  display: inline-block;
+  font-weight: 800 !important;
+  background: #dcfce7 !important;
+  border-left: 2px solid #86efac !important;
 }
 
 /* ── Responsive ── */
 @media (max-width: 768px) {
   .vtype-table { font-size: 11px; }
-  .td-cell, .th-type { min-width: 80px; }
+  .th-vtype, .td-vtype { min-width: 120px; }
+  .th-month-col, .td-cell { min-width: 60px; }
 }

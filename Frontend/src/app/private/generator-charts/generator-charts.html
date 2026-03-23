@@ -3,7 +3,7 @@
   <div class="mkpi-card mkpi-orange">
     <div class="mkpi-icon"><i class="fas fa-fire"></i></div>
     <div class="mkpi-body">
-      <div class="mkpi-label">Total Fuel</div>
+      <div class="mkpi-label">Fuel Consumption</div>
       <div class="mkpi-value">{{ formatNum(generatorTotal()) }} <span>L</span></div>
     </div>
   </div>
@@ -109,20 +109,19 @@
 
 </div>
 
-<!-- ═══ ROW 2: Run Hours Pie (left) + Load Factor Line (right) ═══ -->
-<div class="charts-row">
-
-  <!-- 3. Run Hours Doughnut -->
-  <div class="chart-card">
+<!-- ═══ ROW 2: Run Hours Pie — compact side-by-side layout ═══ -->
+<div class="charts-row-full">
+  <div class="chart-card pie-compact-card">
     <div class="card-header">
       <div class="card-header-left">
         <div class="chart-icon-wrap runhours-bg"><i class="fas fa-chart-pie"></i></div>
         <div>
           <h3>Generator Run Hours Distribution</h3>
-          <p>Total run hours per generator</p>
+          <p>Total operational run hours per generator unit for the year</p>
         </div>
       </div>
     </div>
+
     <div class="chart-loader" [class.hidden]="!isRunHoursLoading()">
       <div class="dot-loader generator-dots"><span></span><span></span><span></span></div>
       <p>Loading...</p>
@@ -132,8 +131,10 @@
       <span>{{ runHoursError() }}</span>
       <button (click)="loadRunHoursChart()">Retry</button>
     </div>
-    <div [class.hidden]="!showRunHoursCanvas()">
-      <div class="pie-canvas-wrap">
+
+    <!-- Donut only — info shown on hover tooltip -->
+    <div class="pie-only-body" [class.hidden]="!showRunHoursCanvas()">
+      <div class="pie-canvas-wrap-sm">
         <canvas #generatorRunHoursCanvas></canvas>
         <div class="pie-centre">
           <span class="pie-centre-value">{{ formatNum(totalRunHours()) }}</span>
@@ -142,36 +143,4 @@
       </div>
     </div>
   </div>
-
-  <!-- 4. Load Factor Trend Line -->
-  <div class="chart-card">
-    <div class="card-header">
-      <div class="card-header-left">
-        <div class="chart-icon-wrap loadfactor-bg"><i class="fas fa-tachometer-alt"></i></div>
-        <div>
-          <h3>Load Factor Trend</h3>
-          <p>Monthly avg load factor % per generator</p>
-        </div>
-      </div>
-      <!-- Zone legend chips -->
-      <div class="zone-chips">
-        <span class="zone-chip chip-optimal">Optimal 75–90%</span>
-        <span class="zone-chip chip-warning">Warning 30–74%</span>
-        <span class="zone-chip chip-critical">Critical &lt;30%</span>
-      </div>
-    </div>
-    <div class="chart-loader" [class.hidden]="!isLoadFactorLoading()">
-      <div class="dot-loader generator-dots"><span></span><span></span><span></span></div>
-      <p>Loading...</p>
-    </div>
-    <div class="chart-error" [class.hidden]="!(loadFactorError() && !isLoadFactorLoading())">
-      <i class="fas fa-exclamation-triangle"></i>
-      <span>{{ loadFactorError() }}</span>
-      <button (click)="loadLoadFactorChart()">Retry</button>
-    </div>
-    <div class="canvas-wrap" [class.hidden]="!showLoadFactorCanvas()">
-      <canvas #generatorLoadFactorCanvas></canvas>
-    </div>
-  </div>
-
 </div>

@@ -3,7 +3,7 @@
   <div class="mkpi-card mkpi-blue">
     <div class="mkpi-icon"><i class="fas fa-fire"></i></div>
     <div class="mkpi-body">
-      <div class="mkpi-label">Total Fuel</div>
+      <div class="mkpi-label">Fuel Consumption</div>
       <div class="mkpi-value">{{ formatNum(vehicleTotal()) }} <span>L</span></div>
     </div>
   </div>
@@ -154,7 +154,7 @@
       <div class="card-header-left">
         <div class="chart-icon-wrap vtype-bg"><i class="fas fa-table"></i></div>
         <div>
-          <h3>Vehicle Type Wise Distance — Month Wise</h3>
+          <h3>Vehicle Type Wise Distance (km) — Month Wise</h3>
           <p>Distance (km) per vehicle type for each month — hover a cell for trip &amp; fuel details</p>
         </div>
       </div>
@@ -173,51 +173,57 @@
       <button (click)="loadVtypeChart()">Retry</button>
     </div>
 
-    <!-- Pivot Table -->
+
+    <!-- Pivot Table: rows = Vehicle Types, columns = Months -->
     <div class="vtype-table-wrap" [class.hidden]="!showVtypeTable()">
       @if (vtypeTableRows()) {
         <table class="vtype-table">
 
-          <!-- ── Header row: Month | Type1 | Type2 | ... | Total ── -->
+          <!-- ── Header: Vehicle Type | Jan | Feb | Mar | ... | Total ── -->
           <thead>
             <tr>
-              <th class="th-month">Month</th>
-              @for (vt of vtypeTableRows()!.vehicleTypes; track vt; let ti = $index) {
-                <th class="th-type">
-                  <div class="th-type-inner">
-                    <span class="vtype-dot" [style.background]="vtypeTableRows()!.colors[ti]"></span>
-                    {{ vt }}
-                  </div>
-                </th>
+              <th class="th-vtype">Vehicle Type</th>
+              @for (month of vtypeTableRows()!.monthLabels; track month; let mi = $index) {
+                <!-- Only show months that have data across any vehicle type -->
+                @if (vtypeTableRows()!.monthTotals[mi] > 0) {
+                  <th class="th-month-col">{{ month }}</th>
+                }
               }
-              <th class="th-total">Total (km)</th>
+              <th class="th-total-col">Total</th>
             </tr>
           </thead>
 
-          <!-- ── Body rows: one per month ── -->
+          <!-- ── Body: one row per vehicle type ── -->
           <tbody>
-            @for (month of vtypeTableRows()!.monthLabels; track month; let mi = $index) {
-              <!-- Only show months that have at least one non-zero value -->
-              @if (vtypeTableRows()!.monthTotals[mi] > 0) {
-                <tr class="data-row">
-                  <td class="td-month">{{ month }}</td>
-                  @for (vt of vtypeTableRows()!.vehicleTypes; track vt; let ti = $index) {
+            @for (vt of vtypeTableRows()!.vehicleTypes; track vt; let ti = $index) {
+              <tr class="data-row">
+
+                <!-- Vehicle type name cell -->
+                <td class="td-vtype">
+                  <div class="vtype-name-cell">
+                    <span class="vtype-color-bar" [style.background]="vtypeTableRows()!.colors[ti]"></span>
+                    <span class="vtype-name-text">{{ vt }}</span>
+                  </div>
+                </td>
+
+                <!-- One cell per month — skip empty months -->
+                @for (month of vtypeTableRows()!.monthLabels; track month; let mi = $index) {
+                  @if (vtypeTableRows()!.monthTotals[mi] > 0) {
                     <td class="td-cell"
-                        [class.has-data]="vtypeTableRows()!.distanceMatrix[mi][ti] > 0"
-                        [title]="vtypeTableRows()!.distanceMatrix[mi][ti] > 0
-                          ? vt + ' · ' + month
-                            + ' | Dist: ' + vtypeTableRows()!.distanceMatrix[mi][ti].toFixed(1) + ' km'
-                            + ' | Trips: ' + vtypeTableRows()!.tripsMatrix[mi][ti]
-                            + ' | Fuel: ' + vtypeTableRows()!.fuelMatrix[mi][ti].toFixed(1) + ' L'
-                          : '—'">
+                        [class.has-data]="vtypeTableRows()!.distanceMatrix[mi][ti] > 0">
                       @if (vtypeTableRows()!.distanceMatrix[mi][ti] > 0) {
+                        <!-- Mini bar width = % of this type's annual total -->
                         <span class="cell-bar"
                               [style.width.%]="vtypeTableRows()!.typeTotals[ti] > 0
                                 ? (vtypeTableRows()!.distanceMatrix[mi][ti] / vtypeTableRows()!.typeTotals[ti]) * 100
                                 : 0"
-                              [style.background]="vtypeTableRows()!.colors[ti] + '33'">
+                              [style.background]="vtypeTableRows()!.colors[ti] + '2a'">
                         </span>
-                        <span class="cell-val">
+                        <span class="cell-val"
+                              [title]="vt + ' · ' + month
+                                + ' | ' + vtypeTableRows()!.distanceMatrix[mi][ti].toFixed(1) + ' km'
+                                + ' | Trips: ' + vtypeTableRows()!.tripsMatrix[mi][ti]
+                                + ' | Fuel: ' + vtypeTableRows()!.fuelMatrix[mi][ti].toFixed(1) + ' L'">
                           {{ formatNum(vtypeTableRows()!.distanceMatrix[mi][ti]) }}
                         </span>
                       } @else {
@@ -225,22 +231,27 @@
                       }
                     </td>
                   }
-                  <td class="td-row-total">
-                    {{ formatNum(vtypeTableRows()!.monthTotals[mi]) }}
-                  </td>
-                </tr>
-              }
+                }
+
+                <!-- Row total for this vehicle type -->
+                <td class="td-row-total">
+                  {{ formatNum(vtypeTableRows()!.typeTotals[ti]) }}
+                </td>
+
+              </tr>
             }
           </tbody>
 
-          <!-- ── Footer: column totals ── -->
+          <!-- ── Footer: monthly totals ── -->
           <tfoot>
             <tr class="total-row">
-              <td class="td-month">Total</td>
-              @for (vt of vtypeTableRows()!.vehicleTypes; track vt; let ti = $index) {
-                <td class="td-cell td-col-total">
-                  {{ formatNum(vtypeTableRows()!.typeTotals[ti]) }}
-                </td>
+              <td class="td-vtype footer-label">Total (km)</td>
+              @for (month of vtypeTableRows()!.monthLabels; track month; let mi = $index) {
+                @if (vtypeTableRows()!.monthTotals[mi] > 0) {
+                  <td class="td-cell td-col-total">
+                    {{ formatNum(vtypeTableRows()!.monthTotals[mi]) }}
+                  </td>
+                }
               }
               <td class="td-row-total grand-total">
                 {{ formatNum(vtypeTotalDist()) }}

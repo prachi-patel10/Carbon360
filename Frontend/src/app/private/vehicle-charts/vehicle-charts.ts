@@ -4,6 +4,7 @@ import {
   signal, computed
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { Chart, registerables, TooltipItem } from 'chart.js';
 import { Subject } from 'rxjs';
 import { takeUntil, finalize } from 'rxjs/operators';
@@ -28,12 +29,11 @@ export class VehicleCharts implements OnInit, AfterViewInit, OnChanges, OnDestro
 
   @Input() year: number = new Date().getFullYear();
 
-  // Canvas refs — order: fuel, emission, distance
   @ViewChild('vehicleFuelCanvas')     fuelCanvasRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('vehicleEmissionCanvas') emissionCanvasRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('vehicleDistanceCanvas') distanceCanvasRef!: ElementRef<HTMLCanvasElement>;
 
-  // ── Signals ───────────────────────────────────────────────────────────────
+  // ── Signals ──────────────────────────────────────────────────
   isFuelLoading     = signal(false);
   isEmissionLoading = signal(false);
   isDistanceLoading = signal(false);
@@ -50,19 +50,18 @@ export class VehicleCharts implements OnInit, AfterViewInit, OnChanges, OnDestro
   totalDistanceKM = signal(0);
   totalTrips      = signal(0);
 
-  isVtypeLoading        = signal(false);
-  vtypeError            = signal('');
-  vtypeTableRows        = signal<VehicleTypeDistancePivotResponse | null>(null);
+  isVtypeLoading = signal(false);
+  vtypeError     = signal('');
+  vtypeTableRows = signal<VehicleTypeDistancePivotResponse | null>(null);
 
   showFuelCanvas     = computed(() => !this.isFuelLoading()     && !this.fuelError());
   showEmissionCanvas = computed(() => !this.isEmissionLoading() && !this.emissionError());
   showDistanceCanvas = computed(() => !this.isDistanceLoading() && !this.distanceError());
   showVtypeTable     = computed(() => !this.isVtypeLoading()    && !this.vtypeError());
 
-  // ── Vtype footer totals (computed to avoid arrow fns in template) ───────
   vtypeTotalDist  = computed(() => (this.vtypeTableRows()?.grandTotal ?? 0));
   vtypeTotalTrips = computed(() => (this.vtypeTableRows()?.tripsMatrix ?? []).reduce((sum: number, row: number[]) => sum + row.reduce((a: number, b: number) => a + b, 0), 0));
-  vtypeTotalFuel  = computed(() => (this.vtypeTableRows()?.fuelMatrix ?? []).reduce((sum: number, row: number[]) => sum + row.reduce((a: number, b: number) => a + b, 0), 0));
+  vtypeTotalFuel  = computed(() => (this.vtypeTableRows()?.fuelMatrix  ?? []).reduce((sum: number, row: number[]) => sum + row.reduce((a: number, b: number) => a + b, 0), 0));
 
   private fuelChart:     Chart | null = null;
   private emissionChart: Chart | null = null;
@@ -70,16 +69,16 @@ export class VehicleCharts implements OnInit, AfterViewInit, OnChanges, OnDestro
   private destroy$  = new Subject<void>();
   private viewReady = false;
 
-  private _lastFuelData:     FuelCombinedChartResponse    | null = null;
-  private _lastEmissionData: MonthlyEmissionChartResponse | null = null;
-  private _lastDistanceData: VehicleDistanceChartResponse         | null = null;
-  private _lastVtypeData:    VehicleTypeDistancePivotResponse   | null = null;
-  private pendingFuel:     FuelCombinedChartResponse    | null = null;
-  private pendingEmission: MonthlyEmissionChartResponse | null = null;
-  private pendingDistance: VehicleDistanceChartResponse        | null = null;
-  private pendingVtype:    VehicleTypeDistancePivotResponse  | null = null;
+  private _lastFuelData:     FuelCombinedChartResponse        | null = null;
+  private _lastEmissionData: MonthlyEmissionChartResponse     | null = null;
+  private _lastDistanceData: VehicleDistanceChartResponse     | null = null;
+  private _lastVtypeData:    VehicleTypeDistancePivotResponse | null = null;
+  private pendingFuel:     FuelCombinedChartResponse        | null = null;
+  private pendingEmission: MonthlyEmissionChartResponse     | null = null;
+  private pendingDistance: VehicleDistanceChartResponse     | null = null;
+  private pendingVtype:    VehicleTypeDistancePivotResponse | null = null;
 
-  constructor(private svc: DashboardService) {}
+  constructor(private svc: DashboardService, private router: Router) {}
 
   ngOnInit(): void { this.loadAll(); }
 
@@ -96,88 +95,106 @@ export class VehicleCharts implements OnInit, AfterViewInit, OnChanges, OnDestro
   }
 
   ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
-    this.fuelChart?.destroy();
-    this.emissionChart?.destroy();
-    this.distanceChart?.destroy();
-
+    this.destroy$.next(); this.destroy$.complete();
+    this.fuelChart?.destroy(); this.emissionChart?.destroy(); this.distanceChart?.destroy();
   }
 
   loadAll(): void {
-    this.loadFuelChart();
-    this.loadEmissionChart();
-    this.loadDistanceChart();
-    this.loadVtypeChart();
+    this.loadFuelChart(); this.loadEmissionChart();
+    this.loadDistanceChart(); this.loadVtypeChart();
   }
 
   refreshCharts(): void {
-    this.deferRenderFuel(null);
-    this.deferRenderEmission(null);
-    this.deferRenderDistance(null);
-    this.deferRenderVtype(null);
+    this.deferRenderFuel(null); this.deferRenderEmission(null);
+    this.deferRenderDistance(null); this.deferRenderVtype(null);
   }
 
-  // ── Load: Fuel ────────────────────────────────────────────────────────────
-  loadFuelChart(): void {
-    this.isFuelLoading.set(true);
-    this.fuelError.set('');
-    this.fuelChart?.destroy(); this.fuelChart = null;
+  // ── Navigation helpers ────────────────────────────────────────
+  private navigateToVehicleSearch(params: { month?: number; fuelType?: string }): void {
+    const queryParams: any = { source: 'chart' };
+    if (params.fuelType) queryParams['fuelType'] = params.fuelType;
+    if (params.month) {
+      const y = this.year, m = params.month;
+      const lastDay = new Date(y, m, 0).getDate();
+      queryParams['startDate'] = `${y}-${String(m).padStart(2, '0')}-01`;
+      queryParams['endDate']   = `${y}-${String(m).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
+    }
+    this.router.navigate(['/dashboard/searchVehicle'], { queryParams });
+  }
 
+  navigateByVehicleMonth(monthIndex: number): void {
+    this.navigateToVehicleSearch({ month: monthIndex + 1 });
+  }
+
+  navigateByVehicleMonthAndFuel(monthIndex: number, fuelType: string): void {
+    this.navigateToVehicleSearch({ month: monthIndex + 1, fuelType });
+  }
+
+  // ── Load: Fuel ────────────────────────────────────────────────
+  loadFuelChart(): void {
+    this.isFuelLoading.set(true); this.fuelError.set('');
+    this.fuelChart?.destroy(); this.fuelChart = null;
     this.svc.getVehicleFuelMonthly(this.year)
       .pipe(takeUntil(this.destroy$), finalize(() => this.isFuelLoading.set(false)))
       .subscribe({
         next: res => {
           if (!res.status || !res.data) { this.fuelError.set('No data returned.'); return; }
-          this.computeFuelKpis(res.data);
-          this.buildFuelLegend(res.data);
-          if (this.viewReady) this.deferRenderFuel(res.data);
-          else this.pendingFuel = res.data;
+          this.computeFuelKpis(res.data); this.buildFuelLegend(res.data);
+          if (this.viewReady) this.deferRenderFuel(res.data); else this.pendingFuel = res.data;
         },
         error: err => this.fuelError.set(err?.message || 'Failed to load fuel chart.')
       });
   }
 
-  // ── Load: Emission ────────────────────────────────────────────────────────
+  // ── Load: Emission ────────────────────────────────────────────
   loadEmissionChart(): void {
-    this.isEmissionLoading.set(true);
-    this.emissionError.set('');
+    this.isEmissionLoading.set(true); this.emissionError.set('');
     this.emissionChart?.destroy(); this.emissionChart = null;
-
     this.svc.getVehicleEmissionChart(this.year)
       .pipe(takeUntil(this.destroy$), finalize(() => this.isEmissionLoading.set(false)))
       .subscribe({
         next: res => {
           if (!res.status || !res.data) { this.emissionError.set('No data returned.'); return; }
-          this.computeEmissionKpi(res.data);
-          this.buildEmissionLegend(res.data);
-          if (this.viewReady) this.deferRenderEmission(res.data);
-          else this.pendingEmission = res.data;
+          this.computeEmissionKpi(res.data); this.buildEmissionLegend(res.data);
+          if (this.viewReady) this.deferRenderEmission(res.data); else this.pendingEmission = res.data;
         },
         error: err => this.emissionError.set(err?.message || 'Failed to load emission chart.')
       });
   }
 
-  // ── Load: Distance ────────────────────────────────────────────────────────
+  // ── Load: Distance ────────────────────────────────────────────
   loadDistanceChart(): void {
-    this.isDistanceLoading.set(true);
-    this.distanceError.set('');
+    this.isDistanceLoading.set(true); this.distanceError.set('');
     this.distanceChart?.destroy();
-
     this.svc.getVehicleDistanceMonthly(this.year)
       .pipe(takeUntil(this.destroy$), finalize(() => this.isDistanceLoading.set(false)))
       .subscribe({
         next: res => {
           if (!res.status || !res.data) { this.distanceError.set('No data returned.'); return; }
           this.computeDistanceKpis(res.data);
-          if (this.viewReady) this.deferRenderDistance(res.data);
-          else this.pendingDistance = res.data;
+          if (this.viewReady) this.deferRenderDistance(res.data); else this.pendingDistance = res.data;
         },
         error: err => this.distanceError.set(err?.message || 'Failed to load distance chart.')
       });
   }
 
-  // ── Deferred renders ──────────────────────────────────────────────────────
+  // ── Load: Vehicle Type Wise ───────────────────────────────────
+  loadVtypeChart(): void {
+    this.isVtypeLoading.set(true); this.vtypeError.set('');
+    this.vtypeTableRows.set(null);
+    this.svc.getVehicleTypeWiseDistance(this.year)
+      .pipe(takeUntil(this.destroy$), finalize(() => this.isVtypeLoading.set(false)))
+      .subscribe({
+        next: res => {
+          if (!res.status || !res.data) { this.vtypeError.set('No data returned.'); return; }
+          this.vtypeTableRows.set(res.data);
+          if (this.viewReady) this.deferRenderVtype(res.data); else this.pendingVtype = res.data;
+        },
+        error: err => this.vtypeError.set(err?.message || 'Failed to load vehicle type chart.')
+      });
+  }
+
+  // ── Deferred renders ──────────────────────────────────────────
   private deferRenderFuel(data: FuelCombinedChartResponse | null): void {
     if (data) this._lastFuelData = data;
     if (!this._lastFuelData) return;
@@ -199,15 +216,21 @@ export class VehicleCharts implements OnInit, AfterViewInit, OnChanges, OnDestro
     setTimeout(() => this.renderDistanceChart(snap), 0);
   }
 
-  // ── KPIs ──────────────────────────────────────────────────────────────────
+  private deferRenderVtype(data: VehicleTypeDistancePivotResponse | null): void {
+    if (data) this._lastVtypeData = data;
+    if (!this._lastVtypeData) return;
+    const snap = this._lastVtypeData;
+    setTimeout(() => this.renderVtypeChart(snap), 0);
+  }
+
+  // ── KPIs ──────────────────────────────────────────────────────
   private computeFuelKpis(data: FuelCombinedChartResponse): void {
     const ds = data?.datasets ?? [];
     this.vehicleTotal.set(ds.reduce((t, d) => t + (d.data ?? []).reduce((a, b) => a + b, 0), 0));
     const ft: Record<string, number> = {};
     ds.forEach(d => { ft[d.fuelType] = (ft[d.fuelType] ?? 0) + (d.data ?? []).reduce((a, b) => a + b, 0); });
     const top = Object.entries(ft).sort((a, b) => b[1] - a[1])[0];
-    this.topFuelType.set(top?.[0] ?? '-');
-    this.topFuelAmount.set(top?.[1] ?? 0);
+    this.topFuelType.set(top?.[0] ?? '-'); this.topFuelAmount.set(top?.[1] ?? 0);
   }
 
   private computeEmissionKpi(data: MonthlyEmissionChartResponse): void {
@@ -232,7 +255,7 @@ export class VehicleCharts implements OnInit, AfterViewInit, OnChanges, OnDestro
     this.emissionLegend.set((data?.datasets ?? []).map(d => ({ label: d.label, color: d.color })));
   }
 
-  // ── Render: Stacked Bar (Fuel) ────────────────────────────────────────────
+  // ── Render: Stacked Bar (Fuel) ────────────────────────────────
   private renderFuelChart(data: FuelCombinedChartResponse): void {
     const canvas = this.fuelCanvasRef?.nativeElement;
     if (!canvas) return;
@@ -256,6 +279,16 @@ export class VehicleCharts implements OnInit, AfterViewInit, OnChanges, OnDestro
       },
       options: {
         responsive: true, maintainAspectRatio: false,
+        onClick: (_e: any, elements: any[]) => {
+          if (!elements.length) return;
+          const el = elements[0];
+          const ds2 = data.datasets[el.datasetIndex];
+          if ((ds2?.data?.[el.index] ?? 0) > 0)
+            this.navigateByVehicleMonthAndFuel(el.index, ds2.fuelType);
+        },
+        onHover: (_e: any, elements: any[]) => {
+          if (canvas) canvas.style.cursor = elements.length ? 'pointer' : 'default';
+        },
         plugins: {
           legend: { display: false },
           tooltip: {
@@ -288,7 +321,7 @@ export class VehicleCharts implements OnInit, AfterViewInit, OnChanges, OnDestro
     });
   }
 
-  // ── Render: Line (Emission) ───────────────────────────────────────────────
+  // ── Render: Line (Emission) ───────────────────────────────────
   private renderEmissionChart(data: MonthlyEmissionChartResponse): void {
     const canvas = this.emissionCanvasRef?.nativeElement;
     if (!canvas) return;
@@ -312,6 +345,13 @@ export class VehicleCharts implements OnInit, AfterViewInit, OnChanges, OnDestro
       },
       options: {
         responsive: true, maintainAspectRatio: false,
+        onClick: (_e: any, elements: any[]) => {
+          if (!elements.length) return;
+          this.navigateByVehicleMonth(elements[0].index);
+        },
+        onHover: (_e: any, elements: any[]) => {
+          if (canvas) canvas.style.cursor = elements.length ? 'pointer' : 'default';
+        },
         plugins: {
           legend: { display: false },
           tooltip: {
@@ -332,7 +372,7 @@ export class VehicleCharts implements OnInit, AfterViewInit, OnChanges, OnDestro
     });
   }
 
-  // ── Render: Dual-axis Bar (Distance) ─────────────────────────────────────
+  // ── Render: Dual-axis Bar (Distance) ─────────────────────────
   private renderDistanceChart(data: VehicleDistanceChartResponse): void {
     const canvas = this.distanceCanvasRef?.nativeElement;
     if (!canvas) return;
@@ -363,6 +403,13 @@ export class VehicleCharts implements OnInit, AfterViewInit, OnChanges, OnDestro
       },
       options: {
         responsive: true, maintainAspectRatio: false,
+        onClick: (_e: any, elements: any[]) => {
+          if (!elements.length) return;
+          this.navigateByVehicleMonth(elements[0].index);
+        },
+        onHover: (_e: any, elements: any[]) => {
+          if (canvas) canvas.style.cursor = elements.length ? 'pointer' : 'default';
+        },
         plugins: {
           legend: { display: false },
           tooltip: {
@@ -391,37 +438,8 @@ export class VehicleCharts implements OnInit, AfterViewInit, OnChanges, OnDestro
     });
   }
 
-  // ── Load: Vehicle Type Wise Distance ─────────────────────────
-  loadVtypeChart(): void {
-    this.isVtypeLoading.set(true);
-    this.vtypeError.set('');
-    this.vtypeTableRows.set(null);
-
-    this.svc.getVehicleTypeWiseDistance(this.year)
-      .pipe(takeUntil(this.destroy$), finalize(() => this.isVtypeLoading.set(false)))
-      .subscribe({
-        next: res => {
-          if (!res.status || !res.data) { this.vtypeError.set('No data returned.'); return; }
-          this.vtypeTableRows.set(res.data);
-          if (this.viewReady) this.deferRenderVtype(res.data);
-          else this.pendingVtype = res.data;
-        },
-        error: err => this.vtypeError.set(err?.message || 'Failed to load vehicle type chart.')
-      });
-  }
-
-  // ── Deferred render: Vtype ────────────────────────────────────
-  private deferRenderVtype(data: VehicleTypeDistancePivotResponse | null): void {
-    if (data) this._lastVtypeData = data;
-    if (!this._lastVtypeData) return;
-    const snap = this._lastVtypeData;
-    setTimeout(() => this.renderVtypeChart(snap), 0);
-  }
-
-  // ── Render: Horizontal Bar + Table (Vehicle Type Distance) ────
+  // ── Render: Vtype table (pure HTML — no canvas needed) ────────
   private renderVtypeChart(data: VehicleTypeDistancePivotResponse): void {
-    // Table is rendered purely via Angular template using vtypeTableRows signal.
-    // No Chart.js canvas needed — data already set in loadVtypeChart via vtypeTableRows.set()
     if (!data?.vehicleTypes?.length) {
       this.vtypeError.set('No vehicle type data for this year.');
     }

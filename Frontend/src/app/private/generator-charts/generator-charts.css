@@ -341,3 +341,29 @@
 @media (max-width: 480px) {
   .module-kpi-grid { grid-template-columns: 1fr; }
 }
+
+/* ── COMPACT PIE — centred donut, no extra info below ── */
+.pie-compact-card { padding-bottom: 14px; }
+
+.pie-only-body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 4px 0 0;
+}
+
+.pie-canvas-wrap-sm {
+  position: relative;
+  width: 140px;
+  height: 140px;
+  flex-shrink: 0;
+}
+.pie-canvas-wrap-sm canvas {
+  width: 140px !important;
+  height: 140px !important;
+  max-width: 140px !important;
+  max-height: 140px !important;
+  display: block;
+}
+.pie-canvas-wrap-sm .pie-centre-value { font-size: 14px; font-weight: 700; }
+.pie-canvas-wrap-sm .pie-centre-label { font-size: 8px; margin-top: 2px; }
