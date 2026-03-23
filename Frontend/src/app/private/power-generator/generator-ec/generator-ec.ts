@@ -685,20 +685,26 @@ export class GeneratorOperationComponent implements OnInit {
     });
   }
 
-  performAction(workflowId: number) {
+ performAction(workflowId: number) {
+  const operationId = this.operationForm.get('OperationId')?.value;
 
-    const operationId = this.operationForm.get('OperationId')?.value;
+  if (!operationId) {
+    Swal.fire('Error', 'Operation not found', 'error');
+    return;
+  }
 
-    if (!operationId) {
-      Swal.fire('Error', 'Operation not found', 'error');
+  const action = this.workflowActions.find(a => a.workflowId === workflowId);
+  if (!action) return;
+
+  if (action.actionName === 'Resubmit') {
+
+    if (this.operationForm.invalid) {
+      this.operationForm.markAllAsTouched();
+      Swal.fire('Error', 'Please fill all required fields before resubmitting', 'error');
       return;
     }
 
-    const action = this.workflowActions.find(a => a.workflowId === workflowId);
-    if (!action) return;
-
     const raw = this.operationForm.getRawValue();
-
     const payload = {
       siteId: raw.SiteId,
       generatorId: raw.GeneratorId,
@@ -708,40 +714,41 @@ export class GeneratorOperationComponent implements OnInit {
       fuelConsumedLiters: raw.FuelConsumedLiters
     };
 
-    // RESUBMIT (update + status change)
-    if (action.actionName === 'Resubmit') {
-
-      if (this.operationForm.invalid) {
-        Swal.fire('Error', 'Please fill all required fields before resubmitting', 'error');
-        return;
-      }
-
-      this.service.update(operationId, payload)
-        .pipe(
-          switchMap(() => this.service.updateStatus(operationId, workflowId))
-        )
-        .subscribe({
+    this.service.update(operationId, payload).subscribe({
+      next: () => {
+        // Step 2: update status only after update succeeds
+        this.service.updateStatus(operationId, workflowId).subscribe({
           next: () => {
             Swal.fire('Resubmitted', 'Operation updated and resubmitted successfully', 'success')
               .then(() => this.goBack());
           },
-          error: () => Swal.fire('Error', 'Resubmit failed', 'error')
+          error: (err) => {
+            console.error('updateStatus error:', err);
+            Swal.fire('Error', 'Data saved but status update failed. Please try again.', 'warning');
+          }
         });
+      },
+      error: (err) => {
+        console.error('update error:', err);
+        Swal.fire('Error', 'Failed to update operation data', 'error');
+      }
+    });
 
-    } else {
+  } else {
 
-      // Approve / Reject
-      this.service.updateStatus(operationId, workflowId)
-        .subscribe({
-          next: () => {
-            Swal.fire('Success', 'Status updated successfully', 'success')
-              .then(() => this.goBack());
-          },
-          error: () => Swal.fire('Error', 'Failed to update status', 'error')
-        });
+    this.service.updateStatus(operationId, workflowId).subscribe({
+      next: () => {
+        Swal.fire('Success', 'Status updated successfully', 'success')
+          .then(() => this.goBack());
+      },
+      error: (err) => {
+        console.error('updateStatus error:', err);
+        Swal.fire('Error', 'Failed to update status', 'error');
+      }
+    });
 
-    }
   }
+}
 
   getActionMessage(h: any): string {
   const role = h.ActionByRole || '';

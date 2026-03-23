@@ -160,33 +160,34 @@ select.invalid {
   display: flex;
   /* justify-content: center;   centers buttons horizontally */
   /* align-items: center; */
-  gap: 10px;                 /* space between buttons */
+  gap: 8px;                 /* space between buttons */
   margin-top: 0px;
   padding-top: 1px;
+  flex-wrap: wrap;
+  justify-content: flex-start;
 }
 
 .review-actions button {
-  min-width: 180px;         
-  padding: 14px 25px;
-  font-size: 15px;
-  font-weight: 600;
   border-radius: 8px;
   border: none;
+  font-size: 15px;
+  font-weight: 600;
+  /* color: white; */
+  transition: 0.2s;
+  display: inline-block;
+  width: auto;
+  padding: 12px 25px;
+  margin-right: 8px;
   cursor: pointer;
-  transition: all 0.3s ease;
 }
-.review-actions button {
-  flex: 1;
-  max-width: 350px;
-  
-}
+
 /* Reporter Buttons */
 .btn-submit {
   background-color: #1b5e20;
   color: #fff;
 }
 .btn-submit:hover {
-  background-color: #145214;
+  background-color: #2e7d32;
 }
 
 .btn-edit {
@@ -198,11 +199,11 @@ select.invalid {
 }
 
 .btn-resubmit {
-  background-color: #3b82f6;
+  background-color: #f59e0b;
   color: #fff;
 }
 .btn-resubmit:hover {
-  background-color: #1e40af;
+  background-color: #d97706;
 }
 
 /* Corporate Buttons */
@@ -223,9 +224,9 @@ select.invalid {
   background-color: #991b1b;
 }
 .btn-reset {
-  background-color: #6c757d;
-  color: white;
-  margin-left: 10px;
+  background-color: #e5e7eb;
+  color: black;
+  margin-left: 0px;
 }
 
 /* ================= TABLE STYLING ================= */
@@ -323,9 +324,6 @@ table tr:hover {
 .history-meta     { display: flex; align-items: center; gap: 6px; }
 .history-date     { font-size: 12px; color: #777; }
 .history-ago      { font-size: 12px; color: #aaa; }
-
-
-
 
 .reported { background: #f59e0b; }
 .reviewed { background: #3b82f6; }

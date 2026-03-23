@@ -175,21 +175,21 @@
         </div>
       </div> -->
     </form>
-  </div>
+  
 
   <!-- ================= BTNS ================= -->
   <div class="review-actions">
 
     <!-- Submit -->
     <button *ngIf="canSubmit() && !isSearchMode()" class="btn-submit" (click)="submitTrip()">
-      Submit Trip
+      Save
     </button>
     <!-- Reset Button -->
     <button *ngIf="canSubmit()" type="button" class="btn-reset" (click)="resetForm()">
       Reset
     </button>
     <!-- Resubmit -->
-    <button *ngIf="canResubmit() && !isSearchMode()" class="btn-submit" (click)="resubmitTrip()">
+    <button *ngIf="canResubmit() && !isSearchMode()" class="btn-resubmit" (click)="resubmitTrip()">
       Resubmit
     </button>
 
@@ -206,6 +206,7 @@
       </button>
 
     </ng-container>
+  </div>
   </div>
 
   <!-- ================= RESULT SECTION ================= -->

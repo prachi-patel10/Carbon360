@@ -55,7 +55,9 @@ export class GeneratorecService {
   }
 
   updateStatus(id: string, workflowId: number) {
-  return this.http.patch(`${this.apiUrl}/status/${id}?workflowId=${workflowId}`, {});
+  return this.http.patch(`${this.apiUrl}/status/${id}?workflowId=${workflowId}`, null,
+    { responseType: 'text' }
+  );
 }
 
   // GET workflow actions for a specific operation
