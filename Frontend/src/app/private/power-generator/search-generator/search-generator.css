@@ -756,3 +756,12 @@ app-date-range-picker-component {
   opacity: 0.55;
   cursor: not-allowed;
 }
+
+.filter-header {
+  display: flex;
+  align-items: center;
+}
+
+.export-btn-container {
+  margin-left: auto;
+}

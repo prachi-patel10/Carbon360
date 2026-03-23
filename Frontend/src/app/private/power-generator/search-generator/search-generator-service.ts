@@ -95,4 +95,11 @@ export class SearchGeneratorService {
     return this.http.get<any>(`${this.apiUrl}/search?${params}`);
   }
 
+   exportExcel(params: any) {
+    return this.http.get(`${this.apiUrl}/export`, {
+      params,
+      responseType: 'blob'
+    });
+  }
+
 }

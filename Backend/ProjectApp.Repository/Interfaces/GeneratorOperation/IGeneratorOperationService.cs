@@ -46,6 +46,16 @@ namespace ProjectApp.Repository.Interfaces.GenerationOperation
         Task<GeneratorOperationPagedResponseDTO> GetMyActionRecordsAsync(
       int pageNumber, int pageSize, string sortColumn, string sortDirection);
 
+        Task<List<GeneratorOperationResponseDTO>> ExportToExcelAsync(
+        string search,
+        string fuelTypes,
+        string generatorName,
+        DateTime? startDate,
+        DateTime? endDate,
+        DateTime? entryStartDate,
+        DateTime? entryEndDate,
+        int? statusId);
+
     }
 }
 

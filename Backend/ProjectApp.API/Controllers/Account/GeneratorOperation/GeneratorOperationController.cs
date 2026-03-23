@@ -5,9 +5,9 @@ using ProjectApp.Core.DTOs.Account.GeneratorOperation;
 using ProjectApp.Core.DTOs.Masters.Generator;
 using ProjectApp.Core.Entities;
 using ProjectApp.Repository.Interfaces.GenerationOperation;
-using ProjectApp.Repository.Services.GeneratorOperation;
 using ProjectApp.Repository.Interfaces.Masters; // IGeneratorService
-
+using ProjectApp.Repository.Services.Common;
+using ProjectApp.Repository.Services.GeneratorOperation;
 using System.Net;
 
 namespace ProjectApp.API.Controllers.Account.GeneratorOperation
@@ -154,7 +154,7 @@ namespace ProjectApp.API.Controllers.Account.GeneratorOperation
     [FromQuery] List<string>? fuelTypes = null,
     DateTime? startDate = null,
     DateTime? endDate = null,
-    DateTime? entryStartDate = null,  
+    DateTime? entryStartDate = null,
     DateTime? entryEndDate = null,
     int? statusId = null,
     int pageNumber = 1,
@@ -170,7 +170,7 @@ namespace ProjectApp.API.Controllers.Account.GeneratorOperation
                 generatorName,
                 startDate,
                 endDate,
-                 entryStartDate,   
+                 entryStartDate,
                 entryEndDate,
                 statusId,
                 pageNumber,
@@ -253,5 +253,58 @@ namespace ProjectApp.API.Controllers.Account.GeneratorOperation
                 pageNumber, pageSize, sortColumn, sortDirection);
             return Ok(result);
         }
+
+
+        [HttpGet("export")]
+        public async Task<IActionResult> ExportToExcel(
+   string? search = null,
+   string? generatorName = null,
+   [FromQuery] List<string>? fuelTypes = null,
+   DateTime? startDate = null,
+   DateTime? endDate = null,
+   DateTime? entryStartDate = null,
+   DateTime? entryEndDate = null,
+   int? statusId = null)
+        {
+            string? fuelTypesString = fuelTypes != null && fuelTypes.Any()
+                ? string.Join(",", fuelTypes)
+                : null;
+
+            var data = await _service.ExportToExcelAsync(
+                search,
+                fuelTypesString,
+                generatorName,
+                startDate,
+                endDate,
+                entryStartDate,
+                entryEndDate,
+                statusId
+            );
+
+            var columns = new Dictionary<string, string>
+    {
+        {"Generator Name", "GeneratorName"},
+        {"Fuel Type", "FuelType"},
+        {"Entry Date", "EntryDate"},
+        {"Start Date", "StartTime"},
+        {"End Date", "EndTime"},
+        {"Fuel (L)", "FuelConsumedLiters"},
+        {"Load Factor", "LoadFactor"},
+        {"Total Emission", "TotalEmission"}
+    };
+
+            var fileBytes = await ExcelExportHelper.ExportToExcelAsync(
+                data,
+                columns,
+                "Generator Report",
+                "Generator Emission Report"
+            );
+
+            return File(
+                fileBytes,
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                "GeneratorOperations.xlsx"
+            );
+        }
     }
-    }
+}

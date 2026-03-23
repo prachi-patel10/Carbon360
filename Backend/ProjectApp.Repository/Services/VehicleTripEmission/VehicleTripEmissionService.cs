@@ -827,17 +827,59 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
             }
         }
 
+        //    public async Task<byte[]> ExportVehicleTripsExcel(
+        //string? search,
+        //string? fuelType,
+        //DateTime? startDate,
+        //DateTime? endDate,
+        //DateTime? entryStartDate,
+        //DateTime? entryEndDate,
+        //string sortColumn,
+        //string sortDirection)
+        //    {
+
+        //        var (data, total) = await SearchVehicleTrips(
+        //            search,
+        //            null,
+        //            fuelType,
+        //            null,
+        //            startDate,
+        //            endDate,
+        //            null,
+        //            null,
+        //            1,
+        //            100000, 
+        //            sortColumn,
+        //            sortDirection
+        //        );
+
+        //        var columns = new Dictionary<string, string>
+        //        {
+        //            {"Vehicle No", "VehicleNumber"},
+        //            {"Vehicle Type", "VehicleType"},
+        //            {"Fuel Type", "FuelType"},
+        //            {"Entry Date", "EntryDate"},
+        //            {"Distance (KM)", "DistanceKm"},
+        //            {"Fuel Used (Ltr)", "FuelConsumedLtr"},
+        //            {"Start Date", "TripStartDateTime"},
+        //            {"End Date", "TripEndDateTime"},
+        //            {"Total Emission", "TotalEmission"}
+        //        };
+
+        //        return await ExcelExportHelper.ExportToExcelAsync(data, columns, "Emission Report");
+        //    }
+
+
         public async Task<byte[]> ExportVehicleTripsExcel(
-    string? search,
-    string? fuelType,
-    DateTime? startDate,
-    DateTime? endDate,
-    DateTime? entryStartDate,
-    DateTime? entryEndDate,
-    string sortColumn,
-    string sortDirection)
+      string? search,
+      string? fuelType,
+      DateTime? startDate,
+      DateTime? endDate,
+      DateTime? entryStartDate,
+      DateTime? entryEndDate,
+      string sortColumn,
+      string sortDirection)
         {
-         
             var (data, total) = await SearchVehicleTrips(
                 search,
                 null,
@@ -848,28 +890,33 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
                 null,
                 null,
                 1,
-                100000, 
+                100000,
                 sortColumn,
                 sortDirection
             );
 
             var columns = new Dictionary<string, string>
-            {
-                {"Vehicle No", "VehicleNumber"},
-                {"Vehicle Type", "VehicleType"},
-                {"Fuel Type", "FuelType"},
-                {"Entry Date", "EntryDate"},
-                {"Distance (KM)", "DistanceKm"},
-                {"Fuel Used (Ltr)", "FuelConsumedLtr"},
-                {"Start Date", "TripStartDateTime"},
-                {"End Date", "TripEndDateTime"},
-                {"Total Emission", "TotalEmission"}
-            };
+    {
+        {"Vehicle No", "VehicleNumber"},
+        {"Vehicle Type", "VehicleType"},
+        {"Fuel Type", "FuelType"},
+        {"Entry Date", "EntryDate"},
+        {"Distance (KM)", "DistanceKm"},
+        {"Fuel Used (Ltr)", "FuelConsumedLtr"},
+        {"Start Date", "TripStartDateTime"},
+        {"End Date", "TripEndDateTime"},
+        {"Total Emission", "TotalEmission"}
+    };
 
-            return await ExcelExportHelper.ExportToExcelAsync(data, columns, "Emission Report");
+            return await ExcelExportHelper.ExportToExcelAsync(
+                data,
+                columns,
+                "Vehicle Report",
+                "Vehicle Trip Emission Report"
+            );
         }
 
-      
+
         //private void EncodeIds(Dictionary<string, object> data)
         //{
         //    if (data == null) return;

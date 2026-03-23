@@ -540,23 +540,34 @@ getSortIcon(column: string): string {
 
     const now = new Date();
 
-const day = ('0' + now.getDate()).slice(-2);
-const month = ('0' + (now.getMonth() + 1)).slice(-2);
-const year = now.getFullYear();
+    const day = ('0' + now.getDate()).slice(-2);
+    const month = ('0' + (now.getMonth() + 1)).slice(-2);
+    const year = now.getFullYear();
 
-// ⏰ TIME (24-hour format with seconds)
-const hours = ('0' + now.getHours()).slice(-2);
-const minutes = ('0' + now.getMinutes()).slice(-2);
-const seconds = ('0' + now.getSeconds()).slice(-2);
+    const hours = ('0' + now.getHours()).slice(-2);
+    const minutes = ('0' + now.getMinutes()).slice(-2);
+    const seconds = ('0' + now.getSeconds()).slice(-2);
 
-// ❌ DON'T use ":" in file name (Windows issue)
-// ✅ use "-"
-const formattedTime = `${hours}-${minutes}-${seconds}`;
+    // ✅ No hyphen anywhere
+    const formattedDateTime = `${day}${month}${year}_${hours}${minutes}${seconds}`;
 
-// 📅 FINAL
-const formattedDateTime = `${day}-${month}-${year}_${formattedTime}`;
+    // const day = ('0' + now.getDate()).slice(-2);
+    // const month = ('0' + (now.getMonth() + 1)).slice(-2);
+    // const year = now.getFullYear();
 
-a.download = `Search_Fleet&Transport_${formattedDateTime}.xlsx`;
+    // // ⏰ TIME (24-hour format with seconds)
+    // const hours = ('0' + now.getHours()).slice(-2);
+    // const minutes = ('0' + now.getMinutes()).slice(-2);
+    // const seconds = ('0' + now.getSeconds()).slice(-2);
+
+    // // ❌ DON'T use ":" in file name (Windows issue)
+    // // ✅ use "-"
+    // const formattedTime = `${hours}-${minutes}-${seconds}`;
+
+    // // 📅 FINAL
+    // const formattedDateTime = `${day}-${month}-${year}_${formattedTime}`;
+
+    a.download = `Search_Fleet&Transport_${formattedDateTime}.xlsx`;
 
     // ✅ FINAL FILE NAME
     //a.download = `Search_Fleet&Transport_${timestamp}.xlsx`;

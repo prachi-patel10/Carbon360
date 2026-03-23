@@ -241,6 +241,69 @@ loadingTrips: Record<string, boolean> = {};
   return !!this.loadingTrips[operationId];
 }
 
+exportExcel() {
+
+  const params: any = {};
+
+  if (this.searchText()) {
+    params.search = this.searchText();
+  }
+
+  if (this.selectedFuels.length > 0) {
+    params.fuelTypes = this.selectedFuels.join(',');
+  }
+
+  if (this.operationStartDate()) {
+    params.startDate = this.operationStartDate();
+  }
+
+  if (this.operationEndDate()) {
+    params.endDate = this.operationEndDate();
+  }
+
+  if (this.entryStartDate()) {
+    params.entryStartDate = this.entryStartDate();
+  }
+
+  if (this.entryEndDate()) {
+    params.entryEndDate = this.entryEndDate();
+  }
+
+  params.isExport = true; // ✅ MUST
+
+  this.service.exportExcel(params).subscribe(blob => {
+
+    const file = new Blob([blob], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    });
+
+    const url = window.URL.createObjectURL(file);
+    const a = document.createElement('a');
+
+    const now = new Date();
+
+    const day = ('0' + now.getDate()).slice(-2);
+    const month = ('0' + (now.getMonth() + 1)).slice(-2);
+    const year = now.getFullYear();
+
+    const hours = ('0' + now.getHours()).slice(-2);
+    const minutes = ('0' + now.getMinutes()).slice(-2);
+    const seconds = ('0' + now.getSeconds()).slice(-2);
+
+    // ✅ Final compact format
+    const formatted = `${day}${month}${year}_${hours}${minutes}${seconds}`;
+
+    // const now = new Date();
+    // const formatted = `${now.getDate()}-${now.getMonth()+1}-${now.getFullYear()}_${now.getHours()}-${now.getMinutes()}-${now.getSeconds()}`;
+
+    a.download = `Search_PowerGenerator_${formatted}.xlsx`;
+    a.href = url;
+    a.click();
+
+    window.URL.revokeObjectURL(url);
+  });
+}
+
 downloadTrip(operationId: string) {
   if (!operationId) return;
   this.loadingTrips[operationId] = true;

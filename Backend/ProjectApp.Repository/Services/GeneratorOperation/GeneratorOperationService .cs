@@ -882,5 +882,87 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
                 return dict.ContainsKey(key) && dict[key] != null ? dict[key].ToString() : "-";
             }
         }
+
+
+        public async Task<List<GeneratorOperationResponseDTO>> ExportToExcelAsync(
+        string search,
+        string fuelTypes,
+        string generatorName,
+        DateTime? startDate,
+        DateTime? endDate,
+        DateTime? entryStartDate,
+        DateTime? entryEndDate,
+        int? statusId)
+        {
+            await using var connection = _context.Database.GetDbConnection();
+            await using var command = connection.CreateCommand();
+
+            command.CommandText = "USP_CB_SearchGeneratorOperation";
+            command.CommandType = CommandType.StoredProcedure;
+
+            command.Parameters.Add(new SqlParameter("@Search", (object)search ?? DBNull.Value));
+            command.Parameters.Add(new SqlParameter("@GeneratorName", (object)generatorName ?? DBNull.Value));
+            command.Parameters.Add(new SqlParameter("@FuelTypes", (object)fuelTypes ?? DBNull.Value));
+            command.Parameters.Add(new SqlParameter("@StartDate", (object)startDate ?? DBNull.Value));
+            command.Parameters.Add(new SqlParameter("@EndDate", (object)endDate ?? DBNull.Value));
+            command.Parameters.Add(new SqlParameter("@EntryStartDate", (object)entryStartDate ?? DBNull.Value));
+            command.Parameters.Add(new SqlParameter("@EntryEndDate", (object)entryEndDate ?? DBNull.Value));
+            command.Parameters.Add(new SqlParameter("@StatusId", (object)statusId ?? DBNull.Value));
+
+            command.Parameters.Add(new SqlParameter("@UserId", GetCurrentUserId()));
+            command.Parameters.Add(new SqlParameter("@UserRole", _userContext.Role ?? "Reporter"));
+
+            command.Parameters.Add(new SqlParameter("@PageNumber", 1));
+            command.Parameters.Add(new SqlParameter("@PageSize", int.MaxValue));
+            command.Parameters.Add(new SqlParameter("@IsExport", 1));
+
+            if (connection.State != ConnectionState.Open)
+                await connection.OpenAsync();
+
+            var list = new List<GeneratorOperationResponseDTO>();
+
+            var totalParam = new SqlParameter("@TotalRecords", SqlDbType.Int)
+            {
+                Direction = ParameterDirection.Output
+            };
+            command.Parameters.Add(totalParam);
+
+            await using var reader = await command.ExecuteReaderAsync();
+
+            while (await reader.ReadAsync())
+            {
+                list.Add(new GeneratorOperationResponseDTO
+                {
+                    GeneratorName = reader["GeneratorName"]?.ToString(),
+                    FuelType = reader["FuelType"]?.ToString(),
+
+                    EntryDate = reader.IsDBNull(reader.GetOrdinal("EntryDate"))
+                        ? DateTime.MinValue
+                        : reader.GetDateTime(reader.GetOrdinal("EntryDate")),
+
+                    StartTime = reader.IsDBNull(reader.GetOrdinal("StartTime"))
+                        ? DateTime.MinValue
+                        : reader.GetDateTime(reader.GetOrdinal("StartTime")),
+
+                    EndTime = reader.IsDBNull(reader.GetOrdinal("EndTime"))
+                        ? DateTime.MinValue
+                        : reader.GetDateTime(reader.GetOrdinal("EndTime")),
+
+                    FuelConsumedLiters = reader.IsDBNull(reader.GetOrdinal("FuelConsumedLiters"))
+                        ? 0
+                        : reader.GetDecimal(reader.GetOrdinal("FuelConsumedLiters")),
+
+                    LoadFactor = reader.IsDBNull(reader.GetOrdinal("LoadFactor"))
+                        ? 0
+                        : reader.GetDecimal(reader.GetOrdinal("LoadFactor")),
+
+                    TotalEmission = reader.IsDBNull(reader.GetOrdinal("Total_CO2E_KG"))
+                        ? 0
+                        : reader.GetDecimal(reader.GetOrdinal("Total_CO2E_KG"))
+                });
+            }
+            return list;
+        }
+
     }
 }
