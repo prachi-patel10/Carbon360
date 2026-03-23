@@ -7,22 +7,32 @@ body {
     background-color: #f0f2f5;
     font-family: 'Inter', 'Segoe UI', Roboto, sans-serif;
     color: #1b5e20;
+    margin: 0;
+    padding: 0;
 }
 
+/* ── ROOT FIX: The content area must NOT overflow the viewport ── */
 .vehicle-search-container {
     min-height: 100vh;
     width: 100%;
-    overflow-x: hidden;
+    max-width: 100%;
+    overflow-x: hidden; /* clips anything that bleeds out */
 }
 
-/* ── Container: never wider than available space ── */
-.vehicle-search-container .container {
-    width: 100%;
+.generator-report-container {
+    overflow-x: hidden;
     max-width: 100%;
+}
+
+/* ── Container: zero auto-margins, full fluid width ── */
+.vehicle-search-container .container,
+.generator-report-container .container {
+    width: 100% !important;
+    max-width: 100% !important;
     padding-left: 16px;
     padding-right: 16px;
-    margin-left: 0;
-    margin-right: 0;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
 }
 
 /* ================= CARDS ================= */
@@ -32,7 +42,9 @@ body {
     border-radius: 12px;
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
     width: 100%;
+    max-width: 100%;
     overflow: hidden;
+    background: #fff;
 }
 
 /* ================= FILTER FORM ================= */
@@ -40,7 +52,6 @@ body {
     padding: 4px 0;
 }
 
-/* Header row: icon + label + export button */
 .filter-header {
     display: flex;
     align-items: center;
@@ -82,18 +93,20 @@ body {
     white-space: nowrap;
 }
 
-/* Filter fields grid — 3 columns by default */
+/* ── Filter fields: auto-fit so they never force overflow ── */
 .filter-row-fields {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     gap: 12px;
     margin-bottom: 12px;
+    width: 100%;
 }
 
 .filter-field {
     display: flex;
     flex-direction: column;
-    min-width: 0; /* critical: prevents grid blowout */
+    min-width: 0;
+    width: 100%;
 }
 
 .filter-label {
@@ -118,12 +131,14 @@ body {
     align-items: center;
     gap: 10px;
     flex-wrap: wrap;
+    width: 100%;
 }
 
 .search-wrap {
-    flex: 1 1 180px;
+    flex: 1 1 160px;
     min-width: 0;
     position: relative;
+    max-width: 100%;
 }
 
 .search-icon {
@@ -189,6 +204,7 @@ body {
 .fuel-multiselect {
     position: relative;
     min-width: 0;
+    width: 100%;
 }
 
 .fuel-trigger {
@@ -204,11 +220,10 @@ body {
     gap: 6px;
     transition: border-color 0.2s;
     overflow: hidden;
+    width: 100%;
 }
 
-.fuel-trigger:hover {
-    border-color: #0f5132;
-}
+.fuel-trigger:hover { border-color: #0f5132; }
 
 .fuel-tags {
     display: flex;
@@ -235,17 +250,8 @@ body {
     text-overflow: ellipsis;
 }
 
-.fuel-tag .remove {
-    cursor: pointer;
-    font-size: 10px;
-    opacity: 0.7;
-    flex-shrink: 0;
-}
-
-.fuel-tag .remove:hover {
-    opacity: 1;
-    color: #b91c1c;
-}
+.fuel-tag .remove { cursor: pointer; font-size: 10px; opacity: 0.7; flex-shrink: 0; }
+.fuel-tag .remove:hover { opacity: 1; color: #b91c1c; }
 
 .placeholder {
     color: #adb5bd;
@@ -262,9 +268,7 @@ body {
     flex-shrink: 0;
 }
 
-.fuel-multiselect.open .arrow {
-    transform: rotate(180deg);
-}
+.fuel-multiselect.open .arrow { transform: rotate(180deg); }
 
 .fuel-dropdown {
     position: absolute;
@@ -275,7 +279,7 @@ body {
     border: 1px solid #e2e8f0;
     border-radius: 8px;
     z-index: 500;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
     overflow: hidden;
     min-width: 160px;
 }
@@ -300,9 +304,7 @@ body {
     font-weight: 500;
 }
 
-.clear-btn:hover {
-    text-decoration: underline;
-}
+.clear-btn:hover { text-decoration: underline; }
 
 .fuel-option {
     display: flex;
@@ -315,13 +317,8 @@ body {
     color: #374151;
 }
 
-.fuel-option:hover {
-    background: #f0fdf4;
-}
-
-.fuel-option.selected {
-    background: #e8f5e9;
-}
+.fuel-option:hover { background: #f0fdf4; }
+.fuel-option.selected { background: #e8f5e9; }
 
 .fuel-option input[type=checkbox] {
     accent-color: #0f5132;
@@ -337,128 +334,118 @@ body {
     color: #1b5e20;
 }
 
-/* ================= TABLE ================= */
+/* ================= TABLE — KEY FIXES ================= */
+
+/* Wrapper scrolls, never expands the page */
 .table-responsive {
     width: 100%;
-    overflow-x: auto;
+    max-width: 100%;
+    overflow-x: auto;          /* horizontal scroll lives HERE */
+    overflow-y: visible;
     -webkit-overflow-scrolling: touch;
-    /* thin scrollbar for webkit */
     scrollbar-width: thin;
     scrollbar-color: #b8e4cc #f0f2f5;
+    display: block;
 }
 
-.table-responsive::-webkit-scrollbar {
-    height: 5px;
-}
+.table-responsive::-webkit-scrollbar { height: 5px; }
+.table-responsive::-webkit-scrollbar-track { background: #f0f2f5; }
+.table-responsive::-webkit-scrollbar-thumb { background: #b8e4cc; border-radius: 4px; }
 
-.table-responsive::-webkit-scrollbar-track {
-    background: #f0f2f5;
-}
-
-.table-responsive::-webkit-scrollbar-thumb {
-    background: #b8e4cc;
-    border-radius: 4px;
-}
-
+/* Table itself has a fixed min-width; it scrolls inside the wrapper */
 .vehicle-table {
     width: 100%;
-    min-width: 860px; /* keeps columns readable; scrolls on small screens */
+    min-width: 1000px;        /* table scrolls below this, never shrinks */
     border-collapse: collapse;
+    table-layout: fixed;       /* equal column distribution, no blowout */
 }
+
+/* Give each column a sensible fixed width */
+.vehicle-table th:nth-child(1)  { width: 120px; } /* Vehicle No */
+.vehicle-table th:nth-child(2)  { width: 80px;  } /* Type */
+.vehicle-table th:nth-child(3)  { width: 90px;  } /* Fuel Type */
+.vehicle-table th:nth-child(4)  { width: 115px; } /* Reported Date */
+.vehicle-table th:nth-child(5)  { width: 105px; } /* Start Date */
+.vehicle-table th:nth-child(6)  { width: 105px; } /* End Date */
+.vehicle-table th:nth-child(7)  { width: 110px; } /* Distance */
+.vehicle-table th:nth-child(8)  { width: 75px;  } /* Fuel L */
+.vehicle-table th:nth-child(9)  { width: 155px; } /* Total Emission */
+.vehicle-table th:nth-child(10) { width: 70px;  } /* Action */
+.vehicle-table th:nth-child(11) { width: 80px;  } /* Download */
 
 .vehicle-table th {
     background-color: #0f5132;
     color: white;
-    font-size: 0.72rem;
+    font-size: 0.70rem;
     text-transform: uppercase;
     letter-spacing: 0.04em;
-    padding: 0.9rem 0.75rem;
+    padding: 0.85rem 0.6rem;
     border-bottom: 2px solid rgba(255,255,255,0.1);
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
     vertical-align: middle;
 }
 
-.vehicle-table th.sortable {
-    cursor: pointer;
-    user-select: none;
-}
+.vehicle-table th.sortable { cursor: pointer; user-select: none; }
+.vehicle-table th.sortable:hover { background-color: #0a3d22; }
 
-.vehicle-table th.sortable:hover {
-    background-color: #0a3d22;
-}
-
-.sort-icon {
-    font-size: 11px;
-    opacity: 0.65;
-    margin-left: 4px;
-}
+.sort-icon { font-size: 10px; opacity: 0.65; margin-left: 3px; }
 
 .vehicle-table tbody td {
-    padding: 0.8rem 0.75rem;
+    padding: 0.75rem 0.6rem;
     border-bottom: 1px solid #f1f5f9;
-    font-size: 0.84rem;
-    /* color: #374151; */
+    font-size: 0.81rem;
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
     vertical-align: middle;
 }
 
-.vehicle-table tbody tr:hover td {
-    background-color: #f0fdf4 !important;
-}
+.vehicle-table tbody tr:hover td { background-color: #f0fdf4 !important; }
 
-.emission-value {
-    font-weight: 700;
-        text-align: center;
-}
+.emission-value { font-weight: 700; text-align: center; }
 
-/* ── Emission Level Colors ── */
-/* ── Emission Level Colors ── */
 td.emission-low       { color: #15803d; font-weight: 700; }
 td.emission-moderate  { color: #a16207; font-weight: 700; }
 td.emission-high      { color: #c2410c; font-weight: 700; }
 td.emission-very-high { color: #991b1b; font-weight: 700; }
 td.emission-critical  { color: #7f1d1d; font-weight: 700; }
-/* ── Emission Tooltip ── */
-td.emission-value {
-  position: relative;
-  cursor: default;
-}
+
+td.emission-value { position: relative; cursor: default; }
 
 .emission-tooltip {
-  visibility: hidden;
-  opacity: 0;
-  position: absolute;
-  bottom: calc(100% + 6px);
-  left: 50%;
-  transform: translateX(-50%);
-  background: #1a2e1a;
-  color: #ffffff;
-  font-size: 11px;
-  font-weight: 500;
-  padding: 5px 10px;
-  border-radius: 6px;
-  white-space: nowrap;
-  z-index: 999;
-  pointer-events: none;
-  transition: opacity 0.2s ease;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    visibility: hidden;
+    opacity: 0;
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a2e1a;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 5px 10px;
+    border-radius: 6px;
+    white-space: nowrap;
+    z-index: 999;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
 }
 
-/* Arrow pointing down */
 .emission-tooltip::after {
-  content: '';
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  border: 5px solid transparent;
-  border-top-color: #1a2e1a;
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-top-color: #1a2e1a;
 }
 
-td.emission-value:hover .emission-tooltip {
-  visibility: visible;
-  opacity: 1;
-}
+td.emission-value:hover .emission-tooltip { visibility: visible; opacity: 1; }
+
 /* ================= ACTION BUTTONS ================= */
 .btn-open {
     background: #e8f5e9;
@@ -472,9 +459,7 @@ td.emission-value:hover .emission-tooltip {
     line-height: 1;
 }
 
-.btn-open:hover {
-    background: #c8e6c9;
-}
+.btn-open:hover { background: #c8e6c9; }
 
 .btn-pdf-download {
     background: #fff0f0;
@@ -488,16 +473,8 @@ td.emission-value:hover .emission-tooltip {
     transition: background 0.2s, color 0.2s;
 }
 
-.btn-pdf-download:hover:not(:disabled) {
-    background: #c0392b;
-    color: #ffffff;
-    border-color: #c0392b;
-}
-
-.btn-pdf-download:disabled {
-    opacity: 0.55;
-    cursor: not-allowed;
-}
+.btn-pdf-download:hover:not(:disabled) { background: #c0392b; color: #fff; border-color: #c0392b; }
+.btn-pdf-download:disabled { opacity: 0.55; cursor: not-allowed; }
 
 /* ================= PAGINATION FOOTER ================= */
 .table-footer {
@@ -530,7 +507,6 @@ td.emission-value:hover .emission-tooltip {
     display: flex;
     align-items: center;
     gap: 6px;
-    flex-wrap: nowrap;
 }
 
 .pagination button {
@@ -545,14 +521,8 @@ td.emission-value:hover .emission-tooltip {
     transition: background 0.2s;
 }
 
-.pagination button:hover:not(:disabled) {
-    background: #166534;
-}
-
-.pagination button:disabled {
-    background: #cbd5e1;
-    cursor: not-allowed;
-}
+.pagination button:hover:not(:disabled) { background: #166534; }
+.pagination button:disabled { background: #cbd5e1; cursor: not-allowed; }
 
 .page-info {
     font-weight: 500;
@@ -562,135 +532,32 @@ td.emission-value:hover .emission-tooltip {
 }
 
 /* ================= RESPONSIVE ================= */
-
-/*
-   Key concept: when the sidebar is OPEN it typically takes ~260px.
-   We use fluid % widths and min-width on the table so it scrolls
-   rather than squishes. The breakpoints below handle the content
-   area width, not the full viewport width.
-*/
-
-/* Sidebar open scenario — content area ~900px or less */
-@media (max-width: 1200px) {
-    .filter-row-fields {
-        grid-template-columns: repeat(3, 1fr);
-        gap: 10px;
-    }
-
-    .vehicle-table {
-        min-width: 780px;
-    }
-
-    .vehicle-table th,
-    .vehicle-table tbody td {
-        padding: 0.75rem 0.6rem;
-        font-size: 0.78rem;
-    }
-}
-
-/* Sidebar open + medium screen — content area ~700-900px */
-@media (max-width: 1024px) {
+@media (max-width: 1100px) {
     .filter-row-fields {
         grid-template-columns: repeat(2, 1fr);
         gap: 10px;
     }
-
-    .vehicle-table {
-        min-width: 720px;
-    }
 }
 
-/* Tablets / sidebar open on smaller screen */
-@media (max-width: 860px) {
-    .vehicle-search-container .container {
-        padding-left: 10px;
-        padding-right: 10px;
-    }
-
-    .filter-row-fields {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 10px;
-    }
-
-    .card-body {
-        padding: 14px !important;
-    }
-
-    .table-footer {
-        gap: 8px;
-    }
-}
-
-/* Phones landscape / small tablets */
 @media (max-width: 700px) {
-    .filter-row-fields {
-        grid-template-columns: 1fr;
-        gap: 10px;
-    }
+    .filter-row-fields { grid-template-columns: 1fr; }
 
-    .filter-header {
-        flex-wrap: wrap;
-        row-gap: 8px;
-    }
+    .filter-header { flex-wrap: wrap; row-gap: 8px; }
 
-    .export-btn-container {
-        margin-left: 0;
-        width: 100%;
-    }
+    .export-btn-container { margin-left: 0; width: 100%; }
+    .export-btn-container .btn { width: 100%; justify-content: center; display: flex; align-items: center; }
 
-    .export-btn-container .btn {
-        width: 100%;
-        justify-content: center;
-        display: flex;
-        align-items: center;
-    }
+    .filter-row-search { flex-direction: column; align-items: stretch; }
+    .search-wrap { width: 100%; flex: none; }
+    .btn-reset { width: 100%; justify-content: center; }
 
-    .filter-row-search {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 8px;
-    }
-
-    .search-wrap {
-        width: 100%;
-        flex: none;
-    }
-
-    .btn-reset {
-        width: 100%;
-        justify-content: center;
-    }
-
-    .table-footer {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    .pagination {
-        width: 100%;
-        justify-content: center;
-    }
+    .table-footer { flex-direction: column; align-items: flex-start; }
+    .pagination { width: 100%; justify-content: center; }
 }
 
-/* Phones portrait */
 @media (max-width: 480px) {
-    .vehicle-search-container .container {
-        padding-left: 6px;
-        padding-right: 6px;
-    }
-
-    .card-body {
-        padding: 10px !important;
-    }
-
-    .total-records,
-    .page-size {
-        width: 100%;
-    }
-
-    .page-size {
-        display: flex;
-        align-items: center;
-        gap: 4px;
-    }
+    .vehicle-search-container .container { padding-left: 6px; padding-right: 6px; }
+    .card-body { padding: 10px !important; }
+    .total-records, .page-size { width: 100%; }
+    .page-size { display: flex; align-items: center; gap: 4px; }
 }

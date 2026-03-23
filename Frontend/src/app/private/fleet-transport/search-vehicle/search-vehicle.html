@@ -128,17 +128,18 @@
     <th (click)="sort('entryDate')" class="sortable">
       Reported Date<span class="sort-icon">{{ getSortIcon('entryDate') }}</span>
     </th>
-    <th (click)="sort('distanceKm')" class="sortable">
-      Distance (km) <span class="sort-icon">{{ getSortIcon('distanceKm') }}</span>
-    </th>
-    <th (click)="sort('fuelConsumedLtr')" class="sortable">
-      Fuel(L) <span class="sort-icon">{{ getSortIcon('fuelConsumedLtr') }}</span>
-    </th>
+   
     <th (click)="sort('tripStartDateTime')" class="sortable">
       Start Date <span class="sort-icon">{{ getSortIcon('tripStartDateTime') }}</span>
     </th>
     <th (click)="sort('tripEndDateTime')" class="sortable">
       End Date <span class="sort-icon">{{ getSortIcon('tripEndDateTime') }}</span>
+    </th>
+     <th (click)="sort('distanceKm')" class="sortable">
+      Distance (km) <span class="sort-icon">{{ getSortIcon('distanceKm') }}</span>
+    </th>
+    <th (click)="sort('fuelConsumedLtr')" class="sortable">
+      Fuel(L) <span class="sort-icon">{{ getSortIcon('fuelConsumedLtr') }}</span>
     </th>
     <th (click)="sort('totalEmission')" class="sortable">
       Total Emission (kg CO₂e) <span class="sort-icon">{{ getSortIcon('totalEmission') }}</span>
@@ -154,13 +155,14 @@
               <td>{{ e.vehicleType }}</td>
               <td>{{ e.fuelType }}</td>
               <td>{{ e.entryDate | date:'dd-MMM-yyyy' }}</td>
+               <td>{{ e.tripStartDateTime | date:'dd-MMM-yyyy' }}</td>
+              <td>{{ e.tripEndDateTime | date:'dd-MMM-yyyy' }}</td>
               <td>{{ e.distanceKm }}</td>
               <td>{{ e.fuelConsumedLtr }}</td>
-              <td>{{ e.tripStartDateTime | date:'dd-MMM-yyyy' }}</td>
-              <td>{{ e.tripEndDateTime | date:'dd-MMM-yyyy' }}</td>
-             <td class="emission-value" [ngClass]="getEmissionClass(e.totalEmission)">
+             
+             <td class="emission-value" >
   {{ e.totalEmission }}
-  <span class="emission-tooltip">{{ getEmissionLabel(e.totalEmission) }}</span>
+  <!-- <span class="emission-tooltip">{{ getEmissionLabel(e.totalEmission) }}</span> -->
 </td>
               <td>
                 <button class="btn btn-sm btn-open" (click)="openTrip(e.tripId)">

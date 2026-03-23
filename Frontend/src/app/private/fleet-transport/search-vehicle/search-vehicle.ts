@@ -114,21 +114,21 @@ export class SearchVehicle implements OnInit {
     });
   }
 
-  getEmissionClass(value: number): string {
-    if (value <= 100)  return 'emission-low';
-    if (value <= 500)  return 'emission-moderate';
-    if (value <= 1000) return 'emission-high';
-    if (value <= 5000) return 'emission-very-high';
-    return 'emission-critical';
-  }
+  // getEmissionClass(value: number): string {
+  //   if (value <= 100)  return 'emission-low';
+  //   if (value <= 500)  return 'emission-moderate';
+  //   if (value <= 1000) return 'emission-high';
+  //   if (value <= 5000) return 'emission-very-high';
+  //   return 'emission-critical';
+  // }
 
-  getEmissionLabel(value: number): string {
-    if (value <= 100)  return '🟢 Low Emission';
-    if (value <= 500)  return '🟡 Moderate Emission';
-    if (value <= 1000) return '🟠 High Emission';
-    if (value <= 5000) return '🔴 Very High Emission';
-    return '🔴 Critical Emission';
-  }
+  // getEmissionLabel(value: number): string {
+  //   if (value <= 100)  return '🟢 Low Emission';
+  //   if (value <= 500)  return '🟡 Moderate Emission';
+  //   if (value <= 1000) return '🟠 High Emission';
+  //   if (value <= 5000) return '🔴 Very High Emission';
+  //   return '🔴 Critical Emission';
+  // }
 
   isLoading(tripId: string): boolean { return !!this.loadingTrips[tripId]; }
 
