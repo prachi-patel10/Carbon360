@@ -1,40 +1,23 @@
 <div class="container">
-  <!-- ================= CREATE / EDIT VEHICLE FORM ================= -->
+
+  <!-- ================= CREATE / EDIT FORM ================= -->
   <div class="card">
     <form class="form-grid">
-      <!-- Vehicle Number -->
       <div class="form-group">
         <label>Vehicle Number</label>
-
-        <input
-          type="text"
-          name="vehicle_number"
+        <input type="text" name="vehicle_number"
           [(ngModel)]="newVehicle().vehicle_number"
           (ngModelChange)="onVehicleNumberChange($event)"
-          placeholder="Enter Vehicle Number"
-        />
-        <small class="error-text" *ngIf="vehicleNumberError()">
-          {{ vehicleNumberError() }}
-        </small>
+          placeholder="Enter Vehicle Number" />
+        <small class="error-text" *ngIf="vehicleNumberError()">{{ vehicleNumberError() }}</small>
       </div>
 
       <div class="form-group">
         <label>Vehicle Type</label>
-
-        <select
-          name="vehicle_type_id"
-          [(ngModel)]="newVehicle().vehicle_type_id"
-          [style.color]="!newVehicle().vehicle_type_id ? '#999' : '#000'"
-        >
-          <!-- Placeholder -->
+        <select name="vehicle_type_id" [(ngModel)]="newVehicle().vehicle_type_id"
+          [style.color]="!newVehicle().vehicle_type_id ? '#999' : '#000'">
           <option [ngValue]="null" disabled>Select Vehicle Type</option>
-
-          <!-- Options -->
-          <option
-            *ngFor="let vt of vehicleTypes()"
-            [ngValue]="vt.vehicle_type_id"
-            style="color: #000"
-          >
+          <option *ngFor="let vt of vehicleTypes()" [ngValue]="vt.vehicle_type_id" style="color:#000">
             {{ vt.vehicle_type_name }}
           </option>
         </select>
@@ -42,122 +25,94 @@
 
       <div class="form-group">
         <label>Fuel</label>
-
-        <select
-          name="fuel_id"
-          [(ngModel)]="newVehicle().fuel_id"
-          [style.color]="!newVehicle().fuel_id ? '#999' : '#000'"
-        >
+        <select name="fuel_id" [(ngModel)]="newVehicle().fuel_id"
+          [style.color]="!newVehicle().fuel_id ? '#999' : '#000'">
           <option [ngValue]="null" disabled>Select Fuel</option>
-
-          <option *ngFor="let f of fuelTypes()" [ngValue]="f.fuel_id" style="color: #000">
+          <option *ngFor="let f of fuelTypes()" [ngValue]="f.fuel_id" style="color:#000">
             {{ f.fuel_name }}
           </option>
         </select>
       </div>
 
-      <!-- Department -->
       <div class="form-group">
         <label>Department</label>
-
-        <select
-          name="department_id"
-          [(ngModel)]="newVehicle().department_id"
-          [style.color]="!newVehicle().department_id ? '#999' : '#000'"
-        >
+        <select name="department_id" [(ngModel)]="newVehicle().department_id"
+          [style.color]="!newVehicle().department_id ? '#999' : '#000'">
           <option [ngValue]="null" disabled>Select Department</option>
-
-          <option *ngFor="let d of departments()" [ngValue]="d.department_id" style="color: #000">
+          <option *ngFor="let d of departments()" [ngValue]="d.department_id" style="color:#000">
             {{ d.department_name }}
           </option>
         </select>
       </div>
-      <!-- <select name="department_id" [(ngModel)]="newVehicle().department_id" class="form-control">
-          <option [ngValue]="null" disabled hidden>Select Department...</option>
-          <option *ngFor="let d of departments()" [ngValue]="d.department_id">
-            {{ d.department_name }}
-          </option>
-        </select> -->
 
-      <!-- Engine Capacity -->
       <div class="form-group">
         <label>Engine Capacity</label>
-        <input
-          type="number"
-          [(ngModel)]="newVehicle().engine_capacity"
-          name="engineCapacity"
-          placeholder="Engine Capacity"
-        />
+        <input type="number" [(ngModel)]="newVehicle().engine_capacity"
+          name="engineCapacity" placeholder="Engine Capacity" />
       </div>
 
-      <!-- Emission Standard -->
       <div class="form-group">
         <label>Emission Standard</label>
-
-        <select
-          name="emissionStandard"
-          [(ngModel)]="newVehicle().emission_standard"
-          [style.color]="!newVehicle().emission_standard ? '#999' : '#000'"
-        >
-          <!-- Placeholder -->
+        <select name="emissionStandard" [(ngModel)]="newVehicle().emission_standard"
+          [style.color]="!newVehicle().emission_standard ? '#999' : '#000'">
           <option [ngValue]="null" disabled>Select Emission Standard</option>
-
-          <!-- Options -->
-          <option value="BS4" style="color: #000">BS4</option>
-          <option value="BS6" style="color: #000">BS6</option>
+          <option value="BS4" style="color:#000">BS4</option>
+          <option value="BS6" style="color:#000">BS6</option>
         </select>
       </div>
 
-      <!-- Status + Save Button -->
       <div class="form-actions">
-  <div class="status-toggle">
-    <span>Active</span>
-    <label class="switch">
-      <input type="checkbox"
-             [checked]="newVehicle().isActive"
-             (change)="onFormActiveChange($event)" />
-      <span class="slider"></span>
-    </label>
-  </div>
+        <div class="status-toggle">
+          <span>Active</span>
+          <label class="switch">
+            <input type="checkbox" [checked]="newVehicle().isActive"
+              (change)="onFormActiveChange($event)" />
+            <span class="slider"></span>
+          </label>
+        </div>
         <button type="button" class="save-btn" (click)="saveVehicle()">
           {{ isEditMode() ? 'Update' : 'Save' }}
         </button>
-        <button class="btn-reset" (click)="resetForm()">Reset</button>
+        <button type="button" class="btn-reset" (click)="resetForm()">Reset</button>
       </div>
     </form>
   </div>
 
-  <!-- ================= SEARCH + VEHICLE LIST ================= -->
+  <!-- ================= TABLE CARD ================= -->
   <div class="card">
+
+    <!-- Search row -->
     <div class="search-row">
       <div class="search-left">
-        <input
-          type="text"
-          class="search-input"
-          placeholder="Quick Search"
-          [(ngModel)]="searchText"
-          (input)="search()"
-        />
+        <div class="search-wrap">
+          <i class="fas fa-search search-icon"></i>
+          <input type="text" class="search-input" placeholder="Quick Search"
+            [(ngModel)]="searchText" (input)="search()" />
+        </div>
       </div>
-
       <div class="search-right">
-        <!-- Single Active Only toggle BEFORE filter button -->
         <div class="status-toggle">
           <span>Active Only</span>
           <label class="switch">
-            <input
-              type="checkbox"
-              [checked]="activeFilter()"
-              (change)="activeFilter.set($event.target.checked); search()"
-            />
+            <input type="checkbox" [checked]="activeFilter()"
+              (change)="activeFilter.set($event.target.checked); search()" />
             <span class="slider"></span>
           </label>
         </div>
 
-        <button class="filter-btn" (click)="openVehicleFilter()">Filter</button>
+        <!-- Filter button with badge -->
+        <button class="filter-btn" (click)="openVehicleFilter()">
+          <i class="fas fa-sliders-h"></i>
+          <span>Filter</span>
+          <span class="filter-badge"
+            *ngIf="selectedFuelIds.length + selectedVehicleTypeIds.length > 0">
+            {{ selectedFuelIds.length + selectedVehicleTypeIds.length }}
+          </span>
+        </button>
       </div>
     </div>
 
+    <!-- Table -->
     <div class="table-wrapper">
       <table>
         <thead>
@@ -203,21 +158,20 @@
               <button class="delete-btn" (click)="deleteVehicle(v)">Delete</button>
             </td>
           </tr>
-           <tr *ngIf="vehicles().length === 0">
-    <td colspan="8" style="text-align: center; padding: 20px; color: #999;">
-      No records found
-    </td>
-  </tr>
+          <tr *ngIf="vehicles().length === 0">
+            <td colspan="8" class="empty-row">No records found</td>
+          </tr>
         </tbody>
       </table>
     </div>
 
+    <!-- Pagination -->
     <div class="pagination-info">
-      <span>Total Records: {{ totalRecords() }}</span>
+      <span>Total Records: <b>{{ totalRecords() }}</b></span>
       <div class="pagination-controls">
-        <button (click)="previousPage()">Previous</button>
+        <button (click)="previousPage()" [disabled]="pageNumber() === 1">Previous</button>
         <span>Page {{ pageNumber() }} of {{ totalPages() }}</span>
-        <button (click)="nextPage()">Next</button>
+        <button (click)="nextPage()" [disabled]="pageNumber() === totalPages()">Next</button>
         <label for="pageSize">Page Size:</label>
         <select id="pageSize" [value]="pageSize()" (change)="onPageSizeChange($event)">
           <option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</option>
@@ -227,60 +181,161 @@
   </div>
 
   <!-- ================= FILTER MODAL ================= -->
-  <div class="filter-overlay" *ngIf="vehicleFilterModalOpen()">
-    <div class="filter-modal">
-      <!-- Header -->
-      <div class="filter-header">
-        <h3>Filter Vehicles</h3>
-        <button type="button" class="close-btn" (click)="closeVehicleFilter()">✖</button>
+  <div class="vf-overlay" *ngIf="vehicleFilterModalOpen()" (click)="closeVehicleFilter()">
+    <div class="vf-modal" (click)="$event.stopPropagation()">
+
+      <!-- ── Header ── -->
+      <div class="vf-header">
+        <div class="vf-header-left">
+          <div class="vf-header-icon">
+            <i class="fas fa-sliders-h"></i>
+          </div>
+          <div>
+            <h3 class="vf-title">Filter Vehicles</h3>
+            <p class="vf-subtitle">Select one or more values per filter</p>
+          </div>
+        </div>
+        <button class="vf-close-btn" (click)="closeVehicleFilter()">
+          <i class="fas fa-times"></i>
+        </button>
       </div>
 
-      <!-- Body -->
-      <div class="filter-body">
-        <div class="form-grid">
-          <!-- Fuel Type -->
-          <div class="form-group">
-            <label>Fuel Type</label>
-            <div class="multi-select-container">
-              <div *ngFor="let fuel of fuelTypesList">
-                <label>
-                  <input
-                    type="checkbox"
-                    [checked]="selectedFuelIds.includes(fuel.fuel_id)"
-                    (change)="toggleFuel(fuel.fuel_id)"
-                  />
-                  {{ fuel.fuel_name }}
-                </label>
-              </div>
-            </div>
+      <!-- ── Active chips showing applied filters ── -->
+      <div class="vf-chips" *ngIf="selectedFuelIds.length > 0 || selectedVehicleTypeIds.length > 0">
+        <span class="vf-chip" *ngFor="let id of selectedVehicleTypeIds">
+          <i class="fas fa-car"></i>
+          {{ getVehicleTypeName(id) }}
+          <button class="vf-chip-remove" (click)="toggleVehicleType(id)">✕</button>
+        </span>
+        <span class="vf-chip vf-chip-fuel" *ngFor="let id of selectedFuelIds">
+          <i class="fas fa-gas-pump"></i>
+          {{ getFuelName(id) }}
+          <button class="vf-chip-remove" (click)="toggleFuel(id)">✕</button>
+        </span>
+      </div>
+
+      <!-- ── Body: two filter columns ── -->
+      <div class="vf-body">
+
+        <!-- ── Fuel Type ── -->
+        <div class="vf-col">
+          <div class="vf-col-label">
+            <i class="fas fa-gas-pump"></i> Fuel Type
+            <span class="vf-col-count" *ngIf="selectedFuelIds.length > 0">
+              {{ selectedFuelIds.length }} selected
+            </span>
           </div>
 
-          <!-- Vehicle Type -->
-          <div class="form-group">
-            <label>Vehicle Type</label>
-            <div class="multi-select-container">
-              <div *ngFor="let vt of vehicleTypesList">
-                <label>
-                  <input
-                    type="checkbox"
-                    [checked]="selectedVehicleTypeIds.includes(vt.vehicle_type_id)"
-                    (change)="toggleVehicleType(vt.vehicle_type_id)"
-                  />
-                  {{ vt.vehicle_type_name }}
-                </label>
-              </div>
+          <!-- Dropdown trigger -->
+          <div class="vf-trigger" [class.open]="fuelDropOpen"
+               (click)="fuelDropOpen = !fuelDropOpen">
+            <span class="vf-trigger-text">
+              <ng-container *ngIf="selectedFuelIds.length === 0">All Fuel Types</ng-container>
+              <ng-container *ngIf="selectedFuelIds.length > 0">
+                {{ selectedFuelIds.length }} fuel{{ selectedFuelIds.length > 1 ? 's' : '' }} selected
+              </ng-container>
+            </span>
+            <i class="fas fa-chevron-down vf-chevron"></i>
+          </div>
+
+          <!-- Checkbox panel -->
+          <div class="vf-panel" [class.open]="fuelDropOpen">
+
+            <!-- Select All -->
+            <div class="vf-check-row vf-select-all" (click)="toggleAllFuels()">
+              <span class="vf-checkbox"
+                [class.checked]="selectedFuelIds.length === fuelTypesList.length && fuelTypesList.length > 0"
+                [class.indeterminate]="selectedFuelIds.length > 0 && selectedFuelIds.length < fuelTypesList.length">
+                <i class="fas fa-check"
+                   *ngIf="selectedFuelIds.length === fuelTypesList.length && fuelTypesList.length > 0"></i>
+                <i class="fas fa-minus"
+                   *ngIf="selectedFuelIds.length > 0 && selectedFuelIds.length < fuelTypesList.length"></i>
+              </span>
+              <span class="vf-check-label">Select All</span>
+            </div>
+
+            <div class="vf-divider"></div>
+
+            <!-- Individual items -->
+            <div class="vf-check-row" *ngFor="let fuel of fuelTypesList"
+                 (click)="toggleFuel(fuel.fuel_id)"
+                 [class.selected]="selectedFuelIds.includes(fuel.fuel_id)">
+              <span class="vf-checkbox" [class.checked]="selectedFuelIds.includes(fuel.fuel_id)">
+                <i class="fas fa-check" *ngIf="selectedFuelIds.includes(fuel.fuel_id)"></i>
+              </span>
+              <span class="vf-check-label">{{ fuel.fuel_name }}</span>
+            </div>
+
+            <div class="vf-panel-empty" *ngIf="fuelTypesList.length === 0">
+              No fuel types found
             </div>
           </div>
         </div>
 
-        <!-- Footer -->
-        <div class="filter-footer">
-          <button type="button" class="reset-btn" (click)="resetVehicleFilter()">Reset</button>
-          <button type="button" class="apply-btn" (click)="applyVehicleFilter()">
-            Apply Filter
-          </button>
+        <!-- ── Vehicle Type ── -->
+        <div class="vf-col">
+          <div class="vf-col-label">
+            <i class="fas fa-car"></i> Vehicle Type
+            <span class="vf-col-count" *ngIf="selectedVehicleTypeIds.length > 0">
+              {{ selectedVehicleTypeIds.length }} selected
+            </span>
+          </div>
+
+          <div class="vf-trigger" [class.open]="vtypeDropOpen"
+               (click)="vtypeDropOpen = !vtypeDropOpen">
+            <span class="vf-trigger-text">
+              <ng-container *ngIf="selectedVehicleTypeIds.length === 0">All Vehicle Types</ng-container>
+              <ng-container *ngIf="selectedVehicleTypeIds.length > 0">
+                {{ selectedVehicleTypeIds.length }} type{{ selectedVehicleTypeIds.length > 1 ? 's' : '' }} selected
+              </ng-container>
+            </span>
+            <i class="fas fa-chevron-down vf-chevron"></i>
+          </div>
+
+          <div class="vf-panel" [class.open]="vtypeDropOpen">
+
+            <div class="vf-check-row vf-select-all" (click)="toggleAllVehicleTypes()">
+              <span class="vf-checkbox"
+                [class.checked]="selectedVehicleTypeIds.length === vehicleTypesList.length && vehicleTypesList.length > 0"
+                [class.indeterminate]="selectedVehicleTypeIds.length > 0 && selectedVehicleTypeIds.length < vehicleTypesList.length">
+                <i class="fas fa-check"
+                   *ngIf="selectedVehicleTypeIds.length === vehicleTypesList.length && vehicleTypesList.length > 0"></i>
+                <i class="fas fa-minus"
+                   *ngIf="selectedVehicleTypeIds.length > 0 && selectedVehicleTypeIds.length < vehicleTypesList.length"></i>
+              </span>
+              <span class="vf-check-label">Select All</span>
+            </div>
+
+            <div class="vf-divider"></div>
+
+            <div class="vf-check-row" *ngFor="let vt of vehicleTypesList"
+                 (click)="toggleVehicleType(vt.vehicle_type_id)"
+                 [class.selected]="selectedVehicleTypeIds.includes(vt.vehicle_type_id)">
+              <span class="vf-checkbox" [class.checked]="selectedVehicleTypeIds.includes(vt.vehicle_type_id)">
+                <i class="fas fa-check" *ngIf="selectedVehicleTypeIds.includes(vt.vehicle_type_id)"></i>
+              </span>
+              <span class="vf-check-label">{{ vt.vehicle_type_name }}</span>
+            </div>
+
+            <div class="vf-panel-empty" *ngIf="vehicleTypesList.length === 0">
+              No vehicle types found
+            </div>
+          </div>
         </div>
+
+      </div><!-- /vf-body -->
+
+      <!-- ── Footer ── -->
+      <div class="vf-footer">
+        <button class="vf-btn-reset" (click)="resetVehicleFilter()">
+          <i class="fas fa-rotate-left"></i> Reset
+        </button>
+        <button class="vf-btn-apply" (click)="applyVehicleFilter(); closeVehicleFilter()">
+          <i class="fas fa-check"></i> Apply Filter
+        </button>
       </div>
-    </div>
-  </div>
+
+    </div><!-- /vf-modal -->
+  </div><!-- /vf-overlay -->
+
 </div>
