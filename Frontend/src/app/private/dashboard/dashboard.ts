@@ -148,8 +148,66 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     else if (url.includes('MyActionVehicle'))   this.pageTitle = 'Actions Fleet & Transport';
     else if (url.includes('searchVehicle'))     this.pageTitle = 'Search Fleet & Transport';
     else if (url.includes('Vehicletype'))       this.pageTitle = 'Vehicle Type';
-    else                                        this.pageTitle = 'Dashboard';
+    else                                        this.pageTitle = 'Statics';
   }
+
+   
+// Checks if ANY config sub-page is active (for closed sidebar icon highlight)
+isAnyConfigActive(): boolean {
+  const url = this.router.url;
+  return url.includes('/user') || url.includes('/department') ||
+         url.includes('/emissionFactors') || url.includes('/fueltype') ||
+         url.includes('/vehiclemaster') || url.includes('/citymaster') ||
+         url.includes('/Vehicletype') || url.includes('/generator') ||
+         url.includes('/sitelocation');
+}
+ 
+// Checks if ANY fleet page is active
+isAnyFleetActive(): boolean {
+  const url = this.router.url;
+  return url.includes('/vehicle') || url.includes('/searchVehicle') ||
+         url.includes('/MyActionVehicle');
+}
+ 
+// Checks if ANY power generation page is active
+isAnyPowerActive(): boolean {
+  const url = this.router.url;
+  return url.includes('/generator-ec') || url.includes('/searchGenerator') ||
+         url.includes('/MyActionGenerator');
+}
+
+  // Returns the active page label for Configuration tooltip
+getActiveConfigLabel(): string {
+  const url = this.router.url;
+  if (url.includes('/user'))            return 'User Administration';
+  if (url.includes('/department'))      return 'Organizational Units';
+  if (url.includes('/emissionFactors')) return 'Emission Factors';
+  if (url.includes('/fueltype'))        return 'Fuel Management';
+  if (url.includes('/vehiclemaster'))   return 'Vehicles';
+  if (url.includes('/citymaster'))      return 'Cities';
+  if (url.includes('/Vehicletype'))     return 'Vehicle Type';
+  if (url.includes('/sitelocation'))    return 'Site Location';
+  if (url.includes('/generator'))       return 'Generators';
+  return 'Configuration';
+}
+ 
+// Returns the active page label for Fleet tooltip
+getActiveFleetLabel(): string {
+  const url = this.router.url;
+  if (url.includes('/searchVehicle'))   return 'Search';
+  if (url.includes('/MyActionVehicle')) return 'My Action';
+  if (url.includes('/vehicle'))         return 'Report';
+  return 'Fleet & Transport';
+}
+ 
+// Returns the active page label for Power Generation tooltip
+getActivePowerLabel(): string {
+  const url = this.router.url;
+  if (url.includes('/searchGenerator'))   return 'Search';
+  if (url.includes('/MyActionGenerator')) return 'My Action';
+  if (url.includes('/generator-ec'))      return 'Report';
+  return 'Power Generation';
+}
 
   goTo(path: string): void { this.router.navigate([path], { relativeTo: this.route }); }
   isActive(path: string): boolean { return this.router.url.includes(path); }
