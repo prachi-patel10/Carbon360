@@ -70,6 +70,6 @@ downloadTripPdf(operationId: string) {
   }
 
   getTripFullDetails(operationId: string): Observable<any> {
-  return this.http.get(`${this.apiUrl}/GeneratorOperation/pdf/${operationId}`);
+  return this.http.get(`${this.apiUrl}/pdf/${operationId}`);
 }
 }

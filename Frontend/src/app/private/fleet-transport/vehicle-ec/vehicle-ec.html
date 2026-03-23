@@ -236,6 +236,16 @@
       <h1 class="card-title">Emission Calculation</h1>
 
       <div class="formula full-width">
+  Run Hours (hrs) = (End Time − Start Time) <br>
+
+  = {{ tripForm.get('tripEndDateTime')?.value | date:'dd-MM-yyyy HH:mm' }} - {{ tripForm.get('tripStartDateTime')?.value | date:'dd-MM-yyyy HH:mm' }}
+  <br>
+
+  = {{ tripDuration }} <br>
+</div>
+
+
+      <div class="formula full-width">
         CO₂ = Fuel × CO₂ Factor <br>
         = {{ tripForm.get('fuelConsumedLtr')?.value }} × {{ tripForm.get('co2Factor')?.value }} <br>
         = {{ totalCO2 | number:'1.3-3' }} kg
@@ -269,11 +279,11 @@
       </div> -->
 
     </div>
-  </div>
 
-  <!-- HISTORY SECTION -->
+
+  <!-- HISTORY SECTION
   <div class="card history-card" *ngIf="tripHistory && tripHistory.length > 0">
-    <h5 class="section-title">Workflow History</h5>
+    <h5 class="section-title">History</h5>
     <ul class="history-list">
       <li *ngFor="let h of tripHistory" class="history-item">
         <span class="history-dot"></span>
@@ -293,6 +303,49 @@
       </li>
     </ul>
   </div>
+</div> -->
+
+<!-- HISTORY SECTION -->
+<div class="card history-card" *ngIf="tripHistory && tripHistory.length > 0">
+  <h5 class="section-title">History</h5>
+
+  <!-- TIMELINE -->
+  <ul class="history-list">
+    <li *ngFor="let h of tripHistory" class="history-item">
+      <!-- <span class="history-dot" [ngClass]="{
+          'dot-submit':   h.ActionName === 'Submit',
+          'dot-approve':  h.ActionName === 'Approve',
+          'dot-reject':   h.ActionName === 'Reject',
+          'dot-resubmit': h.ActionName === 'Resubmit'
+        }">
+        {{h.ActionName}}
+      </span> -->
+
+      <div class="history-content">
+
+        <!-- SMART MESSAGE -->
+        <div class="history-message">{{ getActionMessage(h) }}</div>
+
+        <!-- DATE + RELATIVE TIME -->
+        <div class="history-meta">
+          <span class="history-date">{{ h.ActionDate | date:'dd MMM yyyy, hh:mm a' }}</span>
+          <span class="history-ago">· {{ getTimeAgo(h.ActionDate) }}</span>
+        </div>
+
+        <!-- STATUS BADGE -->
+        <!-- <span class="history-badge" [ngClass]="{
+            'badge-submit':   h.ActionName === 'Submit',
+            'badge-approve':  h.ActionName === 'Approve',
+            'badge-reject':   h.ActionName === 'Reject',
+            'badge-resubmit': h.ActionName === 'Resubmit'
+          }">
+          {{ h.ActionName }}
+        </span> -->
+
+      </div>
+    </li>
+  </ul>
 </div>
+  </div>
 
 <!-- </div> -->

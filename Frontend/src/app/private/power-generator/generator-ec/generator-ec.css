@@ -351,27 +351,35 @@ input[type="datetime-local"]:disabled {
 
 
 
+/* ── HISTORY LIST ── */
 .history-card { margin-top: 16px; padding: 16px; }
-
-.history-list { list-style: none; padding: 0; margin: 0; }
+.history-list  { list-style: none; padding: 0; margin: 0; }
 
 .history-item {
   display: flex;
   align-items: flex-start;
   gap: 12px;
-  padding: 10px 0;
+  padding: 12px 0;
   border-bottom: 1px solid #f0f0f0;
 }
+.history-item:last-child { border-bottom: none; }
 
 .history-dot {
-  width: 10px; height: 10px;
-  background: #1976d2;
-  border-radius: 50%;
-  margin-top: 5px;
-  flex-shrink: 0;
+  font-size: 20px;
+  min-width: 28px;
+  text-align: center;
+  margin-top: 2px;
 }
 
-.history-role { color: #1976d2; margin: 0 4px; font-weight: 500; }
+.history-content  { display: flex; flex-direction: column; gap: 4px; }
+.history-message  { font-size: 14px; color: #333; font-weight: 500; }
+
+.history-meta     { display: flex; align-items: center; gap: 6px; }
+.history-date     { font-size: 12px; color: #777; }
+.history-ago      { font-size: 12px; color: #aaa; }
+
+
+
 
 .action-submit   { color: #192cd2; font-weight: 600; }  
 .action-approve  { color: #4caf50; font-weight: 600; }  

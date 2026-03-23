@@ -6,6 +6,7 @@ import { GeneratorecService } from './generatorec-service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { switchMap } from 'rxjs/operators';
 import Swal from 'sweetalert2';
+import { forkJoin } from 'rxjs';
 
 interface GeneratorOperation {
   operationId: string;
@@ -82,7 +83,7 @@ export class GeneratorOperationComponent implements OnInit {
   no2Factor: number = 0.00007;
   ch4Factor: number = 0.00001;
   totalEmission: number = 0;
-ratedCapacityKW: number = 0;
+  ratedCapacityKW: number = 0;
   totalCalculations: any = {
     runHours: 0,
     totalFuel: 0,
@@ -93,14 +94,14 @@ ratedCapacityKW: number = 0;
 
   showCalculation = false;
 
-  userRole:  'admin' | 'corporate' | 'reporter' = 'reporter';
+  userRole: 'admin' | 'corporate' | 'reporter' = 'reporter';
 
   constructor(
     private fb: FormBuilder,
     private service: GeneratorecService,
     private route: ActivatedRoute,
     private router: Router,
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.initForm();
@@ -123,9 +124,9 @@ ratedCapacityKW: number = 0;
         next: (res: any) => {
           this.generators = res || []; // Do NOT clear generator during edit
 
-           setTimeout(() => {
-      this.calculateLiveValues(); // ✅ trigger after load
-    });
+          setTimeout(() => {
+            this.calculateLiveValues(); // ✅ trigger after load
+          });
           if (!this.isViewMode && !this.isReviewMode && !this.isEditMode) {
             this.operationForm.get('GeneratorId')?.setValue(null);
           }
@@ -139,41 +140,38 @@ ratedCapacityKW: number = 0;
     });
 
     // ================= READ ROUTE PARAMETERS =================
-const operationId = this.route.snapshot.paramMap.get('id');
-const queryParams = this.route.snapshot.queryParamMap;
-const mode = queryParams.get('mode') || 'create';
-const page = queryParams.get('page');
+    const operationId = this.route.snapshot.paramMap.get('id');
+    const queryParams = this.route.snapshot.queryParamMap;
+    const mode = queryParams.get('mode') || 'create';
+    const page = queryParams.get('page');
 
     this.pageSource = page === 'myaction' || page === 'search' ? page : 'search';
 
-// Restrict Corporate from creating new report
-if ((this.userRole === 'corporate' || this.userRole === 'admin') && !operationId) {
+    // Restrict Corporate from creating new report
+    if ((this.userRole === 'corporate' || this.userRole === 'admin') && !operationId) {
 
-  Swal.fire({
-    icon: 'warning',
-    title: 'Access Restricted',
-    text: 'you are not allowed to create generator emission reports.',
-    confirmButtonText: 'Go Back'
-  }).then(() => {
-    this.router.navigate(['/dashboard/MyActionGenerator']);
-  });
+      Swal.fire({
+        icon: 'warning',
+        title: 'Access Restricted',
+        text: 'you are not allowed to create generator emission reports.',
+        confirmButtonText: 'Go Back'
+      }).then(() => {
+        this.router.navigate(['/dashboard/MyActionGenerator']);
+      });
 
-  return;
-}
-  this.pageSource = page === 'myaction' || page === 'search' ? page : 'search';
+      return;
+    }
+    this.pageSource = page === 'myaction' || page === 'search' ? page : 'search';
 
-this.isReviewMode = mode === 'review' && this.pageSource === 'myaction';
-this.isEditMode = mode === 'edit';
-this.isViewMode = mode === 'view';
+    this.isReviewMode = mode === 'review' && this.pageSource === 'myaction';
+    this.isEditMode = mode === 'edit';
+    this.isViewMode = mode === 'view';
     this.showCalculation = !!operationId;
 
 
     // ================= LOAD OPERATION & WORKFLOW =================
     if (operationId) {
       this.loadOperationById(operationId);
-
-      // ✅ Load workflow actions for this operation
-      this.loadWorkflowActions(operationId);
     }
 
     // ================= SET FORM ENABLE/DISABLE =================
@@ -191,9 +189,9 @@ this.isViewMode = mode === 'view';
     if (!this.isViewMode && !this.isReviewMode && !this.isEditMode) {
       this.operationForm.enable();
     }
-this.operationForm.valueChanges.subscribe(() => {
-  this.calculateLiveValues();
-});
+    this.operationForm.valueChanges.subscribe(() => {
+      this.calculateLiveValues();
+    });
   }
 
   initForm() {
@@ -208,65 +206,65 @@ this.operationForm.valueChanges.subscribe(() => {
       FuelConsumedLiters: [0, [Validators.required, Validators.min(0)]],
     });
 
-  
+
   }
 
- calculateLiveValues() {
-  const raw = this.operationForm.getRawValue();
+  calculateLiveValues() {
+    const raw = this.operationForm.getRawValue();
 
-  const start = new Date(raw.StartTime);
-  const end = new Date(raw.EndTime);
+    const start = new Date(raw.StartTime);
+    const end = new Date(raw.EndTime);
 
-  if (!raw.StartTime || !raw.EndTime || end <= start) {
-    this.operation.runHours = 0;
-    return;
+    if (!raw.StartTime || !raw.EndTime || end <= start) {
+      this.operation.runHours = 0;
+      return;
+    }
+
+    const runHours = +((end.getTime() - start.getTime()) / (1000 * 60 * 60)).toFixed(2);
+
+    // ✅ FIXED (type safe)
+    const generator = this.generators.find(
+      g => String(g.generatorId) === String(raw.GeneratorId)
+    );
+
+    this.ratedCapacityKW =
+      generator?.ratedCapacityKW ||
+      this.ratedCapacityKW ||
+      this.operation.ratedCapacityKW ||
+      0;
+
+    const powerOutputKWH = this.ratedCapacityKW * (raw.LoadFactor / 100) * runHours;
+
+    const fuel = Number(raw.FuelConsumedLiters) || 0;
+
+    // ✅ IMPORTANT FIX
+    this.fuelConsumed = fuel;
+
+    const totalCO2 = fuel * this.co2Factor;
+    const totalNO2 = fuel * this.no2Factor;
+    const totalCH4 = fuel * this.ch4Factor;
+
+    const totalEmission =
+      totalCO2 +
+      totalCH4 * (this.operation.gwP_CH4 || 28) +
+      totalNO2 * (this.operation.gwP_NO2 || 265);
+
+    this.operation = {
+      ...this.operation,
+      startTime: start,
+      endTime: end,
+      runHours,
+      ratedCapacityKW: this.ratedCapacityKW,
+      powerOutputKWH,
+      loadFactor: raw.LoadFactor,
+      fuelConsumedLiters: fuel,
+      totalEmission
+    };
+
+    this.totalCO2 = +totalCO2.toFixed(3);
+    this.totalNO2 = +totalNO2.toFixed(6);
+    this.totalCH4 = +totalCH4.toFixed(6);
   }
-
-  const runHours = +((end.getTime() - start.getTime()) / (1000 * 60 * 60)).toFixed(2);
-
-  // ✅ FIXED (type safe)
-  const generator = this.generators.find(
-    g => String(g.generatorId) === String(raw.GeneratorId)
-  );
-
-this.ratedCapacityKW =
-  generator?.ratedCapacityKW ||
-  this.ratedCapacityKW ||
-  this.operation.ratedCapacityKW ||
-  0;
-  
-  const powerOutputKWH = this.ratedCapacityKW * (raw.LoadFactor / 100) * runHours;
-
-  const fuel = Number(raw.FuelConsumedLiters) || 0;
-
-  // ✅ IMPORTANT FIX
-  this.fuelConsumed = fuel;
-
-  const totalCO2 = fuel * this.co2Factor;
-  const totalNO2 = fuel * this.no2Factor;
-  const totalCH4 = fuel * this.ch4Factor;
-
-  const totalEmission =
-    totalCO2 +
-    totalCH4 * (this.operation.gwP_CH4 || 28) +
-    totalNO2 * (this.operation.gwP_NO2 || 265);
-
-  this.operation = {
-    ...this.operation,
-    startTime: start,
-    endTime: end,
-    runHours,
-    ratedCapacityKW: this.ratedCapacityKW,
-    powerOutputKWH,
-    loadFactor: raw.LoadFactor,
-    fuelConsumedLiters: fuel,
-    totalEmission
-  };
-
-  this.totalCO2 = +totalCO2.toFixed(3);
-  this.totalNO2 = +totalNO2.toFixed(6);
-  this.totalCH4 = +totalCH4.toFixed(6);
-}
 
   getSiteName(siteId: any): string {
     const site = this.sites.find((s) => s.siteId == siteId);
@@ -307,22 +305,22 @@ this.ratedCapacityKW =
 
   }
 
-loadTripHistory(operationId: string) {
-  this.service.getTripFullDetails(operationId).subscribe({
-    next: (res: any) => {
-      console.log('Full Details Response:', res);
-      if (res && res.History) {
-        this.tripHistory = res.History;  
-        console.log('Trip History:', this.tripHistory);
-      } else {
-        console.warn('No History in response:', res);
-      }
-    },
-    error: (err) => {
-      console.error('loadTripHistory ERROR:', err);
-    }
-  });
-}
+  // loadTripHistory(operationId: string) {
+  //   this.service.getTripFullDetails(operationId).subscribe({
+  //     next: (res: any) => {
+  //       console.log('Full Details Response:', res);
+  //       if (res && res.History) {
+  //         this.tripHistory = res.History;
+  //         console.log('Trip History:', this.tripHistory);
+  //       } else {
+  //         console.warn('No History in response:', res);
+  //       }
+  //     },
+  //     error: (err) => {
+  //       console.error('loadTripHistory ERROR:', err);
+  //     }
+  //   });
+  // }
 
   loadGenerators() {
     this.service.getGenerators().subscribe({
@@ -442,30 +440,77 @@ loadTripHistory(operationId: string) {
   //     error: () => Swal.fire('Error', 'Failed to load operation', 'error'),
   //   });
   // }
-loadOperationById(id: string) { this.operationId = id; 
-  // ✅ store id globally
-    this.service.getById(id).subscribe({ next: (res: any) => { const op = res.data || res; 
-      // Map to operation object for display 
-      const gwP_CH4 = 28; const gwP_NO2 = 265; const co2Factor = op.cO2 ?? 2.68; const no2Factor = op.nO2 ?? 0.00007; const ch4Factor = op.cH4 ?? 0.00001; this.co2Factor = co2Factor; this.no2Factor = no2Factor; this.ch4Factor = ch4Factor; const runHours = op.startTime && op.endTime ? +( (new Date(op.endTime).getTime() - new Date(op.startTime).getTime()) / (1000 * 60 * 60) ).toFixed(2) : 0;
-       // Get generator rated capacity 
-       const generator = this.generators.find(g => g.generatorId === op.generatorId); 
-       const ratedCapacityKW = generator?.ratedCapacityKW || 0;
-       this.ratedCapacityKW = ratedCapacityKW; // ✅ IMPORTANT
-        // Calculate Power Output
-         const powerOutputKWH = ratedCapacityKW * (op.loadFactor / 100) * runHours; const totalCO2 = (op.fuelConsumedLiters || 0) * co2Factor; const totalNO2 = (op.fuelConsumedLiters || 0) * no2Factor; const totalCH4 = (op.fuelConsumedLiters || 0) * ch4Factor; const totalEmission = totalCO2 + totalCH4 * gwP_CH4 + totalNO2 * gwP_NO2; this.operation = { ...op, runHours, ratedCapacityKW, powerOutputKWH, co2Factor, no2Factor, ch4Factor, cO2: totalCO2, nO2: totalNO2, cH4: totalCH4, gwP_CH4, gwP_NO2, totalEmission, };
-          // Update component-level values for HTML bindings 
-          this.fuelConsumed = op.fuelConsumedLiters || 0; this.totalCO2 = +totalCO2.toFixed(3); this.totalNO2 = +totalNO2.toFixed(6); this.totalCH4 = +totalCH4.toFixed(6); 
-          // Show calculation card
-           this.showCalculation = true;
-            // Patch the form for edit/view
-             this.edit(op); 
-             setTimeout(() => {
-  this.calculateLiveValues();
-   this.loadTripHistory(id); 
-});
-             
-             // Show calculation card
-              }, error: () => Swal.fire('Error', 'Failed to load operation', 'error'), }); }
+ loadOperationById(id: string) {
+  this.operationId = id;
+  const requests: any = {
+    op: this.service.getById(id),
+    history: this.service.getTripFullDetails(id)
+  };
+  if (this.pageSource !== 'search') {
+    requests.actions = this.service.getWorkflowActions(id);
+  }
+
+  forkJoin(requests).subscribe({
+    next: (results: any) => {
+      const res = results.op;
+      const op = res.data || res;
+      const gwP_CH4 = 28;
+      const gwP_NO2 = 265;
+      const co2Factor = op.cO2 ?? 2.68;
+      const no2Factor = op.nO2 ?? 0.00007;
+      const ch4Factor = op.cH4 ?? 0.00001;
+      this.co2Factor = co2Factor;
+      this.no2Factor = no2Factor;
+      this.ch4Factor = ch4Factor;
+
+      const runHours =
+        op.startTime && op.endTime
+          ? +((new Date(op.endTime).getTime() - new Date(op.startTime).getTime()) / (1000 * 60 * 60)).toFixed(2)
+          : 0;
+      const generator = this.generators.find(g => g.generatorId === op.generatorId);
+      const ratedCapacityKW = generator?.ratedCapacityKW || op.ratedCapacityKW || 0;
+      this.ratedCapacityKW = ratedCapacityKW;
+      const powerOutputKWH = ratedCapacityKW * (op.loadFactor / 100) * runHours;
+      const totalCO2 = (op.fuelConsumedLiters || 0) * co2Factor;
+      const totalNO2 = (op.fuelConsumedLiters || 0) * no2Factor;
+      const totalCH4 = (op.fuelConsumedLiters || 0) * ch4Factor;
+      const totalEmission = totalCO2 + totalCH4 * gwP_CH4 + totalNO2 * gwP_NO2;
+      this.operation = {
+        ...op,
+        runHours,
+        ratedCapacityKW,
+        powerOutputKWH,
+        co2Factor,
+        no2Factor,
+        ch4Factor,
+        cO2: totalCO2,
+        nO2: totalNO2,
+        cH4: totalCH4,
+        gwP_CH4,
+        gwP_NO2,
+        totalEmission,
+      };
+      this.fuelConsumed = op.fuelConsumedLiters || 0;
+      this.totalCO2 = +totalCO2.toFixed(3);
+      this.totalNO2 = +totalNO2.toFixed(6);
+      this.totalCH4 = +totalCH4.toFixed(6);
+      this.showCalculation = true;
+      if (results.actions) {
+        const actionsRes = results.actions;
+        this.workflowActions = actionsRes?.data ?? actionsRes ?? [];
+        this.isResubmitMode = this.workflowActions.some(a => a.actionName === 'Resubmit');
+      } else {
+        this.workflowActions = [];
+      }
+      this.tripHistory = results.history?.History || [];
+      console.log('Trip History:', this.tripHistory);
+      console.log('Workflow Actions:', this.workflowActions);
+      this.edit(op);
+      this.calculateLiveValues();
+    },
+    error: () => Swal.fire('Error', 'Failed to load operation details', 'error'),
+  });
+}
 
   computeTotals(res: any) {
     if (!res.startTime || !res.endTime)
@@ -547,10 +592,10 @@ loadOperationById(id: string) { this.operationId = id;
 
   submitOperation() {
 
-     if (this.userRole === 'corporate') {
-    Swal.fire('Access Denied', 'Corporate users cannot submit this form', 'error');
-    return;
-     }
+    if (this.userRole === 'corporate') {
+      Swal.fire('Access Denied', 'Corporate users cannot submit this form', 'error');
+      return;
+    }
 
     if (this.operationForm.invalid) {
       Swal.fire('Error', 'Please fill required fields', 'error');
@@ -642,77 +687,112 @@ loadOperationById(id: string) { this.operationId = id;
 
   performAction(workflowId: number) {
 
-  const operationId = this.operationForm.get('OperationId')?.value;
+    const operationId = this.operationForm.get('OperationId')?.value;
 
-  if (!operationId) {
-    Swal.fire('Error', 'Operation not found', 'error');
-    return;
-  }
-
-  const action = this.workflowActions.find(a => a.workflowId === workflowId);
-  if (!action) return;
-
-  const raw = this.operationForm.getRawValue();
-
-  const payload = {
-    siteId: raw.SiteId,
-    generatorId: raw.GeneratorId,
-    startTime: raw.StartTime,
-    endTime: raw.EndTime,
-    loadFactor: raw.LoadFactor,
-    fuelConsumedLiters: raw.FuelConsumedLiters
-  };
-
-  // RESUBMIT (update + status change)
-  if (action.actionName === 'Resubmit') {
-
-    if (this.operationForm.invalid) {
-      Swal.fire('Error','Please fill all required fields before resubmitting','error');
+    if (!operationId) {
+      Swal.fire('Error', 'Operation not found', 'error');
       return;
     }
 
-    this.service.update(operationId, payload)
-      .pipe(
-        switchMap(() => this.service.updateStatus(operationId, workflowId))
-      )
-      .subscribe({
-        next: () => {
-          Swal.fire('Resubmitted','Operation updated and resubmitted successfully','success')
-          .then(() => this.goBack());
-        },
-        error: () => Swal.fire('Error','Resubmit failed','error')
-      });
+    const action = this.workflowActions.find(a => a.workflowId === workflowId);
+    if (!action) return;
 
-  } else {
+    const raw = this.operationForm.getRawValue();
 
-    // Approve / Reject
-    this.service.updateStatus(operationId, workflowId)
-      .subscribe({
-        next: () => {
-          Swal.fire('Success','Status updated successfully','success')
-          .then(() => this.goBack());
-        },
-        error: () => Swal.fire('Error','Failed to update status','error')
-      });
+    const payload = {
+      siteId: raw.SiteId,
+      generatorId: raw.GeneratorId,
+      startTime: raw.StartTime,
+      endTime: raw.EndTime,
+      loadFactor: raw.LoadFactor,
+      fuelConsumedLiters: raw.FuelConsumedLiters
+    };
 
+    // RESUBMIT (update + status change)
+    if (action.actionName === 'Resubmit') {
+
+      if (this.operationForm.invalid) {
+        Swal.fire('Error', 'Please fill all required fields before resubmitting', 'error');
+        return;
+      }
+
+      this.service.update(operationId, payload)
+        .pipe(
+          switchMap(() => this.service.updateStatus(operationId, workflowId))
+        )
+        .subscribe({
+          next: () => {
+            Swal.fire('Resubmitted', 'Operation updated and resubmitted successfully', 'success')
+              .then(() => this.goBack());
+          },
+          error: () => Swal.fire('Error', 'Resubmit failed', 'error')
+        });
+
+    } else {
+
+      // Approve / Reject
+      this.service.updateStatus(operationId, workflowId)
+        .subscribe({
+          next: () => {
+            Swal.fire('Success', 'Status updated successfully', 'success')
+              .then(() => this.goBack());
+          },
+          error: () => Swal.fire('Error', 'Failed to update status', 'error')
+        });
+
+    }
   }
-} 
+
+  getActionMessage(h: any): string {
+  const role = h.ActionByRole || '';
+  const name = h.FullName || '';
+  const action = h.ActionName || '';
+
+  switch (action) {
+    case 'Submit':
+      return `${name} (${role}) submitted this trip for review`;
+    case 'Approve':
+      return `${name} (${role}) approved this trip`;
+    case 'Reject':
+      return `${name} (${role}) rejected this trip`;
+    case 'Resubmit':
+      return `${name} (${role}) resubmitted this trip after corrections`;
+    default:
+      return `${name} (${role}) performed ${action}`;
+  }
+}
+
+getTimeAgo(dateStr: string): string {
+  const now = new Date();
+  const date = new Date(dateStr);
+  const diffMs = now.getTime() - date.getTime();
+
+  const minutes = Math.floor(diffMs / (1000 * 60));
+  const hours   = Math.floor(diffMs / (1000 * 60 * 60));
+  const days    = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+  if (minutes < 1)  return 'just now';
+  if (minutes < 60) return `${minutes} min${minutes > 1 ? 's' : ''} ago`;
+  if (hours < 24)   return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+  if (days < 30)    return `${days} day${days > 1 ? 's' : ''} ago`;
+  return date.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+}
 
   // ================= LOAD WORKFLOW ACTIONS =================
-loadWorkflowActions(operationId: string) {
-  if (this.pageSource === 'search') {
-    this.workflowActions = [];
-    return;
-  }
+//   loadWorkflowActions(operationId: string) {
+//     if (this.pageSource === 'search') {
+//       this.workflowActions = [];
+//       return;
+//     }
 
-  this.service.getWorkflowActions(operationId).subscribe({
-    next: (res: any) => {
-      this.workflowActions = res?.data ?? res ?? [];
+//     this.service.getWorkflowActions(operationId).subscribe({
+//       next: (res: any) => {
+//         this.workflowActions = res?.data ?? res ?? [];
 
-      // Check if only resubmit action is available
-      this.isResubmitMode = this.workflowActions.some(a => a.actionName === 'Resubmit');
-    },
-    error: () => Swal.fire('Error', 'Failed to load workflow actions', 'error'),
-  });
-}
-}
+//         // Check if only resubmit action is available
+//         this.isResubmitMode = this.workflowActions.some(a => a.actionName === 'Resubmit');
+//       },
+//       error: () => Swal.fire('Error', 'Failed to load workflow actions', 'error'),
+//     });
+//   }
+ }

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Pipe, PipeTransform } from '@angular/core';
 import { TripService } from '../vehicle-ec/vehicle-service-ec';
 import { FormBuilder, FormGroup, ValidationErrors, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
@@ -7,6 +7,8 @@ import { ToastService } from '../../../core/toast/toastservice';
 import { Router } from '@angular/router';
 import Swal from 'sweetalert2';
 import { ActivatedRoute } from '@angular/router';
+import { forkJoin } from 'rxjs';
+
 
 @Component({
   selector: 'app-trip',
@@ -27,7 +29,6 @@ export class TripComponent implements OnInit {
   totalCO2: number = 0;
   totalNO2: number = 0;
   totalCH4: number = 0;
-
   emissionFactors: any[] = [];
   // result: any;
   currentStatusId: number = 0;
@@ -39,6 +40,8 @@ export class TripComponent implements OnInit {
   summaryData: any;
   userRole: string = '';
   source: string = '';
+
+
   showEmissionFactorSection: boolean = true;
   mode: 'add' | 'edit' | 'view' = 'add';
 
@@ -50,216 +53,324 @@ export class TripComponent implements OnInit {
     private route: ActivatedRoute
   ) { }
 
+  // ngOnInit(): void {
+  //   this.formOpenTime = new Date();
+  //   this.tripForm = this.fb.group({
+  //     vehicle_id: ['', Validators.required],
+  //     vehicleType: [''],
+
+
+  //     // fuelType: [''],
+  //     fuelId: [''],
+
+  //     fromCityId: ['', Validators.required],
+  //     toCityId: ['', Validators.required],
+
+  //     distanceKm: [
+  //       '',
+  //       [Validators.required, Validators.min(1), Validators.pattern('^[0-9]+(\\.[0-9]+)?$')]
+  //     ],
+
+  //     fuelConsumedLtr: [
+  //       '',
+  //       [Validators.required, Validators.min(0.1), Validators.pattern('^[0-9]+(\\.[0-9]+)?$')]
+  //     ],
+
+  //     tripStartDateTime: [
+  //       '',
+  //       [Validators.required, this.noFutureDateValidator.bind(this)]
+  //     ],
+
+  //     tripEndDateTime: [
+  //       '',
+  //       [Validators.required, this.noFutureDateValidator.bind(this)]
+  //     ],
+
+  //     co2Factor: [{ value: '', disabled: true }],
+  //     no2Factor: [{ value: '', disabled: true }],
+  //     ch4Factor: [{ value: '', disabled: true }],
+
+  //     totalCO2: [{ value: '', disabled: true }],
+  //     totalNO2: [{ value: '', disabled: true }],
+  //     totalCH4: [{ value: '', disabled: true }],
+  //     finalTotalEmission: [{ value: '', disabled: true }]
+
+  //   }, {
+  //     validators: [
+  //       this.cityValidator,
+  //       this.dateValidator.bind(this)
+  //     ]
+  //   });
+
+  //   this.userRole = this.getUserRole();
+  //   // this.setupVehicleChangeListener();
+  //   this.formOpenTime = new Date();
+  //   //this.initializeForm();
+  //   this.loadAllMasterData();
+  //   this.setupDurationListener();
+  //   this.tripForm.get('fuelConsumedLtr')?.valueChanges.subscribe(() => {
+  //     this.calculateEmissions();
+  //   });
+  //   this.updateCurrentDateTime();
+  //   this.route.queryParams.subscribe(params => {
+
+  //     this.source = params['source'] || '';
+
+  //     if (this.source === 'search' || this.source === 'action') {
+  //       this.showEmissionFactorSection = false;
+  //     }
+
+  //     else {
+  //       this.showEmissionFactorSection = true;
+  //     }
+  //     if (this.source === 'search') {
+  //       this.mode = 'view';
+  //       this.tripForm.disable();
+  //     }
+  //   });
+  //   const tripId = this.route.snapshot.paramMap.get('id');
+  //   if (tripId) {
+  //     this.mode = 'view';
+  //     this.loadAllMasterData(() => {
+  //       this.loadTrip(tripId);
+  //     });
+
+  //   } else {
+  //     this.mode = 'add';
+  //     this.loadAllMasterData();
+  //   }
+  //   if ((this.userRole === 'corporate' || this.userRole === 'admin') && !tripId) {
+  //     Swal.fire({
+  //       icon: 'warning',
+  //       title: 'Access Restricted',
+  //       text: 'you are not allowed to create generator emission reports.',
+  //       confirmButtonText: 'Go Back'
+  //     }).then(() => {
+  //       this.router.navigate(['/dashboard/MyActionVehicle']);
+  //     });
+  //     return;
+  //   }
+  //   // this.setupAutoCalculation();
+  // }
+
   ngOnInit(): void {
-    this.formOpenTime = new Date();
-    this.tripForm = this.fb.group({
-      vehicle_id: ['', Validators.required],
-      vehicleType: [''],
+  this.formOpenTime = new Date();
+  this.tripForm = this.fb.group({
+    vehicle_id: ['', Validators.required],
+    vehicleType: [''],
+    fuelId: [''],
+    fromCityId: ['', Validators.required],
+    toCityId: ['', Validators.required],
+    distanceKm: ['', [Validators.required, Validators.min(1), Validators.pattern('^[0-9]+(\\.[0-9]+)?$')]],
+    fuelConsumedLtr: ['', [Validators.required, Validators.min(0.1), Validators.pattern('^[0-9]+(\\.[0-9]+)?$')]],
+    tripStartDateTime: ['', [Validators.required, this.noFutureDateValidator.bind(this)]],
+    tripEndDateTime: ['', [Validators.required, this.noFutureDateValidator.bind(this)]],
+    co2Factor: [{ value: '', disabled: true }],
+    no2Factor: [{ value: '', disabled: true }],
+    ch4Factor: [{ value: '', disabled: true }],
+    totalCO2: [{ value: '', disabled: true }],
+    totalNO2: [{ value: '', disabled: true }],
+    totalCH4: [{ value: '', disabled: true }],
+    finalTotalEmission: [{ value: '', disabled: true }]
+  }, {
+    validators: [this.cityValidator, this.dateValidator.bind(this)]
+  });
 
+  this.userRole = this.getUserRole();
+  this.updateCurrentDateTime();
+  this.setupDurationListener();
 
-      // fuelType: [''],
-      fuelId: [''],
+  this.tripForm.get('fuelConsumedLtr')?.valueChanges.subscribe(() => {
+    this.calculateEmissions();
+  });
 
-      fromCityId: ['', Validators.required],
-      toCityId: ['', Validators.required],
+  // Read query params first
+  this.source = this.route.snapshot.queryParams['source'] || '';
+  if (this.source === 'search' || this.source === 'action') {
+    this.showEmissionFactorSection = false;
+  } else {
+    this.showEmissionFactorSection = true;
+  }
 
-      distanceKm: [
-        '',
-        [Validators.required, Validators.min(1), Validators.pattern('^[0-9]+(\\.[0-9]+)?$')]
-      ],
+  const tripId = this.route.snapshot.paramMap.get('id');
 
-      fuelConsumedLtr: [
-        '',
-        [Validators.required, Validators.min(0.1), Validators.pattern('^[0-9]+(\\.[0-9]+)?$')]
-      ],
-
-      tripStartDateTime: [
-        '',
-        [Validators.required, this.noFutureDateValidator.bind(this)]
-      ],
-
-      tripEndDateTime: [
-        '',
-        [Validators.required, this.noFutureDateValidator.bind(this)]
-      ],
-
-      co2Factor: [{ value: '', disabled: true }],
-      no2Factor: [{ value: '', disabled: true }],
-      ch4Factor: [{ value: '', disabled: true }],
-
-      totalCO2: [{ value: '', disabled: true }],
-      totalNO2: [{ value: '', disabled: true }],
-      totalCH4: [{ value: '', disabled: true }],
-      finalTotalEmission: [{ value: '', disabled: true }]
-
-    }, {
-      validators: [
-        this.cityValidator,
-        this.dateValidator.bind(this)
-      ]
-    });
-
-    this.userRole = this.getUserRole();
-    // this.setupVehicleChangeListener();
-    this.formOpenTime = new Date();
-    //this.initializeForm();
-    this.loadAllMasterData();
-    this.setupDurationListener();
-    this.tripForm.get('fuelConsumedLtr')?.valueChanges.subscribe(() => {
-      this.calculateEmissions();
-    });
-    this.updateCurrentDateTime();
-    this.route.queryParams.subscribe(params => {
-
-      this.source = params['source'] || '';
-
-      if (this.source === 'search' || this.source === 'action') {
-        this.showEmissionFactorSection = false;
-      }
-
-      else {
-        this.showEmissionFactorSection = true;
-      }
-      if (this.source === 'search') {
-        this.mode = 'view';
-        this.tripForm.disable();
-      }
-    });
-    const tripId = this.route.snapshot.paramMap.get('id');
-    if (tripId) {
-      this.mode = 'view';
-      this.loadAllMasterData(() => {
-        this.loadTrip(tripId);
-      });
-
-    } else {
-      this.mode = 'add';
-      this.loadAllMasterData();
-    }
+  if (tripId) {
+    // Role restriction check
     if ((this.userRole === 'corporate' || this.userRole === 'admin') && !tripId) {
-      Swal.fire({
-        icon: 'warning',
-        title: 'Access Restricted',
-        text: 'you are not allowed to create generator emission reports.',
-        confirmButtonText: 'Go Back'
-      }).then(() => {
-        this.router.navigate(['/dashboard/MyActionVehicle']);
-      });
+      this.showAccessRestricted();
       return;
     }
-    // this.setupAutoCalculation();
-  }
 
-  loadTrip(id: string) {
+    this.mode = 'view';
 
-    this.tripService.getTripById(id).subscribe(res => {
-
-      this.currentStatusId = res.statusId;
-
-      console.log("USER ROLE:", this.userRole);
-      console.log("MODE:", this.mode);
-      console.log("STATUS:", this.currentStatusId);
-
-      this.tripForm.patchValue({
-        vehicle_id: res.vehicleId,
-        fromCityId: res.fromCityId,
-        toCityId: res.toCityId,
-        distanceKm: res.distanceKm,
-        fuelConsumedLtr: res.fuelConsumedLtr,
-        tripStartDateTime: res.tripStartDateTime,
-        tripEndDateTime: res.tripEndDateTime,
-        vehicleType: res.vehicleType || '',
-        // fuelType: res.fuelType,
-        co2Factor: res.cO2,
-        no2Factor: res.nO2,
-        ch4Factor: res.cH4,
-        totalCO2: res.totalCO2,
-        totalNO2: res.totalNO2,
-        totalCH4: res.totalCH4,
-        finalTotalEmission: res.totalEmission
-      });
-      setTimeout(() => {
-        const vehicle = this.vehicles.find(v => v.vehicle_id == res.vehicleId);
-
-        if (vehicle) {
-          this.tripForm.patchValue({
-            vehicleType: vehicle.vehicle_type_name
-          });
-        }
-      }, 0);
-
-      this.totalCO2 = res.totalCO2;
-      this.totalNO2 = res.totalNO2;
-      this.totalCH4 = res.totalCH4;
-
-      this.calculateDuration();
-
-      // ROLE BASED LOCK
-      this.lockFormIfNeeded();
-
-      // Load buttons
-      this.loadWorkflowActions(id);
-       this.loadTripHistory(id);
-
+    // Load master data ONCE, then load trip inside callback
+    this.loadAllMasterData(() => {
+      this.loadTrip(tripId);
     });
 
+  } else {
+    // No tripId = add mode
+    if (this.userRole === 'corporate' || this.userRole === 'admin') {
+      this.showAccessRestricted();
+      return;
+    }
+
+    this.mode = 'add';
+    this.loadAllMasterData(); // no callback needed for add mode
   }
- loadAllMasterData(callback?: () => void) {
-
-  this.tripService.getVehicles().subscribe(vehicleRes => {
-
-    this.vehicles = vehicleRes;
-
-    this.tripService.getFuels().subscribe(fuelRes => {
-
-      this.fuels = fuelRes.data || fuelRes;
-
-      this.tripService.getCities().subscribe(cityRes => {
-
-        this.cities = cityRes.data || cityRes;
-
-        this.tripService.getEmissionFactors().subscribe(emissionRes => {
-
-          this.emissionFactors = emissionRes.data || [];
-
-          this.setupVehicleChangeListener();
-
-          // ✅ THIS LINE IS IMPORTANT
-          if (callback) callback();
-
-        });
-
-      });
-
-    });
-
-  });
-
 }
 
-  loadWorkflowActions(tripId: string) {
+private showAccessRestricted() {
+  Swal.fire({
+    icon: 'warning',
+    title: 'Access Restricted',
+    text: 'You are not allowed to create vehicle emission reports.',
+    confirmButtonText: 'Go Back'
+  }).then(() => {
+    this.router.navigate(['/dashboard/MyActionVehicle']);
+  });
+}
 
-    this.tripService.getWorkflowActions(tripId).subscribe((res: any) => {
+  // loadTrip(id: string) {
+  //   this.tripService.getTripById(id).subscribe(res => {
+  //     this.currentStatusId = res.statusId;
+  //     console.log("USER ROLE:", this.userRole);
+  //     console.log("MODE:", this.mode);
+  //     console.log("STATUS:", this.currentStatusId);
+  //     this.tripForm.patchValue({
+  //       vehicle_id: res.vehicleId,
+  //       fromCityId: res.fromCityId,
+  //       toCityId: res.toCityId,
+  //       distanceKm: res.distanceKm,
+  //       fuelConsumedLtr: res.fuelConsumedLtr,
+  //       tripStartDateTime: res.tripStartDateTime,
+  //       tripEndDateTime: res.tripEndDateTime,
+  //       vehicleType: res.vehicleType || '',
+  //       // fuelType: res.fuelType,
+  //       co2Factor: res.cO2,
+  //       no2Factor: res.nO2,
+  //       ch4Factor: res.cH4,
+  //       totalCO2: res.totalCO2,
+  //       totalNO2: res.totalNO2,
+  //       totalCH4: res.totalCH4,
+  //       finalTotalEmission: res.totalEmission
+  //     });
+  //     setTimeout(() => {
+  //       const vehicle = this.vehicles.find(v => v.vehicle_id == res.vehicleId);
+  //       if (vehicle) {
+  //         this.tripForm.patchValue({
+  //           vehicleType: vehicle.vehicle_type_name
+  //         });
+  //       }
+  //     }, 0);
+  //     this.totalCO2 = res.totalCO2;
+  //     this.totalNO2 = res.totalNO2;
+  //     this.totalCH4 = res.totalCH4;
+  //     this.calculateDuration();
+  //     // ROLE BASED LOCK
+  //     this.lockFormIfNeeded();
+  //     // Load buttons
+  //     this.loadWorkflowActions(id);
+  //      this.loadTripHistory(id);
+  //   });
+  // }
 
-      if (res.status) {
-        this.workflowActions = res.data || [];
+loadTrip(id: string) {
+  forkJoin({
+    trip: this.tripService.getTripById(id),
+    actions: this.tripService.getWorkflowActions(id),
+    history: this.tripService.getTripFullDetails(id)
+  }).subscribe({
+    next: ({ trip, actions, history }) => {
+
+      this.currentStatusId = trip.statusId;
+
+      // Patch all form values at once
+      this.tripForm.patchValue({
+        vehicle_id: trip.vehicleId,
+        fromCityId: trip.fromCityId,
+        toCityId: trip.toCityId,
+        distanceKm: trip.distanceKm,
+        fuelConsumedLtr: trip.fuelConsumedLtr,
+        tripStartDateTime: trip.tripStartDateTime,
+        tripEndDateTime: trip.tripEndDateTime,
+        vehicleType: trip.vehicleType || '',
+        co2Factor: trip.cO2,
+        no2Factor: trip.nO2,
+        ch4Factor: trip.cH4,
+        totalCO2: trip.totalCO2,
+        totalNO2: trip.totalNO2,
+        totalCH4: trip.totalCH4,
+        finalTotalEmission: trip.totalEmission
+      });
+
+      // Resolve vehicle type name from loaded vehicles list
+      const vehicle = this.vehicles.find(v => v.vehicle_id == trip.vehicleId);
+      if (vehicle) {
+        this.tripForm.patchValue({ vehicleType: vehicle.vehicle_type_name });
       }
-
-      console.log("Workflow Actions:", this.workflowActions);
-
-    });
-
-  }
-
- loadTripHistory(tripId: string) {
-  this.tripService.getTripFullDetails(tripId).subscribe((res: any) => {
-    console.log('Full Details Response:', res);  
-    if (res && res.History) {
-      this.tripHistory = res.History;
-      console.log('Trip History:', this.tripHistory);  
+      this.totalCO2 = trip.totalCO2 || 0;
+      this.totalNO2 = trip.totalNO2 || 0;
+      this.totalCH4 = trip.totalCH4 || 0;
+      this.totalCO2e = (this.totalCO2 * 1) +
+        (this.totalCH4 * this.GWP_CH4) +
+        (this.totalNO2 * this.GWP_N2O);
+      this.workflowActions = (actions as any)?.data || [];
+      this.tripHistory = (history as any)?.History || [];
+      this.calculateDuration();
+      this.lockFormIfNeeded();
+      if (this.source === 'search') {
+        this.tripForm.disable();
+      }
+      console.log('Trip loaded:', trip);
+      console.log('Workflow Actions:', this.workflowActions);
+      console.log('Trip History:', this.tripHistory);
+    },
+    error: (err) => {
+      console.error('Failed to load trip details:', err);
+      Swal.fire({
+        icon: 'error',
+        title: 'Failed to load trip',
+        text: 'Please try again or contact support.'
+      });
     }
   });
 }
+
+ loadAllMasterData(callback?: () => void) {
+  this.tripService.getVehicles().subscribe(vehicleRes => {
+    this.vehicles = vehicleRes;
+    this.tripService.getFuels().subscribe(fuelRes => {
+      this.fuels = fuelRes.data || fuelRes;
+      this.tripService.getCities().subscribe(cityRes => {
+        this.cities = cityRes.data || cityRes;
+        this.tripService.getEmissionFactors().subscribe(emissionRes => {
+          this.emissionFactors = emissionRes.data || [];
+          this.setupVehicleChangeListener();
+          if (callback) callback();
+        });
+      });
+    });
+  });
+}
+  // loadWorkflowActions(tripId: string) {
+  //   this.tripService.getWorkflowActions(tripId).subscribe((res: any) => {
+  //     if (res.status) {
+  //       this.workflowActions = res.data || [];
+  //     }
+  //     console.log("Workflow Actions:", this.workflowActions);
+  //   });
+  // }
+
+//  loadTripHistory(tripId: string) {
+//   this.tripService.getTripFullDetails(tripId).subscribe((res: any) => {
+//     console.log('Full Details Response:', res);  
+//     if (res && res.History) {
+//       this.tripHistory = res.History;
+//       console.log('Trip History:', this.tripHistory);  
+//     }
+//   });
+// }
 
   setupVehicleChangeListener() {
     this.tripForm.get('vehicle_id')?.valueChanges.subscribe(selectedVehicleId => {
@@ -696,6 +807,52 @@ export class TripComponent implements OnInit {
       }
     });
   }
+
+  getActionMessage(h: any): string {
+  const role = h.ActionByRole || '';
+  const name = h.FullName || '';
+  const action = h.ActionName || '';
+
+  switch (action) {
+    case 'Submit':
+      return `${name} (${role}) submitted this trip for review`;
+    case 'Approve':
+      return `${name} (${role}) approved this trip`;
+    case 'Reject':
+      return `${name} (${role}) rejected this trip`;
+    case 'Resubmit':
+      return `${name} (${role}) resubmitted this trip after corrections`;
+    default:
+      return `${name} (${role}) performed ${action}`;
+  }
+}
+
+getTimeAgo(dateStr: string): string {
+  const now = new Date();
+  const date = new Date(dateStr);
+  const diffMs = now.getTime() - date.getTime();
+
+  const minutes = Math.floor(diffMs / (1000 * 60));
+  const hours   = Math.floor(diffMs / (1000 * 60 * 60));
+  const days    = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+  if (minutes < 1)  return 'just now';
+  if (minutes < 60) return `${minutes} min${minutes > 1 ? 's' : ''} ago`;
+  if (hours < 24)   return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+  if (days < 30)    return `${days} day${days > 1 ? 's' : ''} ago`;
+  return date.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+}
+
+// getActionIcon(action: string): string {
+//   switch (action) {
+//     case 'Submit':   return '📤';
+//     case 'Approve':  return '✅';
+//     case 'Reject':   return '❌';
+//     case 'Resubmit': return '🔄';
+//     default:         return '🔵';
+//   }
+// }
+
   isSearchMode(): boolean {
     return this.source === 'search';
   }
