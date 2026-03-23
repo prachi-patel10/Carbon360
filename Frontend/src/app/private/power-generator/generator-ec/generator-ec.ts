@@ -307,12 +307,19 @@ this.ratedCapacityKW =
 
   }
 
- loadTripHistory(tripId: string) {
-  this.service.getTripFullDetails(tripId).subscribe((res: any) => {
-    console.log('Full Details Response:', res);  
-    if (res && res.History) {
-      this.service = res.History;
-      console.log('Trip History:', this.service);  
+loadTripHistory(operationId: string) {
+  this.service.getTripFullDetails(operationId).subscribe({
+    next: (res: any) => {
+      console.log('Full Details Response:', res);
+      if (res && res.History) {
+        this.tripHistory = res.History;  
+        console.log('Trip History:', this.tripHistory);
+      } else {
+        console.warn('No History in response:', res);
+      }
+    },
+    error: (err) => {
+      console.error('loadTripHistory ERROR:', err);
     }
   });
 }
@@ -453,7 +460,8 @@ loadOperationById(id: string) { this.operationId = id;
             // Patch the form for edit/view
              this.edit(op); 
              setTimeout(() => {
-  this.calculateLiveValues(); // ✅ important
+  this.calculateLiveValues();
+   this.loadTripHistory(id); 
 });
              
              // Show calculation card

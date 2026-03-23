@@ -69,9 +69,7 @@ downloadTripPdf(operationId: string) {
     });
   }
 
-  getTripFullDetails(hashId: string): Observable<any> {
- return this.http.get(
-      `${this.apiUrl}/GeneratorOperation/pdf/${hashId}`
-    );
+  getTripFullDetails(operationId: string): Observable<any> {
+  return this.http.get(`${this.apiUrl}/GeneratorOperation/pdf/${operationId}`);
 }
 }
