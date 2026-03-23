@@ -110,13 +110,15 @@
 
       <!-- Status + Save Button -->
       <div class="form-actions">
-        <div class="status-toggle">
-          <span>Active</span>
-          <label class="switch">
-            <input type="checkbox" [(ngModel)]="activeFilter" (change)="search()" />
-            <span class="slider"></span>
-          </label>
-        </div>
+  <div class="status-toggle">
+    <span>Active</span>
+    <label class="switch">
+      <input type="checkbox"
+             [checked]="newVehicle().isActive"
+             (change)="onFormActiveChange($event)" />
+      <span class="slider"></span>
+    </label>
+  </div>
         <button type="button" class="save-btn" (click)="saveVehicle()">
           {{ isEditMode() ? 'Update' : 'Save' }}
         </button>
@@ -201,6 +203,11 @@
               <button class="delete-btn" (click)="deleteVehicle(v)">Delete</button>
             </td>
           </tr>
+           <tr *ngIf="vehicles().length === 0">
+    <td colspan="8" style="text-align: center; padding: 20px; color: #999;">
+      No records found
+    </td>
+  </tr>
         </tbody>
       </table>
     </div>

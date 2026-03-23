@@ -59,16 +59,14 @@
     <div class="search-right">
 
       <div class="status-toggle">
-        <span>Active Only</span>
-        <label class="switch">
-          <input
-            type="checkbox"
-            [checked]="onlyActive()"
-            (change)="onlyActive.set($event.target.checked)">
-          <span class="slider"></span>
-        </label>
-      </div>
-
+  <span>Active Only</span>
+  <label class="switch">
+    <input type="checkbox"
+           [checked]="onlyActive() === true"
+           (change)="onActiveFilterChange($event)">
+    <span class="slider"></span>
+  </label>
+</div>
       <button type="button" class="filter-btn"
           (click)="openFilterModal()">
         Filter
@@ -122,6 +120,11 @@
             </td>
 
           </tr>
+           <tr *ngIf="vehicleTypes().length === 0">
+    <td colspan="5" style="text-align: center; padding: 20px; color: #999;">
+      No records found
+    </td>
+  </tr>
         </tbody>
 
       </table>

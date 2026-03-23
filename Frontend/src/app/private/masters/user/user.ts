@@ -43,7 +43,7 @@ export class MasterUserComponent implements OnInit {
   departments = signal<any[]>([]);
 
   searchText = signal<string>('');
-  onlyActive = signal<boolean>(false);
+onlyActive = signal<boolean | undefined>(true);
 pageSizeOptions = [5, 10, 15,20];
 
   currentPage = signal<number>(1);
@@ -80,7 +80,7 @@ pageSizeOptions = [5, 10, 15,20];
       this.currentPage(),
       this.requestedRecords(),
       this.searchText(),
-      this.onlyActive()
+       this.onlyActive() ?? false 
     );
 
     // Load users after roles and departments
@@ -258,7 +258,7 @@ resetUserFilter() {
     this.currentPage(),
     this.requestedRecords(),
     this.searchText(),
-    this.onlyActive(),
+     this.onlyActive() ?? undefined,  
     filter.department_id.length ? filter.department_id.join(',') : '',
     filter.role_id.length ? filter.role_id.join(',') : '',
     this.sortColumn,      // ← NOW PASSED
@@ -507,10 +507,12 @@ resetUserFilter() {
   }
 
   onActiveFilterChange(event: any) {
-    this.onlyActive.set(event.target.checked);
-    this.currentPage.set(1);
-    this.loadUsers();
-  }
+  const checked = event.target.checked;
+  // true = active only, false = inactive only, null = all
+  this.onlyActive.set(checked ? true : false);
+  this.currentPage.set(1);
+  this.loadUsers();
+}
 
   nextPage() {
     if (this.currentPage() < this.totalPages()) {

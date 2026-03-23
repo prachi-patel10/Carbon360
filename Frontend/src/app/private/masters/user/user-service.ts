@@ -37,7 +37,7 @@ export class UserService {
     .set('pageSize', pageSize);
 
   if (searchText) params = params.set('searchText', searchText);
-  if (onlyActive === true) params = params.set('isActive', true);
+ if (onlyActive !== undefined) params = params.set('isActive', onlyActive);
   if (departmentIds) params = params.set('departmentIds', departmentIds);
   if (roleIds) params = params.set('roleIds', roleIds);
   if (sortColumn) params = params.set('sortColumn', sortColumn);

@@ -116,8 +116,9 @@
         <div class="status-toggle">
           <span>Active Only</span>
           <label class="switch">
-            <input type="checkbox" [(ngModel)]="isActiveFilter" (change)="loadGenerators()" />
-            <span class="slider"></span>
+<input type="checkbox"
+       [checked]="isActiveFilter === true"
+       (change)="isActiveFilter = $any($event.target).checked ? true : false; pageNumber = 1; loadGenerators()" />            <span class="slider"></span>
           </label>
         </div>
         <button type="button" class="filter-btn" (click)="openFilterModal()">Filter</button>
@@ -168,6 +169,11 @@
               <button class="delete-btn" (click)="delete(gen)">Delete</button>
             </td>
           </tr>
+          <tr *ngIf="generators().length === 0">
+    <td colspan="7" style="text-align: center; padding: 20px; color: #999;">
+      No records found
+    </td>
+  </tr>
         </tbody>
       </table>
     </div> <!-- end table-wrapper -->

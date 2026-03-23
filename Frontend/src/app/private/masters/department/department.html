@@ -105,6 +105,11 @@
               <button class="delete-btn" (click)="deleteUI(d)">Delete</button>
             </td>
           </tr>
+           <tr *ngIf="departments().length === 0">
+    <td colspan="3" style="text-align: center; padding: 20px; color: #999;">
+      No records found
+    </td>
+  </tr>
         </tbody>
       </table>
     </div>

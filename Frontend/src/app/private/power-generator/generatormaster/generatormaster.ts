@@ -19,7 +19,7 @@ export class Generatormaster implements OnInit {
   departments = signal<{ departmentId: string; departmentName: string }[]>([]);
 
   searchText = '';
-  isActiveFilter: boolean | null = null;
+isActiveFilter: boolean | null = true;
 
   pageNumber = 1;
 pageSize = 5;
@@ -76,23 +76,29 @@ pageSize = 5;
     });
   }
 
-  loadGenerators() {
-    this.service.search({
-      search: this.searchText || '',
-      isActive: this.isActiveFilter,
-      sortColumn: this.sortColumnName,
-      sortDirection: this.sortDir.toUpperCase(),
-      pageNumber: this.pageNumber,
-      pageSize: this.pageSize
-    }).subscribe(res => {
-      this.generators.set(res.data || []);
-      this.totalRecords = res.totalRecords || 0;
-      this.totalPages = Math.ceil(this.totalRecords / this.pageSize);
-    });
+ loadGenerators() {
+  const params: any = {
+    search: this.searchText || '',
+    sortColumn: this.sortColumnName,
+    sortDirection: this.sortDir.toUpperCase(),
+    pageNumber: this.pageNumber,
+    pageSize: this.pageSize
+  };
+
+  // KEY FIX: send for both true and false, skip only when null
+  if (this.isActiveFilter !== null) {
+    params.isActive = this.isActiveFilter;
   }
+
+  this.service.search(params).subscribe(res => {
+    this.generators.set(res.data || []);
+    this.totalRecords = res.totalRecords || 0;
+    this.totalPages = Math.ceil(this.totalRecords / this.pageSize);
+  });
+}
 getSortIcon(column: string): string {
-  if (this.sortColumn() !== column) return '↕';
-  return this.sortDirection() === 'asc' ? '↑' : '↓';
+  if (this.sortColumnName !== column) return '↕';
+  return this.sortDir === 'asc' ? '↑' : '↓';
 }
 
   submit() {
@@ -247,9 +253,6 @@ getSortIcon(column: string): string {
     // Update the signal
     this.generators.set(currentGenerators);
   }
-
-  sortColumn() { return this.sortColumnName; }
-  sortDirection() { return this.sortDir; }
 
   
   // ================== Filter Modal ==================

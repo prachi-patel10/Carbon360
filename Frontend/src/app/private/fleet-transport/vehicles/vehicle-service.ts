@@ -48,7 +48,7 @@ export class VehicleService {
       sortDirection: sortDirection.toUpperCase()
     };
 
-    if (isActive !== null) params.isActive = isActive; // only send if true/false
+   if (isActive !== null && isActive !== undefined) params.isActive = isActive;// only send if true/false
     if (vehicle_type_id) params.vehicle_type_id = vehicle_type_id;
     if (fuel_id) params.fuel_id = fuel_id;
     if (department_id) params.department_id = department_id;

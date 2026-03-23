@@ -24,7 +24,7 @@ totalPages = signal(1);
 pageSizeOptions = [5, 10, 15,20];
 
 searchText = signal('');
-onlyActive = signal(false);
+onlyActive = signal<boolean | undefined>(true);
 
 refreshTrigger = signal(0);
 sortColumn: string = 'fuel_name';
@@ -62,7 +62,8 @@ sortDirection: string = 'ASC';
   newFuel = {
     fuel_name: '',
     fuel_Desc: '',
-    isapplicable: true
+    isapplicable: true,
+    isActive: true  
   };
 
   constructor(
@@ -75,7 +76,7 @@ sortDirection: string = 'ASC';
   const page = this.currentPage();
   const size = this.pageSize();
   const search = this.searchText();
-  const active = this.onlyActive();
+ const active = this.onlyActive();
 
   this.refreshTrigger();
 
@@ -87,8 +88,7 @@ sortDirection: string = 'ASC';
     this.refreshTrigger.update(v => v + 1);
   }
 
- loadFuels(page: number, size: number, search: string, active: boolean) {
-
+loadFuels(page: number, size: number, search: string, active: boolean | undefined) {
   let params: any = {
     pageNumber: page,
     pageSize: size,
@@ -100,7 +100,7 @@ sortDirection: string = 'ASC';
     params.searchText = search;
   }
 
-  if (active) {
+   if (active !== undefined) {
     params.isActive = active;
   }
 
@@ -135,11 +135,12 @@ sortDirection: string = 'ASC';
     fuel_id: this.editingFuelId,
     fuel_name: this.newFuel.fuel_name,
     fuel_Desc: this.newFuel.fuel_Desc,
-    isapplicable: this.newFuel.isapplicable
+    isapplicable: this.newFuel.isapplicable,
+     isActive: this.newFuel.isActive 
   };
 
   const request$ = isCreate
-    ? this.fuelService.createFuel(this.newFuel)
+       ? this.fuelService.createFuel(payload) 
     : this.fuelService.updateFuel(payload);
 
   request$.subscribe({
@@ -312,16 +313,17 @@ onSearchChange(event: any) {
 }
 
 onFilterChange(event: any) {
-  this.onlyActive.set(event.target.checked);
+  const checked = event.target.checked;
+  this.onlyActive.set(checked ? true : false);  // true=active, false=inactive
   this.currentPage.set(1);
 }
+
 
 clearSearch() {
   this.searchText.set('');
-  this.onlyActive.set(false);
+  this.onlyActive.set(undefined);  // undefined = show all
   this.currentPage.set(1);
 }
-
   showToast(title: string, icon: 'success' | 'error' = 'success') {
   Swal.fire({
     toast: true,
@@ -340,7 +342,8 @@ clearSearch() {
     this.newFuel = {
       fuel_name: fuel.fuel_name,
       fuel_Desc: fuel.fuel_Desc,
-      isapplicable: fuel.isapplicable
+      isapplicable: fuel.isapplicable,
+ isActive: true  
     };
 
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -535,7 +538,8 @@ clearSearch() {
     this.newFuel = {
       fuel_name: '',
       fuel_Desc: '',
-      isapplicable: true
+      isapplicable: true,
+       isActive: true  
     };
   }
 

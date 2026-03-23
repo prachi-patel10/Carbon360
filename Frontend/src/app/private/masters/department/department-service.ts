@@ -73,7 +73,7 @@ update(data: MasterDepartment) {
     .set('pageSize', pageSize.toString());
 
   if (search) params = params.set('searchText', search);
-  if (onlyActive) params = params.set('isActive', 'true');
+  if (onlyActive !== undefined) params = params.set('isActive', onlyActive.toString());
 
   return this.http.get<any>(`${this.apiUrl}/Search`, { params });
 }

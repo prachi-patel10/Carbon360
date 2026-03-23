@@ -2,36 +2,44 @@
 
   <!-- 🔹 Create Fuel -->
   <div class="card">
-   <div class="form-grid">
+    <div class="form-grid">
 
       <!-- Fuel Name -->
       <div class="form-group">
         <label>Fuel Name</label>
-        <input type="text"
-               placeholder="Enter Fuel Name"
-               [(ngModel)]="newFuel.fuel_name">
+        <input type="text" placeholder="Enter Fuel Name" [(ngModel)]="newFuel.fuel_name">
       </div>
 
       <!-- Fuel Description -->
       <div class="form-group">
         <label>Fuel Description</label>
-        <input type="text"
-               placeholder="Enter Fuel Description"
-               [(ngModel)]="newFuel.fuel_Desc">
+        <input type="text" placeholder="Enter Fuel Description" [(ngModel)]="newFuel.fuel_Desc">
       </div>
 
       <!-- Generator Applicable -->
       <div class="form-group">
         <label>Generator Applicable</label>
-
         <div class="status-toggle">
           <label class="switch">
-            <input type="checkbox"
-                   [(ngModel)]="newFuel.isapplicable">
-<span class="slider"></span>          </label>
-
+            <input type="checkbox" [(ngModel)]="newFuel.isapplicable">
+            <span class="slider"></span>
+          </label>
           <span class="toggle-text">
             {{ newFuel.isapplicable ? 'Applicable' : 'Not Applicable' }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Status -->
+      <div class="form-group">
+        <label>Status</label>
+        <div class="status-toggle">
+          <label class="switch">
+            <input type="checkbox" [(ngModel)]="newFuel.isActive">
+            <span class="slider"></span>
+          </label>
+          <span class="toggle-text">
+            {{ newFuel.isActive ? 'Active' : 'Inactive' }}
           </span>
         </div>
       </div>
@@ -39,7 +47,6 @@
     </div>
 
     <div class="button-row">
-      <!-- <button class="btn-save" (click)="createFuel()">Save</button> -->
       <button class="btn-save" (click)="createFuel()">
         {{ editingFuelId ? 'Update' : 'Save' }}
       </button>
@@ -47,123 +54,95 @@
     </div>
   </div>
 
-
   <!-- 🔹 Fuel List -->
-   
   <div class="card">
-    <!-- ================= SEARCH ROW ================= -->
-  <div class="search-row">
 
-    <div class="search-left">
-     <input type="text"
-       class="search-input"
-       placeholder="Quick Search"
-       [(ngModel)]="searchText"
-       (input)="onSearchChange($event)">
-    </div>
-
-    <div class="search-right">
-
-      <!-- Active Only Filter -->
-      <div class="status-toggle">
-        <span>Active Only</span>
-        <label class="switch">
-         <input type="checkbox"
-       [(ngModel)]="onlyActive"
-       (change)="onFilterChange($event)">
-          <span class="slider"></span>
-        </label>
+    <div class="search-row">
+      <div class="search-left">
+        <input type="text"
+               class="search-input"
+               placeholder="Quick Search"
+               [(ngModel)]="searchText"
+               (input)="onSearchChange($event)">
       </div>
 
-      <button class="filter-btn" (click)="clearSearch()">Clear</button>
-
+      <div class="search-right">
+        <div class="status-toggle">
+          <span>Active Only</span>
+          <label class="switch">
+            <input type="checkbox"
+                   [checked]="onlyActive() === true"
+                   (change)="onFilterChange($event)">
+            <span class="slider"></span>
+          </label>
+        </div>
+        <button class="filter-btn" (click)="clearSearch()">Clear</button>
+      </div>
     </div>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Generator Applicable</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let fuel of fuels; trackBy: trackByFuel">
+            <td>{{ fuel.fuel_name }}</td>
+            <td>{{ fuel.fuel_Desc }}</td>
+
+            <td>
+              <label class="switch">
+                <input type="checkbox"
+                       [(ngModel)]="fuel.isapplicable"
+                       (ngModelChange)="confirmApplicableChange($event, fuel)" />
+                <span class="slider round green"></span>
+              </label>
+            </td>
+
+            <td>
+              <label class="switch">
+                <input type="checkbox"
+                       [checked]="fuel.isActive"
+                       (change)="confirmStatusChange($event, fuel)" />
+                <span class="slider round blue"></span>
+              </label>
+            </td>
+
+            <td class="action-buttons">
+              <button class="edit-btn" (click)="editFuel(fuel)">Edit</button>
+              <button class="delete-btn" (click)="deleteFuel(fuel)">Delete</button>
+            </td>
+          </tr>
+
+          <!-- No Records Row -->
+          <tr *ngIf="fuels.length === 0">
+            <td colspan="5" style="text-align: center; padding: 20px; color: #999;">
+              No records found
+            </td>
+          </tr>
+
+        </tbody>
+      </table>
+    </div>
+
+    <div class="pagination-info">
+      <span>Total Records: {{ totalRecords() }}</span>
+      <div class="pagination-controls">
+        <button (click)="previousPage()" [disabled]="currentPage() === 1">Previous</button>
+        <span>Page {{ currentPage() }} of {{ totalPages() }}</span>
+        <button (click)="nextPage()" [disabled]="currentPage() === totalPages()">Next</button>
+        <label for="pageSize">Page Size:</label>
+        <select id="pageSize" [value]="pageSize()" (change)="onPageSizeChange($event)">
+          <option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</option>
+        </select>
+      </div>
+    </div>
+
   </div>
-  
-      <div class="table-wrapper">
-    <table>
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Description</th>
-          <th>Generator Applicable</th>
-          <th>Status</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-
-      <tbody>
-
-  <tr *ngFor="let fuel of fuels; trackBy: trackByFuel">
-
-    <td>{{ fuel.fuel_name }}</td>
-    <td>{{ fuel.fuel_Desc }}</td>
-
-    <!-- Generator Toggle -->
-    <td>
-      <label class="switch">
-        <input type="checkbox"
-               [(ngModel)]="fuel.isapplicable"
-               (ngModelChange)="confirmApplicableChange($event, fuel)" />
-        <span class="slider round green"></span>
-      </label>
-    </td>
-
-    <!-- Status Toggle -->
-    <td>
-      <label class="switch">
-        <input type="checkbox"
-               [checked]="fuel.isActive"
-               (change)="confirmStatusChange($event, fuel)" />
-        <span class="slider round blue"></span>
-      </label>
-    </td>
-
-    <!-- Actions -->
-    <td class="action-buttons">
-      <button class="edit-btn" (click)="editFuel(fuel)">Edit</button>
-      <button class="delete-btn" (click)="deleteFuel(fuel)">Delete</button>
-    </td>
-
-  </tr>
-
-</tbody>
-    </table>
-
-  </div>
-
-  <!-- ================= PAGINATION ================= -->
-<!-- ================= PAGINATION ================= -->
-  <!-- Pagination -->
-<div class="pagination-info">
-  <span>Total Records: {{ totalRecords() }}</span>
-
-  <div class="pagination-controls">
-    <!-- Previous Button -->
-    <button (click)="previousPage()" [disabled]="currentPage() === 1">
-      Previous
-    </button>
-
-    <!-- Page Info -->
-    <span>Page {{ currentPage() }} of {{ totalPages() }}</span>
-
-    <!-- Next Button -->
-    <button (click)="nextPage()" [disabled]="currentPage() === totalPages()">
-      Next
-    </button>
-
-    <!-- Page Size Selector -->
-    <label for="pageSize">Page Size:</label>
-    <select
-      id="pageSize"
-      [value]="currentPage()"
-      (change)="onPageSizeChange($event)"
-    >
-      <option *ngFor="let size of pageSizeOptions" [value]="size">
-        {{ size }}
-      </option>
-    </select>
-  </div>
-</div>
-
 </div>

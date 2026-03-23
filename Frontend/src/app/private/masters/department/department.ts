@@ -30,7 +30,7 @@ sortDirection: 'asc' | 'desc' = 'asc';
   totalPages = signal(1);
   currentPage = signal(1);
   requestedRecords = signal(5);
-  onlyActive = signal(false);
+ onlyActive = signal<boolean | undefined>(true);
   searchText = signal('');
   refreshTrigger = signal(0);
   departmentFilterModalOpen = signal(false);
@@ -45,17 +45,16 @@ pageSizeOptions = [5, 10, 15,20];
   ) {
 
 
-    effect(() => {
+   // In effect
+effect(() => {
+  const page = this.currentPage();
+  const size = this.requestedRecords();
+  const search = this.searchText();
+  const active = this.onlyActive();
+  this.refreshTrigger();
 
-      // register dependencies
-      const page = this.currentPage();
-      const size = this.requestedRecords();
-      const search = this.searchText();
-      const active = this.onlyActive();
-      this.refreshTrigger(); // important dependency
-
-      this.loadDepartments(page, size, search, active);
-    });
+  this.loadDepartments(page, size, search, active);  // ← active is boolean | undefined
+});
   }
 
   openDepartmentFilter() {
@@ -162,7 +161,7 @@ ResetDepartmentFilter() {
     page: number,
     size: number,
     search: string,
-    active: boolean
+    active?: boolean   
   ) {
     this.service
       .getPaged(page, size, search, active)
@@ -209,9 +208,10 @@ ResetDepartmentFilter() {
   }
 
   onActiveFilterChange(event: any) {
-    this.onlyActive.set(event.target.checked);
-    this.currentPage.set(1);
-  }
+  const checked = event.target.checked;
+  this.onlyActive.set(checked ? true : false);
+  this.currentPage.set(1);
+}
 
   clearSearch() {
     this.searchForm.patchValue({ searchText: '' });

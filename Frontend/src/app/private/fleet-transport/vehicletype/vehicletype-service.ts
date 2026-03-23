@@ -79,8 +79,7 @@ export class VehicletypeService {
   if (search)
     params = params.set('searchText', search);
 
-  if (onlyActive === true)
-    params = params.set('isActive', 'true');
+  if (onlyActive !== undefined) params = params.set('isActive', onlyActive.toString());
 
   return this.http.get<any>(`${this.apiUrl}/Search`, { params });
 }

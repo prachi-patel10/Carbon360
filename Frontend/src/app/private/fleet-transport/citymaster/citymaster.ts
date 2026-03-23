@@ -37,7 +37,7 @@ export class Citymaster implements OnInit {
   sortColumn = signal<string>('CityName');
   sortDirection = signal<'asc' | 'desc'>('asc');
 
-  onlyActive = signal(false);
+onlyActive = signal<boolean | undefined>(true);
   searchText = signal('');
   refreshTrigger = signal(0);
   pageSizeOptions = [5, 10, 20];  
@@ -160,7 +160,7 @@ isShortCodeSelected(city:string):boolean{
     });
   }
 
-loadCities(page:number,size:number,search:string,active:boolean) {
+loadCities(page: number, size: number, search: string, active?: boolean) {
 
   this.service.getPaged(
   page,
@@ -223,6 +223,13 @@ loadCities(page:number,size:number,search:string,active:boolean) {
     },
     error:()=>this.toastr.error('Failed to load cities')
   });
+}
+
+onActiveFilterChange(event: Event) {
+  const checked = (event.target as HTMLInputElement).checked;
+  this.onlyActive.set(checked ? true : false);  // true=active, false=inactive
+  this.currentPage.set(1);
+  this.refreshTrigger.update(x => x + 1);
 }
 
 openFilterModal() {

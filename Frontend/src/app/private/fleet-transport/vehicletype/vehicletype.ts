@@ -34,7 +34,7 @@ export class Vehicletype implements OnInit {
   totalPages = signal(1);
   currentPage = signal(1);
   //requestedRecords = signal(5);
-  onlyActive = signal(false);
+  onlyActive = signal<boolean | undefined>(true);
   searchText = signal('');
   refreshTrigger = signal(0);
   pageSizeOptions = [5, 10, 20];
@@ -55,7 +55,7 @@ export class Vehicletype implements OnInit {
       const size = this.pageSize();
       //const size = this.requestedRecords();
       const search = this.searchText();
-      const active = this.onlyActive();
+      const active = this.onlyActive();  
       //this.refreshTrigger();
      // this.refreshTrigger.update(v => v + 1);
       const refresh = this.refreshTrigger();
@@ -106,7 +106,12 @@ export class Vehicletype implements OnInit {
     this.refreshTrigger.update(x => x + 1);
     this.closeFilterModal();
   }
-
+onActiveFilterChange(event: Event) {
+  const checked = (event.target as HTMLInputElement).checked;
+  this.onlyActive.set(checked ? true : false);  // true=active, false=inactive
+  this.currentPage.set(1);
+  this.refreshTrigger.update(v => v + 1);
+}
 
   resetFilter() {
     this.filter.set({
@@ -128,7 +133,7 @@ export class Vehicletype implements OnInit {
     return end > this.totalRecords() ? this.totalRecords() : end;
   }
 
-  loadVehicleTypes(page: number, size: number, search: string, active: boolean) {
+loadVehicleTypes(page: number, size: number, search: string, active?: boolean) {
 
    this.service.getPaged(
       page,

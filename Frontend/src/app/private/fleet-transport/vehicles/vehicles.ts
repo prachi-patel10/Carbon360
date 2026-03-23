@@ -39,7 +39,7 @@ export class Vehicles implements OnInit {
   pageSize = signal<number>(5);
 
   searchText = signal<string>('');
-  activeFilter = signal<boolean>(false);
+activeFilter = signal<boolean | undefined>(true);
 
   sortColumn = signal<string>('');
   sortDirection = signal<'asc' | 'desc'>('asc');
@@ -97,6 +97,11 @@ export class Vehicles implements OnInit {
       this.loadVehicles();
     });
   }
+
+  onFormActiveChange(event: Event) {
+  const checked = (event.target as HTMLInputElement).checked;
+  this.newVehicle.update(v => ({ ...v, isActive: checked }));
+}
 
   // ----------------- DROPDOWNS -----------------
   loadDropdowns() {
@@ -210,8 +215,9 @@ export class Vehicles implements OnInit {
 
   // Load vehicles
   loadVehicles() {
-    const filterData = this.vehicleFilter();
-    const isActiveFilter: boolean | null = this.activeFilter() ? true : null;
+      const filterData = this.vehicleFilter();
+  const active = this.activeFilter();
+     const isActiveFilter: boolean | null = active === undefined ? null : active;
 
     this.vehicleService
       .searchVehicles(
@@ -242,11 +248,17 @@ export class Vehicles implements OnInit {
   }
 
   // ----------------- SEARCH -----------------
-  search() {
-    this.pageNumber.set(1);
-    this.loadVehicles();
-  }
+search() {
+  this.pageNumber.set(1);
+  this.loadVehicles();
+}
 
+onActiveFilterChange(event: any) {
+  const checked = event.target.checked;
+  this.activeFilter.set(checked ? true : false);  // true=active, false=inactive
+  this.pageNumber.set(1);
+  this.loadVehicles();
+}
   // ----------------- PAGINATION -----------------
   previousPage() {
     if (this.pageNumber() > 1) {

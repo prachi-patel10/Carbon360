@@ -85,8 +85,7 @@ export class CityService {
   if (search)
     params = params.set('searchText', search);
 
-  if (onlyActive === true)
-    params = params.set('isActive','true');
+  if (onlyActive !== undefined) params = params.set('isActive', onlyActive.toString());
 
   if (sortColumn)
     params = params.set('sortColumn', sortColumn);
