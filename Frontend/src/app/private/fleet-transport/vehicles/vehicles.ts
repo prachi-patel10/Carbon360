@@ -39,12 +39,17 @@ export class Vehicles implements OnInit {
   pageSize      = signal<number>(5);
   searchText    = signal<string>('');
   activeFilter  = signal<boolean | undefined>(true);
-  sortColumn    = signal<string>('');
+  sortColumn    = signal<string>('vehicle_number');
   sortDirection = signal<'asc' | 'desc'>('asc');
 
-  vehicleNumberError   = signal<string>('');
+  vehicleNumberError      = signal<string>('');
   vehicleFilterModalOpen: WritableSignal<boolean> = signal(false);
-  isEditMode           = signal<boolean>(false);
+  isEditMode              = signal<boolean>(false);
+
+  // ── Dropdown loading states ───────────────────────────────────
+  loadingFuelTypes     = signal<boolean>(false);   // ← NEW
+  loadingVehicleTypes  = signal<boolean>(false);   // ← NEW
+  loadingDepartments   = signal<boolean>(false);   // ← NEW
 
   pageSizeOptions = [5, 10, 20, 50];
 
@@ -52,7 +57,6 @@ export class Vehicles implements OnInit {
   selectedFuelIds:        string[] = [];
   selectedVehicleTypeIds: string[] = [];
 
-  // Controls which dropdown panel is open inside the modal
   fuelDropOpen  = false;
   vtypeDropOpen = false;
 
@@ -81,18 +85,11 @@ export class Vehicles implements OnInit {
   ngOnInit() {
     this.loadDropdowns();
     this.loadVehicles();
-
-    effect(() => {
-      this.activeFilter();   // reactive — fires whenever activeFilter changes
-      this.pageNumber.set(1);
-      this.loadVehicles();
-    });
   }
 
   // ── Close modal dropdowns when clicking outside ───────────────
   @HostListener('document:click', ['$event'])
   onDocumentClick(e: MouseEvent) {
-    // Clicking outside the modal closes the inner panels
     if (!(e.target as HTMLElement).closest('.vf-modal')) {
       this.fuelDropOpen  = false;
       this.vtypeDropOpen = false;
@@ -104,28 +101,48 @@ export class Vehicles implements OnInit {
     this.newVehicle.update(v => ({ ...v, isActive: checked }));
   }
 
-  // ── Dropdowns ─────────────────────────────────────────────────
+  // ── Dropdowns — call API every time modal opens ───────────────
   loadDropdowns() {
-    this.vehicleService.getVehicleTypeList().subscribe((res: any[]) => {
-      this.vehicleTypes.set((res || []).map(vt => ({
-        vehicle_type_id:   vt.vehicle_type_id,
-        vehicle_type_name: vt.vehicle_type_name || ''
-      })));
+    // Vehicle Types
+    this.loadingVehicleTypes.set(true);
+    this.vehicleService.getVehicleTypeList().subscribe({
+      next: (res: any) => {
+        const arr = Array.isArray(res) ? res : res.data || [];
+        this.vehicleTypes.set(arr.map((vt: any) => ({
+          vehicle_type_id:   String(vt.vehicle_type_id),
+          vehicle_type_name: vt.vehicle_type_name || ''
+        })));
+        this.loadingVehicleTypes.set(false);
+      },
+      error: () => this.loadingVehicleTypes.set(false)
     });
 
-    this.vehicleService.getFuelList().subscribe((res: any[]) => {
-      this.fuelTypes.set((res || []).map(f => ({
-        fuel_id:   f.fuel_id,
-        fuel_name: f.fuel_name || ''
-      })));
+    // Fuel Types
+    this.loadingFuelTypes.set(true);
+    this.vehicleService.getFuelList().subscribe({
+      next: (res: any) => {
+        const arr = Array.isArray(res) ? res : res.data || [];
+        this.fuelTypes.set(arr.map((f: any) => ({
+          fuel_id:   String(f.fuel_id),
+          fuel_name: f.fuel_name || ''
+        })));
+        this.loadingFuelTypes.set(false);
+      },
+      error: () => this.loadingFuelTypes.set(false)
     });
 
-    this.vehicleService.getDepartmentList().subscribe((res: any) => {
-      let arr: any[] = Array.isArray(res.data) ? res.data : res.data ? [res.data] : [];
-      this.departments.set(arr.map(d => ({
-        department_id:   d.department_id || d.id,
-        department_name: d.departmentName || ''
-      })));
+    // Departments
+    this.loadingDepartments.set(true);
+    this.vehicleService.getDepartmentList().subscribe({
+      next: (res: any) => {
+        const arr = Array.isArray(res.data) ? res.data : res.data ? [res.data] : Array.isArray(res) ? res : [];
+        this.departments.set(arr.map((d: any) => ({
+          department_id:   String(d.department_id || d.id),
+          department_name: d.departmentName || d.department_name || ''
+        })));
+        this.loadingDepartments.set(false);
+      },
+      error: () => this.loadingDepartments.set(false)
     });
   }
 
@@ -163,9 +180,9 @@ export class Vehicles implements OnInit {
     ).subscribe({
       next: (res: any) => {
         this.vehicles.set(res.data || []);
-        this.totalRecords.set(res.totalRecords ?? res.data.length);
-        this.totalPages.set(Math.ceil((res.totalRecords ?? res.data.length) / this.pageSize()));
-        this.pageNumber.set(res.currentPage ?? 1);
+        this.totalRecords.set(res.totalRecords ?? res.data?.length ?? 0);
+        this.totalPages.set(res.totalPages ?? Math.ceil((res.totalRecords ?? 0) / this.pageSize()));
+        this.pageNumber.set(res.currentPage ?? this.pageNumber());
       },
       error: (err) => {
         console.error('Vehicle load error', err);
@@ -178,8 +195,10 @@ export class Vehicles implements OnInit {
   search() { this.pageNumber.set(1); this.loadVehicles(); }
 
   onActiveFilterChange(event: any) {
-    this.activeFilter.set(event.target.checked ? true : false);
-    this.pageNumber.set(1); this.loadVehicles();
+    const checked = (event.target as HTMLInputElement).checked;
+    this.activeFilter.set(checked);
+    this.pageNumber.set(1);
+    this.loadVehicles();                                     // ← direct call, no effect()
   }
 
   // ── Pagination ────────────────────────────────────────────────
@@ -325,7 +344,7 @@ export class Vehicles implements OnInit {
     this.validateVehicleNumber();
   }
 
-  // ── Toast ──────────────────────────────────────────────────────
+  // ── Toast ─────────────────────────────────────────────────────
   showToast(title: string, text: string, icon: 'success' | 'error' = 'success') {
     Swal.fire({ icon, title, text, toast: true, position: 'top-end', timer: 2000, showConfirmButton: false });
   }
@@ -335,6 +354,8 @@ export class Vehicles implements OnInit {
     // Sync UI selections with currently applied filter
     this.selectedFuelIds        = [...this.vehicleFilter().fuel_id];
     this.selectedVehicleTypeIds = [...this.vehicleFilter().vehicle_type_id];
+    // ← Reload dropdowns fresh from API every time modal opens
+    this.loadDropdowns();
     this.vehicleFilterModalOpen.set(true);
   }
 
@@ -357,7 +378,7 @@ export class Vehicles implements OnInit {
       : [...this.selectedVehicleTypeIds, id];
   }
 
-  // ── Toggle all (select-all row) ───────────────────────────────
+  // ── Toggle all ────────────────────────────────────────────────
   toggleAllFuels() {
     this.selectedFuelIds = this.selectedFuelIds.length === this.fuelTypesList.length
       ? []
@@ -372,13 +393,15 @@ export class Vehicles implements OnInit {
 
   // ── Apply / Reset ─────────────────────────────────────────────
   applyVehicleFilter() {
+    // ← Commit selections into vehicleFilter signal THEN reload
     this.vehicleFilter.set({
       fuel_id:         [...this.selectedFuelIds],
       vehicle_type_id: [...this.selectedVehicleTypeIds],
       department_id:   this.vehicleFilter().department_id
     });
     this.pageNumber.set(1);
-    this.loadVehicles();
+    this.closeVehicleFilter();                               // ← close modal first
+    this.loadVehicles();                                     // ← then reload with new filter
   }
 
   resetVehicleFilter() {
@@ -386,10 +409,11 @@ export class Vehicles implements OnInit {
     this.selectedVehicleTypeIds = [];
     this.vehicleFilter.set({ vehicle_type_id: [], fuel_id: [], department_id: [] });
     this.pageNumber.set(1);
-    this.loadVehicles();
+    this.closeVehicleFilter();                               // ← close modal
+    this.loadVehicles();                                     // ← reload with cleared filter
   }
 
-  // ── Legacy helpers needed by some template usages ─────────────
+  // ── Legacy helpers ────────────────────────────────────────────
   applyFilter()      { this.pageNumber.set(1); this.loadVehicles(); }
   resetFilter()      { this.vehicleFilter.set({ vehicle_type_id: [], fuel_id: [], department_id: [] }); this.applyFilter(); }
   resetFilterModal() { this.selectedVehicleTypeIds = []; this.selectedFuelIds = []; this.vehicleFilter.set({ vehicle_type_id: [], fuel_id: [], department_id: [] }); }
@@ -404,7 +428,6 @@ export class Vehicles implements OnInit {
     this.vehicleFilter.update((f: any) => ({ ...f, department_id: this.selectedSiteIds }));
   }
 
-  // Getters used by template
   get vehicleTypesList() { return this.vehicleTypes(); }
   get fuelTypesList()    { return this.fuelTypes(); }
 }

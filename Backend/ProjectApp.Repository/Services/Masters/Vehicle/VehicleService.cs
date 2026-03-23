@@ -167,51 +167,102 @@ namespace ProjectApp.Repository.Services.Masters.Vehicle
 
         public async Task<VehicleSearchResponse> SearchAsync(VehicleSearchRequest request)
         {
+            // ── Decode comma-separated encoded IDs back to integers ──────
+            string? vehicleTypeIds = DecodeIds(request.vehicle_type_id);
+            string? fuelIds = DecodeIds(request.fuel_id);
+            string? departmentIds = DecodeIds(request.department_id);
+
             var parameters = new List<SqlParameter>
     {
-        new SqlParameter("@Search", request.Search ?? (object)DBNull.Value),
-        new SqlParameter("@vehicle_type_id", request.vehicle_type_id ?? (object)DBNull.Value),
-        new SqlParameter("@fuel_id", request.fuel_id ?? (object)DBNull.Value),
-        new SqlParameter("@department_id", request.department_id ?? (object)DBNull.Value),
-        new SqlParameter("@IsActive", request.IsActive ?? (object)DBNull.Value),
-        new SqlParameter("@PageNumber", request.PageNumber),
-        new SqlParameter("@PageSize", request.PageSize),
-        new SqlParameter("@SortColumn", request.SortColumn ?? (object)DBNull.Value),
-        new SqlParameter("@SortDirection", request.SortDirection ?? (object)DBNull.Value)
+        new SqlParameter("@Search",          request.Search          ?? (object)DBNull.Value),
+        new SqlParameter("@vehicle_type_id", vehicleTypeIds          ?? (object)DBNull.Value), // ← decoded
+        new SqlParameter("@fuel_id",         fuelIds                 ?? (object)DBNull.Value), // ← decoded
+        new SqlParameter("@department_id",   departmentIds           ?? (object)DBNull.Value), // ← decoded
+        new SqlParameter("@IsActive",        request.IsActive        ?? (object)DBNull.Value),
+        new SqlParameter("@PageNumber",      request.PageNumber),
+        new SqlParameter("@PageSize",        request.PageSize),
+        new SqlParameter("@SortColumn",      request.SortColumn      ?? (object)DBNull.Value),
+        new SqlParameter("@SortDirection",   request.SortDirection   ?? (object)DBNull.Value)
     };
 
-            var result = await _spService.ExecuteSpAsync("USP_CB_VehicleMasterSearch", parameters.ToArray());
+            var result = await _spService.ExecuteSpAsync(
+                "USP_CB_VehicleMasterSearch",
+                parameters.ToArray()
+            );
 
+            // ── Result set 1: vehicle rows ────────────────────────────────
             var dataList = (result.ContainsKey("Data") && result["Data"] != null)
-                ? (result["Data"] as IEnumerable<object>)?.Cast<Dictionary<string, object>>().ToList()
+                ? (result["Data"] as IEnumerable<object>)
+                    ?.Cast<Dictionary<string, object>>()
+                    .ToList()
+                  ?? new List<Dictionary<string, object>>()
                 : new List<Dictionary<string, object>>();
 
             var vehicles = dataList.Select(MapToResponseDto).ToList();
 
-            var pagination = result.ContainsKey("Pagination")
-                ? result["Pagination"] as Dictionary<string, object>
-                : new Dictionary<string, object>();
+            // ── Result set 2: pagination row ──────────────────────────────
+            var paginationList = (result.ContainsKey("Pagination") && result["Pagination"] != null)
+                ? (result["Pagination"] as IEnumerable<object>)
+                    ?.Cast<Dictionary<string, object>>()
+                    .ToList()
+                  ?? new List<Dictionary<string, object>>()
+                : new List<Dictionary<string, object>>();
+
+            var pagination = paginationList.FirstOrDefault()
+                             ?? new Dictionary<string, object>();
+
+            int totalRecords = pagination.ContainsKey("TotalRecords")
+                ? Convert.ToInt32(pagination["TotalRecords"]) : 0;
+
+            int pageSize = request.PageSize > 0 ? request.PageSize : 10;
+
+            int totalPages = pagination.ContainsKey("TotalPages")
+                ? Convert.ToInt32(pagination["TotalPages"])
+                : (totalRecords > 0 ? (int)Math.Ceiling(totalRecords * 1.0 / pageSize) : 0);
+
+            int currentPage = pagination.ContainsKey("CurrentPage")
+                ? Convert.ToInt32(pagination["CurrentPage"])
+                : request.PageNumber;
 
             return new VehicleSearchResponse
             {
                 Data = vehicles,
-                TotalRecords = pagination.ContainsKey("TotalRecords") ? Convert.ToInt32(pagination["TotalRecords"]) : 0,
-                TotalPages = pagination.ContainsKey("TotalPages") ? Convert.ToInt32(pagination["TotalPages"]) : 0,
-                CurrentPage = pagination.ContainsKey("CurrentPage") ? Convert.ToInt32(pagination["CurrentPage"]) : request.PageNumber
+                TotalRecords = totalRecords,
+                TotalPages = totalPages,
+                CurrentPage = currentPage
             };
+        }
+
+        // ── Decodes "YvnOD6Ao,0YJARnOR" → "3,7" ──────────────────────────
+        private string? DecodeIds(string? encodedIds)
+        {
+            if (string.IsNullOrWhiteSpace(encodedIds))
+                return null;
+
+            try
+            {
+                var decoded = encodedIds
+                    .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                    .Select(id => _idEncoder.Decode(id.Trim()).ToString())
+                    .ToList();
+
+                return decoded.Count > 0 ? string.Join(",", decoded) : null;
+            }
+            catch
+            {
+                return null; // if any ID fails to decode, treat as no filter
+            }
         }
 
         private VehicleResponseDto MapToResponseDto(Dictionary<string, object> row)
         {
             int GetInt(string key)
                 => row.ContainsKey(key) && row[key] != DBNull.Value
-                    ? Convert.ToInt32(row[key])
-                    : 0;
+                    ? Convert.ToInt32(row[key]) : 0;
 
             string? GetString(string key)
                 => row.ContainsKey(key) && row[key] != DBNull.Value
-                    ? row[key].ToString()
-                    : null;
+                    ? row[key].ToString() : null;
 
             bool GetBool(string key)
                 => row.ContainsKey(key) && row[key] != DBNull.Value
@@ -219,19 +270,26 @@ namespace ProjectApp.Repository.Services.Masters.Vehicle
 
             int? GetNullableInt(string key)
                 => row.ContainsKey(key) && row[key] != DBNull.Value
-                    ? Convert.ToInt32(row[key])
-                    : null;
+                    ? Convert.ToInt32(row[key]) : null;
+
+            int vehicleId = GetInt("vehicle_id");
+            int vehicleTypeId = GetInt("vehicle_type_id");
+            int fuelId = GetInt("fuel_id");
+            int departmentId = GetInt("department_id");
 
             return new VehicleResponseDto
             {
-                vehicle_id = _idEncoder.Encode(GetInt("vehicle_id")),
-                vehicle_number = GetString("vehicle_number"),
+                vehicle_id = _idEncoder.Encode(vehicleId),
 
-                // Instead of returning encrypted IDs, return the actual names
+                // ← encode IDs so Angular filter can match them
+                vehicle_type_id = vehicleTypeId > 0 ? _idEncoder.Encode(vehicleTypeId) : null,
+                fuel_id = fuelId > 0 ? _idEncoder.Encode(fuelId) : null,
+                department_id = departmentId > 0 ? _idEncoder.Encode(departmentId) : null,
+
+                vehicle_number = GetString("vehicle_number"),
                 vehicle_type_name = GetString("vehicle_type_name"),
                 fuel_name = GetString("fuel_name"),
                 department_name = GetString("DepartmentName"),
-
                 engine_capacity = GetNullableInt("engine_capacity"),
                 emission_standard = GetString("emission_standard"),
                 IsActive = GetBool("IsActive")

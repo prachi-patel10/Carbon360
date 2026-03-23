@@ -16,8 +16,8 @@ namespace ProjectApp.Core.DTOs.Masters.Vehicle
         public string SortColumn { get; set; } = "vehicle_number";
         public string SortDirection { get; set; } = "ASC";
 
-        public int? vehicle_type_id { get; set; }
-        public int? fuel_id { get; set; }
-        public int? department_id { get; set; }
+        public string? vehicle_type_id { get; set; }
+        public string? fuel_id { get; set; }
+        public string? department_id { get; set; }
     }
 }

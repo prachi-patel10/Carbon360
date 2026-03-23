@@ -87,7 +87,9 @@
         <div class="search-wrap">
           <i class="fas fa-search search-icon"></i>
           <input type="text" class="search-input" placeholder="Quick Search"
-            [(ngModel)]="searchText" (input)="search()" />
+            [ngModel]="searchText()"
+            (ngModelChange)="searchText.set($event)"
+            (input)="search()" />
         </div>
       </div>
       <div class="search-right">
@@ -95,7 +97,7 @@
           <span>Active Only</span>
           <label class="switch">
             <input type="checkbox" [checked]="activeFilter()"
-              (change)="activeFilter.set($event.target.checked); search()" />
+              (change)="onActiveFilterChange($event)" />
             <span class="slider"></span>
           </label>
         </div>
@@ -184,7 +186,7 @@
   <div class="vf-overlay" *ngIf="vehicleFilterModalOpen()" (click)="closeVehicleFilter()">
     <div class="vf-modal" (click)="$event.stopPropagation()">
 
-      <!-- ── Header ── -->
+      <!-- Header -->
       <div class="vf-header">
         <div class="vf-header-left">
           <div class="vf-header-icon">
@@ -200,7 +202,7 @@
         </button>
       </div>
 
-      <!-- ── Active chips showing applied filters ── -->
+      <!-- Active chips showing applied filters -->
       <div class="vf-chips" *ngIf="selectedFuelIds.length > 0 || selectedVehicleTypeIds.length > 0">
         <span class="vf-chip" *ngFor="let id of selectedVehicleTypeIds">
           <i class="fas fa-car"></i>
@@ -214,10 +216,10 @@
         </span>
       </div>
 
-      <!-- ── Body: two filter columns ── -->
+      <!-- Body: two filter columns -->
       <div class="vf-body">
 
-        <!-- ── Fuel Type ── -->
+        <!-- Fuel Type -->
         <div class="vf-col">
           <div class="vf-col-label">
             <i class="fas fa-gas-pump"></i> Fuel Type
@@ -226,7 +228,6 @@
             </span>
           </div>
 
-          <!-- Dropdown trigger -->
           <div class="vf-trigger" [class.open]="fuelDropOpen"
                (click)="fuelDropOpen = !fuelDropOpen">
             <span class="vf-trigger-text">
@@ -238,41 +239,46 @@
             <i class="fas fa-chevron-down vf-chevron"></i>
           </div>
 
-          <!-- Checkbox panel -->
           <div class="vf-panel" [class.open]="fuelDropOpen">
 
-            <!-- Select All -->
-            <div class="vf-check-row vf-select-all" (click)="toggleAllFuels()">
-              <span class="vf-checkbox"
-                [class.checked]="selectedFuelIds.length === fuelTypesList.length && fuelTypesList.length > 0"
-                [class.indeterminate]="selectedFuelIds.length > 0 && selectedFuelIds.length < fuelTypesList.length">
-                <i class="fas fa-check"
-                   *ngIf="selectedFuelIds.length === fuelTypesList.length && fuelTypesList.length > 0"></i>
-                <i class="fas fa-minus"
-                   *ngIf="selectedFuelIds.length > 0 && selectedFuelIds.length < fuelTypesList.length"></i>
-              </span>
-              <span class="vf-check-label">Select All</span>
+            <!-- Loading state -->
+            <div class="vf-panel-loading" *ngIf="loadingFuelTypes()">
+              <i class="fas fa-spinner fa-spin"></i> Loading...
             </div>
 
-            <div class="vf-divider"></div>
+            <ng-container *ngIf="!loadingFuelTypes()">
+              <div class="vf-check-row vf-select-all" (click)="toggleAllFuels()">
+                <span class="vf-checkbox"
+                  [class.checked]="selectedFuelIds.length === fuelTypesList.length && fuelTypesList.length > 0"
+                  [class.indeterminate]="selectedFuelIds.length > 0 && selectedFuelIds.length < fuelTypesList.length">
+                  <i class="fas fa-check"
+                     *ngIf="selectedFuelIds.length === fuelTypesList.length && fuelTypesList.length > 0"></i>
+                  <i class="fas fa-minus"
+                     *ngIf="selectedFuelIds.length > 0 && selectedFuelIds.length < fuelTypesList.length"></i>
+                </span>
+                <span class="vf-check-label">Select All</span>
+              </div>
 
-            <!-- Individual items -->
-            <div class="vf-check-row" *ngFor="let fuel of fuelTypesList"
-                 (click)="toggleFuel(fuel.fuel_id)"
-                 [class.selected]="selectedFuelIds.includes(fuel.fuel_id)">
-              <span class="vf-checkbox" [class.checked]="selectedFuelIds.includes(fuel.fuel_id)">
-                <i class="fas fa-check" *ngIf="selectedFuelIds.includes(fuel.fuel_id)"></i>
-              </span>
-              <span class="vf-check-label">{{ fuel.fuel_name }}</span>
-            </div>
+              <div class="vf-divider"></div>
 
-            <div class="vf-panel-empty" *ngIf="fuelTypesList.length === 0">
-              No fuel types found
-            </div>
+              <div class="vf-check-row" *ngFor="let fuel of fuelTypesList"
+                   (click)="toggleFuel(fuel.fuel_id)"
+                   [class.selected]="selectedFuelIds.includes(fuel.fuel_id)">
+                <span class="vf-checkbox" [class.checked]="selectedFuelIds.includes(fuel.fuel_id)">
+                  <i class="fas fa-check" *ngIf="selectedFuelIds.includes(fuel.fuel_id)"></i>
+                </span>
+                <span class="vf-check-label">{{ fuel.fuel_name }}</span>
+              </div>
+
+              <div class="vf-panel-empty" *ngIf="fuelTypesList.length === 0">
+                No fuel types found
+              </div>
+            </ng-container>
+
           </div>
         </div>
 
-        <!-- ── Vehicle Type ── -->
+        <!-- Vehicle Type -->
         <div class="vf-col">
           <div class="vf-col-label">
             <i class="fas fa-car"></i> Vehicle Type
@@ -294,43 +300,51 @@
 
           <div class="vf-panel" [class.open]="vtypeDropOpen">
 
-            <div class="vf-check-row vf-select-all" (click)="toggleAllVehicleTypes()">
-              <span class="vf-checkbox"
-                [class.checked]="selectedVehicleTypeIds.length === vehicleTypesList.length && vehicleTypesList.length > 0"
-                [class.indeterminate]="selectedVehicleTypeIds.length > 0 && selectedVehicleTypeIds.length < vehicleTypesList.length">
-                <i class="fas fa-check"
-                   *ngIf="selectedVehicleTypeIds.length === vehicleTypesList.length && vehicleTypesList.length > 0"></i>
-                <i class="fas fa-minus"
-                   *ngIf="selectedVehicleTypeIds.length > 0 && selectedVehicleTypeIds.length < vehicleTypesList.length"></i>
-              </span>
-              <span class="vf-check-label">Select All</span>
+            <!-- Loading state -->
+            <div class="vf-panel-loading" *ngIf="loadingVehicleTypes()">
+              <i class="fas fa-spinner fa-spin"></i> Loading...
             </div>
 
-            <div class="vf-divider"></div>
+            <ng-container *ngIf="!loadingVehicleTypes()">
+              <div class="vf-check-row vf-select-all" (click)="toggleAllVehicleTypes()">
+                <span class="vf-checkbox"
+                  [class.checked]="selectedVehicleTypeIds.length === vehicleTypesList.length && vehicleTypesList.length > 0"
+                  [class.indeterminate]="selectedVehicleTypeIds.length > 0 && selectedVehicleTypeIds.length < vehicleTypesList.length">
+                  <i class="fas fa-check"
+                     *ngIf="selectedVehicleTypeIds.length === vehicleTypesList.length && vehicleTypesList.length > 0"></i>
+                  <i class="fas fa-minus"
+                     *ngIf="selectedVehicleTypeIds.length > 0 && selectedVehicleTypeIds.length < vehicleTypesList.length"></i>
+                </span>
+                <span class="vf-check-label">Select All</span>
+              </div>
 
-            <div class="vf-check-row" *ngFor="let vt of vehicleTypesList"
-                 (click)="toggleVehicleType(vt.vehicle_type_id)"
-                 [class.selected]="selectedVehicleTypeIds.includes(vt.vehicle_type_id)">
-              <span class="vf-checkbox" [class.checked]="selectedVehicleTypeIds.includes(vt.vehicle_type_id)">
-                <i class="fas fa-check" *ngIf="selectedVehicleTypeIds.includes(vt.vehicle_type_id)"></i>
-              </span>
-              <span class="vf-check-label">{{ vt.vehicle_type_name }}</span>
-            </div>
+              <div class="vf-divider"></div>
 
-            <div class="vf-panel-empty" *ngIf="vehicleTypesList.length === 0">
-              No vehicle types found
-            </div>
+              <div class="vf-check-row" *ngFor="let vt of vehicleTypesList"
+                   (click)="toggleVehicleType(vt.vehicle_type_id)"
+                   [class.selected]="selectedVehicleTypeIds.includes(vt.vehicle_type_id)">
+                <span class="vf-checkbox" [class.checked]="selectedVehicleTypeIds.includes(vt.vehicle_type_id)">
+                  <i class="fas fa-check" *ngIf="selectedVehicleTypeIds.includes(vt.vehicle_type_id)"></i>
+                </span>
+                <span class="vf-check-label">{{ vt.vehicle_type_name }}</span>
+              </div>
+
+              <div class="vf-panel-empty" *ngIf="vehicleTypesList.length === 0">
+                No vehicle types found
+              </div>
+            </ng-container>
+
           </div>
         </div>
 
       </div><!-- /vf-body -->
 
-      <!-- ── Footer ── -->
+      <!-- Footer -->
       <div class="vf-footer">
         <button class="vf-btn-reset" (click)="resetVehicleFilter()">
           <i class="fas fa-rotate-left"></i> Reset
         </button>
-        <button class="vf-btn-apply" (click)="applyVehicleFilter(); closeVehicleFilter()">
+        <button class="vf-btn-apply" (click)="applyVehicleFilter()">
           <i class="fas fa-check"></i> Apply Filter
         </button>
       </div>
