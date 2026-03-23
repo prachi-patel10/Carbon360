@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using ProjectApp.Core.DTOs.Account.ForgotPassword;
 using ProjectApp.Core.DTOs.Account.Login;
 using ProjectApp.Repository.Utilities.Auth;
 using System.Security.Claims;
@@ -62,6 +63,29 @@ namespace ProjectApp.API.Controllers.Account.Login
             var result = await _authService.SwitchRoleAsync(dto);
 
             return Ok(result); // returns FullName, RoleName, and refreshed token
+        }
+
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDTO dto)
+        {
+            try
+            {
+                var result = await _authService.ForgotPasswordAsync(dto);
+                return Ok(new { success = true, message = result.Message });
+            }
+            catch (Exception ex)
+            {
+                // ✅ Returns 400 immediately with clean message
+                return BadRequest(new { success = false, message = ex.Message });
+            }
+        }
+
+        // ✅ Add this:
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDTO dto)
+        {
+            var result = await _authService.ResetPasswordAsync(dto);
+            return Ok(new { success = true, message = result.Message });
         }
 
     }

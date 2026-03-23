@@ -40,7 +40,8 @@ namespace ProjectApp.Repository.Interfaces.GenerationOperation
     DateTime? entryEndDate,
     int? statusId,
     int pageNumber,
-    int pageSize);
+    int pageSize, string sortColumn = "EntryDate",    // ← ADD
+    string sortDirection = "DESC");
         Task<List<WorkflowActionDTO>> GetWorkflowActionsAsync(string encryptedId);
 
         Task<GeneratorOperationPagedResponseDTO> GetMyActionRecordsAsync(

@@ -1,9 +1,10 @@
-﻿using System;
+﻿using ProjectApp.Core.DTOs.Account.ForgotPassword;
+using ProjectApp.Core.DTOs.Account.Login;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using ProjectApp.Core.DTOs.Account.Login;
 
 namespace ProjectApp.Repository.Utilities.Auth
 {
@@ -12,6 +13,8 @@ namespace ProjectApp.Repository.Utilities.Auth
         Task<LoginResDTO> LoginAsyc(LoginDTO loginDTO);
         Task LogoutAsync(int userId);
         Task<LoginResDTO> SwitchRoleAsync(SwitchRoleDTO dto);
+        Task<ForgotPasswordResDTO> ForgotPasswordAsync(ForgotPasswordDTO dto);
+        Task<ForgotPasswordResDTO> ResetPasswordAsync(ResetPasswordDTO dto);
 
     }
 }

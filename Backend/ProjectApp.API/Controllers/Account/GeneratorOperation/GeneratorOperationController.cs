@@ -158,7 +158,9 @@ namespace ProjectApp.API.Controllers.Account.GeneratorOperation
     DateTime? entryEndDate = null,
     int? statusId = null,
     int pageNumber = 1,
-    int pageSize = 10)
+    int pageSize = 10,
+     string sortColumn = "EntryDate",      // ← ADD
+    string sortDirection = "DESC")
         {
             string? fuelTypesString = fuelTypes != null && fuelTypes.Any()
                 ? string.Join(",", fuelTypes)
@@ -174,7 +176,9 @@ namespace ProjectApp.API.Controllers.Account.GeneratorOperation
                 entryEndDate,
                 statusId,
                 pageNumber,
-                pageSize
+                pageSize,
+                  sortColumn,      // ← ADD
+        sortDirection    // ← ADD
             );
 
             return Ok(new

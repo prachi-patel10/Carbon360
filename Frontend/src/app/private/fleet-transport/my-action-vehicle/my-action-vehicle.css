@@ -1,154 +1,187 @@
+/* ================= BASE ================= */
+* { box-sizing: border-box; }
 
-
-/* Title */
-
-.page-title{
-  color:#1b5e20;
-  font-weight:600;
-  margin-bottom:20px;
+.generator-report-container {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
-/* Table */
-
-.generator-table{
-  width:100%;
-  border-collapse:collapse;
-  background:white;
-  border-radius:8px;
-  overflow:hidden;
-  box-shadow:0 2px 8px rgba(0,0,0,0.05);
+.generator-report-container .container,
+.generator-page {
+  width: 100% !important;
+  max-width: 100% !important;
+  padding-left: 16px;
+  padding-right: 16px;
+  margin: 0 !important;
 }
 
-/* Header */
-
-.generator-table thead{
-   background-color: #0f5132;
-  color:white;
+/* ================= TABLE WRAPPER ================= */
+.table-responsive {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: visible;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: #b8e4cc #f0f2f5;
+  display: block;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
 
-.generator-table th{
+.table-responsive::-webkit-scrollbar { height: 5px; }
+.table-responsive::-webkit-scrollbar-track { background: #f0f2f5; }
+.table-responsive::-webkit-scrollbar-thumb { background: #b8e4cc; border-radius: 4px; }
+
+/* ================= TABLE ================= */
+.generator-table {
+  width: 100%;
+  min-width: 700px;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  table-layout: fixed;
+}
+
+/* Column widths */
+.generator-table th:nth-child(1) { width: 120px; } /* Vehicle No    */
+.generator-table th:nth-child(2) { width: 140px; } /* Route        */
+.generator-table th:nth-child(3) { width: 120px; } /* Reported Date */
+.generator-table th:nth-child(4) { width: 90px;  } /* Fuel Type    */
+.generator-table th:nth-child(5) { width: 90px;  } /* Run Hours    */
+.generator-table th:nth-child(6) { width: 160px; } /* Total Emission */
+.generator-table th:nth-child(7) { width: 75px;  } /* Action       */
+
+/* ================= HEADER ================= */
+.generator-table thead { background-color: #0f5132; color: white; }
+
+.generator-table th {
   text-transform: uppercase;
-      background-color: #0f5132;
-    color: white;
-    font-size: 0.85rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    padding: 1.1rem 1rem;
-    border-bottom: 2px solid #f1f5f9;
-}
-
-.generator-table th.sortable {
-  cursor: pointer;
-  user-select: none;
+  background-color: #0f5132;
+  color: white;
+  font-size: 0.70rem;
+  letter-spacing: 0.04em;
+  padding: 0.85rem 0.65rem;
+  border-bottom: 2px solid rgba(255,255,255,0.1);
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+  text-align: left;
 }
 
-.generator-table th.sortable:hover {
-  background-color: #0a3d22;
+.generator-table th.sortable { cursor: pointer; user-select: none; }
+.generator-table th.sortable:hover { background-color: #0a3d22; }
+.sort-icon { font-size: 10px; opacity: 0.65; margin-left: 3px; }
+
+/* ================= CELLS ================= */
+.generator-table td {
+  padding: 0.75rem 0.65rem;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 0.84rem;
+  color: #374151;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: middle;
 }
 
-.sort-icon {
-  font-size: 11px;
-  opacity: 0.6;
-  margin-left: 4px;
+.generator-table tbody tr:hover td { background: #f0fdf4; }
+
+.emission-value { font-weight: 700; text-align: center; }
+.no-data { padding: 20px; color: #777; text-align: center; }
+
+/* ================= ACTION ================= */
+.action-btn { text-align: center; }
+
+.btn-edit {
+  background: #e8f5e9;
+  border: none;
+  color: #1b5e20;
+  padding: 5px 9px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: background 0.2s;
+  line-height: 1;
 }
 
-/* Cells */
+.btn-edit:hover { background: #c8e6c9; }
 
-.generator-table td{
-  padding:10px;
-  border-bottom:1px solid #eee;
+/* ================= PAGINATION FOOTER ================= */
+.table-footer {
+  margin-top: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  font-size: 0.84rem;
+  gap: 10px;
+  padding: 10px 0;
 }
 
-/* Hover */
-.generator-table tbody tr:hover{
-  background:#f0fdf4;
+.total-records,
+.page-size { color: #374151; white-space: nowrap; }
+
+.page-size select {
+  margin: 0 5px;
+  padding: 3px 6px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.84rem;
 }
 
-/* No data */
-.no-data{
-  padding:20px;
-  color:#777;
+.pagination { display: flex; align-items: center; gap: 6px; }
+
+.pagination button {
+  border: none;
+  padding: 5px 12px;
+  background: #0f5132;
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.84rem;
+  white-space: nowrap;
+  transition: background 0.2s;
 }
 
-/* Action column */
+.pagination button:hover:not(:disabled) { background: #166534; }
+.pagination button:disabled { background: #cbd5e1; cursor: not-allowed; }
+.page-info { font-weight: 500; color: #374151; font-size: 0.84rem; white-space: nowrap; }
 
-.action-buttons{
-  text-align:center;
-  color:#1b7d55;
+/* ================= TABLET ================= */
+@media (max-width: 1100px) {
+  .generator-table { min-width: 650px; }
+
+  .generator-table th,
+  .generator-table td {
+    font-size: 0.78rem;
+    padding: 0.7rem 0.5rem;
+  }
 }
 
-.emission-value {
-    font-weight: 700;
-    color: #1b5e20;   /* your main green */
+/* ================= PHONE ================= */
+@media (max-width: 700px) {
+  .generator-report-container .container,
+  .generator-page { padding-left: 8px; padding-right: 8px; }
+
+  .generator-table { min-width: 580px; }
+
+  .generator-table th { font-size: 0.62rem; padding: 0.65rem 0.4rem; }
+  .generator-table td { font-size: 0.76rem; padding: 0.6rem 0.4rem; }
+
+  .table-footer { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .pagination { width: 100%; justify-content: center; }
+  .total-records, .page-size { width: 100%; }
+  .page-size { display: flex; align-items: center; gap: 4px; }
 }
 
-.emission-header {
-    color: #3cc946;
-}
-
-.leaf-icon {
-    color: #1b5e20;   /* green leaf */
-    margin-right: 5px;
-}
-
-/* Edit button */
-
-.btn-edit{
-  background:white;
-  border:none;
-  color:#1b5e20;
-  padding:6px 10px;
-  border-radius:6px;
-  cursor:pointer;
-  transition:0.2s;
-}
-
-
-/* Footer */
-.table-footer{
-  margin-top:15px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  flex-wrap:wrap;
-  font-size:14px;
-  gap:10px;
-}
-
-/* Pagination */
-
-.pagination{
-  display:flex;
-  align-items:center;
-  gap:8px;
-}
-
-.pagination button{
-  border:none;
-  padding:6px 14px;
-  background:#0f5132;
-  color:white;
-  border-radius:6px;
-  cursor:pointer;
-}
-
-.pagination button:disabled{
-  background:#cbd5e1;
-  cursor:not-allowed;
-}
-
-/* Page info */
-
-.page-info{
-  font-weight:500;
-}
-
-/* Page size */
-
-.page-size select{
-  margin:0 5px;
-  padding:4px 6px;
-  border:1px solid #ddd;
-  border-radius:4px;
+/* ================= SMALL PHONE ================= */
+@media (max-width: 360px) {
+  .generator-table { min-width: 500px; }
+  .generator-table th { font-size: 0.58rem; padding: 0.55rem 0.3rem; }
+  .generator-table td { font-size: 0.70rem; padding: 0.5rem 0.3rem; }
+  .pagination button { padding: 4px 8px; font-size: 0.74rem; }
 }

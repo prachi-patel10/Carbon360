@@ -73,28 +73,33 @@ export class SearchGeneratorService {
   }
 
   // ================= SEARCH API =================
-  searchEmissions(
-    pageNumber: number = 1,
-    pageSize: number = 10,
-    search?: string,
-    fuelTypes?: string,
-    startDate?: string,
-    endDate?: string,
-    entryStartDate?: string,
-    entryEndDate?: string
-  ): Observable<any> {
-    let params = `pageNumber=${pageNumber}&pageSize=${pageSize}`;
+ searchEmissions(
+  pageNumber: number = 1,
+  pageSize: number = 10,
+  search?: string,
+  fuelTypes?: string,
+  startDate?: string,
+  endDate?: string,
+  entryStartDate?: string,
+  entryEndDate?: string,
+  sortColumn: string = 'entryDate',
+  sortDirection: string = 'desc'
+): Observable<any> {
+  let params = new HttpParams()
+    .set('pageNumber', pageNumber)
+    .set('pageSize', pageSize)
+    .set('sortColumn', sortColumn)
+    .set('sortDirection', sortDirection.toUpperCase());
 
-    if (search)         params += `&search=${encodeURIComponent(search)}`;
-    if (fuelTypes)      params += `&fuelTypes=${encodeURIComponent(fuelTypes)}`;
-    if (startDate)      params += `&startDate=${startDate}`;
-    if (endDate)        params += `&endDate=${endDate}`;
-    if (entryStartDate) params += `&entryStartDate=${entryStartDate}`;
-    if (entryEndDate)   params += `&entryEndDate=${entryEndDate}`;
+  if (search)         params = params.set('search', encodeURIComponent(search));
+  if (fuelTypes)      params = params.set('fuelTypes', encodeURIComponent(fuelTypes));
+  if (startDate)      params = params.set('startDate', startDate);
+  if (endDate)        params = params.set('endDate', endDate);
+  if (entryStartDate) params = params.set('entryStartDate', entryStartDate);
+  if (entryEndDate)   params = params.set('entryEndDate', entryEndDate);
 
-    return this.http.get<any>(`${this.apiUrl}/search?${params}`);
-  }
-
+  return this.http.get<any>(`${this.apiUrl}/search`, { params });
+}
    exportExcel(params: any) {
     return this.http.get(`${this.apiUrl}/export`, {
       params,

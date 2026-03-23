@@ -27,6 +27,8 @@ import { ExportExcel } from './private/export-excel/export-excel';
 
 import { VehicleCharts } from './private/vehicle-charts/vehicle-charts';
 import { GeneratorCharts } from './private/generator-charts/generator-charts';
+import { ForgotPasswordComponent } from './public/account/forgot-password/forgot-password';
+import { ResetPasswordComponent } from './public/account/reset-password/reset-password';
 
 export const routes: Routes = [
 
@@ -45,6 +47,8 @@ export const routes: Routes = [
     { path: 'login', component: Login },
     { path: 'register', component: Register },
     { path: 'unauthorized', component: Unauthorized },
+     { path: 'forgot-password', component: ForgotPasswordComponent },  // ✅
+  { path: 'reset-password', component: ResetPasswordComponent },
 
     // Dashboard Routes
     {

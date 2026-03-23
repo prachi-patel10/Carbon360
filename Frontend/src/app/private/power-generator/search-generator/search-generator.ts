@@ -77,36 +77,38 @@ export class SearchGenerator implements OnInit {
     });
   }
 
-  loadEmissions() {
-    const fuelParam = this.selectedFuels.length > 0 ? this.selectedFuels.join(',') : undefined;
+ loadEmissions() {
+  const fuelParam = this.selectedFuels.length > 0 ? this.selectedFuels.join(',') : undefined;
 
-    this.service.searchEmissions(
-      this.currentPage(),
-      this.pageSize,
-      this.searchText() || undefined,
-      fuelParam,
-      this.operationStartDate() ? this.operationStartDate()!.substring(0, 10) : undefined,
-      this.operationEndDate()   ? this.operationEndDate()!.substring(0, 10)   : undefined,
-      this.entryStartDate()     ? this.entryStartDate()!.substring(0, 10)     : undefined,
-      this.entryEndDate()       ? this.entryEndDate()!.substring(0, 10)       : undefined
-    ).subscribe({
-      next: (res: any) => {
-        const records = res.data?.records     ?? [];
-        const total   = res.data?.totalRecords ?? 0;
-        const mapped: GeneratorOperationDisplay[] = records.map((e: any) => ({
-          ...e,
-          generatorName: e.generatorName ?? 'Unknown Generator',
-          fuelType:      e.fuelType      ?? 'Unknown',
-          status:        e.statusName    ?? (e.statusId === 1 ? 'Completed' : 'Pending'),
-          totalEmission: e.totalEmission ?? 0
-        }));
-        this.filteredData.set(mapped);
-        this.totalRecordsCount.set(total);
-        this.totalPagesCount.set(Math.ceil(total / this.pageSize));
-      },
-      error: (err) => console.error('Error loading emissions', err)
-    });
-  }
+  this.service.searchEmissions(
+    this.currentPage(),
+    this.pageSize,
+    this.searchText() || undefined,
+    fuelParam,
+    this.operationStartDate() ? this.operationStartDate()!.substring(0, 10) : undefined,
+    this.operationEndDate()   ? this.operationEndDate()!.substring(0, 10)   : undefined,
+    this.entryStartDate()     ? this.entryStartDate()!.substring(0, 10)     : undefined,
+    this.entryEndDate()       ? this.entryEndDate()!.substring(0, 10)       : undefined,
+    this.sortColumn,       // ← pass the class property
+    this.sortDirection     // ← pass the class property
+  ).subscribe({
+    next: (res: any) => {
+      const records = res.data?.records     ?? [];
+      const total   = res.data?.totalRecords ?? 0;
+      const mapped: GeneratorOperationDisplay[] = records.map((e: any) => ({
+        ...e,
+        generatorName: e.generatorName ?? 'Unknown Generator',
+        fuelType:      e.fuelType      ?? 'Unknown',
+        status:        e.statusName    ?? (e.statusId === 1 ? 'Completed' : 'Pending'),
+        totalEmission: e.totalEmission ?? 0
+      }));
+      this.filteredData.set(mapped);
+      this.totalRecordsCount.set(total);
+      this.totalPagesCount.set(Math.ceil(total / this.pageSize));
+    },
+    error: (err) => console.error('Error loading emissions', err)
+  });
+}
 
   // ─── Fuel Multi-Select ────────────────────────────────────────
 
@@ -186,16 +188,45 @@ export class SearchGenerator implements OnInit {
   // ─── Sort ─────────────────────────────────────────────────────
 
   sortBy(column: string) {
-    if (this.sortColumn === column)
-      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
-    else { this.sortColumn = column; this.sortDirection = 'asc'; }
-    this.currentPage.set(1); this.loadEmissions();
+  // Map frontend camelCase to SP column names
+  const columnMap: Record<string, string> = {
+    'generatorName':       'GeneratorName',
+    'entryDate':           'EntryDate',
+    'startTime':           'StartTime',
+    'endTime':             'EndTime',
+    'loadFactor':          'LoadFactor',
+    'fuelConsumedLiters':  'FuelConsumedLiters',
+    'totalEmission':       'Total_CO2E_KG'
+  };
+
+  const mappedColumn = columnMap[column] || 'EntryDate';
+
+  if (this.sortColumn === mappedColumn)
+    this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+  else {
+    this.sortColumn = mappedColumn;
+    this.sortDirection = 'asc';
   }
 
-  getSortIcon(column: string): string {
-    if (this.sortColumn !== column) return '↕';
-    return this.sortDirection === 'asc' ? '↑' : '↓';
-  }
+  this.currentPage.set(1);
+  this.loadEmissions();
+}
+
+getSortIcon(column: string): string {
+  const columnMap: Record<string, string> = {
+    'generatorName':       'GeneratorName',
+    'entryDate':           'EntryDate',
+    'startTime':           'StartTime',
+    'endTime':             'EndTime',
+    'loadFactor':          'LoadFactor',
+    'fuelConsumedLiters':  'FuelConsumedLiters',
+    'totalEmission':       'Total_CO2E_KG'
+  };
+
+  const mappedColumn = columnMap[column] || column;
+  if (this.sortColumn !== mappedColumn) return '↕';
+  return this.sortDirection === 'asc' ? '↑' : '↓';
+}
 
   // ─── Navigation ───────────────────────────────────────────────
 

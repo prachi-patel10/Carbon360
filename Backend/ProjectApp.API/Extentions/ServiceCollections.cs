@@ -4,6 +4,7 @@ using pr.Repository.Services.Auth;
 using ProjectApp.Core.DTOs.Account.GeneratorOperation;
 using ProjectApp.Repository.Interfaces.Charts;
 using ProjectApp.Repository.Interfaces.Common;
+using ProjectApp.Repository.Interfaces.Email;
 using ProjectApp.Repository.Interfaces.GenerationOperation;
 using ProjectApp.Repository.Interfaces.Masters.City;
 using ProjectApp.Repository.Interfaces.Masters.Department;
@@ -31,6 +32,7 @@ using ProjectApp.Repository.Services.SiteLocation;
 using ProjectApp.Repository.Services.User;
 using ProjectApp.Repository.Services.VehicleTripEmission;
 using ProjectApp.Repository.Utilities.Auth;
+using ProjectApp.Repository.Utilities.Email;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -65,6 +67,7 @@ namespace ProjectApp.API.Extentions
             services.AddScoped<IEmissionFactorService, EmissionFactorService>();
             services.AddScoped<IGeneratorOperationService, GeneratorOperationService>();
             services.AddScoped<IChartService, ChartService>();
+            services.AddScoped<IEmailService, EmailService>();
             return services;
         }
     }

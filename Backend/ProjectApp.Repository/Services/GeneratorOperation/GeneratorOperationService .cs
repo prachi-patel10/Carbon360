@@ -287,7 +287,9 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
     DateTime? entryEndDate,
      int? statusId,
      int pageNumber,
-     int pageSize)
+     int pageSize,
+      string sortColumn = "EntryDate",      // ← ADD
+    string sortDirection = "DESC")
         {
             var result = new GeneratorOperationPagedResponseDTO();
 
@@ -309,6 +311,9 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
             command.Parameters.Add(new SqlParameter("@UserRole", _userContext.Role ?? "Reporter"));
             command.Parameters.Add(new SqlParameter("@PageNumber", pageNumber));
             command.Parameters.Add(new SqlParameter("@PageSize", pageSize));
+            command.Parameters.Add(new SqlParameter("@SortColumn", sortColumn ?? "EntryDate"));   // ← ADD
+            command.Parameters.Add(new SqlParameter("@SortDirection", sortDirection ?? "DESC"));        // ← ADD
+
 
             var totalParam = new SqlParameter("@TotalRecords", SqlDbType.Int)
             {

@@ -26,7 +26,7 @@
       Fuel (L) <span class="sort-icon">{{ getSortIcon('fuelConsumedLiters') }}</span>
     </th>
      <th (click)="sortBy('totalEmission')" class="sortable emission-header">
-      Emission (kg CO₂e) <span class="sort-icon">{{ getSortIcon('totalEmission') }}</span>
+     Total Emission (kg CO₂e) <span class="sort-icon">{{ getSortIcon('totalEmission') }}</span>
     </th>
     <th class="text-center">Action</th>
   </tr>
@@ -40,7 +40,7 @@
           <td>{{ item.runHours }}</td>
           <td>{{ item.loadFactor }}</td>
           <td>{{ item.fuelConsumedLiters }}</td>
- <td class="emission-value">{{ item.totalEmission }}   <i class="fas fa-leaf leaf-icon"></i>  </td>           
+ <td class="emission-value">{{ item.totalEmission }}</td>           
                 
               
           <td class="action-buttons">

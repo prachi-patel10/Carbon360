@@ -9,7 +9,7 @@ import { jwtDecode } from "jwt-decode";
 
 @Component({
   selector: 'app-login',
-  imports: [ReactiveFormsModule, CommonModule],
+  imports: [ReactiveFormsModule, CommonModule,RouterLink],
   templateUrl: './login.html',
   styleUrls: ['./login.css'],
 })

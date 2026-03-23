@@ -1,6 +1,4 @@
 <div class="generator-report-container py-4">
-  <div class="container">
-
     <!-- <div class="d-flex justify-content-between align-items-center mb-4">
       <h2 class="page-title">
         <i class="fas fa-truck text-primary me-2"></i>
@@ -8,78 +6,66 @@
       </h2>
     </div> -->
 
-    <div class="container generator-page">
-
+    <div class=" generator-page">
       <div class="table-responsive">
-
         <table class="generator-table">
-
           <thead>
-  <tr>
-    <th (click)="sort('vehicleNumber')" class="sortable">
-      Vehicle No. <span class="sort-icon">{{ getSortIcon('vehicleNumber') }}</span>
-    </th>
-    <th (click)="sort('fromCity')" class="sortable">
-      Route <span class="sort-icon">{{ getSortIcon('fromCity') }}</span>
-    </th>
-    <th (click)="sort('tripEntryDate')" class="sortable">
-      Reported Date <span class="sort-icon">{{ getSortIcon('tripEntryDate') }}</span>
-    </th>
-    <th (click)="sort('fuelType')" class="sortable">
-      Fuel Type <span class="sort-icon">{{ getSortIcon('fuelType') }}</span>
-    </th>
-    <th (click)="sort('runHours')" class="sortable">
-      Run Hours <span class="sort-icon">{{ getSortIcon('runHours') }}</span>
-    </th>
-    <th (click)="sort('totalEmission')" class="sortable">
-      Total Emission <span class="sort-icon">{{ getSortIcon('totalEmission') }}</span>
-    </th>
-    <th class="text-center">Action</th>
-  </tr>
-</thead>          <tbody>
-
+            <tr>
+              <th (click)="sort('vehicleNumber')" class="sortable">
+                Vehicle No. <span class="sort-icon">{{ getSortIcon('vehicleNumber') }}</span>
+              </th>
+              <th (click)="sort('fromCity')" class="sortable">
+                Route <span class="sort-icon">{{ getSortIcon('fromCity') }}</span>
+              </th>
+              <th (click)="sort('tripEntryDate')" class="sortable">
+                Reported Date <span class="sort-icon">{{ getSortIcon('tripEntryDate') }}</span>
+              </th>
+              <th (click)="sort('fuelType')" class="sortable">
+                Fuel Type <span class="sort-icon">{{ getSortIcon('fuelType') }}</span>
+              </th>
+              <th (click)="sort('runHours')" class="sortable">
+                Run Hours <span class="sort-icon">{{ getSortIcon('runHours') }}</span>
+              </th>
+              <th (click)="sort('totalEmission')" class="sortable">
+                Total Emission (kg CO₂e)
+                <span class="sort-icon">{{ getSortIcon('totalEmission') }}</span>
+              </th>
+              <th class="text-center">Action</th>
+            </tr>
+          </thead>
+          <tbody>
             <tr *ngFor="let e of trips()">
-
               <td>{{ e.vehicleNumber }}</td>
 
-              <td>
-                {{ e.fromCity }} - {{ e.toCity }}
-              </td>
+              <td>{{ e.fromCity }} - {{ e.toCity }}</td>
 
               <!-- <td>{{ e.tripStartDateTime | date:'short' }}</td>
 
               <td>{{ e.tripEndDateTime | date:'short' }}</td> -->
-                <td>{{ e.entryDate | date:'dd-MMM-yyyy' }}</td>
+              <td>{{ e.entryDate | date: 'dd-MMM-yyyy' }}</td>
               <td>{{ e.fuelType }}</td>
 
               <td>{{ e.runHours }}</td>
 
-              <td class="emission-value">{{ e.totalEmission }} <i class="fas fa-leaf leaf-icon"></i></td>
+              <td class="emission-value">{{ e.totalEmission }}</td>
 
               <td class="action-btn">
                 <button class="btn-edit" (click)="editTrip(e.tripId)">
                   <i class="fa fa-edit"></i>
                 </button>
               </td>
-
             </tr>
 
             <tr *ngIf="trips().length === 0">
-              <td colspan="6" class="text-center no-data">
-                No records found
-              </td>
+              <td colspan="6" class="text-center no-data">No records found</td>
             </tr>
-
           </tbody>
-
         </table>
-
       </div>
 
       <!-- Pagination -->
 
       <div class="table-footer">
-
         <div class="total-records">
           Total Records : <b>{{ totalRecords() }}</b>
         </div>
@@ -96,26 +82,16 @@
         </div>
 
         <div class="pagination">
-
-          <button (click)="goToPage(currentPage()-1)" [disabled]="currentPage() === 1">
-
+          <button (click)="goToPage(currentPage() - 1)" [disabled]="currentPage() === 1">
             Prev
           </button>
 
-          <span class="page-info">
-            Page {{ currentPage() }} of {{ totalPages() }}
-          </span>
+          <span class="page-info"> Page {{ currentPage() }} of {{ totalPages() }} </span>
 
-          <button (click)="goToPage(currentPage()+1)" [disabled]="currentPage() === totalPages()">
-
+          <button (click)="goToPage(currentPage() + 1)" [disabled]="currentPage() === totalPages()">
             Next
           </button>
-
         </div>
-
       </div>
-
     </div>
-
-  </div>
 </div>
