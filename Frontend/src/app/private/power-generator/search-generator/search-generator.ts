@@ -226,9 +226,16 @@ export class SearchGenerator implements OnInit {
       return res.blob();
     })
     .then((blob: any) => {
+      const now = new Date();
+  const dateStr = now.getFullYear().toString() +
+    String(now.getMonth() + 1).padStart(2, '0') +
+    String(now.getDate()).padStart(2, '0') + '_' +
+    String(now.getHours()).padStart(2, '0') +
+    String(now.getMinutes()).padStart(2, '0') +
+    String(now.getSeconds()).padStart(2, '0');
       const url  = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
-      link.href = url; link.download = `Generator-${operationId}.pdf`;
+      link.href = url; link.download = `Search_PowerGenerator_${dateStr}.pdf`;
       document.body.appendChild(link); link.click();
       document.body.removeChild(link); window.URL.revokeObjectURL(url);
     })

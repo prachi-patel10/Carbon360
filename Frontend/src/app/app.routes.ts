@@ -24,7 +24,7 @@ import { authGuard } from './core/guards/auth-guard';
 import { SearchVehicle } from './private/fleet-transport/search-vehicle/search-vehicle';
 import { ChartsComponent } from './public/charts-component/charts-component';
 import { ExportExcel } from './private/export-excel/export-excel';
-import { VehiclePdf } from './private/fleet-transport/vehicle-pdf/vehicle-pdf';
+
 import { VehicleCharts } from './private/vehicle-charts/vehicle-charts';
 import { GeneratorCharts } from './private/generator-charts/generator-charts';
 
@@ -82,7 +82,7 @@ export const routes: Routes = [
                 path: 'dashboard/generator-review/:id',
                 component: GeneratorOperationComponent
             },
-             {path:'vehiclepdf',component:VehiclePdf}
+           
 
         ]
     },

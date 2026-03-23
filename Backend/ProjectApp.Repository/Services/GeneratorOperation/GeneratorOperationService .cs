@@ -759,20 +759,50 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
             DateTime? GetDate(string key) =>
                 operation.ContainsKey(key) && operation[key] != null ? Convert.ToDateTime(operation[key]) : null;
 
+            string GetValue(Dictionary<string, object> dict, string key) =>
+                dict.ContainsKey(key) && dict[key] != null ? dict[key].ToString() : "-";
+
             var historyRows = new StringBuilder();
             foreach (var h in history)
             {
                 var actionDate = h.ContainsKey("ActionDate") && h["ActionDate"] != null
-                    ? Convert.ToDateTime(h["ActionDate"]).ToString("dd-MMM-yyyy HH:mm")
+                    ? Convert.ToDateTime(h["ActionDate"]).ToString("dd MMM yyyy, HH:mm tt")
                     : "-";
 
+                var actionName = GetValue(h, "ActionName");
+                var actionRole = GetValue(h, "ActionByRole");
+                var fullName = GetValue(h, "FullName");
+
+                string smartMessage = actionName.ToLower() switch
+                {
+                    "submit" => $"{fullName} ({actionRole}) submitted this operation for review",
+                    "approve" => $"{fullName} ({actionRole}) approved this operation",
+                    "reject" => $"{fullName} ({actionRole}) rejected this operation",
+                    "resubmit" => $"{fullName} ({actionRole}) resubmitted this operation after corrections",
+                    _ => $"{fullName} ({actionRole}) performed {actionName}"
+                };
+
+                string dotClass = actionName.ToLower() switch
+                {
+                    "submit" => "dot-submit",
+                    "approve" => "dot-approve",
+                    "reject" => "dot-reject",
+                    "resubmit" => "dot-resubmit",
+                    _ => "dot-default"
+                };
+
                 historyRows.Append($@"
-<tr>
-    <td>{actionDate}</td>
-    <td>{GetValue(h, "ActionName")}</td>
-    <td>{GetValue(h, "ActionByRole")}</td>
-    <td>{GetValue(h, "FullName")}</td>
-</tr>");
+<div class=""timeline-item"">
+    <div class=""timeline-dot-col"">
+        <span class=""timeline-dot {dotClass}""></span>
+    </div>
+    <div class=""timeline-content"">
+        <div class=""timeline-message"">{smartMessage}</div>
+        <div class=""timeline-meta"">
+            <span class=""timeline-date"">{actionDate}</span>
+        </div>
+    </div>
+</div>");
             }
 
             string templateDir = Path.Combine(AppContext.BaseDirectory, "Template", "VehicleTrip");
@@ -786,10 +816,20 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
             headerHtml = headerHtml.Replace("</head>", $"{cssTag}</head>");
             footerHtml = footerHtml.Replace("</head>", $"{cssTag}</head>");
 
+            string entryDateStr = GetDate("EntryDate")?.ToString("dd-MMM-yyyy HH:mm tt")
+                               ?? DateTime.Now.ToString("dd-MMM-yyyy HH:mm tt");
+
+            headerHtml = headerHtml.Replace("{{ReportTitle}}", "Generator Operation Emission Report");
+            headerHtml = headerHtml.Replace("{{EntryDate}}", entryDateStr);
+            headerHtml = headerHtml.Replace("{{status}}", GetString("Status"));
+
+            footerHtml = footerHtml.Replace("{{generatedDate}}", DateTime.Now.ToString("dd-MMM-yyyy HH:mm"));
+
             contentHtml = contentHtml.Replace("{{EntryByFullName}}", GetString("EntryByFullName"));
             contentHtml = contentHtml.Replace("{{EntryByUserName}}", GetString("EntryByUserName"));
             contentHtml = contentHtml.Replace("{{EntryByEmail}}", GetString("EntryByEmail"));
             contentHtml = contentHtml.Replace("{{status}}", GetString("Status"));
+            contentHtml = contentHtml.Replace("{{EntryDate}}", entryDateStr);
             contentHtml = contentHtml.Replace("{{operationId}}", operationId);
 
             contentHtml = contentHtml.Replace("{{generatorName}}", GetString("GeneratorName"));
@@ -821,30 +861,22 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
             contentHtml = contentHtml.Replace("{{co2Factor}}", co2Factor.ToString("0.########"));
             contentHtml = contentHtml.Replace("{{no2Factor}}", no2Factor.ToString("0.########"));
             contentHtml = contentHtml.Replace("{{ch4Factor}}", ch4Factor.ToString("0.########"));
-            contentHtml = contentHtml.Replace("{{co2}}", co2.ToString("0.##"));
+            contentHtml = contentHtml.Replace("{{co2}}", co2.ToString("0.######"));
             contentHtml = contentHtml.Replace("{{no2}}", no2.ToString("0.######"));
             contentHtml = contentHtml.Replace("{{ch4}}", ch4.ToString("0.######"));
-            contentHtml = contentHtml.Replace("{{total}}", total.ToString("0.##"));
+            contentHtml = contentHtml.Replace("{{total}}", total.ToString("0.######"));
             contentHtml = contentHtml.Replace("{{GWP_CH4}}", "28");
             contentHtml = contentHtml.Replace("{{GWP_N2O}}", "265");
-
             var start = GetDate("StartTime");
             var end = GetDate("EndTime");
             string duration = "-";
             if (start != null && end != null)
             {
                 var diff = end.Value - start.Value;
-                int totalHours = (int)diff.TotalHours;
-                int minutes = diff.Minutes;
-                duration = $"{totalHours} hrs {minutes} mins";
+                duration = $"{(int)diff.TotalHours} hrs {diff.Minutes} mins";
             }
             contentHtml = contentHtml.Replace("{{duration}}", duration);
-
             contentHtml = contentHtml.Replace("{{historyRows}}", historyRows.ToString());
-
-            headerHtml = headerHtml.Replace("{{ReportTitle}}", "Generator Operation Emission Report");
-            footerHtml = footerHtml.Replace("{{generatedDate}}", DateTime.Now.ToString("dd-MMM-yyyy HH:mm"));
-
             using var browser = await Puppeteer.LaunchAsync(new LaunchOptions
             {
                 Headless = true,
@@ -876,13 +908,7 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
 
             await browser.CloseAsync();
             return pdf;
-
-            string GetValue(Dictionary<string, object> dict, string key)
-            {
-                return dict.ContainsKey(key) && dict[key] != null ? dict[key].ToString() : "-";
-            }
         }
-
 
         public async Task<List<GeneratorOperationResponseDTO>> ExportToExcelAsync(
         string search,

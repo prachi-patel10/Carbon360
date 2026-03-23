@@ -1013,7 +1013,6 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
             if (trip == null || trip.Count == 0)
                 throw new Exception($"No trip data found for tripId: {tripId}");
 
-            Console.WriteLine($"Trip keys: {string.Join(", ", trip.Keys)}"); // debug
             var history = data["History"] as List<Dictionary<string, object>> ?? new();
 
             string GetString(string key) =>
@@ -1025,43 +1024,63 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
             DateTime? GetDate(string key) =>
                 trip.ContainsKey(key) && trip[key] != null ? Convert.ToDateTime(trip[key]) : null;
 
-            var historyRows = new StringBuilder();
+            string GetValue(Dictionary<string, object> dict, string key) =>
+                dict.ContainsKey(key) && dict[key] != null ? dict[key].ToString() : "-";
 
+            var historyRows = new StringBuilder();
 
             foreach (var h in history)
             {
                 var actionDate = h.ContainsKey("ActionDate") && h["ActionDate"] != null
-                    ? Convert.ToDateTime(h["ActionDate"]).ToString("dd-MMM-yyyy HH:mm")
+                    ? Convert.ToDateTime(h["ActionDate"]).ToString("dd MMM yyyy, HH:mm tt")
                     : "-";
 
                 var actionName = GetValue(h, "ActionName");
                 var actionRole = GetValue(h, "ActionByRole");
                 var fullName = GetValue(h, "FullName");
-
-                // Pick action CSS class based on action name
-                string actionClass = actionName.ToLower() switch
+                string smartMessage = actionName.ToLower() switch
                 {
-                    var a when a.Contains("approve") => "timeline-action-approve",
-                    var a when a.Contains("reject") => "timeline-action-reject",
-                    var a when a.Contains("submit") => "timeline-action-submit",
-                    _ => "timeline-action-default"
+                    "submit" => $"{fullName} ({actionRole}) submitted this trip for review",
+                    "approve" => $"{fullName} ({actionRole}) approved this trip",
+                    "reject" => $"{fullName} ({actionRole}) rejected this trip",
+                    "resubmit" => $"{fullName} ({actionRole}) resubmitted this trip after corrections",
+                    _ => $"{fullName} ({actionRole}) performed {actionName}"
                 };
+                string dotClass = actionName.ToLower() switch
+                {
+                    "submit" => "dot-submit",
+                    "approve" => "dot-approve",
+                    "reject" => "dot-reject",
+                    "resubmit" => "dot-resubmit",
+                    _ => "dot-default"
+                };
+
+                //// Badge CSS class
+                //string badgeClass = actionName.ToLower() switch
+                //{
+                //    "submit" => "badge-submit",
+                //    "approve" => "badge-approve",
+                //    "reject" => "badge-reject",
+                //    "resubmit" => "badge-resubmit",
+                //    _ => "badge-default"
+                //};
 
                 historyRows.Append($@"
 <div class=""timeline-item"">
     <div class=""timeline-dot-col"">
-        <span class=""timeline-dot""></span>
+        <span class=""timeline-dot {dotClass}""></span>
     </div>
     <div class=""timeline-content"">
-        On <span class=""timeline-date"">{actionDate}</span>
-        &nbsp;<span class=""timeline-role"">{actionRole} - <span class=""timeline-user"">{fullName}</span></span>
-        &nbsp;has performed <span class=""{actionClass}"">{actionName}</span>
+        <div class=""timeline-message"">{smartMessage}</div>
+        <div class=""timeline-meta"">
+            <span class=""timeline-date"">{actionDate}</span>
+        </div>
+       
     </div>
 </div>");
             }
 
 
-            //  string templateDir = @"C:\Users\Jenisha Dhodia\Documents\GitHub\Carbon360\Backend\ProjectApp.API\Template\VehicleTrip";
             string templateDir = Path.Combine(AppContext.BaseDirectory, "Template", "VehicleTrip");
             string css = await File.ReadAllTextAsync(Path.Combine(templateDir, "styles.css"));
             string contentHtml = await File.ReadAllTextAsync(Path.Combine(templateDir, "VehicleTripReport.html"));
@@ -1069,16 +1088,26 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
             string footerHtml = await File.ReadAllTextAsync(Path.Combine(templateDir, "footer.html"));
 
             string cssTag = $"<style>{css}</style>";
-            // Add this with the other header replacements
-            headerHtml = headerHtml.Replace("{{EntryDate}}", GetDate("EntryDate")?.ToString("dd-MMM-yyyy HH:mm") ?? DateTime.Now.ToString("dd-MMM-yyyy HH:mm"));
+
             contentHtml = contentHtml.Replace("</head>", $"{cssTag}</head>");
             headerHtml = headerHtml.Replace("</head>", $"{cssTag}</head>");
             footerHtml = footerHtml.Replace("</head>", $"{cssTag}</head>");
+
+            string entryDateStr = GetDate("EntryDate")?.ToString("dd-MMM-yyyy HH:mm tt")
+                      ?? DateTime.Now.ToString("dd-MMM-yyyy HH:mm tt");
+
+
+            headerHtml = headerHtml.Replace("{{ReportTitle}}", "Fleet &amp; Transport Emission Report");
+            headerHtml = headerHtml.Replace("{{EntryDate}}", entryDateStr);
+            headerHtml = headerHtml.Replace("{{status}}", GetString("Status"));
+
+            footerHtml = footerHtml.Replace("{{generatedDate}}", DateTime.Now.ToString("dd-MMM-yyyy HH:mm"));
 
             contentHtml = contentHtml.Replace("{{EntryByFullName}}", GetString("EntryByFullName"));
             contentHtml = contentHtml.Replace("{{EntryByUserName}}", GetString("EntryByUserName"));
             contentHtml = contentHtml.Replace("{{EntryByEmail}}", GetString("EntryByEmail"));
             contentHtml = contentHtml.Replace("{{status}}", GetString("Status"));
+            contentHtml = contentHtml.Replace("{{EntryDate}}", entryDateStr);
             contentHtml = contentHtml.Replace("{{tripId}}", tripId);
 
             contentHtml = contentHtml.Replace("{{vehicle}}", GetString("vehicle_number"));
@@ -1088,8 +1117,23 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
             contentHtml = contentHtml.Replace("{{toCity}}", GetString("ToCity"));
             contentHtml = contentHtml.Replace("{{distance}}", GetDecimal("DistanceKm").ToString("0.##"));
             contentHtml = contentHtml.Replace("{{fuel}}", GetDecimal("FuelConsumedLtr").ToString("0.##"));
-            var fuel = GetDecimal("FuelConsumedLtr");
 
+            contentHtml = contentHtml.Replace("{{tripstartdate}}",
+                GetDate("TripStartDateTime")?.ToString("dd-MMM-yyyy HH:mm") ?? "-");
+            contentHtml = contentHtml.Replace("{{tripenddate}}",
+                GetDate("TripEndDateTime")?.ToString("dd-MMM-yyyy HH:mm") ?? "-");
+
+            var start = GetDate("TripStartDateTime");
+            var end = GetDate("TripEndDateTime");
+            string duration = "-";
+            if (start != null && end != null)
+            {
+                var diff = end.Value - start.Value;
+                duration = $"{(int)diff.TotalHours} hrs {diff.Minutes} mins";
+            }
+            contentHtml = contentHtml.Replace("{{tripduration}}", duration);
+
+            var fuel = GetDecimal("FuelConsumedLtr");
             var co2Factor = GetDecimal("CO2Factor");
             var no2Factor = GetDecimal("NO2Factor");
             var ch4Factor = GetDecimal("CH4Factor");
@@ -1097,64 +1141,18 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
             var co2 = fuel * co2Factor;
             var no2 = fuel * no2Factor;
             var ch4 = fuel * ch4Factor;
-
             var total = co2 + (ch4 * 28) + (no2 * 265);
 
-            //contentHtml = contentHtml.Replace("{{co2Factor}}", co2Factor.ToString("0.########"));
-            //contentHtml = contentHtml.Replace("{{no2Factor}}", no2Factor.ToString("0.########"));
-            //contentHtml = contentHtml.Replace("{{ch4Factor}}", ch4Factor.ToString("0.########"));
-
-            //contentHtml = contentHtml.Replace("{{co2}}", co2.ToString("0.##"));
-            //contentHtml = contentHtml.Replace("{{no2}}", no2.ToString("0.######"));
-            //contentHtml = contentHtml.Replace("{{ch4}}", ch4.ToString("0.######"));
-
-            //contentHtml = contentHtml.Replace("{{total}}", total.ToString("0.##"));
             contentHtml = contentHtml.Replace("{{co2Factor}}", co2Factor.ToString("0.########"));
             contentHtml = contentHtml.Replace("{{no2Factor}}", no2Factor.ToString("0.########"));
             contentHtml = contentHtml.Replace("{{ch4Factor}}", ch4Factor.ToString("0.########"));
-
-            contentHtml = contentHtml.Replace("{{co2}}", co2.ToString("0.##"));
+            contentHtml = contentHtml.Replace("{{co2}}", co2.ToString("0.######"));
             contentHtml = contentHtml.Replace("{{no2}}", no2.ToString("0.######"));
             contentHtml = contentHtml.Replace("{{ch4}}", ch4.ToString("0.######"));
-
-            contentHtml = contentHtml.Replace("{{total}}", total.ToString("0.##"));
-            contentHtml = contentHtml.Replace("{{tripstartdate}}",
-    GetDate("TripStartDateTime")?.ToString("dd-MMM-yyyy HH:mm") ?? "-");
-
-            contentHtml = contentHtml.Replace("{{tripenddate}}",
-                GetDate("TripEndDateTime")?.ToString("dd-MMM-yyyy HH:mm") ?? "-");
-            //contentHtml = contentHtml.Replace("{{co2Factor}}", GetDecimal("CO2").ToString());
-            //contentHtml = contentHtml.Replace("{{no2Factor}}", GetDecimal("NO2").ToString());
-            //contentHtml = contentHtml.Replace("{{ch4Factor}}", GetDecimal("CH4").ToString());
-
+            contentHtml = contentHtml.Replace("{{total}}", total.ToString("0.######"));
             contentHtml = contentHtml.Replace("{{GWP_CH4}}", "28");
             contentHtml = contentHtml.Replace("{{GWP_N2O}}", "265");
-            // contentHtml = contentHtml.Replace("{{total}}", GetDecimal("TotalEmission").ToString("0.##"));
-
-            var start = GetDate("TripStartDateTime");
-            var end = GetDate("TripEndDateTime");
-
-            string duration = "-";
-
-            if (start != null && end != null)
-            {
-                var diff = end.Value - start.Value;
-
-                int totalHours = (int)diff.TotalHours;
-                int minutes = diff.Minutes;
-
-                duration = $"{totalHours} hrs {minutes} mins";
-            }
-
-            contentHtml = contentHtml.Replace("{{tripduration}}", duration);
-
             contentHtml = contentHtml.Replace("{{historyRows}}", historyRows.ToString());
-
-            headerHtml = headerHtml.Replace("{{ReportTitle}}", "Report Fleet & Transport");
-            footerHtml = footerHtml.Replace("{{generatedDate}}", DateTime.Now.ToString("dd-MMM-yyyy HH:mm"));
-
-
-
             using var browser = await Puppeteer.LaunchAsync(new LaunchOptions
             {
                 Headless = true,
@@ -1177,25 +1175,16 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
                 FooterTemplate = footerHtml,
                 MarginOptions = new MarginOptions
                 {
-                    //Top = "60px",
-                    //Bottom = "60px",
-                    //Left = "20px",
-                    //Right = "20px"
-
                     Top = "90px",
                     Bottom = "70px",
                     Left = "25px",
                     Right = "25px"
+
                 }
             });
 
             await browser.CloseAsync();
             return pdf;
-            string GetValue(Dictionary<string, object> dict, string key)
-            {
-                return dict.ContainsKey(key) && dict[key] != null ? dict[key].ToString() : "-";
-            }
-
         }
 
         public async Task<Dictionary<string, object>> GetByHashIdAsyncPDF(string hashId)

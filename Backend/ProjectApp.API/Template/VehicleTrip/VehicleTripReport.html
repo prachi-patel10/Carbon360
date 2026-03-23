@@ -23,7 +23,6 @@
         <!-- ── TRIP DETAILS ── -->
         <div class="sec">
             <div class="sec-head">
-                <div class="sec-icon"><div class="sec-icon-box">&#9654;</div></div>
                 <div class="sec-title">Trip Details</div>
             </div>
             <div class="sec-body">
@@ -62,17 +61,17 @@
                             <div class="fcell-val">{{fuel}}</div>
                         </td>
                         <td>
-                            <div class="fcell-lbl">Trip Start Date</div>
+                            <div class="fcell-lbl">Trip Start Date & Time</div>
                             <div class="fcell-val">{{tripstartdate}}</div>
                         </td>
                         <td>
-                            <div class="fcell-lbl">Trip End Date</div>
+                            <div class="fcell-lbl">Trip End Date & Time</div>
                             <div class="fcell-val">{{tripenddate}}</div>
                         </td>
                     </tr>
                     <tr>
                         <td>
-                            <div class="fcell-lbl">Trip Duration</div>
+                            <div class="fcell-lbl">Trip Duration Hours</div>
                             <div class="fcell-val">{{tripduration}}</div>
                         </td>
                         <td></td>
@@ -85,7 +84,6 @@
         <!-- ── EMISSION DETAILS ── -->
         <div class="sec">
             <div class="sec-head">
-                <div class="sec-icon"><div class="sec-icon-box">&#9650;</div></div>
                 <div class="sec-title">Emission Details</div>
             </div>
             <div class="sec-body">
@@ -115,8 +113,16 @@
                 </div>
 
                 <div class="emission-divider">Emission Calculation</div>
-                <div class="formula-grid">
 
+                <div class="calc-row">
+                    <div class="calc-card">
+                        <div class="calc-label">Trip Duration Hours</div>
+                        <div class="calc-line">= End Time &minus; Start Time</div>
+                        <div class="calc-line">= {{tripenddate}} &minus; {{tripstartdate}}</div>
+                        <div class="calc-result">= {{tripduration}} hrs</div>
+                    </div>
+                </div>
+                <div class="formula-grid">
                     <div class="f-card">
                         <div class="f-card-inner">
                             <div class="f-gas">CO&#8322;</div>
@@ -178,10 +184,9 @@
         </div>
 
         <!-- ── WORKFLOW HISTORY ── -->
-        <div class="sec">
+        <div class="sec sec-history">
             <div class="sec-head">
-                <div class="sec-icon"><div class="sec-icon-box">&#9776;</div></div>
-                <div class="sec-title">Workflow History</div>
+                <div class="sec-title">History</div>
             </div>
             <div class="sec-body">
                 <div class="timeline">

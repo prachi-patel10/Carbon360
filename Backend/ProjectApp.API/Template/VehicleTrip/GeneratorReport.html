@@ -11,8 +11,8 @@
         <div class="status-bar-left">
             Reported By: <strong>{{EntryByFullName}}</strong>
         </div>
-        <div class="status-bar-right">
-            Status: &nbsp;<span class="status-pill">{{status}}</span>
+        <div class="header-date-value" style="display:table-cell; vertical-align:middle; text-align:right; padding-right:20px; font-size:11px; color:#555;">
+            Reported Date: <strong>{{EntryDate}}</strong>
         </div>
     </div>
 
@@ -22,7 +22,6 @@
         <!-- ── GENERATOR DETAILS ── -->
         <div class="sec">
             <div class="sec-head">
-                <div class="sec-icon"><div class="sec-icon-box">&#9654;</div></div>
                 <div class="sec-title">Generator Details</div>
             </div>
             <div class="sec-body">
@@ -90,7 +89,6 @@
         <!-- ── EMISSION DETAILS ── -->
         <div class="sec">
             <div class="sec-head">
-                <div class="sec-icon"><div class="sec-icon-box">&#9650;</div></div>
                 <div class="sec-title">Emission Details</div>
             </div>
             <div class="sec-body">
@@ -126,7 +124,7 @@
                     <div class="calc-card">
                         <div class="calc-label">Run Hours</div>
                         <div class="calc-line">= End Time &minus; Start Time</div>
-                        <div class="calc-line">= {{startTime}} &rarr; {{endTime}}</div>
+                        <div class="calc-line">= {{startTime}} &minus; {{endTime}}</div>
                         <div class="calc-result">= {{runHours}} hrs</div>
                     </div>
                     <div class="calc-card">
@@ -204,8 +202,7 @@
         <!-- ── WORKFLOW HISTORY ── -->
         <div class="sec">
             <div class="sec-head">
-                <div class="sec-icon"><div class="sec-icon-box">&#9776;</div></div>
-                <div class="sec-title">Workflow History</div>
+                <div class="sec-title">History</div>
             </div>
             <div class="sec-body">
                 <div class="timeline">
