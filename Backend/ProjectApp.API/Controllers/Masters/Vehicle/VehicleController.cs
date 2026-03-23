@@ -31,12 +31,7 @@ namespace ProjectApp.API.Controllers.Masters.Vehicle
         public async Task<IActionResult> Update([FromBody] VehicleUpdateDto dto)
         {
             await _service.UpdateAsync(dto);
-
-            return Ok(new
-            {
-                success = true,
-                message = "Vehicle updated successfully"
-            });
+            return Ok(new { success = true, message = "Vehicle updated successfully" });
         }
 
         [HttpDelete("delete/{id}")]
@@ -76,15 +71,15 @@ namespace ProjectApp.API.Controllers.Masters.Vehicle
 
         [HttpGet("search")]
         public async Task<IActionResult> Search(
-    [FromQuery] string? search,
-    [FromQuery] bool? isActive,
-    [FromQuery] int pageNumber = 1,
-    [FromQuery] int pageSize = 10,
-    [FromQuery] string sortColumn = "vehicle_number",
-    [FromQuery] string sortDirection = "ASC",
-    [FromQuery] int? vehicle_type_id = null,
-    [FromQuery] int? fuel_id = null,
-    [FromQuery] int? department_id = null)
+            [FromQuery] string? search,
+            [FromQuery] bool? isActive,
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 10,
+            [FromQuery] string sortColumn = "vehicle_number",
+            [FromQuery] string sortDirection = "ASC",
+            [FromQuery] string? vehicle_type_id = null,
+            [FromQuery] string? fuel_id = null,
+            [FromQuery] string? department_id = null)
         {
             var request = new VehicleSearchRequest
             {
@@ -94,9 +89,9 @@ namespace ProjectApp.API.Controllers.Masters.Vehicle
                 PageSize = pageSize,
                 SortColumn = sortColumn,
                 SortDirection = sortDirection,
-                vehicle_type_id = vehicle_type_id,
-                fuel_id = fuel_id,
-                department_id = department_id
+                vehicle_type_id = vehicle_type_id,   // ← now string?
+                fuel_id = fuel_id,            // ← now string?
+                department_id = department_id       // ← now string?
             };
 
             var result = await _service.SearchAsync(request);
