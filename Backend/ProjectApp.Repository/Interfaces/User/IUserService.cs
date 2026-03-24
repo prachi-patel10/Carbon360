@@ -19,6 +19,6 @@ namespace ProjectApp.Repository.Interfaces.User
         Task<bool> UpdateUserAsync(UserUpdateDTO dto);
         Task<bool> UpdateUserStatusAsync(UserStatusUpdateDTO dto);
 
-        Task<(List<UserResDTO> Users, int TotalRecords)> SearchUsersPaginatedAsync(SearchRequest request);
+        Task<(List<UserResDTO> Users, int TotalRecords)> SearchUsersPaginatedAsync(SearchRequestDTO request);
     }
 }

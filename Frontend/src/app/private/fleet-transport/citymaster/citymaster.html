@@ -2,36 +2,28 @@
 
   <!-- ================= FORM ================= -->
   <div class="card">
-    <form class="form-grid"
-          [formGroup]="cityForm"
-          (ngSubmit)="submit()">
+    <form class="form-grid" [formGroup]="cityForm" (ngSubmit)="submit()">
 
-     <div class="form-group">
-  <label>City Name</label>
-  <input type="text"
-         formControlName="cityName"
-         placeholder="Enter City Name">
-</div>
+      <div class="form-group">
+        <label>City Name</label>
+        <input type="text" formControlName="cityName" placeholder="Enter City Name">
+      </div>
 
-<div class="form-group">
-  <label>State Name</label>
-  <input type="text"
-         formControlName="stateName"
-         placeholder="Enter State Name">
-</div>
+      <div class="form-group">
+        <label>State Name</label>
+        <input type="text" formControlName="stateName" placeholder="Enter State Name">
+      </div>
 
-<div class="form-group">
-  <label>Short Code</label>
-  <input type="text"
-         formControlName="shortCode"
-         placeholder="Enter Short Code">
-</div>
+      <div class="form-group">
+        <label>Short Code</label>
+        <input type="text" formControlName="shortCode" placeholder="Enter Short Code">
+      </div>
 
       <div class="form-actions">
         <button class="save-btn" type="submit">
           {{ !cityForm.value.cityId ? 'Save' : 'Update' }}
         </button>
-      <button class="btn-reset" (click)="resetForm()">Reset</button>
+        <button class="btn-reset" (click)="resetForm()">Reset</button>
 
       </div>
 
@@ -46,31 +38,21 @@
 
       <div class="search-row">
 
-        <input type="text"
-               class="search-input"
-                       placeholder="Quick Search"
-               formControlName="searchText">
+        <input type="text" class="search-input" placeholder="Quick Search" formControlName="searchText">
 
         <div class="search-right">
           <div class="status-toggle">
-  <span>Active Only</span>
-  <label class="switch">
-    <input type="checkbox"
-           [checked]="onlyActive() === true"
-           (change)="onActiveFilterChange($event)">
-    <span class="slider"></span>
-  </label>
-</div>
-        <button type="button"
-        class="filter-btn"
-        (click)="openFilterModal()">
-        Filter
-      </button>
+            <span>Active Only</span>
+            <label class="switch">
+              <input type="checkbox" [checked]="onlyActive() === true" (change)="onActiveFilterChange($event)">
+              <span class="slider"></span>
+            </label>
+          </div>
         </div>
 
 
       </div>
-      
+
 
     </form>
 
@@ -79,20 +61,20 @@
 
       <table>
         <thead>
-  <tr>
-    <th (click)="sort('CityName')" class="sortable">
-      City <span class="sort-icon">{{ getSortIcon('CityName') }}</span>
-    </th>
-    <th (click)="sort('StateName')" class="sortable">
-      State <span class="sort-icon">{{ getSortIcon('StateName') }}</span>
-    </th>
-    <th (click)="sort('ShortCode')" class="sortable">
-      Short Code <span class="sort-icon">{{ getSortIcon('ShortCode') }}</span>
-    </th>
-    <th>Status</th>
-    <th>Actions</th>
-  </tr>
-</thead>
+          <tr>
+            <th (click)="sort('CityName')" class="sortable">
+              City <span class="sort-icon">{{ getSortIcon('CityName') }}</span>
+            </th>
+            <th (click)="sort('StateName')" class="sortable">
+              State <span class="sort-icon">{{ getSortIcon('StateName') }}</span>
+            </th>
+            <th (click)="sort('ShortCode')" class="sortable">
+              Short Code <span class="sort-icon">{{ getSortIcon('ShortCode') }}</span>
+            </th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
 
         <tbody>
           <tr *ngFor="let c of cities()">
@@ -102,9 +84,7 @@
 
             <td>
               <label class="switch">
-                <input type="checkbox"
-                       [checked]="c.isActive"
-                       (change)="toggleActive(c)">
+                <input type="checkbox" [checked]="c.isActive" (change)="toggleActive(c)">
                 <span class="slider"></span>
               </label>
             </td>
@@ -114,123 +94,31 @@
               <button class="delete-btn" (click)="deleteUI(c)">Delete</button>
             </td>
           </tr>
-           <tr *ngIf="cities().length === 0">
-    <td colspan="5" style="text-align: center; padding: 20px; color: #999;">
-      No records found
-    </td>
-  </tr>
+          <tr *ngIf="cities().length === 0">
+            <td colspan="5" style="text-align: center; padding: 20px; color: #999;">
+              No records found
+            </td>
+          </tr>
         </tbody>
       </table>
 
     </div>
 
     <!-- ================= PAGINATION ================= -->
-   <!-- ================= PAGINATION ================= -->
-         <div class="pagination-info">
-    <span>Total Records: {{ totalRecords() }}</span>
-    <div class="pagination-controls">
-      <button (click)="previousPage()" [disabled]="currentPage() === 1">Previous</button>
-      <span>Page {{ currentPage() }} of {{ totalPages() }}</span>
-      <button (click)="nextPage()" [disabled]="currentPage() === totalPages()">Next</button>
+    <div class="pagination-info">
+      <span>Total Records: {{ totalRecords() }}</span>
+      <div class="pagination-controls">
+        <button (click)="previousPage()" [disabled]="currentPage() === 1">Previous</button>
+        <span>Page {{ currentPage() }} of {{ totalPages() }}</span>
+        <button (click)="nextPage()" [disabled]="currentPage() === totalPages()">Next</button>
 
-      <label for="pageSize">Page Size:</label>
-      <select id="pageSize" [value]="pageSize()" (change)="onPageSizeChange($event)">
-        <option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</option>
-      </select>
-    </div>
-  </div>
-    
-
-  </div>
-
-</div>
-<!-- ================= FILTER MODAL ================= -->
-<div class="filter-overlay"
-     *ngIf="filterModalOpen()"
-     (click)="closeFilterModal()">
-
-  <div class="filter-modal"
-       (click)="$event.stopPropagation()">
-
-    <div class="filter-header">
-      <h2>Filter Cities</h2>
-      <button type="button"
-              class="close-btn"
-              (click)="closeFilterModal()">✖</button>
-    </div>
-
-    <div class="filter-body">
-
-      <div class="filter-group">
-        <label>State</label>
-
-        <div class="multi-select-box">
-          <div class="checkbox-item"
-               *ngFor="let state of allStates()">
-
-            <label>
-              <input type="checkbox"
-                     [checked]="isStateSelected(state)"
-                     (change)="toggleState(state)" />
-              <span>{{ state }}</span>
-            </label>
-
-          </div>
-        </div>
+        <label for="pageSize">Page Size:</label>
+        <select id="pageSize" [value]="pageSize()" (change)="onPageSizeChange($event)">
+          <option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</option>
+        </select>
       </div>
-
-      <div class="filter-group">
-  <label>City</label>
-
-  <div class="multi-select-box">
-    <div class="checkbox-item"
-         *ngFor="let city of allCities()">
-
-      <label>
-        <input type="checkbox"
-               [checked]="isCitySelected(city)"
-               (change)="toggleCity(city)" />
-        <span>{{ city }}</span>
-      </label>
-
     </div>
-  </div>
-</div>
 
-
-          <div class="filter-group">
-  <label>Short Code</label>
-
-  <div class="multi-select-box">
-    <div class="checkbox-item"
-         *ngFor="let city of allShortCodes()">
-
-      <label>
-        <input type="checkbox"
-               [checked]="isShortCodeSelected(city)"
-               (change)="toggleShortCode(city)" />
-        <span>{{ city }}</span>
-      </label>
-
-    </div>
-  </div>
-</div>
-
-      <div class="filter-footer">
-        <button type="button"
-                class="reset-btn"
-                (click)="resetFilter()">
-          Reset
-        </button>
-
-        <button type="button"
-                class="apply-btn"
-                (click)="applyFilter()">
-          Apply Filter
-        </button>
-      </div>
-
-    </div>
 
   </div>
 

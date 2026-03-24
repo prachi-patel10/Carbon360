@@ -1,14 +1,27 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
+import { environment } from '../../../enviorments/environment';
+
+export interface FilterOption {
+  id:    string;
+  value: string;
+}
 
 @Injectable({
   providedIn: 'root',
 })
 export class SiteLocationMasterService {
-   private baseUrl = 'http://localhost:5236/api/SiteLocation'; // change if needed
+
+  private baseUrl = `${environment.apiBaseUrl}/SiteLocation`;
 
   constructor(private http: HttpClient) {}
+
+  // ================= GET ALL =================
+  getAll(): Observable<any> {
+    return this.http.get(`${this.baseUrl}/all`);
+  }
 
   // ================= CREATE =================
   create(data: any): Observable<any> {
@@ -25,23 +38,12 @@ export class SiteLocationMasterService {
     return this.http.delete(`${this.baseUrl}/${id}`);
   }
 
-  // // ================= TOGGLE STATUS =================
-  // toggleStatus(id: string, isActive: boolean): Observable<any> {
-  //   const formData = new FormData();
-  //   formData.append('siteId', id);
-  //   formData.append('isActive', isActive.toString());
-
-  //   return this.http.patch(`${this.baseUrl}/toggle-status`, formData);
-  // }
-
   // ================= TOGGLE STATUS =================
   toggleStatus(id: string, isActive: boolean): Observable<any> {
     return this.http.patch(
       `${this.baseUrl}/${id}/toggle-status`,
       null,
-      {
-        params: { isActive: isActive }
-      }
+      { params: { isActive: isActive } }
     );
   }
 
@@ -49,25 +51,47 @@ export class SiteLocationMasterService {
   search(paramsObj: any): Observable<any> {
     let params = new HttpParams();
     Object.keys(paramsObj).forEach(key => {
-      if (paramsObj[key] !== null && paramsObj[key] !== undefined) {
-        params = params.set(key, paramsObj[key]);
+      const val = paramsObj[key];
+      if (val !== null && val !== undefined && val !== '') {
+        // Convert arrays to comma-separated string
+        if (Array.isArray(val)) {
+          if (val.length > 0)
+            params = params.set(key, val.join(','));
+        } else {
+          params = params.set(key, val);
+        }
       }
     });
     return this.http.get(`${this.baseUrl}/search`, { params });
   }
 
-  // ================= ADVANCED SEARCH =================
-  advancedSearch(filter: any, pageNumber: number, pageSize: number): Observable<any> {
-    let params = new HttpParams()
-      .set('pageNumber', pageNumber)
-      .set('pageSize', pageSize);
+  // ================= FILTER OPTIONS =================
+  // Builds SiteName + City filter lists from getAll() — no extra endpoint needed
+  getFilterOptions(): Observable<{ siteNames: FilterOption[]; cities: FilterOption[] }> {
+    return this.getAll().pipe(
+      map((res: any) => {
+        const list: any[] = Array.isArray(res) ? res : (res.data ?? res);
 
-    Object.keys(filter).forEach(key => {
-      if (filter[key] !== null && filter[key] !== undefined && filter[key] !== '') {
-        params = params.set(key, filter[key]);
-      }
-    });
+        // Distinct site names
+        const siteNames: FilterOption[] = Array.from(
+          new Map(
+            list
+              .filter(v => v.siteName && v.siteName !== 'N/A')
+              .map(v => [v.siteName, { id: v.siteName, value: v.siteName }])
+          ).values()
+        ).sort((a, b) => a.value.localeCompare(b.value));
 
-    return this.http.get(`${this.baseUrl}/advanced-search`, { params });
+        // Distinct cities
+        const cities: FilterOption[] = Array.from(
+          new Map(
+            list
+              .filter(v => v.city && v.city !== 'N/A')
+              .map(v => [v.city, { id: v.city, value: v.city }])
+          ).values()
+        ).sort((a, b) => a.value.localeCompare(b.value));
+
+        return { siteNames, cities };
+      })
+    );
   }
 }

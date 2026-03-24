@@ -1,7 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using ProjectApp.Core.DTOs.Masters.Generator;
 using ProjectApp.Core.DTOs.Masters.SiteLocation;
 using ProjectApp.Repository.Interfaces.SiteLocation;
 using ProjectApp.Repository.Utilities.Auth;
@@ -20,36 +18,23 @@ namespace ProjectApp.API.Controllers.Masters.SiteLocation
         {
             _service = service;
             _idEncoder = idEncoder;
-    }
+        }
 
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] SiteLocationCreateUpdateDTO dto)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
+            if (!ModelState.IsValid) return BadRequest(ModelState);
             int userId = Convert.ToInt32(User.FindFirst("UserId")?.Value);
-
-            // Decode DepartmentId before sending to service
-
             var encryptedId = await _service.Create(dto, userId);
-
             return Ok(new { SiteId = encryptedId });
         }
-
 
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(string id, [FromBody] SiteLocationCreateUpdateDTO dto)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
+            if (!ModelState.IsValid) return BadRequest(ModelState);
             int userId = Convert.ToInt32(User.FindFirst("UserId")?.Value);
-
-            // Decode DepartmentId before sending to service
-
             await _service.Update(id, dto, userId);
-
             return Ok();
         }
 
@@ -81,15 +66,16 @@ namespace ProjectApp.API.Controllers.Masters.SiteLocation
             return Ok(result);
         }
 
-
         [HttpGet("search")]
         public async Task<IActionResult> Search(
-    string? search,
-    bool? isActive,
-    string sortColumn = "SiteName",
-    string sortDirection = "ASC",
-    int pageNumber = 1,
-    int pageSize = 10)
+            [FromQuery] string? search,
+            [FromQuery] bool? isActive,
+            [FromQuery] string sortColumn = "SiteName",
+            [FromQuery] string sortDirection = "ASC",
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 10,
+            [FromQuery] string? cities = null,   // NEW: "Mumbai,Surat"
+            [FromQuery] string? states = null)   // NEW: "Gujarat,Maharashtra"
         {
             var request = new SiteLocationSearchRequest
             {
@@ -98,7 +84,9 @@ namespace ProjectApp.API.Controllers.Masters.SiteLocation
                 SortColumn = sortColumn,
                 SortDirection = sortDirection,
                 PageNumber = pageNumber,
-                PageSize = pageSize
+                PageSize = pageSize,
+                Cities = cities,
+                States = states
             };
 
             var result = await _service.SearchAsync(request);

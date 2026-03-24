@@ -25,6 +25,7 @@ namespace ProjectApp.API.Extentions
             CreateMap<UserDTO, CB_User>().ReverseMap();
             CreateMap<UserResDTO, CB_User>().ReverseMap();
             CreateMap<UserUpdateDTO, CB_User>().ReverseMap();
+            CreateMap<SearchRequestDTO, CB_User>().ReverseMap();
             CreateMap<CB_Department, DepartmentResponseDTO>()
      .ForMember(dest => dest.Id, opt => opt.Ignore());
 
@@ -43,6 +44,7 @@ namespace ProjectApp.API.Extentions
             CreateMap<CB_MasterVehicleType, VehicleTypeDTO>().ReverseMap();
             CreateMap<CB_MasterVehicleType, VehicleTypeResponseDTO>().ReverseMap();
             CreateMap<CB_MasterVehicleType, VehicleTypeUpdateDTO>().ReverseMap();
+            CreateMap<CB_MasterVehicleType, VehicleTypeSearchDTO>().ReverseMap();
 
             // ================= VEHICLE MASTER =================
             CreateMap<CB_MasterVehicle, VehicleDto>().ReverseMap();

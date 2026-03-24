@@ -79,25 +79,28 @@ namespace ProjectApp.API.Controllers.Masters.VehicleType
 
         [HttpGet("Search")]
         public async Task<IActionResult> Search(
-        [FromQuery] string? searchText,
-        [FromQuery] int pageNumber = 1,
-        [FromQuery] int pageSize = 10,
-        [FromQuery] string? sortColumn = null,
-        [FromQuery] string? sortDirection = "ASC",
-        [FromQuery] bool? isActive = null)
+    [FromQuery] string? searchText,
+    [FromQuery] int pageNumber = 1,
+    [FromQuery] int pageSize = 10,
+    [FromQuery] string? sortColumn = null,
+    [FromQuery] string? sortDirection = "ASC",
+    [FromQuery] bool? isActive = null,
+    [FromQuery] string? categoryIds = null,
+    [FromQuery] string? vehicleNames = null)
         {
-            var request = new SearchRequest
+            var dto = new VehicleTypeSearchDTO
             {
                 Search = searchText,
                 PageNumber = pageNumber,
                 PageSize = pageSize,
                 SortColumn = sortColumn ?? "vehicle_type_name",
                 SortDirection = sortDirection ?? "ASC",
-                IsActive = isActive
+                IsActive = isActive,
+                CategoryIds = categoryIds,
+                VehicleNames = vehicleNames
             };
 
-            var result = await _vehicleTypeService.SearchVehicleTypesAsync(request);
-
+            var result = await _vehicleTypeService.SearchVehicleTypesAsync(dto);
             return Ok(result);
         }
 

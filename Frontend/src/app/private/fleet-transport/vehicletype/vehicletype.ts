@@ -1,21 +1,9 @@
-// import { Component } from '@angular/core';
-import { Component, OnInit, signal, effect } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { VehicletypeService } from './vehicletype-service';
-import { ToastrService } from 'ngx-toastr';
+import { VehicletypeService, VehicleType, FilterOption } from './vehicletype-service';
 import { CommonModule } from '@angular/common';
 import Swal from 'sweetalert2';
-import { ChangeDetectorRef } from '@angular/core';
-
-interface VehicleType {
-  vehicle_type_id: string;
-  vehicle_type_name: string;
-  categoryId: string;
-  categoryName: string;
-  description?: string;
-  isActive: boolean;
-}
-
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 @Component({
   selector: 'app-vehicletype',
@@ -27,74 +15,160 @@ interface VehicleType {
 export class Vehicletype implements OnInit {
 
   vehicleForm!: FormGroup;
-  searchForm!: FormGroup;
+  searchForm!:  FormGroup;
 
-  vehicleTypes = signal<VehicleType[]>([]);
-  totalRecords = signal(0);
-  totalPages = signal(1);
-  currentPage = signal(1);
-  //requestedRecords = signal(5);
-  onlyActive = signal<boolean | undefined>(true);
-  searchText = signal('');
-  refreshTrigger = signal(0);
+  // ── Table ──────────────────────────────────────────────
+  vehicleTypes    = signal<VehicleType[]>([]);
+  totalRecords    = signal(0);
+  totalPages      = signal(1);
+  currentPage     = signal(1);
   pageSizeOptions = [5, 10, 20];
-  pageSize = signal(5);
+  pageSize        = signal(5);
 
-  sortColumn = signal<string>('vehicle_type_name');
-  sortDirection = signal<'asc' | 'desc'>('asc');
+  // ── Sort / active filter ───────────────────────────────
+  onlyActive = signal<boolean | undefined>(true);
+  sortCol    = signal<string>('vehicle_type_name');
+  sortDir    = signal<'ASC' | 'DESC'>('ASC');
+
+  // ── Filter modal ───────────────────────────────────────
+  filterModalOpen     = signal(false);
+  loadingVehicleNames = signal(false);
+  loadingCategories   = signal(false);
+
+  vehicleNamesList: FilterOption[] = [];
+  categoryList:     FilterOption[] = [];
+
+  // selectedVehicleNames → plain name strings ["Bike","Bus"]
+  selectedVehicleNames: string[] = [];
+
+  // selectedCategoryIds → numeric ID strings ["1","2"]
+  // (opt.id from categoryList which maps LDV→1, MDV→2, HDV→3)
+  selectedCategoryIds: string[] = [];
+
+  vehicleNameDropOpen = false;
+  categoryDropOpen    = false;
+
+  get totalFilterCount(): number {
+    return this.selectedVehicleNames.length + this.selectedCategoryIds.length;
+  }
 
   constructor(
-    private fb: FormBuilder,
-    private service: VehicletypeService,
-    private toastr: ToastrService,
-    private cdr: ChangeDetectorRef
-  ) {
-    effect(() => {
-      //const refresh = this.refreshTrigger();
-      const page = this.currentPage();
-      const size = this.pageSize();
-      //const size = this.requestedRecords();
-      const search = this.searchText();
-      const active = this.onlyActive();  
-      //this.refreshTrigger();
-     // this.refreshTrigger.update(v => v + 1);
-      const refresh = this.refreshTrigger();
-      //this.refreshTrigger();
-
-      this.loadVehicleTypes(page, size, search, active);
-    });
-  }
+    private fb:      FormBuilder,
+    private service: VehicletypeService
+  ) {}
 
   ngOnInit(): void {
-    this.initForms();
+    this.buildForms();
+    this.loadData();
   }
 
-  initForms() {
+  // ── Forms ──────────────────────────────────────────────
+  buildForms() {
     this.vehicleForm = this.fb.group({
-      vehicle_type_id: [''],
+      vehicle_type_id:   [''],
       vehicle_type_name: ['', Validators.required],
-      categoryId: ['', Validators.required],
-      description: [''],
-      isActive: [true]
+      categoryId:        ['', Validators.required],
+      description:       ['']
     });
 
-    this.searchForm = this.fb.group({
-      searchText: ['']
-    });
+    this.searchForm = this.fb.group({ searchText: [''] });
 
-    this.searchForm.get('searchText')?.valueChanges.subscribe(val => {
-      this.searchText.set(val || '');
-      this.currentPage.set(1);
+    this.searchForm.get('searchText')!
+      .valueChanges
+      .pipe(debounceTime(400), distinctUntilChanged())
+      .subscribe(() => {
+        this.currentPage.set(1);
+        this.loadData();
+      });
+  }
+
+  // ── Load table ─────────────────────────────────────────
+  loadData() {
+    const search = this.searchForm?.get('searchText')?.value ?? '';
+
+    this.service.getPaged(
+      this.currentPage(),
+      this.pageSize(),
+      search,
+      this.onlyActive(),
+      this.sortCol(),
+      this.sortDir(),
+      this.selectedCategoryIds.length  > 0 ? this.selectedCategoryIds  : undefined,
+      this.selectedVehicleNames.length > 0 ? this.selectedVehicleNames : undefined
+    ).subscribe({
+      next: (res: any) => {
+        const rows: VehicleType[] = (res.data ?? []).map((v: any) => ({
+          vehicle_type_id:   v.vehicle_type_id,
+          vehicle_type_name: v.vehicle_type_name,
+          categoryName:      v.categoryName ?? '',
+          description:       v.description  ?? '',
+          isActive:          v.isActive,
+          entryBy:           v.entryBy
+        }));
+
+        this.vehicleTypes.set(rows);
+        this.totalRecords.set(res.totalRecords ?? rows.length);
+        this.totalPages.set(res.totalPages     ?? 1);
+      },
+      error: (err: any) => {
+        console.error('getPaged error:', err);
+        this.showToast('Failed to load vehicle types', 'error');
+      }
     });
   }
 
-  onPageSizeChange(event: any) {
-    this.pageSize.set(+event.target.value);
+  // ── Sort ───────────────────────────────────────────────
+  sort(column: string) {
+    if (this.sortCol() === column) {
+      this.sortDir.set(this.sortDir() === 'ASC' ? 'DESC' : 'ASC');
+    } else {
+      this.sortCol.set(column);
+      this.sortDir.set('ASC');
+    }
     this.currentPage.set(1);
+    this.loadData();
   }
 
+  getSortIcon(column: string): string {
+    if (this.sortCol() !== column) return '↕';
+    return this.sortDir() === 'ASC' ? '↑' : '↓';
+  }
+
+  // ── Pagination ─────────────────────────────────────────
+  onPageSizeChange(event: Event) {
+    this.pageSize.set(+(event.target as HTMLSelectElement).value);
+    this.currentPage.set(1);
+    this.loadData();
+  }
+
+  previousPage() {
+    if (this.currentPage() > 1) {
+      this.currentPage.update(p => p - 1);
+      this.loadData();
+    }
+  }
+
+  nextPage() {
+    if (this.currentPage() < this.totalPages()) {
+      this.currentPage.update(p => p + 1);
+      this.loadData();
+    }
+  }
+
+  // ── Active toggle ──────────────────────────────────────
+  onActiveFilterChange(event: Event) {
+    const checked = (event.target as HTMLInputElement).checked;
+    this.onlyActive.set(checked ? true : false);
+    this.currentPage.set(1);
+    this.loadData();
+  }
+
+  // ── Filter modal ───────────────────────────────────────
   openFilterModal() {
     this.filterModalOpen.set(true);
+    this.vehicleNameDropOpen = false;
+    this.categoryDropOpen    = false;
+    this.loadFilterOptions();
   }
 
   closeFilterModal() {
@@ -103,610 +177,196 @@ export class Vehicletype implements OnInit {
 
   applyFilter() {
     this.currentPage.set(1);
-    this.refreshTrigger.update(x => x + 1);
     this.closeFilterModal();
+    this.loadData();
   }
-onActiveFilterChange(event: Event) {
-  const checked = (event.target as HTMLInputElement).checked;
-  this.onlyActive.set(checked ? true : false);  // true=active, false=inactive
-  this.currentPage.set(1);
-  this.refreshTrigger.update(v => v + 1);
-}
 
   resetFilter() {
-    this.filter.set({
-      categoryIds: [],
-      vehicleNames: []
-    });
-
+    this.selectedVehicleNames = [];
+    this.selectedCategoryIds  = [];
     this.currentPage.set(1);
-    this.refreshTrigger.update(x => x + 1);
+    this.closeFilterModal();
+    this.loadData();
   }
 
-  get startRecord(): number {
-    if (this.totalRecords() === 0) return 0;
-    return (this.currentPage() - 1) * this.pageSize() + 1;
-  }
+  // ── Load filter options (from getAll) ──────────────────
+  loadFilterOptions() {
+    this.loadingVehicleNames.set(true);
+    this.loadingCategories.set(true);
 
-  get endRecord(): number {
-    const end = this.currentPage() * this.pageSize();
-    return end > this.totalRecords() ? this.totalRecords() : end;
-  }
-
-loadVehicleTypes(page: number, size: number, search: string, active?: boolean) {
-
-   this.service.getPaged(
-      page,
-      size,
-      search,
-      active,
-      this.sortColumn(),
-      this.sortDirection()
-    ).subscribe({
+    this.service.getFilterOptions().subscribe({
       next: (res: any) => {
-
-        console.log('API RESPONSE:', res);
-
-        // If API returns: { data: [], totalRecords, totalPages }
-
-        const list = res.data || res;
-
-        const mapped = (list.data || list).map((v: any) => ({
-          vehicle_type_id: v.vehicle_type_id,
-          vehicle_type_name: v.vehicle_type_name,
-          categoryId: v.categoryId,
-          categoryName: v.categoryName,
-          description: v.description,
-          isActive: v.isActive
-        }));
-
-
-        //let filtered = mapped;
-        let filtered: VehicleType[] = mapped;
-
-        const f = this.filter();
-
-        // Category filter
-        if (f.categoryIds.length > 0) {
-          filtered = filtered.filter(v =>
-            f.categoryIds.includes(String(v.categoryId))
-          );
-        }
-
-        // Vehicle Name filter
-        if (f.vehicleNames.length > 0) {
-          filtered = filtered.filter(v =>
-            f.vehicleNames.includes(v.vehicle_type_name)
-          );
-        }
-
-        const selectedCategories = this.filter().categoryIds;
-
-        if (selectedCategories.length > 0) {
-          filtered = filtered.filter((v: VehicleType) =>
-            selectedCategories.includes(String(v.categoryId))
-          );
-        }
-
-        //this.vehicleTypes.set(filtered);
-        this.vehicleTypes.set([...filtered]);
-
-        this.totalRecords.set(res.totalRecords);
-        this.totalPages.set(res.totalPages);
-        // this.totalRecords.set(filtered.length);
-        // this.totalPages.set(Math.ceil(filtered.length / size) || 1);
+        this.vehicleNamesList = res.vehicleNames ?? [];
+        this.categoryList     = res.categories   ?? [];
+        this.loadingVehicleNames.set(false);
+        this.loadingCategories.set(false);
       },
-      error: (err) => {
-        console.error(err);
-        //this.toastr.error('Failed to load vehicle types');
-        this.showToast('Failed to load vehicle types', 'error');
+      error: () => {
+        this.loadingVehicleNames.set(false);
+        this.loadingCategories.set(false);
+        this.showToast('Failed to load filter options', 'error');
       }
     });
   }
 
-  filterModalOpen = signal(false);
+  // ── Vehicle Name helpers ───────────────────────────────
+  toggleVehicleName(value: string) {
+    const i = this.selectedVehicleNames.indexOf(value);
+    if (i > -1) this.selectedVehicleNames.splice(i, 1);
+    else        this.selectedVehicleNames.push(value);
+    this.selectedVehicleNames = [...this.selectedVehicleNames];
+  }
 
-  filter = signal({
-    categoryIds: [] as string[],
-    vehicleNames: [] as string[]
-  });
+  isVehicleNameSelected(value: string): boolean {
+    return this.selectedVehicleNames.includes(value);
+  }
 
+  toggleAllVehicleNames() {
+    this.selectedVehicleNames =
+      this.selectedVehicleNames.length === this.vehicleNamesList.length
+        ? []
+        : this.vehicleNamesList.map(x => x.value);
+  }
+
+  removeVehicleName(value: string) {
+    this.selectedVehicleNames = this.selectedVehicleNames.filter(v => v !== value);
+  }
+
+  // ── Category helpers (uses opt.id = numeric string) ────
   toggleCategory(id: string) {
-    const selected = [...this.filter().categoryIds];
-    const index = selected.indexOf(id);
-
-    if (index > -1) {
-      selected.splice(index, 1);
-    } else {
-      selected.push(id);
-    }
-
-    this.filter.update(f => ({ ...f, categoryIds: selected }));
-  }
-
-  toggleVehicle(name: string) {
-    const selected = [...this.filter().vehicleNames];
-    const index = selected.indexOf(name);
-
-    if (index > -1) {
-      selected.splice(index, 1);
-    } else {
-      selected.push(name);
-    }
-
-    this.filter.update(f => ({ ...f, vehicleNames: selected }));
-  }
-
-  isVehicleSelected(name: string): boolean {
-    return this.filter().vehicleNames.includes(name);
+    const i = this.selectedCategoryIds.indexOf(id);
+    if (i > -1) this.selectedCategoryIds.splice(i, 1);
+    else        this.selectedCategoryIds.push(id);
+    this.selectedCategoryIds = [...this.selectedCategoryIds];
   }
 
   isCategorySelected(id: string): boolean {
-    return this.filter().categoryIds.includes(id);
+    return this.selectedCategoryIds.includes(id);
   }
 
-
-  sort(column: string) {
-
-  if (this.sortColumn() === column) {
-    this.sortDirection.set(
-      this.sortDirection() === 'asc' ? 'desc' : 'asc'
-    );
-  } else {
-    this.sortColumn.set(column);
-    this.sortDirection.set('asc');
+  toggleAllCategories() {
+    this.selectedCategoryIds =
+      this.selectedCategoryIds.length === this.categoryList.length
+        ? []
+        : this.categoryList.map(x => x.id);
   }
 
-  this.currentPage.set(1);
-  this.refreshTrigger.update(v => v + 1);
-}
+  removeCategory(id: string) {
+    this.selectedCategoryIds = this.selectedCategoryIds.filter(v => v !== id);
+  }
 
-  showToast(title: string, icon: 'success' | 'error' = 'success') {
-  Swal.fire({
-    toast: true,
-    position: 'top-end',
-    icon: icon,
-    title: title,
-    showConfirmButton: false,
-    timer: 2000,
-    timerProgressBar: true
-  });
-}
+  // Returns display label for a category id (used in chips)
+  getCategoryLabel(id: string): string {
+    return this.categoryList.find(x => x.id === id)?.value ?? id;
+  }
 
-      submit() {
+  // ── CRUD ───────────────────────────────────────────────
+  submit() {
+    if (this.vehicleForm.invalid) {
+      this.vehicleForm.markAllAsTouched();
+      return;
+    }
 
-  if (this.vehicleForm.invalid) return;
+    const data     = this.vehicleForm.value;
+    const isCreate = !data.vehicle_type_id || data.vehicle_type_id === '';
+    const req$     = isCreate
+      ? this.service.create(data)
+      : this.service.update(data);
 
-  const data = this.vehicleForm.value;
-  const isCreate = !data.vehicle_type_id || data.vehicle_type_id === '';
-
-  const request$ = isCreate
-    ? this.service.create(data)
-    : this.service.update(data);
-
-  request$.subscribe({
-
-    next: (res: any) => {
-
-      console.log("SUCCESS RESPONSE:", res);
-
-      this.showToast(
-        isCreate
-          ? 'Vehicle Type created successfully'
-          : 'Vehicle Type updated successfully',
-        'success'
-      );
-
-      this.refreshTrigger.update(v => v + 1);
-      this.resetForm();
-    },
-
-    error: (err) => {
-
-      console.log("ERROR RESPONSE:", err);
-
-      // 🔥 sometimes backend returns success inside error
-      if (err.status === 200 || err.status === 204) {
-
+    req$.subscribe({
+      next: () => {
         this.showToast(
-          isCreate
-            ? 'Vehicle Type created successfully'
-            : 'Vehicle Type updated successfully',
+          isCreate ? 'Vehicle Type created successfully' : 'Vehicle Type updated successfully',
           'success'
         );
-
-        this.refreshTrigger.update(v => v + 1);
         this.resetForm();
-        return;
+        this.loadData();
+      },
+      error: (err: any) => {
+        if (err.status === 200 || err.status === 204) {
+          this.showToast(
+            isCreate ? 'Vehicle Type created successfully' : 'Vehicle Type updated successfully',
+            'success'
+          );
+          this.resetForm();
+          this.loadData();
+          return;
+        }
+        this.showToast(isCreate ? 'Create failed' : 'Update failed', 'error');
       }
-
-      this.showToast(
-        isCreate
-          ? 'Create failed'
-          : 'Update failed',
-        'error'
-      );
-    }
-
-  });
-
-}
-
-//     submit() {
-
-//   if (this.vehicleForm.invalid) return;
-
-//   const data = this.vehicleForm.value;
-//   const isCreate = !data.vehicle_type_id || data.vehicle_type_id === '';
-
-//   const request$ = isCreate
-//     ? this.service.create(data)
-//     : this.service.update(data);
-
-//   request$.subscribe({
-
-//     next: (res: any) => {
-
-//       console.log("API RESPONSE:", res);
-
-//       // always treat success
-//       this.showToast(
-//         isCreate
-//           ? 'Vehicle Type created successfully'
-//           : 'Vehicle Type updated successfully',
-//         'success'
-//       );
-
-//       //  refresh table
-//       this.refreshTrigger.update(v => v + 1);
-
-//       // reset form
-//       this.resetForm();
-//     },
-
-//     error: (err) => {
-
-//       console.error("API ERROR:", err);
-
-//       this.showToast(
-//         isCreate
-//           ? 'Create failed'
-//           : 'Update failed',
-//         'error'
-//       );
-//     }
-
-//   });
-// }
-//     submit() {
-
-//   if (this.vehicleForm.invalid) return;
-
-//   const data = this.vehicleForm.value;
-
-//   const isCreate = !data.vehicle_type_id || data.vehicle_type_id === '';
-
-//   const request$ = isCreate
-//     ? this.service.create(data)
-//     : this.service.update(data);
-
-//   request$.subscribe({
-//     next: (res) => {
-
-//       console.log("API SUCCESS:", res);
-
-//       if (isCreate) {
-//         this.showToast('Vehicle Type created successfully', 'success');
-//       } else {
-//         this.showToast('Vehicle Type updated successfully', 'success');
-//       }
-
-//       this.refreshTrigger.update(v => v + 1);
-
-//       this.resetForm();
-//     },
-
-//     error: (err) => {
-
-//       console.error("API ERROR:", err);
-
-//       if (isCreate) {
-//         this.showToast('Create failed', 'error');
-//       } else {
-//         this.showToast('Update failed', 'error');
-//       }
-//     }
-//   });
-// }
-
-//     submit() {
-
-//   if (this.vehicleForm.invalid) return;
-
-//   const data = this.vehicleForm.value;
-//   //const isCreate = !data.vehicle_type_id;
-//    const isCreate = !data.vehicle_type_id || data.vehicle_type_id === '';
-
-//   const request$ = isCreate
-//     ? this.service.create(data)
-//     : this.service.update(data);
-
-//   request$.subscribe({
-//     next: () => {
-
-//       // ✅ SweetAlert toast
-//       this.showToast(
-//         isCreate
-//           ? 'Vehicle Type created successfully'
-//           : 'Vehicle Type updated successfully',
-//         'success'
-//       );
-
-//       this.refreshTrigger.update(v => v + 1);
-//       this.resetForm();
-//     },
-
-//     error: () => {
-//       this.showToast(
-//         isCreate
-//           ? 'Create failed'
-//           : 'Update failed',
-//         'error'
-//       );
-//     }
-//   });
-// }
-
-//     submit() {
-
-//   if (this.vehicleForm.invalid) return;
-
-//   const data = this.vehicleForm.value;
-//   const isCreate = !data.vehicle_type_id;
-
-//   const request$ = isCreate
-//     ? this.service.create(data)
-//     : this.service.update(data);
-
-//   request$.subscribe({
-//     next: () => {
-
-//       // ✅ toast message
-//       this.toastr.success(
-//         isCreate
-//           ? 'Vehicle Type created successfully'
-//           : 'Vehicle Type updated successfully'
-//       );
-
-//       // ✅ trigger reload (IMPORTANT)
-//       this.refreshTrigger.update(v => v + 1);
-
-//       // ✅ reset form
-//       this.resetForm();
-//     },
-
-//     error: () => {
-//       this.toastr.error(
-//         isCreate
-//           ? 'Create failed'
-//           : 'Update failed'
-//       );
-//     }
-//   });
-// }
-
-//   submit() {
-
-//     if (this.vehicleForm.invalid) return;
-
-//     const data = this.vehicleForm.value;
-//     const isCreate = !data.vehicle_type_id;
-
-//     const obs = isCreate
-//       ? this.service.create(data)
-//       : this.service.update(data);
-
-//     obs.subscribe({
-//       next: () => {
-
-//   this.toastr.success(
-//     isCreate
-//       ? 'Vehicle Type created successfully'
-//       : 'Vehicle Type updated successfully'
-//   );
-
-//   // refresh list immediately
-//   this.refreshTrigger.update(v => v + 1);
-
-//   // reset form
-//   this.resetForm();
-
-// },
-//       // next: () => {
-
-//       //   // show correct message
-//       //   this.toastr.success(
-//       //     isCreate ? 'Vehicle Type created successfully'
-//       //       : 'Vehicle Type updated successfully'
-//       //   );
-
-//       //   // delay refresh slightly so toastr can render
-//       //   setTimeout(() => {
-//       //     this.refreshTrigger.update(v => v + 1);
-//       //     this.resetForm();
-//       //   }, 100);
-
-//       // },
-//       error: () => {
-//         this.toastr.error(
-//           isCreate ? 'Create failed' : 'Update failed'
-//         );
-//       }
-//     });
-//   }
-  // submit() {
-
-  //   if (this.vehicleForm.invalid) return;
-
-  //   const data = this.vehicleForm.value;
-  //   const isCreate = !data.vehicle_type_id;
-
-  //   const obs = isCreate
-  //     ? this.service.create(data)
-  //     : this.service.update(data);
-
-  //   obs.subscribe({
-  //     next: () => {
-  //       this.toastr.success('Saved successfully');
-  //       this.refreshTrigger.update(v => v + 1);
-  //       this.resetForm();
-  //     },
-  //     error: () => this.toastr.error('Save failed')
-  //   });
-  // }
-
-  // edit(v: VehicleType) {
-  //   this.vehicleForm.patchValue(v);
-  // }
+    });
+  }
 
   edit(v: VehicleType) {
-
-    console.log(v);
-
     this.vehicleForm.patchValue({
-      vehicle_type_id: v.vehicle_type_id,
+      vehicle_type_id:   v.vehicle_type_id,
       vehicle_type_name: v.vehicle_type_name,
-      categoryId: v.categoryId,   //  now dropdown selects
-      categoryName: v.categoryName,
-      description: v.description,
-      isActive: v.isActive
+      categoryId:        '',
+      description:       v.description
     });
-
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-    deleteUI(v: VehicleType) {
-
-  Swal.fire({
-    title: 'Are you sure?',
-    text: 'This will delete the vehicle type!',
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonText: 'Yes, Delete'
-  }).then(result => {
-
-    if (result.isConfirmed) {
-
+  deleteUI(v: VehicleType) {
+    Swal.fire({
+      title: 'Are you sure?',
+      text:  `Delete "${v.vehicle_type_name}"?`,
+      icon:  'warning',
+      showCancelButton:   true,
+      confirmButtonText:  'Yes, Delete',
+      confirmButtonColor: '#c92a2a'
+    }).then(result => {
+      if (!result.isConfirmed) return;
       this.service.delete(v.vehicle_type_id).subscribe({
-
-        next: () => {
-
-          // ✅ SUCCESS
-          this.showToast('Vehicle Type deleted successfully', 'success');
-
-          this.refreshTrigger.update(x => x + 1);
-        },
-
-        error: (err) => {
-
-          console.log("DELETE ERROR:", err);
-
-          // ⚠️ Some APIs return 204 → Angular enters error block
+        next: () => { this.showToast('Deleted successfully', 'success'); this.loadData(); },
+        error: (err: any) => {
           if (err.status === 200 || err.status === 204) {
-
-            this.showToast('Vehicle Type deleted successfully', 'success');
-
-            this.refreshTrigger.update(x => x + 1);
-            return;
+            this.showToast('Deleted successfully', 'success'); this.loadData(); return;
           }
-
-          // ❌ real error
           this.showToast('Delete failed', 'error');
         }
-
       });
-
-    }
-
-  });
-
-}
-
-  // deleteUI(v: VehicleType) {
-  //   Swal.fire({
-  //     title: 'Are you sure?',
-  //     text: 'This will delete the vehicle type!',
-  //     icon: 'warning',
-  //     showCancelButton: true
-  //   }).then(result => {
-  //     if (result.isConfirmed) {
-  //       this.service.delete(v.vehicle_type_id).subscribe(() => {
-  //         this.refreshTrigger.update(x => x + 1);
-  //         Swal.fire('Deleted!', '', 'success');
-  //       });
-  //     }
-  //   });
-  // }
-
-  toggleActive(v: VehicleType) {
-
-    const newStatus = !v.isActive;
-
-    Swal.fire({
-      title: 'Change status?',
-      icon: 'warning',
-      showCancelButton: true
-    }).then(result => {
-
-      if (result.isConfirmed) {
-
-        this.service.toggleActive(v.vehicle_type_id).subscribe(() => {
-
-          this.vehicleTypes.update(list =>
-            list.map(x =>
-              x.vehicle_type_id === v.vehicle_type_id
-                ? { ...x, isActive: newStatus }
-                : x
-            )
-          );
-
-          Swal.fire('Updated!', '', 'success');
-        });
-      }
     });
   }
 
-  // resetForm() {
-  //   this.vehicleForm.reset({
-  //     vehicle_type_id: '',
-  //     vehicle_type_name: '',
-  //     categoryId: '',
-  //     description: '',
-  //     isActive: true
-  //   });
-  // }
-  resetForm() {
-  this.vehicleForm.reset();
-
-  this.vehicleForm.patchValue({
-    vehicle_type_id: '',
-    vehicle_type_name: '',
-    categoryId: '',
-    description: '',
-    isActive: true
-  });
-}
-
-getSortIcon(column: string): string {
-  if (this.sortColumn() !== column) return '↕';
-  return this.sortDirection() === 'asc' ? '↑' : '↓';
-}
-  previousPage() {
-    if (this.currentPage() > 1)
-      this.currentPage.set(this.currentPage() - 1);
+  toggleActive(v: VehicleType) {
+    Swal.fire({
+      title: `${v.isActive ? 'Deactivate' : 'Activate'} "${v.vehicle_type_name}"?`,
+      icon: 'warning', showCancelButton: true, confirmButtonText: 'Yes'
+    }).then(result => {
+      if (!result.isConfirmed) return;
+      this.service.toggleActive(v.vehicle_type_id).subscribe({
+        next: () => {
+          this.vehicleTypes.update(list =>
+            list.map(x => x.vehicle_type_id === v.vehicle_type_id
+              ? { ...x, isActive: !x.isActive } : x)
+          );
+          this.showToast('Status updated', 'success');
+        },
+        error: (err: any) => {
+          if (err.status === 200 || err.status === 204) {
+            this.vehicleTypes.update(list =>
+              list.map(x => x.vehicle_type_id === v.vehicle_type_id
+                ? { ...x, isActive: !x.isActive } : x)
+            );
+            this.showToast('Status updated', 'success');
+          }
+        }
+      });
+    });
   }
 
-  nextPage() {
-    if (this.currentPage() < this.totalPages())
-      this.currentPage.set(this.currentPage() + 1);
+  resetForm() {
+    this.vehicleForm.reset({
+      vehicle_type_id: '', vehicle_type_name: '',
+      categoryId: '', description: ''
+    });
+  }
+
+  showToast(title: string, icon: 'success' | 'error' = 'success') {
+    Swal.fire({
+      toast: true, position: 'top-end', icon, title,
+      showConfirmButton: false, timer: 2500, timerProgressBar: true
+    });
   }
 }

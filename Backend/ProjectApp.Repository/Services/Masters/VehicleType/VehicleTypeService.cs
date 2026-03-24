@@ -308,9 +308,31 @@ namespace ProjectApp.Repository.Services.Masters.VehicleType
             return true;
         }
 
-        public async Task<PageResult> SearchVehicleTypesAsync(SearchRequest request)
+        public async Task<PageResult> SearchVehicleTypesAsync(VehicleTypeSearchDTO dto)
         {
-            var parameters = SpParameterBuilder.BuildSearchParams(request);
+            var parameters = new List<SqlParameter>
+    {
+        new SqlParameter("@Search",
+            string.IsNullOrWhiteSpace(dto.Search)
+                ? (object)DBNull.Value : dto.Search),
+
+        new SqlParameter("@IsActive",
+            dto.IsActive.HasValue
+                ? (object)dto.IsActive.Value : DBNull.Value),
+
+        new SqlParameter("@PageNumber",    dto.PageNumber),
+        new SqlParameter("@PageSize",      dto.PageSize),
+        new SqlParameter("@SortColumn",    dto.SortColumn),
+        new SqlParameter("@SortDirection", dto.SortDirection),
+
+        new SqlParameter("@CategoryIds",
+            string.IsNullOrWhiteSpace(dto.CategoryIds)
+                ? (object)DBNull.Value : dto.CategoryIds),
+
+        new SqlParameter("@VehicleNames",
+            string.IsNullOrWhiteSpace(dto.VehicleNames)
+                ? (object)DBNull.Value : dto.VehicleNames),
+    };
 
             var connection = _context.Database.GetDbConnection();
             await connection.OpenAsync();
@@ -319,32 +341,27 @@ namespace ProjectApp.Repository.Services.Masters.VehicleType
             command.CommandText = "USP_CB_VehicleTypeSearch";
             command.CommandType = System.Data.CommandType.StoredProcedure;
 
-            foreach (var param in parameters)
-                command.Parameters.Add(param);
+            foreach (var p in parameters)
+                command.Parameters.Add(p);
 
             using var reader = await command.ExecuteReaderAsync();
 
             int totalRecords = 0;
-
             if (await reader.ReadAsync())
                 totalRecords = reader.GetInt32(0);
 
             await reader.NextResultAsync();
 
             var list = new List<VehicleTypeResponseDTO>();
-
             while (await reader.ReadAsync())
             {
                 list.Add(new VehicleTypeResponseDTO
                 {
-                    vehicle_type_id = _idEncoder.Encode(
-                        Convert.ToInt32(reader["VehicleTypeId"])),
-
+                    vehicle_type_id = _idEncoder.Encode(Convert.ToInt32(reader["VehicleTypeId"])),
                     vehicle_type_name = reader["VehicleTypeName"]?.ToString(),
                     CategoryName = reader["CategoryName"]?.ToString(),
                     description = reader["description"] == DBNull.Value
-                                    ? null
-                                    : reader["description"].ToString(),
+                                            ? null : reader["description"].ToString(),
                     IsActive = Convert.ToBoolean(reader["IsActive"]),
                     EntryBy = Convert.ToInt32(reader["EntryBy"])
                 });
@@ -356,8 +373,8 @@ namespace ProjectApp.Repository.Services.Masters.VehicleType
             {
                 Data = list,
                 TotalRecords = totalRecords,
-                CurrentPage = request.PageNumber,
-                TotalPages = (int)Math.Ceiling((double)totalRecords / request.PageSize)
+                CurrentPage = dto.PageNumber,
+                TotalPages = (int)Math.Ceiling((double)totalRecords / dto.PageSize)
             };
         }
 

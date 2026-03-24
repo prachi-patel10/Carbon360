@@ -27,18 +27,15 @@ namespace ProjectApp.Repository.Services.SiteLocation
         {
             var parameters = new[]
             {
-            new SqlParameter("@SiteName", dto.SiteName),
-            new SqlParameter("@BuildingName", dto.BuildingName ?? (object)DBNull.Value),
-            new SqlParameter("@City", dto.City ?? (object)DBNull.Value),
-            new SqlParameter("@State", dto.State ?? (object)DBNull.Value),
-            new SqlParameter("@ShortCode", dto.ShortCode),
-            new SqlParameter("@EntryBy", userId)
-        };
+                new SqlParameter("@SiteName",     dto.SiteName),
+                new SqlParameter("@BuildingName", dto.BuildingName ?? (object)DBNull.Value),
+                new SqlParameter("@City",         dto.City        ?? (object)DBNull.Value),
+                new SqlParameter("@State",        dto.State       ?? (object)DBNull.Value),
+                new SqlParameter("@ShortCode",    dto.ShortCode),
+                new SqlParameter("@EntryBy",      userId)
+            };
 
-            var result = await _spService.ExecuteSpAsync(
-                "USP_CB_CreateSiteLocation",
-                parameters
-            );
+            var result = await _spService.ExecuteSpAsync("USP_CB_CreateSiteLocation", parameters);
 
             var data = (result["Data"] as IEnumerable<object>)
                         ?.Cast<Dictionary<string, object>>()
@@ -58,19 +55,16 @@ namespace ProjectApp.Repository.Services.SiteLocation
 
             var parameters = new[]
             {
-            new SqlParameter("@SiteId", id),
-            new SqlParameter("@SiteName", dto.SiteName),
-            new SqlParameter("@BuildingName", dto.BuildingName ?? (object)DBNull.Value),
-            new SqlParameter("@City", dto.City ?? (object)DBNull.Value),
-            new SqlParameter("@State", dto.State ?? (object)DBNull.Value),
-            new SqlParameter("@ShortCode", dto.ShortCode),
-            new SqlParameter("@UpdatedBy", userId)
-        };
+                new SqlParameter("@SiteId",       id),
+                new SqlParameter("@SiteName",     dto.SiteName),
+                new SqlParameter("@BuildingName", dto.BuildingName ?? (object)DBNull.Value),
+                new SqlParameter("@City",         dto.City        ?? (object)DBNull.Value),
+                new SqlParameter("@State",        dto.State       ?? (object)DBNull.Value),
+                new SqlParameter("@ShortCode",    dto.ShortCode),
+                new SqlParameter("@UpdatedBy",    userId)
+            };
 
-            await _spService.ExecuteSpAsync(
-                "USP_CB_UpdateSiteLocation",
-                parameters
-            );
+            await _spService.ExecuteSpAsync("USP_CB_UpdateSiteLocation", parameters);
         }
 
         // ================= DELETE =================
@@ -128,15 +122,28 @@ namespace ProjectApp.Repository.Services.SiteLocation
         {
             var parameters = new[]
             {
-            new SqlParameter("@Search", request.Search ?? (object)DBNull.Value),
-            //new SqlParameter("@FilterColumn", request.FilterColumn ?? (object)DBNull.Value),
-            //new SqlParameter("@FilterValue", request.FilterValue ?? (object)DBNull.Value),
-            new SqlParameter("@IsActive", request.IsActive ?? (object)DBNull.Value),
-            new SqlParameter("@PageNumber", request.PageNumber),
-            new SqlParameter("@PageSize", request.PageSize),
-            new SqlParameter("@SortColumn", request.SortColumn),
-            new SqlParameter("@SortDirection", request.SortDirection)
-        };
+                new SqlParameter("@Search",
+                    string.IsNullOrWhiteSpace(request.Search)
+                        ? (object)DBNull.Value : request.Search),
+
+                new SqlParameter("@IsActive",
+                    request.IsActive.HasValue
+                        ? (object)request.IsActive.Value : DBNull.Value),
+
+                new SqlParameter("@PageNumber",    request.PageNumber),
+                new SqlParameter("@PageSize",      request.PageSize),
+                new SqlParameter("@SortColumn",    request.SortColumn),
+                new SqlParameter("@SortDirection", request.SortDirection),
+
+                // NEW filter params
+                new SqlParameter("@Cities",
+                    string.IsNullOrWhiteSpace(request.Cities)
+                        ? (object)DBNull.Value : request.Cities),
+
+                new SqlParameter("@States",
+                    string.IsNullOrWhiteSpace(request.States)
+                        ? (object)DBNull.Value : request.States),
+            };
 
             var result = await _spService.ExecuteSpAsync("USP_CB_SearchSiteLocation", parameters);
 
@@ -165,27 +172,25 @@ namespace ProjectApp.Repository.Services.SiteLocation
         {
             int GetInt(string key) =>
                 row.ContainsKey(key) && row[key] != DBNull.Value
-                ? Convert.ToInt32(row[key])
-                : 0;
+                    ? Convert.ToInt32(row[key]) : 0;
 
             string GetString(string key)
             {
-                var foundKey = row.Keys.FirstOrDefault(k => string.Equals(k, key, StringComparison.OrdinalIgnoreCase));
+                var foundKey = row.Keys.FirstOrDefault(
+                    k => string.Equals(k, key, StringComparison.OrdinalIgnoreCase));
                 return foundKey != null && row[foundKey] != DBNull.Value
-                       ? row[foundKey].ToString()!
-                       : "N/A";
+                    ? row[foundKey].ToString()! : "N/A";
             }
 
             bool GetBool(string key) =>
                 row.ContainsKey(key) && row[key] != DBNull.Value
                 && Convert.ToBoolean(row[key]);
 
-
             int siteId = GetInt("SiteId");
 
             return new SiteLocationResponseDTO
             {
-                Id = siteId,   // ADD THIS LINE
+                Id = siteId,
                 SiteId = _idEncoder.Encode(siteId),
                 SiteName = GetString("SiteName"),
                 BuildingName = GetString("BuildingName"),
@@ -195,8 +200,8 @@ namespace ProjectApp.Repository.Services.SiteLocation
                 IsActive = GetBool("IsActive")
             };
         }
-             
-     
+
+        // ================= GET SITE NAME BY ID =================
         public async Task<string?> GetSiteNameByIdAsync(int siteId)
         {
             var result = await _spService.ExecuteSpAsync(
@@ -213,6 +218,8 @@ namespace ProjectApp.Repository.Services.SiteLocation
 
             return null;
         }
+
+        // ================= GET DEPARTMENTS =================
         public async Task<List<object>> GetDepartments()
         {
             var result = await _spService.ExecuteSpAsync("USP_CB_DepartmentGetAll");
@@ -229,6 +236,5 @@ namespace ProjectApp.Repository.Services.SiteLocation
 
             return dataList;
         }
-
     }
 }

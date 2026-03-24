@@ -6,6 +6,8 @@ using ProjectApp.Core.DTOs.Account.User;
 using ProjectApp.Repository.Interfaces.User;
 using ProjectApp.Core.Entities;
 using ProjectApp.Repository.Utilities.SP;
+using Microsoft.Data.SqlClient;
+using ProjectApp.Repository.Utilities.Auth;
 
 namespace ProjectApp.API.Controllers.Account.User
 {
@@ -181,25 +183,30 @@ namespace ProjectApp.API.Controllers.Account.User
 
         [HttpGet("Search")]
         public async Task<ActionResult<APIResponse>> SearchUsers(
-    [FromQuery] string? searchText,
-    [FromQuery] int pageNumber = 1,
-    [FromQuery] int pageSize = 10,
-    [FromQuery] string? sortColumn = null,
-    [FromQuery] string? sortDirection = "asc",
-    [FromQuery] bool? isActive = null
-)
+             [FromQuery] string? searchText,
+             [FromQuery] int pageNumber = 1,
+             [FromQuery] int pageSize = 10,
+             [FromQuery] string? sortColumn = null,
+             [FromQuery] string? sortDirection = "asc",
+             [FromQuery] bool? isActive = null,
+             [FromQuery] string? departmentIds = null,  // ← NEW
+             [FromQuery] string? roleIds = null   // ← NEW
+         )
         {
             var response = new APIResponse();
             try
             {
-                var request = new SearchRequest
+                // ← Build SearchRequestDTO (not SearchRequest) — no ambiguity
+                var request = new SearchRequestDTO
                 {
                     Search = searchText,
                     PageNumber = pageNumber,
                     PageSize = pageSize,
                     SortColumn = sortColumn,
                     SortDirection = sortDirection,
-                    IsActive = isActive
+                    IsActive = isActive,
+                    DepartmentIds = departmentIds,
+                    RoleIds = roleIds
                 };
 
                 var (users, totalRecords) = await _userService.SearchUsersPaginatedAsync(request);
@@ -212,14 +219,13 @@ namespace ProjectApp.API.Controllers.Account.User
                     TotalPages = (int)Math.Ceiling(totalRecords / (double)pageSize)
                 };
                 response.status = true;
-                response.StatusCode = System.Net.HttpStatusCode.OK;
-
+                response.StatusCode = HttpStatusCode.OK;
                 return Ok(response);
             }
             catch (Exception ex)
             {
                 response.status = false;
-                response.StatusCode = System.Net.HttpStatusCode.InternalServerError;
+                response.StatusCode = HttpStatusCode.InternalServerError;
                 response.Errors.Add(ex.Message);
                 return StatusCode(500, response);
             }

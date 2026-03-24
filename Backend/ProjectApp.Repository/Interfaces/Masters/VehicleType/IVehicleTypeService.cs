@@ -24,7 +24,7 @@ namespace ProjectApp.Repository.Interfaces.Masters.VehicleType
 
         Task<bool> UpdateStatusAsync(VehicleTypeStatusUpdateDTO dto);
 
-        Task<PageResult> SearchVehicleTypesAsync(SearchRequest request);
+        Task<PageResult> SearchVehicleTypesAsync(VehicleTypeSearchDTO dto);
         Task<bool> ToggleStatusAsync(string encryptedId);
         //Task<VehicleTypeResponseDTO> GetVehicleTypeByNameAsync(string name);
     }
