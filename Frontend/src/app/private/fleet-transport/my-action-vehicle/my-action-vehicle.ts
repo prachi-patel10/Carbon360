@@ -7,6 +7,7 @@ import { Router } from '@angular/router';
 interface VehicleTripDisplay extends VehicleTrip {
 
   vehicleNumber: string
+   reportId: string
   fromCity: string
   toCity: string
   status: string

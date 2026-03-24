@@ -14,6 +14,9 @@
               <th (click)="sort('vehicleNumber')" class="sortable">
                 Vehicle No. <span class="sort-icon">{{ getSortIcon('vehicleNumber') }}</span>
               </th>
+              <th (click)="sort('reportId')" class="sortable">
+  Report ID <span class="sort-icon">{{ getSortIcon('reportId') }}</span>
+</th>
               <th (click)="sort('fromCity')" class="sortable">
                 Route <span class="sort-icon">{{ getSortIcon('fromCity') }}</span>
               </th>
@@ -36,7 +39,7 @@
           <tbody>
             <tr *ngFor="let e of trips()">
               <td>{{ e.vehicleNumber }}</td>
-
+<td>{{ e.reportId }}</td>
               <td>{{ e.fromCity }} - {{ e.toCity }}</td>
 
               <!-- <td>{{ e.tripStartDateTime | date:'short' }}</td>

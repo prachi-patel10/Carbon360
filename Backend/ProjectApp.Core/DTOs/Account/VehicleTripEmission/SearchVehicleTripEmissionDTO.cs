@@ -9,6 +9,7 @@ namespace ProjectApp.Core.DTOs.Account.VehicleTripEmission
     public class SearchVehicleTripEmissionDTO
     {
         public string? TripId { get; set; }
+        public string ReportId { get; set; }
         public string? VehicleNumber { get; set; }
         public string? VehicleType { get; set; }
         public string? FuelType { get; set; }

@@ -8,6 +8,7 @@ namespace ProjectApp.Core.DTOs.Account.VehicleTripEmission
 {
     public class ResponseVehicleTripEmissionDTO
     {
+        public string ReportId { get; set; }
         public string TripId { get; set; }
         public string VehicleId { get; set; }
         public string FromCityId { get; set; }

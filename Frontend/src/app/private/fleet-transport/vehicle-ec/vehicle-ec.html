@@ -38,7 +38,7 @@
                 <path d="M9 17h6"></path>
                 <circle cx="17" cy="17" r="2"></circle>
               </svg>
-              <select formControlName="vehicle_id"
+              <select formControlName="vehicle_id" [disabled]="mode === 'edit'"
                 [ngClass]="{'invalid': tripForm.get('vehicle_id')?.touched && tripForm.get('vehicle_id')?.invalid}">
                 <option value="">Select Vehicle</option>
                 <option *ngFor="let v of vehicles" [value]="v.vehicle_id">
@@ -64,7 +64,7 @@
                 <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path>
                 <circle cx="12" cy="10" r="3"></circle>
               </svg>
-              <select formControlName="fromCityId"
+              <select formControlName="fromCityId" [disabled]="mode === 'edit'"
                 [ngClass]="{'invalid': tripForm.get('fromCityId')?.touched && tripForm.get('fromCityId')?.invalid}">
                 <option value="">Select From City</option>
                 <option *ngFor="let city of cities" [value]="city.cityId">
@@ -90,7 +90,7 @@
                 <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path>
                 <circle cx="12" cy="10" r="3"></circle>
               </svg>
-              <select formControlName="toCityId"
+              <select formControlName="toCityId" [disabled]="mode === 'edit'"
                 [ngClass]="{'invalid': tripForm.get('toCityId')?.touched && tripForm.get('toCityId')?.invalid}">
                 <option value="">Select To City</option>
                 <option *ngFor="let city of cities" [value]="city.cityId">

@@ -223,6 +223,8 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
                             response = new ResponseVehicleTripEmissionDTO
                             {
                                 TripId = _idEncoder.Encode(Convert.ToInt32(reader["tripid"])),
+                                ReportId = reader["ReportId"]?.ToString(),
+
                                 VehicleId = _idEncoder.Encode(Convert.ToInt32(reader["vehicleid"])),
                                 FromCityId = _idEncoder.Encode(Convert.ToInt32(reader["fromcityid"])),
                                 ToCityId = _idEncoder.Encode(Convert.ToInt32(reader["tocityid"])),
@@ -319,7 +321,7 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
                             result = new ResponseVehicleTripEmissionDTO
                             {
                                 TripId = hashId,
-
+                                ReportId = reader["ReportId"]?.ToString(),
                                 VehicleId = _idEncoder.Encode(Convert.ToInt32(reader["VehicleId"])),
 
                                 FromCityId = reader["FromCityId"] == DBNull.Value
@@ -496,7 +498,7 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
                             result.Add(new ResponseVehicleTripEmissionDTO
                             {
                                 TripId = _idEncoder.Encode(Convert.ToInt32(reader["TripId"])),
-
+                                ReportId = reader["ReportId"]?.ToString(),
                                 VehicleId = _idEncoder.Encode(Convert.ToInt32(reader["VehicleId"])),
 
                                 FromCityId = reader["FromCityId"] == DBNull.Value
@@ -621,7 +623,7 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
                 result.Add(new SearchVehicleTripEmissionDTO
                 {
                     TripId = _idEncoder.Encode(reader.GetInt32(reader.GetOrdinal("TripId"))),
-
+                    ReportId = reader["ReportId"]?.ToString(),
                     VehicleNumber = reader["VehicleNumber"]?.ToString() ?? "",
                     VehicleType = reader["VehicleType"]?.ToString() ?? "",
                     FuelType = reader["FuelType"]?.ToString() ?? "",
@@ -758,7 +760,7 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
                 result.Add(new ResponseVehicleTripEmissionDTO
                 {
                     TripId = _idEncoder.Encode(Convert.ToInt32(reader["TripId"])),
-
+                    ReportId = reader["ReportId"]?.ToString(),
                     VehicleId = _idEncoder.Encode(Convert.ToInt32(reader["VehicleId"])),
 
                     FromCityId = _idEncoder.Encode(Convert.ToInt32(reader["FromCityId"])),
@@ -1100,6 +1102,7 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
             headerHtml = headerHtml.Replace("{{ReportTitle}}", "Fleet &amp; Transport Emission Report");
             headerHtml = headerHtml.Replace("{{EntryDate}}", entryDateStr);
             headerHtml = headerHtml.Replace("{{status}}", GetString("Status"));
+            headerHtml = headerHtml.Replace("{{reportId}}", GetString("ReportId"));
 
             footerHtml = footerHtml.Replace("{{generatedDate}}", DateTime.Now.ToString("dd-MMM-yyyy HH:mm"));
 
@@ -1108,7 +1111,7 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
             contentHtml = contentHtml.Replace("{{EntryByEmail}}", GetString("EntryByEmail"));
             contentHtml = contentHtml.Replace("{{status}}", GetString("Status"));
             contentHtml = contentHtml.Replace("{{EntryDate}}", entryDateStr);
-            contentHtml = contentHtml.Replace("{{tripId}}", tripId);
+            contentHtml = contentHtml.Replace("{{tripId}}", GetString("ReportId"));
 
             contentHtml = contentHtml.Replace("{{vehicle}}", GetString("vehicle_number"));
             contentHtml = contentHtml.Replace("{{VehicleType}}", GetString("VehicleType"));

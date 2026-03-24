@@ -529,6 +529,12 @@ loadTrip(id: string) {
       // Rejected → allow edit
       else if (this.currentStatusId === 3) {
         this.tripForm.enable();
+
+      // 🔥 LOCK IMPORTANT FIELDS
+      this.tripForm.get('vehicle_id')?.disable();
+      this.tripForm.get('fromCityId')?.disable();
+      this.tripForm.get('toCityId')?.disable();
+
       }
 
     }

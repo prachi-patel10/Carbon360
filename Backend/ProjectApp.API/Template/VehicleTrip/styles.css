@@ -153,16 +153,6 @@ body {
     padding-right: 20px;
 }
 
-.status-pill {
-    background: #d6f5e3;
-    border: 1px solid #7ed4a4;
-    color: #0a5c2a;
-    font-weight: bold;
-    padding: 3px 14px;
-    border-radius: 20px;
-    font-size: 10px;
-    display: inline-block;
-}
 
 /* ================= BODY WRAPPER ================= */
 .body {

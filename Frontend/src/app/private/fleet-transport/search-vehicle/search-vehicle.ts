@@ -8,6 +8,7 @@ import { DateRangePickerComponent } from '../../../public/date-range-picker-comp
 
 interface VehicleEmissionDisplay {
   tripId: string;
+   reportId: string;
   vehicleNumber: string;
   vehicleType: string;
   fuelType: string;
@@ -94,6 +95,7 @@ export class SearchVehicle implements OnInit {
       next: (res: any) => {
         const mapped = res.data.map((e: any) => ({
           tripId:            e.tripId,
+          reportId:          e.reportId,
           vehicleNumber:     e.vehicleNumber,
           vehicleType:       e.vehicleType,
           fuelType:          e.fuelType,
