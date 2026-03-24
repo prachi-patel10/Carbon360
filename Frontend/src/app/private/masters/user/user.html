@@ -55,9 +55,10 @@
           </div>
           <div class="dropdown-list" *ngIf="showRoleDropdown">
             <div *ngFor="let r of rolesList()" class="role-checkbox">
-              <input type="checkbox" [value]="r.roleId"
+              <input type="checkbox"
+                [value]="r.roleId"
                 (change)="onRoleChange($event)"
-                [checked]="userForm.value.RoleIds?.includes(r.roleId)">
+                [checked]="isFormRoleChecked(r.roleId)">
               <span>{{ r.roleName }}</span>
             </div>
           </div>
@@ -102,13 +103,12 @@
           </label>
         </div>
 
-        <!-- Filter button with badge -->
+        <!-- Filter button — badge shows APPLIED count only -->
         <button class="filter-btn" (click)="openUserFilter()">
           <i class="fas fa-sliders-h"></i>
           <span>Filter</span>
-          <span class="filter-badge"
-            *ngIf="selectedDepartmentIds.length + selectedRoleIds.length > 0">
-            {{ selectedDepartmentIds.length + selectedRoleIds.length }}
+          <span class="filter-badge" *ngIf="appliedFilterCount > 0">
+            {{ appliedFilterCount }}
           </span>
         </button>
       </div>
@@ -201,21 +201,24 @@
         </button>
       </div>
 
-      <!-- Active chips -->
+      <!-- ── Active chips (pending selection inside modal) ── -->
       <div class="vf-chips"
            *ngIf="selectedDepartmentIds.length > 0 || selectedRoleIds.length > 0">
+
         <span class="vf-chip" *ngFor="let id of selectedDepartmentIds">
           <i class="fas fa-building"></i>
           {{ getDepartmentName(id) }}
           <button class="vf-chip-remove"
-            (click)="toggleDepartmentFilter(id + ''); $event.stopPropagation()">✕</button>
+            (click)="toggleDepartmentFilter(id, $event)">✕</button>
         </span>
-        <span class="vf-chip vf-chip-fuel" *ngFor="let id of selectedRoleIds">
+
+        <span class="vf-chip vf-chip-role" *ngFor="let id of selectedRoleIds">
           <i class="fas fa-user-tag"></i>
           {{ getRoleName(id) }}
           <button class="vf-chip-remove"
-            (click)="toggleRoleFilter(id + ''); $event.stopPropagation()">✕</button>
+            (click)="toggleRoleFilter(id, $event)">✕</button>
         </span>
+
       </div>
 
       <!-- Body -->
@@ -233,9 +236,7 @@
           <div class="vf-trigger" [class.open]="deptDropOpen"
                (click)="deptDropOpen = !deptDropOpen; $event.stopPropagation()">
             <span class="vf-trigger-text">
-              <ng-container *ngIf="selectedDepartmentIds.length === 0">
-                All Departments
-              </ng-container>
+              <ng-container *ngIf="selectedDepartmentIds.length === 0">All Departments</ng-container>
               <ng-container *ngIf="selectedDepartmentIds.length > 0">
                 {{ selectedDepartmentIds.length }}
                 dept{{ selectedDepartmentIds.length > 1 ? 's' : '' }} selected
@@ -245,37 +246,44 @@
           </div>
 
           <!-- Department Panel -->
-          <div class="vf-panel" [class.open]="deptDropOpen">
+          <div class="vf-panel" [class.open]="deptDropOpen" (click)="$event.stopPropagation()">
 
-            <div class="vf-check-row vf-select-all"
-                 (click)="toggleAllDepartments(); $event.stopPropagation()">
-              <span class="vf-checkbox"
-                [class.checked]="selectedDepartmentIds.length === departments().length && departments().length > 0"
-                [class.indeterminate]="selectedDepartmentIds.length > 0 && selectedDepartmentIds.length < departments().length">
-                <i class="fas fa-check"
-                   *ngIf="selectedDepartmentIds.length === departments().length && departments().length > 0"></i>
-                <i class="fas fa-minus"
-                   *ngIf="selectedDepartmentIds.length > 0 && selectedDepartmentIds.length < departments().length"></i>
-              </span>
-              <span class="vf-check-label">Select All</span>
+            <div *ngIf="loadingDepartments()" class="vf-panel-loading">
+              <i class="fas fa-spinner fa-spin"></i> Loading...
             </div>
 
-            <div class="vf-divider"></div>
+            <ng-container *ngIf="!loadingDepartments()">
+              <div class="vf-check-row vf-select-all"
+                   (click)="toggleAllDepartments($event)">
+                <span class="vf-checkbox"
+                  [class.checked]="selectedDepartmentIds.length === departments().length && departments().length > 0"
+                  [class.indeterminate]="selectedDepartmentIds.length > 0 && selectedDepartmentIds.length < departments().length">
+                  <i class="fas fa-check"
+                     *ngIf="selectedDepartmentIds.length === departments().length && departments().length > 0"></i>
+                  <i class="fas fa-minus"
+                     *ngIf="selectedDepartmentIds.length > 0 && selectedDepartmentIds.length < departments().length"></i>
+                </span>
+                <span class="vf-check-label">Select All</span>
+              </div>
 
-            <div class="vf-check-row" *ngFor="let dept of departments()"
-                 (click)="toggleDepartmentFilter(dept.DepartmentId + ''); $event.stopPropagation()"
-                 [class.selected]="selectedDepartmentIds.includes(dept.DepartmentId + '')">
-              <span class="vf-checkbox"
-                    [class.checked]="selectedDepartmentIds.includes(dept.DepartmentId + '')">
-                <i class="fas fa-check"
-                   *ngIf="selectedDepartmentIds.includes(dept.DepartmentId + '')"></i>
-              </span>
-              <span class="vf-check-label">{{ dept.DepartmentName }}</span>
-            </div>
+              <div class="vf-divider"></div>
 
-            <div class="vf-panel-empty" *ngIf="departments().length === 0">
-              No departments found
-            </div>
+              <div class="vf-check-row"
+                   *ngFor="let dept of departments()"
+                   (click)="toggleDepartmentFilter(dept.DepartmentId, $event)"
+                   [class.selected]="isDepartmentSelected(dept.DepartmentId)">
+                <span class="vf-checkbox"
+                      [class.checked]="isDepartmentSelected(dept.DepartmentId)">
+                  <i class="fas fa-check"
+                     *ngIf="isDepartmentSelected(dept.DepartmentId)"></i>
+                </span>
+                <span class="vf-check-label">{{ dept.DepartmentName }}</span>
+              </div>
+
+              <div class="vf-panel-empty" *ngIf="departments().length === 0">
+                No departments found
+              </div>
+            </ng-container>
           </div>
         </div>
 
@@ -301,37 +309,44 @@
           </div>
 
           <!-- Role Panel -->
-          <div class="vf-panel" [class.open]="roleDropOpen">
+          <div class="vf-panel" [class.open]="roleDropOpen" (click)="$event.stopPropagation()">
 
-            <div class="vf-check-row vf-select-all"
-                 (click)="toggleAllRoles(); $event.stopPropagation()">
-              <span class="vf-checkbox"
-                [class.checked]="selectedRoleIds.length === rolesList().length && rolesList().length > 0"
-                [class.indeterminate]="selectedRoleIds.length > 0 && selectedRoleIds.length < rolesList().length">
-                <i class="fas fa-check"
-                   *ngIf="selectedRoleIds.length === rolesList().length && rolesList().length > 0"></i>
-                <i class="fas fa-minus"
-                   *ngIf="selectedRoleIds.length > 0 && selectedRoleIds.length < rolesList().length"></i>
-              </span>
-              <span class="vf-check-label">Select All</span>
+            <div *ngIf="loadingRoles()" class="vf-panel-loading">
+              <i class="fas fa-spinner fa-spin"></i> Loading...
             </div>
 
-            <div class="vf-divider"></div>
+            <ng-container *ngIf="!loadingRoles()">
+              <div class="vf-check-row vf-select-all"
+                   (click)="toggleAllRoles($event)">
+                <span class="vf-checkbox"
+                  [class.checked]="selectedRoleIds.length === rolesList().length && rolesList().length > 0"
+                  [class.indeterminate]="selectedRoleIds.length > 0 && selectedRoleIds.length < rolesList().length">
+                  <i class="fas fa-check"
+                     *ngIf="selectedRoleIds.length === rolesList().length && rolesList().length > 0"></i>
+                  <i class="fas fa-minus"
+                     *ngIf="selectedRoleIds.length > 0 && selectedRoleIds.length < rolesList().length"></i>
+                </span>
+                <span class="vf-check-label">Select All</span>
+              </div>
 
-            <div class="vf-check-row" *ngFor="let role of rolesList()"
-                 (click)="toggleRoleFilter(role.roleId + ''); $event.stopPropagation()"
-                 [class.selected]="selectedRoleIds.includes(role.roleId + '')">
-              <span class="vf-checkbox"
-                    [class.checked]="selectedRoleIds.includes(role.roleId + '')">
-                <i class="fas fa-check"
-                   *ngIf="selectedRoleIds.includes(role.roleId + '')"></i>
-              </span>
-              <span class="vf-check-label">{{ role.roleName }}</span>
-            </div>
+              <div class="vf-divider"></div>
 
-            <div class="vf-panel-empty" *ngIf="rolesList().length === 0">
-              No roles found
-            </div>
+              <div class="vf-check-row"
+                   *ngFor="let role of rolesList()"
+                   (click)="toggleRoleFilter(role.roleId, $event)"
+                   [class.selected]="isRoleSelected(role.roleId)">
+                <span class="vf-checkbox"
+                      [class.checked]="isRoleSelected(role.roleId)">
+                  <i class="fas fa-check"
+                     *ngIf="isRoleSelected(role.roleId)"></i>
+                </span>
+                <span class="vf-check-label">{{ role.roleName }}</span>
+              </div>
+
+              <div class="vf-panel-empty" *ngIf="rolesList().length === 0">
+                No roles found
+              </div>
+            </ng-container>
           </div>
         </div>
 

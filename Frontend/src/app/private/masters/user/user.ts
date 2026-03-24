@@ -37,16 +37,18 @@ export class MasterUserComponent implements OnInit {
   userForm!: FormGroup;
 
   // ── Signals ───────────────────────────────────────────────────
-  users            = signal<any[]>([]);
-  rolesList        = signal<any[]>([]);
-  departments      = signal<any[]>([]);
-  searchText       = signal<string>('');
-  onlyActive       = signal<boolean | undefined>(true);
-  currentPage      = signal<number>(1);
-  totalPages       = signal<number>(1);
-  totalRecords     = signal<number>(0);
-  requestedRecords = signal<number>(5);
+  users               = signal<any[]>([]);
+  rolesList           = signal<any[]>([]);
+  departments         = signal<any[]>([]);
+  searchText          = signal<string>('');
+  onlyActive          = signal<boolean | undefined>(true);
+  currentPage         = signal<number>(1);
+  totalPages          = signal<number>(1);
+  totalRecords        = signal<number>(0);
+  requestedRecords    = signal<number>(5);
   userFilterModalOpen = signal(false);
+  loadingDepartments  = signal(false);
+  loadingRoles        = signal(false);
 
   pageSizeOptions = [5, 10, 15, 20];
 
@@ -56,28 +58,31 @@ export class MasterUserComponent implements OnInit {
   sortDirection: 'ASC' | 'DESC' = 'ASC';
 
   // ── Filter state ──────────────────────────────────────────────
+  // These are the PENDING selections inside the modal (not yet applied)
   selectedDepartmentIds: string[] = [];
   selectedRoleIds:       string[] = [];
-  deptDropOpen  = false;
-  roleDropOpen  = false;
 
+  deptDropOpen = false;
+  roleDropOpen = false;
+
+  // These are the APPLIED filter values (used for API calls + badge count)
   userFilter = signal({
     department_id: [] as string[],
     role_id:       [] as string[]
   });
 
-  // ── Close inner dropdowns when clicking outside modal ─────────
- @HostListener('document:click', ['$event'])
-onDocumentClick(e: MouseEvent) {
-  const target = e.target as HTMLElement;
-  const insideModal   = !!target.closest('.vf-modal');
-  const insidePanel   = !!target.closest('.vf-panel');
-  const insideTrigger = !!target.closest('.vf-trigger');
-  if (!insideModal && !insidePanel && !insideTrigger) {
-    this.deptDropOpen = false;
-    this.roleDropOpen = false;
+  // ── Close dropdowns when clicking outside ─────────────────────
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(e: MouseEvent) {
+    const target = e.target as HTMLElement;
+    const insideModal   = !!target.closest('.vf-modal');
+    const insidePanel   = !!target.closest('.vf-panel');
+    const insideTrigger = !!target.closest('.vf-trigger');
+    if (!insideModal && !insidePanel && !insideTrigger) {
+      this.deptDropOpen = false;
+      this.roleDropOpen = false;
+    }
   }
-}
 
   ngOnInit(): void {
     this.initForm();
@@ -112,6 +117,7 @@ onDocumentClick(e: MouseEvent) {
 
   // ── Load data ─────────────────────────────────────────────────
   loadRoles() {
+    this.loadingRoles.set(true);
     this.service.getRoles().subscribe({
       next: (res: any) => {
         const roles = (res?.data ?? []).map((r: any) => ({
@@ -119,21 +125,31 @@ onDocumentClick(e: MouseEvent) {
           roleName: r.roleName
         }));
         this.rolesList.set(roles);
+        this.loadingRoles.set(false);
       },
-      error: () => this.toastr.error('Failed to load roles')
+      error: () => {
+        this.toastr.error('Failed to load roles');
+        this.loadingRoles.set(false);
+      }
     });
   }
 
-
   loadDepartments() {
-    this.service.getDepartments().subscribe(res => {
-      const list   = res.data?.data || res.data || [];
-      const mapped = list.map((d: any) => ({
-        DepartmentId:   String(d.departmentId || d.id),
-        DepartmentName: d.departmentName,
-        IsActive:       d.isActive
-      }));
-      this.departments.set(mapped);
+    this.loadingDepartments.set(true);
+    this.service.getDepartments().subscribe({
+      next: (res: any) => {
+        const list   = res.data?.data || res.data || [];
+        const mapped = list.map((d: any) => ({
+          DepartmentId:   String(d.departmentId || d.id),
+          DepartmentName: d.departmentName,
+          IsActive:       d.isActive
+        }));
+        this.departments.set(mapped);
+        this.loadingDepartments.set(false);
+      },
+      error: () => {
+        this.loadingDepartments.set(false);
+      }
     });
   }
 
@@ -169,9 +185,7 @@ onDocumentClick(e: MouseEvent) {
   // ── Save / Update ─────────────────────────────────────────────
   submitUser() {
     if (this.userForm.invalid) { this.userForm.markAllAsTouched(); return; }
-
     const payload = { ...this.userForm.value };
-
     if (!payload.UserId) {
       this.service.create(payload).subscribe({
         next: () => { this.toastr.success('User created successfully'); this.loadUsers(); this.resetForm(); },
@@ -241,7 +255,7 @@ onDocumentClick(e: MouseEvent) {
     });
   }
 
-  // ── Search ────────────────────────────────────────────────────
+  // ── Search / Filters ──────────────────────────────────────────
   onSearch(event: any) {
     this.searchText.set(event.target.value);
     this.currentPage.set(1);
@@ -293,27 +307,39 @@ onDocumentClick(e: MouseEvent) {
   toggleRoleDropdown() { this.showRoleDropdown = !this.showRoleDropdown; }
 
   getSelectedRoleNames(): string {
-    const selectedIds = this.userForm.value.RoleIds || [];
+    const selectedIds: string[] = (this.userForm.value.RoleIds || []).map((id: any) => String(id));
     return this.rolesList()
-      .filter(r => selectedIds.includes(r.roleId))
+      .filter(r => selectedIds.includes(String(r.roleId)))
       .map(r => r.roleName)
       .join(', ');
   }
 
   onRoleChange(event: any) {
-    const roleId = event.target.value;
-    let selectedRoles: string[] = this.userForm.get('RoleIds')?.value || [];
-    if (event.target.checked) selectedRoles = [...selectedRoles, roleId];
-    else selectedRoles = selectedRoles.filter(r => r !== roleId);
+    const roleId = String(event.target.value);
+    let selectedRoles: string[] = (this.userForm.get('RoleIds')?.value || []).map((id: any) => String(id));
+    if (event.target.checked) {
+      if (!selectedRoles.includes(roleId)) selectedRoles = [...selectedRoles, roleId];
+    } else {
+      selectedRoles = selectedRoles.filter(r => r !== roleId);
+    }
     this.userForm.get('RoleIds')?.setValue(selectedRoles);
+  }
+
+  isFormRoleChecked(roleId: string): boolean {
+    const selected: any[] = this.userForm.get('RoleIds')?.value || [];
+    return selected.map((id: any) => String(id)).includes(String(roleId));
   }
 
   // ── Filter modal ──────────────────────────────────────────────
   openUserFilter() {
+    // Snapshot the currently APPLIED filter into pending selections
     this.selectedDepartmentIds = [...this.userFilter().department_id];
     this.selectedRoleIds       = [...this.userFilter().role_id];
-    this.loadDepartments();   // refresh from API
-    this.loadRoles();         // refresh from API
+    // Do NOT reload departments/roles here — they are already loaded in ngOnInit
+    // Reloading would overwrite rolesList AFTER we snapshot selectedRoleIds,
+    // causing the length-comparison in toggleAllRoles to misbehave
+    this.deptDropOpen = false;
+    this.roleDropOpen = false;
     this.userFilterModalOpen.set(true);
   }
 
@@ -324,18 +350,24 @@ onDocumentClick(e: MouseEvent) {
   }
 
   // ── Department filter ─────────────────────────────────────────
-  toggleDepartmentFilter(id: string) {
+  toggleDepartmentFilter(id: string, event?: Event) {
+    event?.stopPropagation();
     const sid = String(id);
     this.selectedDepartmentIds = this.selectedDepartmentIds.includes(sid)
       ? this.selectedDepartmentIds.filter(x => x !== sid)
       : [...this.selectedDepartmentIds, sid];
   }
 
-  toggleAllDepartments() {
+  toggleAllDepartments(event?: Event) {
+    event?.stopPropagation();
     this.selectedDepartmentIds =
       this.selectedDepartmentIds.length === this.departments().length
         ? []
         : this.departments().map(d => String(d.DepartmentId));
+  }
+
+  isDepartmentSelected(id: string): boolean {
+    return this.selectedDepartmentIds.includes(String(id));
   }
 
   getDepartmentName(id: string): string {
@@ -343,20 +375,25 @@ onDocumentClick(e: MouseEvent) {
   }
 
   // ── Role filter ───────────────────────────────────────────────
- toggleRoleFilter(id: string) {
+  toggleRoleFilter(id: string, event?: Event) {
+    event?.stopPropagation();
     const sid = String(id);
     this.selectedRoleIds = this.selectedRoleIds.includes(sid)
       ? this.selectedRoleIds.filter(x => x !== sid)
       : [...this.selectedRoleIds, sid];
   }
 
-  toggleAllRoles() {
+  toggleAllRoles(event?: Event) {
+    event?.stopPropagation();
     this.selectedRoleIds =
       this.selectedRoleIds.length === this.rolesList().length
         ? []
         : this.rolesList().map(r => String(r.roleId));
   }
 
+  isRoleSelected(id: string): boolean {
+    return this.selectedRoleIds.includes(String(id));
+  }
 
   getRoleName(id: string): string {
     return this.rolesList().find(r => String(r.roleId) === String(id))?.roleName ?? id;
@@ -378,7 +415,11 @@ onDocumentClick(e: MouseEvent) {
     this.selectedRoleIds       = [];
     this.userFilter.set({ department_id: [], role_id: [] });
     this.currentPage.set(1);
-    this.closeUserFilter();
     this.loadUsers();
+  }
+
+  // ── Badge count (applied filters only) ───────────────────────
+  get appliedFilterCount(): number {
+    return this.userFilter().department_id.length + this.userFilter().role_id.length;
   }
 }

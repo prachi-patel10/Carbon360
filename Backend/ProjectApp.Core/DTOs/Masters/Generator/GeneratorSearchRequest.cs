@@ -12,6 +12,8 @@ namespace ProjectApp.Core.DTOs.Masters.Generator
         public string? FilterColumn { get; set; }
         public string? FilterValue { get; set; }
         public bool? IsActive { get; set; }
+        public string? FuelIds { get; set; }   
+        public string? SiteIds { get; set; }   
 
         public int PageNumber { get; set; } = 1;
         public int PageSize { get; set; } = 10;

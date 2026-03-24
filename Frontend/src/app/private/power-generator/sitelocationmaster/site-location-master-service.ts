@@ -5,7 +5,7 @@ import { map } from 'rxjs/operators';
 import { environment } from '../../../enviorments/environment';
 
 export interface FilterOption {
-  id:    string;
+  id: string;
   value: string;
 }
 
@@ -16,7 +16,7 @@ export class SiteLocationMasterService {
 
   private baseUrl = `${environment.apiBaseUrl}/SiteLocation`;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   // ================= GET ALL =================
   getAll(): Observable<any> {
@@ -50,29 +50,42 @@ export class SiteLocationMasterService {
   // ================= SEARCH =================
   search(paramsObj: any): Observable<any> {
     let params = new HttpParams();
-    Object.keys(paramsObj).forEach(key => {
-      const val = paramsObj[key];
-      if (val !== null && val !== undefined && val !== '') {
-        // Convert arrays to comma-separated string
-        if (Array.isArray(val)) {
-          if (val.length > 0)
-            params = params.set(key, val.join(','));
-        } else {
-          params = params.set(key, val);
-        }
-      }
-    });
+
+    // Standard scalar params
+    if (paramsObj.search)
+      params = params.set('search', paramsObj.search);
+
+    if (paramsObj.pageNumber)
+      params = params.set('pageNumber', String(paramsObj.pageNumber));
+
+    if (paramsObj.pageSize)
+      params = params.set('pageSize', String(paramsObj.pageSize));
+
+    if (paramsObj.sortColumn)
+      params = params.set('sortColumn', paramsObj.sortColumn);
+
+    if (paramsObj.sortDirection)
+      params = params.set('sortDirection', paramsObj.sortDirection);
+
+    if (paramsObj.isActive !== null && paramsObj.isActive !== undefined)
+      params = params.set('isActive', String(paramsObj.isActive));
+
+    if (paramsObj.siteNames && paramsObj.siteNames.length > 0)
+      params = params.set('siteNames', paramsObj.siteNames.join(','));
+
+    if (paramsObj.cityNames && paramsObj.cityNames.length > 0)
+      params = params.set('cities', paramsObj.cityNames.join(','));  
+
     return this.http.get(`${this.baseUrl}/search`, { params });
   }
 
   // ================= FILTER OPTIONS =================
-  // Builds SiteName + City filter lists from getAll() — no extra endpoint needed
+  // Builds SiteName + City filter lists from getAll() 
   getFilterOptions(): Observable<{ siteNames: FilterOption[]; cities: FilterOption[] }> {
     return this.getAll().pipe(
       map((res: any) => {
         const list: any[] = Array.isArray(res) ? res : (res.data ?? res);
 
-        // Distinct site names
         const siteNames: FilterOption[] = Array.from(
           new Map(
             list
@@ -81,7 +94,6 @@ export class SiteLocationMasterService {
           ).values()
         ).sort((a, b) => a.value.localeCompare(b.value));
 
-        // Distinct cities
         const cities: FilterOption[] = Array.from(
           new Map(
             list

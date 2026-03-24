@@ -100,11 +100,6 @@
           </label>
         </div>
 
-        <!-- ✅ Clear filter button shown when filters are active -->
-        <button type="button" class="btn-reset" *ngIf="totalFilterCount > 0" (click)="clearFilters()">
-          <i class="bi bi-x-circle"></i> Clear
-        </button>
-
         <button type="button" class="filter-btn" (click)="openFilterModal()">
           <i class="bi bi-sliders"></i>
           <span>Filter</span>
@@ -205,7 +200,7 @@
       </button>
     </div>
 
-    <!-- Active chips -->
+    <!-- Active chips inside modal -->
     <div class="vf-chips"
          *ngIf="selectedSiteNames.length > 0 || selectedCityNames.length > 0">
       <span class="vf-chip" *ngFor="let name of selectedSiteNames">
@@ -253,7 +248,6 @@
 
           <ng-container *ngIf="!loadingSiteNames()">
 
-            <!-- ✅ Search inside panel -->
             <div class="vf-panel-search">
               <input type="text"
                      placeholder="Search site..."
@@ -323,7 +317,6 @@
 
           <ng-container *ngIf="!loadingCities()">
 
-            <!-- ✅ Search inside panel -->
             <div class="vf-panel-search">
               <input type="text"
                      placeholder="Search city..."

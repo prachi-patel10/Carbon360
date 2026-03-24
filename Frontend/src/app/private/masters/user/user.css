@@ -457,3 +457,23 @@ tbody tr:hover td { background-color: #f0fdf4; }
   }
   .vf-modal { width: calc(100vw - 24px); }
 }
+
+/* ── Role chip variant (mirrors vf-chip-fuel in vehicle master) ── */
+.vf-chip-role {
+  background: #ede9fe;
+  color: #4c1d95;
+  border-color: #ddd6fe;
+}
+
+/* ── Loading spinner inside panel ── */
+.vf-panel-loading {
+  padding: 14px 12px;
+  font-size: 13px;
+  color: #9ca3af;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+}

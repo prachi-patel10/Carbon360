@@ -140,6 +140,13 @@ namespace ProjectApp.Repository.Services.Masters.Generator
         new SqlParameter("@FilterColumn", request.FilterColumn ?? (object)DBNull.Value),
         new SqlParameter("@FilterValue", request.FilterValue ?? (object)DBNull.Value),
         new SqlParameter("@IsActive", request.IsActive ?? (object)DBNull.Value),
+        new SqlParameter("@FuelIds",
+    string.IsNullOrWhiteSpace(request.FuelIds)
+        ? (object)DBNull.Value : request.FuelIds),
+
+new SqlParameter("@SiteIds",
+    string.IsNullOrWhiteSpace(request.SiteIds)
+        ? (object)DBNull.Value : request.SiteIds),
         new SqlParameter("@PageNumber", request.PageNumber),
         new SqlParameter("@PageSize", request.PageSize),
         new SqlParameter("@SortColumn", request.SortColumn),

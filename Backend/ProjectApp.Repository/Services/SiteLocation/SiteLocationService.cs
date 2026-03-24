@@ -118,32 +118,37 @@ namespace ProjectApp.Repository.Services.SiteLocation
         }
 
         // ================= SEARCH =================
+        // ================= SEARCH =================
         public async Task<PageResult> SearchAsync(SiteLocationSearchRequest request)
         {
             var parameters = new[]
             {
-                new SqlParameter("@Search",
-                    string.IsNullOrWhiteSpace(request.Search)
-                        ? (object)DBNull.Value : request.Search),
+        new SqlParameter("@Search",
+            string.IsNullOrWhiteSpace(request.Search)
+                ? (object)DBNull.Value : request.Search),
 
-                new SqlParameter("@IsActive",
-                    request.IsActive.HasValue
-                        ? (object)request.IsActive.Value : DBNull.Value),
+        new SqlParameter("@IsActive",
+            request.IsActive.HasValue
+                ? (object)request.IsActive.Value : DBNull.Value),
 
-                new SqlParameter("@PageNumber",    request.PageNumber),
-                new SqlParameter("@PageSize",      request.PageSize),
-                new SqlParameter("@SortColumn",    request.SortColumn),
-                new SqlParameter("@SortDirection", request.SortDirection),
+        new SqlParameter("@PageNumber",    request.PageNumber),
+        new SqlParameter("@PageSize",      request.PageSize),
+        new SqlParameter("@SortColumn",    request.SortColumn),
+        new SqlParameter("@SortDirection", request.SortDirection),
 
-                // NEW filter params
-                new SqlParameter("@Cities",
-                    string.IsNullOrWhiteSpace(request.Cities)
-                        ? (object)DBNull.Value : request.Cities),
+        // ✅ ADDED: SiteNames filter
+        new SqlParameter("@SiteNames",
+            string.IsNullOrWhiteSpace(request.SiteNames)
+                ? (object)DBNull.Value : request.SiteNames),
 
-                new SqlParameter("@States",
-                    string.IsNullOrWhiteSpace(request.States)
-                        ? (object)DBNull.Value : request.States),
-            };
+        new SqlParameter("@Cities",
+            string.IsNullOrWhiteSpace(request.Cities)
+                ? (object)DBNull.Value : request.Cities),
+
+        new SqlParameter("@States",
+            string.IsNullOrWhiteSpace(request.States)
+                ? (object)DBNull.Value : request.States),
+    };
 
             var result = await _spService.ExecuteSpAsync("USP_CB_SearchSiteLocation", parameters);
 

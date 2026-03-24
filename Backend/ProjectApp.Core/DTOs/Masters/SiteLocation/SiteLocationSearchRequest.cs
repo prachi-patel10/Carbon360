@@ -14,7 +14,8 @@ namespace ProjectApp.Core.DTOs.Masters.SiteLocation
         public string SortDirection { get; set; } = "ASC";
         public int PageNumber { get; set; } = 1;
         public int PageSize { get; set; } = 10;
-   
+        public string? SiteNames { get; set; }
+
         public string? Cities { get; set; }   // e.g. "Mumbai,Surat"
         public string? States { get; set; }   // e.g. "Gujarat,Maharashtra"
     }

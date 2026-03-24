@@ -176,87 +176,103 @@ namespace ProjectApp.Repository.Services.User
             return users.Select(u => MapToResponse(u)).ToList();
         }
 
-        // ================= SEARCH WITH PAGINATION =================
+        // ================= SEARCH WITH PAGINATION (uses stored procedure) =================
         public async Task<(List<UserResDTO> Users, int TotalRecords)>
-     SearchUsersPaginatedAsync(SearchRequestDTO request)
+            SearchUsersPaginatedAsync(SearchRequestDTO request)
         {
-            var deptIdList = DecodeIdList(request.DepartmentIds);
-            var roleIdList = DecodeIdList(request.RoleIds);
+            // Decode comma-separated encoded IDs → plain int CSV for the SP
+            var deptIdsCsv = DecodeToCsv(request.DepartmentIds);
+            var roleIdsCsv = DecodeToCsv(request.RoleIds);
 
             var allowedColumns = new[] { "FName", "LName", "UserName", "Email", "IsActive", "EntryDate" };
             var sortCol = allowedColumns.Contains(request.SortColumn) ? request.SortColumn : "FName";
             var sortDir = request.SortDirection?.ToUpper() == "DESC" ? "DESC" : "ASC";
 
-            // ── Base query ────────────────────────────────────────────
-            var query = _context.CB_Users
-                .Where(u => u.IsDeleted == false)
-                .AsQueryable();
+            using var conn = _context.Database.GetDbConnection();
+            await conn.OpenAsync();
 
-            // ── Search ────────────────────────────────────────────────
-            if (!string.IsNullOrWhiteSpace(request.Search))
-                query = query.Where(u =>
-                    u.Fname.Contains(request.Search) ||
-                    u.Lname.Contains(request.Search) ||
-                    u.UserName.Contains(request.Search) ||
-                    u.Email.Contains(request.Search));
+            using var cmd = conn.CreateCommand();
+            cmd.CommandText = "USP_CB_UserSearch";
+            cmd.CommandType = System.Data.CommandType.StoredProcedure;
+            cmd.Parameters.Add(new SqlParameter("@Search", (object?)request.Search ?? DBNull.Value));
+            cmd.Parameters.Add(new SqlParameter("@IsActive", (object?)request.IsActive ?? DBNull.Value));
+            cmd.Parameters.Add(new SqlParameter("@PageNumber", request.PageNumber));
+            cmd.Parameters.Add(new SqlParameter("@PageSize", request.PageSize));
+            cmd.Parameters.Add(new SqlParameter("@SortColumn", sortCol));
+            cmd.Parameters.Add(new SqlParameter("@SortDirection", sortDir));
+            cmd.Parameters.Add(new SqlParameter("@DepartmentIds", (object?)deptIdsCsv ?? DBNull.Value));
+            cmd.Parameters.Add(new SqlParameter("@RoleIds", (object?)roleIdsCsv ?? DBNull.Value));
 
-            // ── Active filter ─────────────────────────────────────────
-            if (request.IsActive.HasValue)
-                query = query.Where(u => u.IsActive == request.IsActive.Value);
+            // Temporary holder: raw userId (int) + role name from result set 2
+            var roleRows = new List<(int UserId, string RoleName)>();
+            var userResults = new List<UserResDTO>();
+            int totalRecords = 0;
 
-            // ── Department filter ─────────────────────────────────────
-            if (deptIdList.Any())
-                query = query.Where(u =>
-                    u.DepartmentId.HasValue &&
-                    deptIdList.Contains(u.DepartmentId.Value));
+            using var reader = await cmd.ExecuteReaderAsync();
 
-            // ── Role filter ───────────────────────────────────────────
-            if (roleIdList.Any())
-                query = query.Where(u =>
-                    u.CB_UserRoleMappings.Any(m =>
-                        m.IsActive == true &&
-                        m.RoleId != null &&
-                        roleIdList.Contains((int)m.RoleId)));
-
-            // ── Total count ───────────────────────────────────────────
-            int totalRecords = await query.CountAsync();
-
-            // ── Sorting ───────────────────────────────────────────────
-            query = (sortCol, sortDir) switch
+            // ── Result set 1: paged users ────────────────────────────
+            while (await reader.ReadAsync())
             {
-                ("LName", "DESC") => query.OrderByDescending(u => u.Lname),
-                ("LName", _) => query.OrderBy(u => u.Lname),
-                ("UserName", "DESC") => query.OrderByDescending(u => u.UserName),
-                ("UserName", _) => query.OrderBy(u => u.UserName),
-                ("Email", "DESC") => query.OrderByDescending(u => u.Email),
-                ("Email", _) => query.OrderBy(u => u.Email),
-                ("IsActive", "DESC") => query.OrderByDescending(u => u.IsActive),
-                ("IsActive", _) => query.OrderBy(u => u.IsActive),
-                ("EntryDate", "DESC") => query.OrderByDescending(u => u.EntryDate),
-                ("EntryDate", _) => query.OrderBy(u => u.EntryDate),
-                (_, "DESC") => query.OrderByDescending(u => u.Fname),
-                _ => query.OrderBy(u => u.Fname)
-            };
+                totalRecords = reader["TotalRecords"] != DBNull.Value
+                    ? Convert.ToInt32(reader["TotalRecords"]) : 0;
 
-            // ── Pagination + Include ──────────────────────────────────
-            var users = await query
-                .Include(u => u.CB_UserRoleMappings).ThenInclude(ur => ur.Role)
-                .Include(u => u.Department)
-                .Skip((request.PageNumber - 1) * request.PageSize)
-                .Take(request.PageSize)
-                .ToListAsync();
+                int rawUserId = Convert.ToInt32(reader["UserId"]);
+                int? rawDeptId = reader["DepartmentId"] != DBNull.Value
+                    ? Convert.ToInt32(reader["DepartmentId"]) : null;
 
-            return (users.Select(MapToResponse).ToList(), totalRecords);
+                userResults.Add(new UserResDTO
+                {
+                    UserId = _idEncoder.Encode(rawUserId),
+                    FName = reader["FName"]?.ToString() ?? "",
+                    LName = reader["LName"]?.ToString() ?? "",
+                    UserName = reader["UserName"]?.ToString() ?? "",
+                    Email = reader["Email"]?.ToString() ?? "",
+                    DepartmentId = rawDeptId.HasValue ? _idEncoder.Encode(rawDeptId.Value) : null,
+                    DepartmentName = reader["DepartmentName"]?.ToString() ?? "N/A",
+                    IsActive = reader["IsActive"] != DBNull.Value && Convert.ToBoolean(reader["IsActive"]),
+                    EntryDate = reader["EntryDate"] != DBNull.Value
+                                        ? Convert.ToDateTime(reader["EntryDate"]) : null
+                });
+            }
+
+            // ── Result set 2: roles for those users ──────────────────
+            if (await reader.NextResultAsync())
+            {
+                while (await reader.ReadAsync())
+                {
+                    roleRows.Add((
+                        UserId: Convert.ToInt32(reader["UserId"]),
+                        RoleName: reader["RoleName"]?.ToString() ?? ""
+                    ));
+                }
+            }
+
+            await conn.CloseAsync();
+
+            // ── Attach roles to each UserResDTO ───────────────────────
+            // userId in result set 1 was encoded; decode back to match raw int keys
+            var rolesByRawId = roleRows
+                .GroupBy(r => r.UserId)
+                .ToDictionary(g => g.Key, g => g.Select(r => r.RoleName).ToList());
+
+            foreach (var dto in userResults)
+            {
+                int rawId = _idEncoder.Decode(dto.UserId);
+                dto.Roles = rolesByRawId.TryGetValue(rawId, out var roles)
+                    ? roles : new List<string>();
+            }
+
+            return (userResults, totalRecords);
         }
 
-        // ── Decode comma-separated encoded IDs → List<int> ───────────
-        private List<int> DecodeIdList(string? encodedIds)
+        // ── Decode comma-separated encoded IDs → plain int CSV ────────
+        // e.g. "xr65BW8m,aj6r4J0y"  →  "3,7"
+        private string? DecodeToCsv(string? encodedIds)
         {
-            if (string.IsNullOrWhiteSpace(encodedIds))
-                return new List<int>();
+            if (string.IsNullOrWhiteSpace(encodedIds)) return null;
             try
             {
-                return encodedIds
+                var decoded = encodedIds
                     .Split(',', StringSplitOptions.RemoveEmptyEntries)
                     .Select(id =>
                     {
@@ -264,10 +280,12 @@ namespace ProjectApp.Repository.Services.User
                         catch { return null; }
                     })
                     .Where(id => id.HasValue && id.Value > 0)
-                    .Select(id => id!.Value)
+                    .Select(id => id!.Value.ToString())
                     .ToList();
+
+                return decoded.Any() ? string.Join(",", decoded) : null;
             }
-            catch { return new List<int>(); }
+            catch { return null; }
         }
 
         // ================= MAPPER =================
@@ -295,5 +313,7 @@ namespace ProjectApp.Repository.Services.User
                                  ?? new List<string>()
             };
         }
+
+
     }
 }

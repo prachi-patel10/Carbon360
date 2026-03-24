@@ -1,10 +1,9 @@
 <div class="master-container">
 
-  <!-- ================= CREATE / UPDATE GENERATOR FORM ================= -->
+  <!-- ================= FORM ================= -->
   <div class="card">
     <form [formGroup]="generatorForm" (ngSubmit)="submit()" class="form-grid">
 
-      <!-- Generator Name -->
       <div class="form-group">
         <label>Generator Name</label>
         <input type="text" formControlName="generatorName" placeholder="Enter generator name" />
@@ -14,7 +13,6 @@
         </span>
       </div>
 
-      <!-- Rated Capacity -->
       <div class="form-group">
         <label>Rated Capacity (kW)</label>
         <input type="number" formControlName="ratedCapacityKW" placeholder="Enter capacity" />
@@ -24,68 +22,51 @@
         </span>
       </div>
 
-      <!-- ================= Site Dropdown ================= -->
       <div class="form-group">
         <label>Site</label>
-<select formControlName="siteId"
-        [style.color]="!generatorForm.get('siteId')?.value ? '#999' : '#000'">
-
-  <option value="" disabled>Select Site</option>
-
-  <option *ngFor="let s of sites()"
-          [value]="s.siteId"
-          style="color:#000;">
-    {{ s.siteName }}
-  </option>
-
-</select>
-        <span class="error-text" *ngIf="generatorForm.get('siteId')?.invalid && generatorForm.get('siteId')?.touched">
+        <select formControlName="siteId"
+                [style.color]="!generatorForm.get('siteId')?.value ? '#999' : '#000'">
+          <option value="" disabled>Select Site</option>
+          <option *ngFor="let s of sites()" [value]="s.siteId" style="color:#000">
+            {{ s.siteName }}
+          </option>
+        </select>
+        <span class="error-text"
+          *ngIf="generatorForm.get('siteId')?.invalid && generatorForm.get('siteId')?.touched">
           Site is required
         </span>
       </div>
 
-      <!-- ================= Department Dropdown ================= -->
       <div class="form-group">
         <label>Department</label>
         <select formControlName="departmentId"
-        [style.color]="!generatorForm.get('departmentId')?.value ? '#999' : '#000'">
-
-  <option value="" disabled>Select Department</option>
-
-  <option *ngFor="let d of departments()"
-          [value]="d.departmentId"
-          style="color:#000;">
-    {{ d.departmentName }}
-  </option>
-
-</select>
+                [style.color]="!generatorForm.get('departmentId')?.value ? '#999' : '#000'">
+          <option value="" disabled>Select Department</option>
+          <option *ngFor="let d of departments()" [value]="d.departmentId" style="color:#000">
+            {{ d.departmentName }}
+          </option>
+        </select>
         <span class="error-text"
           *ngIf="generatorForm.get('departmentId')?.invalid && generatorForm.get('departmentId')?.touched">
           Department is required
         </span>
       </div>
 
-      <!-- fuel -->
       <div class="form-group">
         <label>Fuel</label>
-       <select formControlName="fuelId"
-        [style.color]="!generatorForm.get('fuelId')?.value ? '#999' : '#000'">
-
-  <option value="" disabled>Select Fuel</option>
-
-  <option *ngFor="let f of fuels()"
-          [value]="f.fuelId"
-          style="color:#000;">
-    {{ f.fuelName }}
-  </option>
-
-</select>
-        <span class="error-text" *ngIf="generatorForm.get('fuelId')?.invalid && generatorForm.get('fuelId')?.touched">
+        <select formControlName="fuelId"
+                [style.color]="!generatorForm.get('fuelId')?.value ? '#999' : '#000'">
+          <option value="" disabled>Select Fuel</option>
+          <option *ngFor="let f of fuels()" [value]="f.fuelId" style="color:#000">
+            {{ f.fuelName }}
+          </option>
+        </select>
+        <span class="error-text"
+          *ngIf="generatorForm.get('fuelId')?.invalid && generatorForm.get('fuelId')?.touched">
           Fuel is required
         </span>
       </div>
 
-      <!-- Status + Save -->
       <div class="form-actions">
         <div class="status-toggle">
           <span>Active</span>
@@ -94,63 +75,71 @@
             <span class="slider"></span>
           </label>
         </div>
-        <button type="submit" class="save-btn">
-          {{ editingGeneratorId ? 'Update' : 'Save' }}
-        </button>
-              <button class="btn-reset" (click)="resetForm()">Reset</button>
+        <button type="submit" class="save-btn">{{ editingGeneratorId ? 'Update' : 'Save' }}</button>
+        <button type="button" class="btn-reset" (click)="resetForm()">Reset</button>
       </div>
 
     </form>
   </div>
 
-  <!-- ================= SEARCH + GENERATOR LIST ================= -->
+  <!-- ================= TABLE CARD ================= -->
   <div class="card">
-    <div class="search-row">
 
+    <div class="search-row">
       <div class="search-left">
-        <input type="text" class="search-input" placeholder="Quick Search" [(ngModel)]="searchText"
-          (input)="loadGenerators()" />
+        <div class="search-wrap">
+          <i class="bi bi-search search-icon"></i>
+          <input type="text" class="search-input" placeholder="Quick Search"
+                 [(ngModel)]="searchText" (input)="applySearch()" />
+        </div>
       </div>
 
       <div class="search-right">
         <div class="status-toggle">
           <span>Active Only</span>
           <label class="switch">
-<input type="checkbox"
-       [checked]="isActiveFilter === true"
-       (change)="isActiveFilter = $any($event.target).checked ? true : false; pageNumber = 1; loadGenerators()" />            <span class="slider"></span>
+            <input type="checkbox"
+                   [checked]="isActiveFilter === true"
+                   (change)="onToggleActive()" />
+            <span class="slider"></span>
           </label>
         </div>
-        <button type="button" class="filter-btn" (click)="openFilterModal()">Filter</button>
+
+        <button type="button" class="filter-btn" (click)="openFilterModal()">
+          <i class="bi bi-sliders"></i>
+          <span>Filter</span>
+          <span class="filter-badge" *ngIf="totalFilterCount > 0">{{ totalFilterCount }}</span>
+        </button>
       </div>
+    </div>
 
-    </div> <!-- end search-row -->
+    <!-- Active chips row -->
+    <div class="active-chips-row"
+         *ngIf="selectedFuelIds.length > 0 || selectedSiteIds.length > 0">
+      <span class="vf-chip" *ngFor="let id of selectedFuelIds">
+        <i class="bi bi-fuel-pump"></i> {{ getFuelName(id) }}
+        <button class="vf-chip-remove" (click)="removeFuel(id); applySearch()">✕</button>
+      </span>
+      <span class="vf-chip vf-chip-city" *ngFor="let id of selectedSiteIds">
+        <i class="bi bi-geo-alt"></i> {{ getSiteName(id) }}
+        <button class="vf-chip-remove" (click)="removeSite(id); applySearch()">✕</button>
+      </span>
+    </div>
 
+    <!-- Table -->
     <div class="table-wrapper">
       <table>
         <thead>
-  <tr>
-    <th class="sortable" (click)="sort('generatorName')">
-      Name <span class="sort-icon">{{ getSortIcon('generatorName') }}</span>
-    </th>
-    <th class="sortable" (click)="sort('ratedCapacityKW')">
-      Rated KW <span class="sort-icon">{{ getSortIcon('ratedCapacityKW') }}</span>
-    </th>
-    <th class="sortable" (click)="sort('fuelName')">
-      Fuel Type <span class="sort-icon">{{ getSortIcon('fuelName') }}</span>
-    </th>
-    <th class="sortable" (click)="sort('siteName')">
-      Site Location <span class="sort-icon">{{ getSortIcon('siteName') }}</span>
-    </th>
-    <th class="sortable" (click)="sort('departmentName')">
-      Department <span class="sort-icon">{{ getSortIcon('departmentName') }}</span>
-    </th>
-    <th class="sortable" (click)="sort('isActive')">
-      Status 
-    </th>
-    <th>Actions</th>
-  </tr>
-</thead>
+          <tr>
+            <th class="sortable" (click)="sort('generatorName')">Name <span class="sort-icon">{{ getSortIcon('generatorName') }}</span></th>
+            <th class="sortable" (click)="sort('ratedCapacityKW')">Rated KW <span class="sort-icon">{{ getSortIcon('ratedCapacityKW') }}</span></th>
+            <th class="sortable" (click)="sort('fuelName')">Fuel Type <span class="sort-icon">{{ getSortIcon('fuelName') }}</span></th>
+            <th class="sortable" (click)="sort('siteName')">Site Location <span class="sort-icon">{{ getSortIcon('siteName') }}</span></th>
+            <th class="sortable" (click)="sort('departmentName')">Department <span class="sort-icon">{{ getSortIcon('departmentName') }}</span></th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
         <tbody>
           <tr *ngFor="let gen of generators()">
             <td>{{ gen?.generatorName }}</td>
@@ -160,92 +149,193 @@
             <td>{{ gen?.departmentName }}</td>
             <td>
               <label class="switch">
-                <input type="checkbox" [checked]="gen.isActive" (click)="confirmToggleStatus($event, gen)" />
+                <input type="checkbox" [checked]="gen.isActive"
+                       (click)="confirmToggleStatus($event, gen)" />
                 <span class="slider"></span>
               </label>
             </td>
             <td class="actions">
-              <button class="edit-btn" (click)="edit(gen)">Edit</button>
+              <button class="edit-btn"   (click)="edit(gen)">Edit</button>
               <button class="delete-btn" (click)="delete(gen)">Delete</button>
             </td>
           </tr>
           <tr *ngIf="generators().length === 0">
-    <td colspan="7" style="text-align: center; padding: 20px; color: #999;">
-      No records found
-    </td>
-  </tr>
+            <td colspan="7" class="empty-row">No records found</td>
+          </tr>
         </tbody>
       </table>
-    </div> <!-- end table-wrapper -->
+    </div>
 
-    <!-- ================= PAGINATION ================= -->
-     <div class="pagination-info">
-      <span>Total Records: {{ totalRecords }}</span>
+    <!-- Pagination -->
+    <div class="pagination-info">
+      <span>Total Records: <b>{{ totalRecords }}</b></span>
       <div class="pagination-controls">
-        <button (click)="prevPage()" [disabled]="pageNumber===1">Previous</button>
+        <button (click)="prevPage()" [disabled]="pageNumber === 1">Previous</button>
         <span>Page {{ pageNumber }} of {{ totalPages }}</span>
-        <button (click)="nextPage()" [disabled]="pageNumber===totalPages">Next</button>
-        <label for="pageSize">Page Size :</label>
+        <button (click)="nextPage()" [disabled]="pageNumber === totalPages">Next</button>
+        <label for="pageSize">Page Size:</label>
         <select id="pageSize" [value]="pageSize" (change)="changePageSize($event)">
           <option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</option>
         </select>
       </div>
     </div>
-  
+
   </div>
+</div>
 
 
-  <!-- ================= FILTER MODAL ================= -->
-  <div class="filter-overlay" *ngIf="filterModalOpen">
-    <div class="filter-modal">
+<!-- ===================== FILTER MODAL ===================== -->
+<div class="vf-overlay" *ngIf="filterModalOpen()" (click)="closeFilter()">
+  <div class="vf-modal" (click)="$event.stopPropagation()">
 
-      <!-- Header -->
-      <div class="filter-header">
-        <h3>Filter Generators</h3>
-        <button type="button" class="close-btn" (click)="closeFilter()">✖</button>
-      </div>
-
-      <!-- Body -->
-      <div class="filter-body">
-
-        <div class="form-row">
-          <!-- Fuel Type Multi Select -->
-          <div class="form-group half-width">
-            <label>Fuel Type</label>
-            <div class="multi-select-box">
-              <div *ngFor="let fuel of fuels()" class="checkbox-item">
-                <label>
-                  <input type="checkbox" [checked]="selectedFuelIds.includes(fuel.fuelId)"
-                    (change)="toggleFuel(fuel.fuelId)" />
-                  <span>{{ fuel.fuelName }}</span>
-                </label>
-              </div>
-            </div>
-          </div>
-
-          <!-- Site Multi Select -->
-          <div class="form-group half-width">
-            <label>Site</label>
-            <div class="multi-select-box">
-              <div *ngFor="let site of sites()" class="checkbox-item">
-                <label>
-                  <input type="checkbox" [checked]="selectedSiteIds.includes(site.siteId)"
-                    (change)="toggleSite(site.siteId)" />
-                  <span>{{ site.siteName }}</span>
-                </label>
-              </div>
-            </div>
-          </div>
+    <!-- Header -->
+    <div class="vf-header">
+      <div class="vf-header-left">
+        <div class="vf-header-icon">
+          <i class="bi bi-sliders"></i>
         </div>
-
-        <!-- Footer -->
-        <div class="filter-footer">
-          <button type="button" class="reset-btn" (click)="resetFilterModal()">Reset</button>
-          <button type="button" class="apply-btn" (click)="applyFilter()">Apply Filter</button>
+        <div>
+          <h3 class="vf-title">Filter Generators</h3>
+          <p class="vf-subtitle">Select one or more values per filter</p>
         </div>
-
       </div>
+      <button class="vf-close-btn" (click)="closeFilter()">
+        <i class="bi bi-x-lg"></i>
+      </button>
     </div>
-  </div>
 
+    <!-- Active chips inside modal -->
+    <div class="vf-chips" *ngIf="selectedFuelIds.length > 0 || selectedSiteIds.length > 0">
+      <span class="vf-chip" *ngFor="let id of selectedFuelIds">
+        <i class="bi bi-fuel-pump"></i> {{ getFuelName(id) }}
+        <button class="vf-chip-remove" (click)="removeFuel(id)">✕</button>
+      </span>
+      <span class="vf-chip vf-chip-city" *ngFor="let id of selectedSiteIds">
+        <i class="bi bi-geo-alt"></i> {{ getSiteName(id) }}
+        <button class="vf-chip-remove" (click)="removeSite(id)">✕</button>
+      </span>
+    </div>
+
+    <!-- Body -->
+    <div class="vf-body">
+
+      <!-- Fuel Type -->
+      <div class="vf-col">
+        <div class="vf-col-label">
+          <i class="bi bi-fuel-pump"></i>
+          Fuel Type
+          <span class="vf-col-count" *ngIf="selectedFuelIds.length > 0">
+            {{ selectedFuelIds.length }} selected
+          </span>
+        </div>
+
+        <div class="vf-trigger" [class.open]="fuelDropOpen"
+             (click)="fuelDropOpen = !fuelDropOpen">
+          <span class="vf-trigger-text">
+            <ng-container *ngIf="selectedFuelIds.length === 0">All Fuel Types</ng-container>
+            <ng-container *ngIf="selectedFuelIds.length > 0">
+              {{ selectedFuelIds.length }} fuel{{ selectedFuelIds.length > 1 ? 's' : '' }} selected
+            </ng-container>
+          </span>
+          <i class="bi bi-chevron-down vf-chevron"></i>
+        </div>
+
+        <div class="vf-panel" [class.open]="fuelDropOpen">
+          <div class="vf-panel-search">
+            <input type="text" placeholder="Search fuel..."
+                   [(ngModel)]="fuelSearch" (click)="$event.stopPropagation()" />
+          </div>
+
+          <div class="vf-check-row vf-select-all" (click)="toggleAllFuels()">
+            <span class="vf-checkbox"
+                  [class.checked]="selectedFuelIds.length === filteredFuelList.length && filteredFuelList.length > 0"
+                  [class.indeterminate]="selectedFuelIds.length > 0 && selectedFuelIds.length < filteredFuelList.length">
+              <i class="bi bi-check"
+                 *ngIf="selectedFuelIds.length === filteredFuelList.length && filteredFuelList.length > 0"></i>
+              <i class="bi bi-dash"
+                 *ngIf="selectedFuelIds.length > 0 && selectedFuelIds.length < filteredFuelList.length"></i>
+            </span>
+            <span class="vf-check-label">Select All</span>
+          </div>
+
+          <div class="vf-divider"></div>
+
+          <div class="vf-check-row" *ngFor="let f of filteredFuelList"
+               (click)="toggleFuel(f.fuelId)" [class.selected]="isFuelSelected(f.fuelId)">
+            <span class="vf-checkbox" [class.checked]="isFuelSelected(f.fuelId)">
+              <i class="bi bi-check" *ngIf="isFuelSelected(f.fuelId)"></i>
+            </span>
+            <span class="vf-check-label">{{ f.fuelName }}</span>
+          </div>
+
+          <div class="vf-panel-empty" *ngIf="filteredFuelList.length === 0">No options found</div>
+        </div>
+      </div>
+
+      <!-- Site -->
+      <div class="vf-col">
+        <div class="vf-col-label">
+          <i class="bi bi-geo-alt"></i>
+          Site Location
+          <span class="vf-col-count" *ngIf="selectedSiteIds.length > 0">
+            {{ selectedSiteIds.length }} selected
+          </span>
+        </div>
+
+        <div class="vf-trigger" [class.open]="siteDropOpen"
+             (click)="siteDropOpen = !siteDropOpen">
+          <span class="vf-trigger-text">
+            <ng-container *ngIf="selectedSiteIds.length === 0">All Sites</ng-container>
+            <ng-container *ngIf="selectedSiteIds.length > 0">
+              {{ selectedSiteIds.length }} site{{ selectedSiteIds.length > 1 ? 's' : '' }} selected
+            </ng-container>
+          </span>
+          <i class="bi bi-chevron-down vf-chevron"></i>
+        </div>
+
+        <div class="vf-panel" [class.open]="siteDropOpen">
+          <div class="vf-panel-search">
+            <input type="text" placeholder="Search site..."
+                   [(ngModel)]="siteSearch" (click)="$event.stopPropagation()" />
+          </div>
+
+          <div class="vf-check-row vf-select-all" (click)="toggleAllSites()">
+            <span class="vf-checkbox"
+                  [class.checked]="selectedSiteIds.length === filteredSiteList.length && filteredSiteList.length > 0"
+                  [class.indeterminate]="selectedSiteIds.length > 0 && selectedSiteIds.length < filteredSiteList.length">
+              <i class="bi bi-check"
+                 *ngIf="selectedSiteIds.length === filteredSiteList.length && filteredSiteList.length > 0"></i>
+              <i class="bi bi-dash"
+                 *ngIf="selectedSiteIds.length > 0 && selectedSiteIds.length < filteredSiteList.length"></i>
+            </span>
+            <span class="vf-check-label">Select All</span>
+          </div>
+
+          <div class="vf-divider"></div>
+
+          <div class="vf-check-row" *ngFor="let s of filteredSiteList"
+               (click)="toggleSite(s.siteId)" [class.selected]="isSiteSelected(s.siteId)">
+            <span class="vf-checkbox" [class.checked]="isSiteSelected(s.siteId)">
+              <i class="bi bi-check" *ngIf="isSiteSelected(s.siteId)"></i>
+            </span>
+            <span class="vf-check-label">{{ s.siteName }}</span>
+          </div>
+
+          <div class="vf-panel-empty" *ngIf="filteredSiteList.length === 0">No options found</div>
+        </div>
+      </div>
+
+    </div><!-- /vf-body -->
+
+    <!-- Footer -->
+    <div class="vf-footer">
+      <button class="vf-btn-reset" type="button" (click)="resetFilterModal()">
+        <i class="bi bi-arrow-counterclockwise"></i> Reset
+      </button>
+      <button class="vf-btn-apply" type="button" (click)="applyFilter()">
+        <i class="bi bi-search"></i> Apply Filter
+      </button>
+    </div>
+
+  </div>
 </div>

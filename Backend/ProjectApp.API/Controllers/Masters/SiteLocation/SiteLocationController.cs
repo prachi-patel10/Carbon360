@@ -74,6 +74,7 @@ namespace ProjectApp.API.Controllers.Masters.SiteLocation
             [FromQuery] string sortDirection = "ASC",
             [FromQuery] int pageNumber = 1,
             [FromQuery] int pageSize = 10,
+            [FromQuery] string? siteNames = null,
             [FromQuery] string? cities = null,   // NEW: "Mumbai,Surat"
             [FromQuery] string? states = null)   // NEW: "Gujarat,Maharashtra"
         {
@@ -85,6 +86,7 @@ namespace ProjectApp.API.Controllers.Masters.SiteLocation
                 SortDirection = sortDirection,
                 PageNumber = pageNumber,
                 PageSize = pageSize,
+                SiteNames = siteNames,
                 Cities = cities,
                 States = states
             };

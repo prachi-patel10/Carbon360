@@ -73,14 +73,13 @@ namespace ProjectApp.API.Controllers.Masters.Generator
 
         [HttpGet("search")]
         public async Task<IActionResult> Search(
-    string? search,
-    bool? isActive,
+    string? search, bool? isActive,
     string sortColumn = "generatorName",
     string sortDirection = "ASC",
-    int pageNumber = 1,
-    int pageSize = 10)
+    int pageNumber = 1, int pageSize = 10,
+    string? fuelIds = null,  
+    string? siteIds = null)   
         {
-            // Map query parameters to your search request DTO
             var request = new GeneratorSearchRequest
             {
                 Search = search,
@@ -88,11 +87,11 @@ namespace ProjectApp.API.Controllers.Masters.Generator
                 SortColumn = sortColumn,
                 SortDirection = sortDirection,
                 PageNumber = pageNumber,
-                PageSize = pageSize
+                PageSize = pageSize,
+                FuelIds = fuelIds,   
+                SiteIds = siteIds    
             };
-
             var result = await _service.SearchAsync(request);
-
             return Ok(result);
         }
 

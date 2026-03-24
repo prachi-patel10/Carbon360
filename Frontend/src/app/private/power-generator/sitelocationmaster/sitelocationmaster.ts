@@ -369,7 +369,7 @@ export class Sitelocationmaster implements OnInit {
     this.siteNameSearch    = '';
     this.citySearch        = '';
     this.pageNumber        = 1;
-    this.filterModalOpen.set(false);
+    // this.filterModalOpen.set(false);
     this.search();
   }
 
