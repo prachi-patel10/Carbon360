@@ -1,228 +1,593 @@
-<div class="container py-4">
-
-  <!-- ================= FORM ================= -->
-  <div class="card mb-4">
-    <form [formGroup]="operationForm" (ngSubmit)="submitOperation()" class="row g-3">
-
-      <!-- ================= SITE ================= -->
-      <div class="col-md-3">
-        <label class="form-label fw-bold">Site Location <span class="text-danger">*</span></label>
-        <select class="form-select" formControlName="SiteId" required>
-          <option [ngValue]="null">-- Select Site --</option>
-          <option *ngFor="let s of sites" [ngValue]="s.siteId">
-            {{ s.siteName }}
-          </option>
-        </select>
-        <div class="text-danger" *ngIf="isInvalid('SiteId')">Site is required</div>
-      </div>
-
-      <!-- ================= GENERATOR ================= -->
-      <div class="col-md-3">
-        <label class="form-label fw-bold">Generator <span class="text-danger">*</span></label>
-        <select class="form-select" formControlName="GeneratorId" required>
-          <option [ngValue]="null">-- Select Generator --</option>
-          <option *ngFor="let g of generators" [ngValue]="g.generatorId">
-            {{ g.generatorName }}
-          </option>
-        </select>
-        <div class="text-danger" *ngIf="isInvalid('GeneratorId')">Generator is required</div>
-      </div>
-
-      <!-- ================= START TIME ================= -->
-      <div class="col-md-3">
-        <label class="form-label fw-bold">Start Date & Time <span class="text-danger">*</span></label>
-        <input type="datetime-local" class="form-control" formControlName="StartTime" required>
-        <div class="text-danger" *ngIf="isInvalid('StartTime')">
-          <span *ngIf="operationForm.get('StartTime')?.errors?.['required']">Start time is required</span>
-          <span *ngIf="operationForm.get('StartTime')?.errors?.['futureDate']">Future date/time not allowed</span>
+<div class="generator-ecpage">
+  <div class="form-card">
+    <div class="form-body">
+      <form [formGroup]="operationForm" (ngSubmit)="submitOperation()">
+        <!-- ================= SECTION: GENERATOR DETAILS ================= -->
+        <div class="section-divider">
+          <div class="section-divider-line"></div>
+          <div class="section-divider-text">
+            <svg
+              class="label-icon"
+              xmlns="http://www.w3.org/2000/svg"
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path>
+              <circle cx="12" cy="10" r="3"></circle>
+            </svg>
+            Generator Details
+          </div>
+          <div class="section-divider-line"></div>
         </div>
-      </div>
 
-      <!-- ================= END TIME ================= -->
-      <div class="col-md-3">
-        <label class="form-label fw-bold">End Date & Time <span class="text-danger">*</span></label>
-        <input type="datetime-local" class="form-control" formControlName="EndTime" required>
-        <div class="text-danger" *ngIf="isInvalid('EndTime')">
-          <span *ngIf="operationForm.get('EndTime')?.errors?.['required']">End time is required</span>
-          <span *ngIf="operationForm.get('EndTime')?.errors?.['futureDate']">Future date/time not allowed</span>
-        </div>
-      </div>
+        <div class="form-row three-cols">
+          <!-- Site -->
+          <div class="form-group">
+            <label>
+              <svg
+                class="label-icon"
+                xmlns="http://www.w3.org/2000/svg"
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path>
+                <circle cx="12" cy="10" r="3"></circle>
+              </svg>
+              Site Location
+            </label>
 
-      <!-- ================= LOAD FACTOR ================= -->
-      <div class="col-md-3">
-        <label class="form-label fw-bold">Load Factor (%) <span class="text-danger">*</span></label>
-        <input type="number" class="form-control" formControlName="LoadFactor" placeholder="0%" required>
-        <div class="text-danger" *ngIf="isInvalid('LoadFactor')">
-          <span *ngIf="operationForm.get('LoadFactor')?.errors?.['required']">Load Factor is required</span>
-          <span *ngIf="operationForm.get('LoadFactor')?.errors?.['min']">Cannot be negative</span>
-          <span *ngIf="operationForm.get('LoadFactor')?.errors?.['max']">Cannot exceed 100%</span>
-        </div>
-      </div>
+            <div class="input-wrapper">
+              <svg
+                class="input-icon"
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path>
+                <circle cx="12" cy="10" r="3"></circle>
+              </svg>
 
-      <!-- ================= FUEL CONSUMED ================= -->
-      <div class="col-md-3">
-        <label class="form-label fw-bold">Fuel Consumed (L) <span class="text-danger">*</span></label>
-        <input type="number" class="form-control" formControlName="FuelConsumedLiters" placeholder="0" required>
-        <div class="text-danger" *ngIf="isInvalid('FuelConsumedLiters')">
-          <span *ngIf="operationForm.get('FuelConsumedLiters')?.errors?.['required']">Fuel is required</span>
-          <span *ngIf="operationForm.get('FuelConsumedLiters')?.errors?.['min']">Cannot be negative</span>
-        </div>
-      </div>
-
-      <!-- ================= FORM BUTTONS ================= -->
-      <div class="col-12 mt-3" *ngIf="userRole === 'reporter' && !isViewMode && !isReviewMode && !isResubmitMode">
-
-        <button type="submit" class="btn btn-primary">
-          Save
-        </button>
-
-        <button type="button" class="btn btn-secondary ms-2" (click)="resetForm()">
-          Reset
-        </button>
-
-      </div>
-
-    </form>
-
-
-  <div class="workflow-actions" *ngIf="workflowActions.length > 0">
-
-    <button *ngFor="let action of workflowActions" class="workflow-btn" [ngClass]="{
-      'approve-btn': action.actionName === 'Approve',
-      'reject-btn': action.actionName === 'Reject',
-      'resubmit-btn': action.actionName === 'Resubmit'
-    }" (click)="performAction(action.workflowId)">
-      {{ action.actionName }}
-    </button>
-
-  </div>
-    </div>
-
-  <!-- ================= GENERATOR RESULT SECTION ================= -->
-  <div class="card result-card"
-    *ngIf="isViewMode || isReviewMode|| isResubmitMode || isEditMode || (isEditMode && userRole === 'reporter')">
-
-    <!-- Main Header -->
-
-    <div class="result-grid">
-
-      <!-- ================= EMISSION FACTORS ================= -->
-      <h4 class="section-title">Emission Factors</h4>
-
-      <div><strong>CO₂ Factor:</strong> {{ co2Factor }} kg</div>
-      <div><strong>NO₂ Factor:</strong> {{ no2Factor }} kg</div>
-      <div><strong>CH₄ Factor:</strong> {{ ch4Factor }} kg</div>
-
-      <div><strong>GWP (CH₄):</strong> {{ operation.gwP_CH4 }}</div>
-      <div><strong>GWP (NO₂):</strong> {{ operation.gwP_NO2 }}</div>
-
-      <!-- Divider -->
-      <hr class="full-width">
-
-      <!-- ================= CALCULATION ================= -->
-      <h4 class="section-title">Emission Calculation</h4>
-
-
-      <div class="formula full-width">
-        Run Hours (hrs) = (End Time − Start Time) <br>
-
-        = {{ operation.endTime | date:'dd-MM-yyyy HH:mm' }} - {{ operation.startTime | date:'dd-MM-yyyy HH:mm' }}
-        <br>
-
-        = {{ operation.runHours }} hours <br>
-      </div>
-
-      <div class="formula full-width">
-
-        Power Output (kWh) = Rated Capacity × Load Factor × Run Hours <br>
-
-        = {{ operation.ratedCapacityKW }} ×
-        ({{ operation.loadFactor }} / 100) ×
-        {{ operation.runHours }} <br>
-
-        = {{ operation.powerOutputKWH | number:'1.2-2' }} kWh
-      </div>
-
-      <div class="formula full-width">
-        CO₂ = Fuel(L) × CO₂ Factor <br>
-        = {{ fuelConsumed }} × {{ co2Factor }} <br>
-        = {{ totalCO2 | number:'1.3-3' }} kg
-      </div>
-
-      <div class="formula full-width">
-        NO₂ = Fuel(L) × NO₂ Factor <br>
-        = {{ fuelConsumed }} × {{ no2Factor }} <br>
-        = {{ totalNO2 | number:'1.6-6' }} kg
-      </div>
-
-      <div class="formula full-width">
-        CH₄ = Fuel(L) × CH₄ Factor <br>
-        = {{ fuelConsumed }} × {{ ch4Factor }} <br>
-        = {{ totalCH4 | number:'1.6-6' }} kg
-      </div>
-
-      <div class="formula full-width">
-        Total Emission CO₂ Eq = CO₂ + (CH₄ × GWP) + (NO₂ × GWP) <br>
-        = {{ totalCO2 | number:'1.3-3' }} +
-        ({{ totalCH4 | number:'1.6-6' }} × {{ operation.gwP_CH4 }}) +
-        ({{ totalNO2 | number:'1.6-6' }} × {{ operation.gwP_NO2 }}) <br>
-        = {{ operation.totalEmission | number:'1.3-3' }} kg CO₂e
-      </div>
-
-    </div>
-
-    <!-- HISTORY SECTION -->
-    <div class="card history-card" *ngIf="tripHistory && tripHistory.length > 0">
-      <h5 class="section-title">History</h5>
-
-      <!-- TIMELINE -->
-      <ul class="history-list">
-        <li *ngFor="let h of tripHistory" class="history-item">
-          <!-- <span class="history-dot" [ngClass]="{
-          'dot-submit':   h.ActionName === 'Submit',
-          'dot-approve':  h.ActionName === 'Approve',
-          'dot-reject':   h.ActionName === 'Reject',
-          'dot-resubmit': h.ActionName === 'Resubmit'
-        }">
-        {{h.ActionName}}
-      </span> -->
-
-          <div class="history-content">
-
-            <!-- SMART MESSAGE -->
-            <div class="history-message">{{ getActionMessage(h) }}</div>
-
-            <!-- DATE + RELATIVE TIME -->
-            <div class="history-meta">
-              <span class="history-date">{{ h.ActionDate | date:'dd MMM yyyy, hh:mm a' }}</span>
-              <span class="history-ago">· {{ getTimeAgo(h.ActionDate) }}</span>
+              <select formControlName="SiteId" [ngClass]="{ invalid: isInvalid('SiteId') }">
+                <option [ngValue]="null">Select Site</option>
+                <option *ngFor="let s of sites" [ngValue]="s.siteId">
+                  {{ s.siteName }}
+                </option>
+              </select>
             </div>
 
-            <!-- STATUS BADGE -->
-            <!-- <span class="history-badge" [ngClass]="{
-            'badge-submit':   h.ActionName === 'Submit',
-            'badge-approve':  h.ActionName === 'Approve',
-            'badge-reject':   h.ActionName === 'Reject',
-            'badge-resubmit': h.ActionName === 'Resubmit'
-          }">
-          {{ h.ActionName }}
-        </span> -->
-
+            <small class="error" *ngIf="isInvalid('SiteId')"> Site is required </small>
           </div>
-        </li>
-      </ul>
+
+          <!-- Generator -->
+          <div class="form-group">
+            <label>
+              <svg
+                class="label-icon"
+                xmlns="http://www.w3.org/2000/svg"
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline>
+                <polyline points="16 7 22 7 22 13"></polyline>
+              </svg>
+              Generator
+            </label>
+
+            <div class="input-wrapper">
+              <svg
+                class="input-icon"
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline>
+                <polyline points="16 7 22 7 22 13"></polyline>
+              </svg>
+
+              <select
+                formControlName="GeneratorId"
+                [ngClass]="{ invalid: isInvalid('GeneratorId') }"
+              >
+                <option [ngValue]="null">Select Generator</option>
+                <option *ngFor="let g of generators" [ngValue]="g.generatorId">
+                  {{ g.generatorName }}
+                </option>
+              </select>
+            </div>
+
+            <small class="error" *ngIf="isInvalid('GeneratorId')"> Generator is required </small>
+          </div>
+        </div>
+
+        <!-- ================= PERFORMANCE ================= -->
+        <div class="section-divider">
+          <div class="section-divider-line"></div>
+          <div class="section-divider-text">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="m12 14 4-4"></path>
+              <path d="M3.34 19a10 10 0 1 1 17.32 0"></path>
+            </svg>
+            Performance & Consumption
+          </div>
+          <div class="section-divider-line"></div>
+        </div>
+
+        <div class="form-row three-cols">
+          <!-- Load Factor -->
+          <div class="form-group">
+            <label>
+              <svg class="label-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18">
+                <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline>
+              </svg>
+              Load Factor (%)
+            </label>
+
+            <div class="input-wrapper">
+              <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20">
+                <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline>
+              </svg>
+
+              <input
+                type="number"
+                formControlName="LoadFactor"
+                placeholder="Enter load factor"
+                [ngClass]="{ invalid: isInvalid('LoadFactor') }"
+              />
+            </div>
+
+            <small class="error" *ngIf="isInvalid('LoadFactor')"> Invalid load factor </small>
+          </div>
+
+          <!-- Fuel -->
+          <div class="form-group">
+            <label>
+              <svg
+                class="label-icon"
+                xmlns="http://www.w3.org/2000/svg"
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <line x1="3" x2="15" y1="22" y2="22"></line>
+                <line x1="4" x2="14" y1="9" y2="9"></line>
+                <path d="M14 22V4a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v18"></path>
+                <path
+                  d="M14 13h2a2 2 0 0 1 2 2v2a2 2 0 0 0 2 2h0a2 2 0 0 0 2-2V9.83a2 2 0 0 0-.59-1.42L18 5"
+                ></path>
+              </svg>
+
+              Fuel Consumed (Liters)
+            </label>
+
+            <div class="input-wrapper">
+              <svg
+                class="input-icon"
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <line x1="3" x2="15" y1="22" y2="22"></line>
+                <line x1="4" x2="14" y1="9" y2="9"></line>
+                <path d="M14 22V4a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v18"></path>
+                <path
+                  d="M14 13h2a2 2 0 0 1 2 2v2a2 2 0 0 0 2 2h0a2 2 0 0 0 2-2V9.83a2 2 0 0 0-.59-1.42L18 5"
+                ></path>
+              </svg>
+
+              <input
+                type="number"
+                formControlName="FuelConsumedLiters"
+                placeholder="Enter fuel"
+                [ngClass]="{ invalid: isInvalid('FuelConsumedLiters') }"
+              />
+            </div>
+
+            <small class="error" *ngIf="isInvalid('FuelConsumedLiters')"> Fuel is required </small>
+          </div>
+        </div>
+
+        <!-- ================= TIME ================= -->
+        <div class="section-divider">
+          <div class="section-divider-line"></div>
+          <div class="section-divider-text">
+            <svg
+              class="label-icon"
+              xmlns="http://www.w3.org/2000/svg"
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <rect width="18" height="18" x="3" y="4" rx="2" ry="2"></rect>
+              <line x1="16" x2="16" y1="2" y2="6"></line>
+              <line x1="8" x2="8" y1="2" y2="6"></line>
+              <line x1="3" x2="21" y1="10" y2="10"></line>
+            </svg>
+            Operation Time
+          </div>
+          <div class="section-divider-line"></div>
+        </div>
+
+        <div class="form-row three-cols">
+          <!-- Start -->
+          <div class="form-group">
+            <label>
+              <svg
+                class="label-icon"
+                xmlns="http://www.w3.org/2000/svg"
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <rect width="18" height="18" x="3" y="4" rx="2" ry="2"></rect>
+                <line x1="16" x2="16" y1="2" y2="6"></line>
+                <line x1="8" x2="8" y1="2" y2="6"></line>
+                <line x1="3" x2="21" y1="10" y2="10"></line>
+              </svg>
+              Start Date</label
+            >
+
+            <div class="input-wrapper">
+              <svg
+                class="input-icon"
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <rect width="18" height="18" x="3" y="4" rx="2" ry="2"></rect>
+                <line x1="16" x2="16" y1="2" y2="6"></line>
+                <line x1="8" x2="8" y1="2" y2="6"></line>
+                <line x1="3" x2="21" y1="10" y2="10"></line>
+              </svg>
+
+              <input
+                type="datetime-local"
+                formControlName="StartTime"
+                [ngClass]="{ invalid: isInvalid('StartTime') }"
+              />
+            </div>
+
+            <small class="error" *ngIf="isInvalid('StartTime')"> Start time required </small>
+          </div>
+
+          <!-- End -->
+          <div class="form-group">
+            <label>
+              <svg
+                class="label-icon"
+                xmlns="http://www.w3.org/2000/svg"
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <rect width="18" height="18" x="3" y="4" rx="2" ry="2"></rect>
+                <line x1="16" x2="16" y1="2" y2="6"></line>
+                <line x1="8" x2="8" y1="2" y2="6"></line>
+                <line x1="3" x2="21" y1="10" y2="10"></line>
+                </svg>End Date</label>
+
+            <div class="input-wrapper">
+              <svg
+                class="input-icon"
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <rect width="18" height="18" x="3" y="4" rx="2" ry="2"></rect>
+                <line x1="16" x2="16" y1="2" y2="6"></line>
+                <line x1="8" x2="8" y1="2" y2="6"></line>
+                <line x1="3" x2="21" y1="10" y2="10"></line>
+              </svg>
+              <input
+                type="datetime-local"
+                formControlName="EndTime"
+                [ngClass]="{ invalid: isInvalid('EndTime') }"
+              />
+            </div>
+
+            <small class="error" *ngIf="isInvalid('EndTime')"> End time required </small>
+          </div>
+        </div>
+        <div
+          class="review-actions"
+          *ngIf="
+            pageSource === 'myaction' &&
+            userRole === 'reporter' &&
+            !isViewMode &&
+            !isReviewMode &&
+            !isResubmitMode
+          "
+        >
+          <button type="submit" class="btn-submit">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+              <polyline points="17 21 17 13 7 13 7 21"></polyline>
+              <polyline points="7 3 7 8 15 8"></polyline>
+            </svg>
+            Save Report
+          </button>
+          <button type="button" class="btn-reset" (click)="operationForm.reset()">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path>
+              <path d="M21 3v5h-5"></path>
+              <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path>
+              <path d="M8 16H3v5"></path></svg>Reset
+          </button>
+        </div>
+      </form>
+
+      <!-- ================= WORKFLOW ACTIONS ================= -->
+      <div class="review-actions" *ngIf="workflowActions.length > 0">
+            <button
+          *ngFor="let action of workflowActions"
+          class="workflow-btn"
+          [ngClass]="{
+            'btn-approve': action.actionName === 'Approve',
+            'btn-reject': action.actionName === 'Reject',
+            'btn-resubmit': action.actionName === 'Resubmit',
+          }"
+          (click)="performAction(action.workflowId)"
+        >
+                {{ action.actionName }}     
+        </button>
+
+          
+      </div>
+          
     </div>
+
+      <!-- ================= GENERATOR RESULT SECTION ================= -->
+      
+    <div
+      class="card result-card"
+      *ngIf="
+        isViewMode ||
+        isReviewMode ||
+        isResubmitMode ||
+        isEditMode ||
+        (isEditMode && userRole === 'reporter')
+      "
+    >
+          <!-- Main Header -->
+
+        
+      <div class="result-grid">
+              <!-- ================= EMISSION FACTORS ================= -->
+              
+        <h4 class="section-title">Emission Factors</h4>
+
+              
+        <div><strong>CO₂ Factor:</strong> {{ co2Factor }} kg</div>
+              
+        <div><strong>NO₂ Factor:</strong> {{ no2Factor }} kg</div>
+              
+        <div><strong>CH₄ Factor:</strong> {{ ch4Factor }} kg</div>
+
+              
+        <div><strong>GWP (CH₄):</strong> {{ operation.gwP_CH4 }}</div>
+              
+        <div><strong>GWP (NO₂):</strong> {{ operation.gwP_NO2 }}</div>
+
+              <!-- Divider -->
+              
+        <hr class="full-width" />
+
+              <!-- ================= CALCULATION ================= -->
+              
+        <h4 class="section-title">Emission Calculation</h4>
+
+              
+        <div class="formula full-width">
+                  Run Hours (hrs) = (End Time − Start Time) <br />
+
+                  = {{ operation.endTime | date: 'dd-MM-yyyy HH:mm' }} -
+          {{ operation.startTime | date: 'dd-MM-yyyy HH:mm' }}         <br />
+
+                  = {{ operation.runHours }} hours <br />
+                
+        </div>
+
+              
+        <div class="formula full-width">
+                  Power Output (kWh) = Rated Capacity × Load Factor × Run Hours <br />
+
+                  = {{ operation.ratedCapacityKW }} ×         ({{ operation.loadFactor }} / 100) ×
+                  {{ operation.runHours }} <br />
+
+                  = {{ operation.powerOutputKWH | number: '1.2-2' }} kWh       
+        </div>
+
+              
+        <div class="formula full-width">
+                  CO₂ = Fuel(L) × CO₂ Factor <br />
+                  = {{ fuelConsumed }} × {{ co2Factor }} <br />
+                  = {{ totalCO2 | number: '1.3-3' }} kg       
+        </div>
+
+              
+        <div class="formula full-width">
+                  NO₂ = Fuel(L) × NO₂ Factor <br />
+                  = {{ fuelConsumed }} × {{ no2Factor }} <br />
+                  = {{ totalNO2 | number: '1.6-6' }} kg       
+        </div>
+
+              
+        <div class="formula full-width">
+                  CH₄ = Fuel(L) × CH₄ Factor <br />
+                  = {{ fuelConsumed }} × {{ ch4Factor }} <br />
+                  = {{ totalCH4 | number: '1.6-6' }} kg       
+        </div>
+
+              
+        <div class="formula full-width">
+                  Total Emission CO₂ Eq = CO₂ + (CH₄ × GWP) + (NO₂ × GWP) <br />
+                  = {{ totalCO2 | number: '1.3-3' }} +         ({{ totalCH4 | number: '1.6-6' }} ×
+          {{ operation.gwP_CH4 }}) +         ({{ totalNO2 | number: '1.6-6' }} ×
+          {{ operation.gwP_NO2 }}) <br />
+                  = {{ operation.totalEmission | number: '1.3-3' }} kg CO₂e       
+        </div>
+
+            
+      </div>
+
+          <!-- HISTORY SECTION -->
+          
+      <div class="history-card" *ngIf="tripHistory && tripHistory.length > 0">
+              
+        <h5 class="section-title">History</h5>
+
+              <!-- TIMELINE -->
+              
+        <ul class="history-list">
+                  
+          <li *ngFor="let h of tripHistory" class="history-item">
+                      <!-- <span class="history-dot" [ngClass]="{
+          'dot-submit':   h.ActionName === 'Submit',
+          'dot-approve':  h.ActionName === 'Approve',
+          'dot-reject':   h.ActionName === 'Reject',
+          'dot-resubmit': h.ActionName === 'Resubmit'
+        }">
+        {{h.ActionName}}
+      </span> -->
+
+            
+            <div class="history-content">
+            
+              <div class="history-message">{{ getActionMessage(h) }}</div>
+
+              <div class="history-meta">
+               <span class="history-date">{{
+                  h.ActionDate | date: 'dd MMM yyyy, hh:mm a'
+                }}</span>
+                <span class="history-ago">· {{ getTimeAgo(h.ActionDate) }}</span>
+                
+              </div>
+
+              <!-- STATUS BADGE -->
+              <!-- <span class="history-badge" [ngClass]="{
+            'badge-submit':   h.ActionName === 'Submit',
+            'badge-approve':  h.ActionName === 'Approve',
+            'badge-reject':   h.ActionName === 'Reject',
+            'badge-resubmit': h.ActionName === 'Resubmit'
+          }">
+          {{ h.ActionName }}
+        </span> -->
+
+                        
+            </div>
+                    
+          </li>
+                
+        </ul>
+            
+      </div>
+        
+    </div>
+</div>
+      <!-- Corporate Approve / Reject
+  <div class="review-actions mt-3" *ngIf="userRole === 'corporate' && currentStatusId == 1">
+    <button class="btn-approve me-2" (click)="updateStatus(2)">Approve</button>
+    <button class="btn-reject" (click)="updateStatus(3)">Reject</button>
+  </div> -->
+
+      <!-- ================= APPROVE / REJECT / RESUBMIT BUTTONS ================= -->
+      <!-- ================= WORKFLOW ACTION BUTTONS ================= -->
   </div>
 
-  <!-- Corporate Approve / Reject
-  <div class="review-actions mt-3" *ngIf="userRole === 'corporate' && currentStatusId == 1">
-    <button class="btn-approve me-2" (click)="updateStatus(2)">Approve</button>
-    <button class="btn-reject" (click)="updateStatus(3)">Reject</button>
-  </div> -->
-
-
-  <!-- ================= APPROVE / REJECT / RESUBMIT BUTTONS ================= -->
-  <!-- ================= WORKFLOW ACTION BUTTONS ================= -->
-
-
-</div>

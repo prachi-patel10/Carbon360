@@ -1,227 +1,367 @@
 <div class="generator-ecpage">
 
   <!-- ================= INPUT FORM ================= -->
-  <div class="card form-card">
-    <!-- <h2 class="card-title">Vehicle Trip Emission</h2> -->
-
-    <form [formGroup]="tripForm" (ngSubmit)="submitTrip()">
-
-      <!-- ROW 1 -->
-      <div class="form-row">
-
-        <div class="form-group">
-          <label>Vehicle</label>
-          <select formControlName="vehicle_id"
-            [ngClass]="{'invalid': tripForm.get('vehicle_id')?.touched && tripForm.get('vehicle_id')?.invalid}">
-            <option value="">Select Vehicle</option>
-            <option *ngFor="let v of vehicles" [value]="v.vehicle_id">
-              {{ v.vehicle_number }}
-            </option>
-          </select>
-          <small class="error" *ngIf="tripForm.get('vehicle_id')?.touched && tripForm.get('vehicle_id')?.invalid">
-            Vehicle is required
-          </small>
+  <div class="form-card">
+    <!-- BODY -->
+    <div class="form-body">
+      <form [formGroup]="tripForm" (ngSubmit)="submitTrip()">
+        
+        <!-- SECTION 1: TRIP DETAILS -->
+        <div class="section-divider">
+          <div class="section-divider-line"></div>
+          <div class="section-divider-text">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path>
+              <circle cx="12" cy="10" r="3"></circle>
+            </svg>
+            Trip Details
+          </div>
+          <div class="section-divider-line"></div>
         </div>
 
-        <div class="form-group">
-          <label>From City</label>
-          <select formControlName="fromCityId"
-            [ngClass]="{'invalid': tripForm.get('fromCityId')?.touched && tripForm.get('fromCityId')?.invalid}">
-            <option value="">Select From City</option>
-            <option *ngFor="let city of cities" [value]="city.cityId">
-              {{ city.cityName }}
-            </option>
-          </select>
-          <small class="error" *ngIf="tripForm.get('fromCityId')?.touched && tripForm.get('fromCityId')?.invalid">
-            From city is required
-          </small>
-        </div>
-
-        <div class="form-group">
-          <label>To City</label>
-          <select formControlName="toCityId"
-            [ngClass]="{'invalid': tripForm.get('toCityId')?.touched && tripForm.get('toCityId')?.invalid}">
-            <option value="">Select To City</option>
-            <option *ngFor="let city of cities" [value]="city.cityId">
-              {{ city.cityName }}
-            </option>
-          </select>
-          <small class="error" *ngIf="tripForm.get('toCityId')?.touched && tripForm.get('toCityId')?.invalid">
-            To city is required
-          </small>
-          <small class="error" *ngIf="tripForm.errors?.['sameCity']">
-            From city and To city cannot be same
-          </small>
-        </div>
-      </div>
-
-      <!-- ROW 2 -->
-
-      <div class="form-row">
-        <div class="form-group">
-          <label>Vehicle Type</label>
-          <input type="text" formControlName="vehicleType" readonly />
-        </div>
-        <!-- <div class="form-row">
-        <div class="form-group">
-          <label>Fuel Type</label>
-          <input type="text" formControlName="fuelType" readonly />
-        </div> -->
-        <div class="form-group">
-          <label>Distance (KM)</label>
-          <input type="number" formControlName="distanceKm"
-            [ngClass]="{'invalid': tripForm.get('distanceKm')?.touched && tripForm.get('distanceKm')?.invalid}" />
-
-          <small class="error"
-            *ngIf="tripForm.get('distanceKm')?.touched && tripForm.get('distanceKm')?.errors?.['required']">
-            Distance is required
-          </small>
-
-          <small class="error" *ngIf="tripForm.get('distanceKm')?.errors?.['min']">
-            Distance must be greater than 0
-          </small>
-        </div>
-
-        <div class="form-group">
-          <label>Fuel Consumed (Liters)</label>
-          <input type="number" formControlName="fuelConsumedLtr"
-            [ngClass]="{'invalid': tripForm.get('fuelConsumedLtr')?.touched && tripForm.get('fuelConsumedLtr')?.invalid}" />
-
-          <small class="error"
-            *ngIf="tripForm.get('fuelConsumedLtr')?.touched && tripForm.get('fuelConsumedLtr')?.errors?.['required']">
-            Fuel consumed is required
-          </small>
-
-          <small class="error" *ngIf="tripForm.get('fuelConsumedLtr')?.errors?.['min']">
-            Fuel must be greater than 0
-          </small>
-        </div>
-
-      </div>
-
-      <!-- ROW 3 -->
-      <div class="form-row">
-
-        <div class="form-group">
-          <label>Trip Start Date</label>
-          <!-- <input type="datetime-local" formControlName="tripStartDateTime" /> -->
-          <input type="datetime-local" formControlName="tripStartDateTime" [max]="todayDateTime"
-            [ngClass]="{'invalid': tripForm.get('tripStartDateTime')?.touched && tripForm.get('tripStartDateTime')?.invalid}"
-            (change)="calculateDuration()" />
-
-          <small class="error"
-            *ngIf="tripForm.get('tripStartDateTime')?.touched && tripForm.get('tripStartDateTime')?.errors?.['required']">
-            Start date is required
-          </small>
-
-          <small class="error" *ngIf="tripForm.get('tripStartDateTime')?.errors?.['futureDate']">
-            Future date/time not allowed
-          </small>
-        </div>
-
-        <div class="form-group">
-          <label>Trip End Date</label>
-          <!-- <input type="datetime-local" formControlName="tripEndDateTime" /> -->
-          <input type="datetime-local" formControlName="tripEndDateTime" [max]="todayDateTime"
-            [ngClass]="{'invalid': tripForm.get('tripEndDateTime')?.touched && tripForm.get('tripEndDateTime')?.invalid}"
-            (change)="calculateDuration()" />
-
-          <small class="error"
-            *ngIf="tripForm.get('tripEndDateTime')?.touched && tripForm.get('tripEndDateTime')?.errors?.['required']">
-            End date is required
-          </small>
-
-          <small class="error" *ngIf="tripForm.get('tripEndDateTime')?.errors?.['endBeforeStart']">
-            End date must be after start date
-          </small>
-          <small class="error" *ngIf="tripForm.get('tripEndDateTime')?.errors?.['futureDate']">
-            Future date/time not allowed
-          </small>
-        </div>
-
-        <div class="form-group" *ngIf="shouldShowDuration()">
-          <label>Trip Duration</label>
-
-          <input type="text" [value]="tripDuration" readonly />
-
-          <small class="error" *ngIf="tripForm.get('tripEndDateTime')?.errors?.['endBeforeStart']">
-            Trip duration cannot be calculated because end date is before start date
-          </small>
-        </div>
-
-      </div>
-
-      <!-- EMISSION FACTORS -->
-      <!-- <div *ngIf="showEmissionFactorSection">
-
-        <h3 class="sub-title">Emission Factors (KG)</h3>
-
-        <div class="form-row">
-
-           <div class="form-group">
-            <label>CO₂ Factor</label>
-            <input type="number" formControlName="co2Factor" readonly />
+        <!-- ROW 1 -->
+        <div class="form-row three-cols">
+          <div class="form-group">
+            <label>
+              <svg class="label-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"></path>
+                <circle cx="7" cy="17" r="2"></circle>
+                <path d="M9 17h6"></path>
+                <circle cx="17" cy="17" r="2"></circle>
+              </svg>
+              Vehicle
+            </label>
+            <div class="input-wrapper">
+              <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"></path>
+                <circle cx="7" cy="17" r="2"></circle>
+                <path d="M9 17h6"></path>
+                <circle cx="17" cy="17" r="2"></circle>
+              </svg>
+              <select formControlName="vehicle_id"
+                [ngClass]="{'invalid': tripForm.get('vehicle_id')?.touched && tripForm.get('vehicle_id')?.invalid}">
+                <option value="">Select Vehicle</option>
+                <option *ngFor="let v of vehicles" [value]="v.vehicle_id">
+                  {{ v.vehicle_number }}
+                </option>
+              </select>
+            </div>
+            <small class="error" *ngIf="tripForm.get('vehicle_id')?.touched && tripForm.get('vehicle_id')?.invalid">
+              Vehicle is required
+            </small>
           </div>
 
           <div class="form-group">
-            <label>NO₂ Factor</label>
-            <input type="number" formControlName="no2Factor" readonly />
+            <label>
+              <svg class="label-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path>
+                <circle cx="12" cy="10" r="3"></circle>
+              </svg>
+              From City
+            </label>
+            <div class="input-wrapper">
+              <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path>
+                <circle cx="12" cy="10" r="3"></circle>
+              </svg>
+              <select formControlName="fromCityId"
+                [ngClass]="{'invalid': tripForm.get('fromCityId')?.touched && tripForm.get('fromCityId')?.invalid}">
+                <option value="">Select From City</option>
+                <option *ngFor="let city of cities" [value]="city.cityId">
+                  {{ city.cityName }}
+                </option>
+              </select>
+            </div>
+            <small class="error" *ngIf="tripForm.get('fromCityId')?.touched && tripForm.get('fromCityId')?.invalid">
+              From city is required
+            </small>
           </div>
 
           <div class="form-group">
-            <label>CH₄ Factor</label>
-            <input type="number" formControlName="ch4Factor" readonly />
-          </div> 
+            <label>
+              <svg class="label-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path>
+                <circle cx="12" cy="10" r="3"></circle>
+              </svg>
+              To City
+            </label>
+            <div class="input-wrapper">
+              <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path>
+                <circle cx="12" cy="10" r="3"></circle>
+              </svg>
+              <select formControlName="toCityId"
+                [ngClass]="{'invalid': tripForm.get('toCityId')?.touched && tripForm.get('toCityId')?.invalid}">
+                <option value="">Select To City</option>
+                <option *ngFor="let city of cities" [value]="city.cityId">
+                  {{ city.cityName }}
+                </option>
+              </select>
+            </div>
+            <small class="error" *ngIf="tripForm.get('toCityId')?.touched && tripForm.get('toCityId')?.invalid">
+              To city is required
+            </small>
+            <small class="error" *ngIf="tripForm.errors?.['sameCity']">
+              From city and To city cannot be same
+            </small>
+          </div>
         </div>
-      </div> -->
-    </form>
-  
 
-  <!-- ================= BTNS ================= -->
-  <div class="review-actions">
+        <!-- SECTION 2: VEHICLE & CONSUMPTION -->
+        <div class="section-divider">
+          <div class="section-divider-line"></div>
+          <div class="section-divider-text">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m12 14 4-4"></path>
+              <path d="M3.34 19a10 10 0 1 1 17.32 0"></path>
+            </svg>
+            Vehicle & Consumption
+          </div>
+          <div class="section-divider-line"></div>
+        </div>
 
-    <!-- Submit -->
-    <button *ngIf="canSubmit() && !isSearchMode()" class="btn-submit" (click)="submitTrip()">
-      Save
-    </button>
-    <!-- Reset Button -->
-    <button *ngIf="canSubmit()" type="button" class="btn-reset" (click)="resetForm()">
-      Reset
-    </button>
-    <!-- Resubmit -->
-    <button *ngIf="canResubmit() && !isSearchMode()" class="btn-resubmit" (click)="resubmitTrip()">
-      Resubmit
-    </button>
+        <!-- ROW 2 -->
+        <div class="form-row three-cols">
+          <div class="form-group">
+            <label>
+              <svg class="label-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"></path>
+                <circle cx="7" cy="17" r="2"></circle>
+                <path d="M9 17h6"></path>
+                <circle cx="17" cy="17" r="2"></circle>
+              </svg>
+              Vehicle Type
+            </label>
+            <div class="input-wrapper">
+              <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"></path>
+                <circle cx="7" cy="17" r="2"></circle>
+                <path d="M9 17h6"></path>
+                <circle cx="17" cy="17" r="2"></circle>
+              </svg>
+              <input type="text" formControlName="vehicleType" readonly placeholder="Auto-populated" />
+            </div>
+          </div>
 
-    <!-- Corporate Actions -->
-    <ng-container *ngIf="canCorporateAction() && !isSearchMode()">
+          <div class="form-group">
+            <label>
+              <svg class="label-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline>
+                <polyline points="16 7 22 7 22 13"></polyline>
+              </svg>
+              Distance (KM)
+            </label>
+            <div class="input-wrapper">
+              <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline>
+                <polyline points="16 7 22 7 22 13"></polyline>
+              </svg>
+              <input type="number" formControlName="distanceKm"
+                [ngClass]="{'invalid': tripForm.get('distanceKm')?.touched && tripForm.get('distanceKm')?.invalid}"
+                placeholder="Enter distance in kilometers" />
+            </div>
+            <small class="error"
+              *ngIf="tripForm.get('distanceKm')?.touched && tripForm.get('distanceKm')?.errors?.['required']">
+              Distance is required
+            </small>
+            <small class="error" *ngIf="tripForm.get('distanceKm')?.errors?.['min']">
+              Distance must be greater than 0
+            </small>
+          </div>
 
-      <button *ngFor="let action of workflowActions" [ngClass]="{
-      'btn-approve': action.actionName === 'Approve',
-      'btn-reject': action.actionName === 'Reject'
-    }" (click)="updateStatus(action.workflowId)">
+          <div class="form-group">
+            <label>
+              <svg class="label-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="3" x2="15" y1="22" y2="22"></line>
+                <line x1="4" x2="14" y1="9" y2="9"></line>
+                <path d="M14 22V4a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v18"></path>
+                <path d="M14 13h2a2 2 0 0 1 2 2v2a2 2 0 0 0 2 2h0a2 2 0 0 0 2-2V9.83a2 2 0 0 0-.59-1.42L18 5"></path>
+              </svg>
+              Fuel Consumed (Liters)
+            </label>
+            <div class="input-wrapper">
+              <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="3" x2="15" y1="22" y2="22"></line>
+                <line x1="4" x2="14" y1="9" y2="9"></line>
+                <path d="M14 22V4a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v18"></path>
+                <path d="M14 13h2a2 2 0 0 1 2 2v2a2 2 0 0 0 2 2h0a2 2 0 0 0 2-2V9.83a2 2 0 0 0-.59-1.42L18 5"></path>
+              </svg>
+              <input type="number" formControlName="fuelConsumedLtr"
+                [ngClass]="{'invalid': tripForm.get('fuelConsumedLtr')?.touched && tripForm.get('fuelConsumedLtr')?.invalid}"
+                placeholder="Enter fuel consumed" />
+            </div>
+            <small class="error"
+              *ngIf="tripForm.get('fuelConsumedLtr')?.touched && tripForm.get('fuelConsumedLtr')?.errors?.['required']">
+              Fuel consumed is required
+            </small>
+            <small class="error" *ngIf="tripForm.get('fuelConsumedLtr')?.errors?.['min']">
+              Fuel must be greater than 0
+            </small>
+          </div>
+        </div>
 
-        {{ action.actionName }}
+        <!-- SECTION 3: SCHEDULE -->
+        <div class="section-divider">
+          <div class="section-divider-line"></div>
+          <div class="section-divider-text">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect width="18" height="18" x="3" y="4" rx="2" ry="2"></rect>
+              <line x1="16" x2="16" y1="2" y2="6"></line>
+              <line x1="8" x2="8" y1="2" y2="6"></line>
+              <line x1="3" x2="21" y1="10" y2="10"></line>
+            </svg>
+            Trip Schedule
+          </div>
+          <div class="section-divider-line"></div>
+        </div>
 
-      </button>
+        <!-- ROW 3 -->
+        <div class="form-row three-cols">
+          <div class="form-group">
+            <label>
+              <svg class="label-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect width="18" height="18" x="3" y="4" rx="2" ry="2"></rect>
+                <line x1="16" x2="16" y1="2" y2="6"></line>
+                <line x1="8" x2="8" y1="2" y2="6"></line>
+                <line x1="3" x2="21" y1="10" y2="10"></line>
+              </svg>
+              Trip Start Date
+            </label>
+            <div class="input-wrapper">
+              <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect width="18" height="18" x="3" y="4" rx="2" ry="2"></rect>
+                <line x1="16" x2="16" y1="2" y2="6"></line>
+                <line x1="8" x2="8" y1="2" y2="6"></line>
+                <line x1="3" x2="21" y1="10" y2="10"></line>
+              </svg>
+              <input type="datetime-local" formControlName="tripStartDateTime" [max]="todayDateTime"
+                [ngClass]="{'invalid': tripForm.get('tripStartDateTime')?.touched && tripForm.get('tripStartDateTime')?.invalid}"
+                (change)="calculateDuration()" />
+            </div>
+            <small class="error"
+              *ngIf="tripForm.get('tripStartDateTime')?.touched && tripForm.get('tripStartDateTime')?.errors?.['required']">
+              Start date is required
+            </small>
+            <small class="error" *ngIf="tripForm.get('tripStartDateTime')?.errors?.['futureDate']">
+              Future date/time not allowed
+            </small>
+          </div>
 
-    </ng-container>
-  </div>
+          <div class="form-group">
+            <label>
+              <svg class="label-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect width="18" height="18" x="3" y="4" rx="2" ry="2"></rect>
+                <line x1="16" x2="16" y1="2" y2="6"></line>
+                <line x1="8" x2="8" y1="2" y2="6"></line>
+                <line x1="3" x2="21" y1="10" y2="10"></line>
+              </svg>
+              Trip End Date
+            </label>
+            <div class="input-wrapper">
+              <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect width="18" height="18" x="3" y="4" rx="2" ry="2"></rect>
+                <line x1="16" x2="16" y1="2" y2="6"></line>
+                <line x1="8" x2="8" y1="2" y2="6"></line>
+                <line x1="3" x2="21" y1="10" y2="10"></line>
+              </svg>
+              <input type="datetime-local" formControlName="tripEndDateTime" [max]="todayDateTime"
+                [ngClass]="{'invalid': tripForm.get('tripEndDateTime')?.touched && tripForm.get('tripEndDateTime')?.invalid}"
+                (change)="calculateDuration()" />
+            </div>
+            <small class="error"
+              *ngIf="tripForm.get('tripEndDateTime')?.touched && tripForm.get('tripEndDateTime')?.errors?.['required']">
+              End date is required
+            </small>
+            <small class="error" *ngIf="tripForm.get('tripEndDateTime')?.errors?.['endBeforeStart']">
+              End date must be after start date
+            </small>
+            <small class="error" *ngIf="tripForm.get('tripEndDateTime')?.errors?.['futureDate']">
+              Future date/time not allowed
+            </small>
+          </div>
+
+          <div class="form-group" *ngIf="shouldShowDuration()">
+            <label>
+              <svg class="label-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </svg>
+              Trip Duration
+            </label>
+            <div class="input-wrapper">
+              <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </svg>
+              <input type="text" [value]="tripDuration" readonly placeholder="Auto-calculated" />
+            </div>
+            <small class="error" *ngIf="tripForm.get('tripEndDateTime')?.errors?.['endBeforeStart']">
+              Trip duration cannot be calculated because end date is before start date
+            </small>
+          </div>
+        </div>
+
+      </form>
+
+      <!-- ================= BUTTONS ================= -->
+      <div class="review-actions">
+      
+
+        <!-- Resubmit -->
+        <button *ngIf="canResubmit() && !isSearchMode()" class="btn-resubmit" (click)="resubmitTrip()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="22" x2="11" y1="2" y2="13"></line>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+          </svg>
+          Resubmit
+        </button>
+
+        <!-- Corporate Actions -->
+        <ng-container *ngIf="canCorporateAction() && !isSearchMode()">
+          <button *ngFor="let action of workflowActions" [ngClass]="{
+            'btn-approve': action.actionName === 'Approve',
+            'btn-reject': action.actionName === 'Reject'
+          }" (click)="updateStatus(action.workflowId)">
+            <svg *ngIf="action.actionName === 'Reject'" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path>
+              <path d="M12 9v4"></path>
+              <path d="M12 17h.01"></path>
+            </svg>
+            <svg *ngIf="action.actionName === 'Approve'" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"></path>
+              <path d="m9 12 2 2 4-4"></path>
+            </svg>
+            {{ action.actionName }}
+          </button>
+        </ng-container>
+
+        <!-- Submit -->
+        <button *ngIf="canSubmit() && !isSearchMode()" class="btn-submit" (click)="submitTrip()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+            <polyline points="17 21 17 13 7 13 7 21"></polyline>
+            <polyline points="7 3 7 8 15 8"></polyline>
+          </svg>
+          Save Report
+        </button>
+
+          <!-- Reset Button -->
+        <button *ngIf="canSubmit()" type="button" class="btn-reset" (click)="resetForm()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path>
+            <path d="M21 3v5h-5"></path>
+            <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path>
+            <path d="M8 16H3v5"></path>
+          </svg>
+          Reset
+        </button>
+      </div>
+    </div>
   </div>
 
   <!-- ================= RESULT SECTION ================= -->
-  <div class="card result-card" *ngIf="mode === 'view'">
-    <!-- <div class="card result-card"> -->
-
+  <div class="result-card" *ngIf="mode === 'view'">
     <div class="result-grid">
-      <!-- <div><strong>GWP (CH₄):</strong> {{ tripForm.gwP_CH4 }}</div>
-      <div><strong>GWP (NO₂):</strong> {{ tripForm.gwP_NO2 }}</div> -->
-
-      <!-- <div><strong>Distance:</strong> {{ tripForm.get('distanceKm')?.value }} km</div>
-      <div><strong>Fuel Consumed:</strong> {{ tripForm.get('fuelConsumedLtr')?.value }} L</div> -->
-
-      <!-- <hr class="full-width">  -->
-
       <h5 class="section-title">Emission Factors</h5>
 
       <div><strong>CO₂ Factor:</strong> {{ tripForm.get('co2Factor')?.value }}</div>
@@ -232,19 +372,14 @@
 
       <hr class="full-width">
 
-      <!-- <h5 class="section-title">Calculation Formula</h5> -->
-
       <h1 class="card-title">Emission Calculation</h1>
 
       <div class="formula full-width">
-  Run Hours (hrs) = (End Time − Start Time) <br>
-
-  = {{ tripForm.get('tripEndDateTime')?.value | date:'dd-MM-yyyy HH:mm' }} - {{ tripForm.get('tripStartDateTime')?.value | date:'dd-MM-yyyy HH:mm' }}
-  <br>
-
-  = {{ tripDuration }} <br>
-</div>
-
+        Run Hours (hrs) = (End Time − Start Time) <br>
+        = {{ tripForm.get('tripEndDateTime')?.value | date:'dd-MM-yyyy HH:mm' }} - {{ tripForm.get('tripStartDateTime')?.value | date:'dd-MM-yyyy HH:mm' }}
+        <br>
+        = {{ tripDuration }} <br>
+      </div>
 
       <div class="formula full-width">
         CO₂ = Fuel × CO₂ Factor <br>
@@ -264,7 +399,6 @@
         = {{ totalCH4 | number:'1.6-6' }} kg
       </div>
 
-
       <div class="formula full-width">
         Total Emission CO₂ Eq = CO₂ + NO₂ + CH₄ <br>
         = ({{ totalCO2 | number:'1.3-3' }} × 1) +
@@ -272,81 +406,24 @@
         ({{ totalNO2 | number:'1.6-6' }} × 265) <br>
         = {{ totalCO2e | number:'1.6-6' }} kg CO₂e
       </div>
-
-
-
-      <!-- <div class="total-emission full-width">
-        Final Emission: {{ totalCO2 + totalNO2 + totalCH4 | number:'1.3-3' }} kg CO₂e
-      </div> -->
-
     </div>
 
+    <!-- HISTORY SECTION -->
+    <div class="history-card" *ngIf="tripHistory && tripHistory.length > 0">
+      <h5 class="section-title">History</h5>
 
-  <!-- HISTORY SECTION
-  <div class="card history-card" *ngIf="tripHistory && tripHistory.length > 0">
-    <h5 class="section-title">History</h5>
-    <ul class="history-list">
-      <li *ngFor="let h of tripHistory" class="history-item">
-        <span class="history-dot"></span>
-        <div class="history-content">
-          <span>
-            On <strong>{{ h.ActionDate | date:'dd MMM yyyy HH:mm' }}</strong>
-            <span class="history-role">{{ h.ActionByRole }} - {{ h.FullName }}</span>
-            has performed
-            <span [ngClass]="{
-                'action-submit':   h.ActionName === 'Submit',
-                'action-approve':  h.ActionName === 'Approve',
-                'action-reject':   h.ActionName === 'Reject',
-                'action-resubmit': h.ActionName === 'Resubmit'
-              }">{{ h.ActionName }}</span>
-          </span>
-        </div>
-      </li>
-    </ul>
+      <ul class="history-list">
+        <li *ngFor="let h of tripHistory" class="history-item">
+          <div class="history-content">
+            <div class="history-message">{{ getActionMessage(h) }}</div>
+            <div class="history-meta">
+              <span class="history-date">{{ h.ActionDate | date:'dd MMM yyyy, hh:mm a' }}</span>
+              <span class="history-ago">· {{ getTimeAgo(h.ActionDate) }}</span>
+            </div>
+          </div>
+        </li>
+      </ul>
+    </div>
   </div>
-</div> -->
 
-<!-- HISTORY SECTION -->
-<div class="card history-card" *ngIf="tripHistory && tripHistory.length > 0">
-  <h5 class="section-title">History</h5>
-
-  <!-- TIMELINE -->
-  <ul class="history-list">
-    <li *ngFor="let h of tripHistory" class="history-item">
-      <!-- <span class="history-dot" [ngClass]="{
-          'dot-submit':   h.ActionName === 'Submit',
-          'dot-approve':  h.ActionName === 'Approve',
-          'dot-reject':   h.ActionName === 'Reject',
-          'dot-resubmit': h.ActionName === 'Resubmit'
-        }">
-        {{h.ActionName}}
-      </span> -->
-
-      <div class="history-content">
-
-        <!-- SMART MESSAGE -->
-        <div class="history-message">{{ getActionMessage(h) }}</div>
-
-        <!-- DATE + RELATIVE TIME -->
-        <div class="history-meta">
-          <span class="history-date">{{ h.ActionDate | date:'dd MMM yyyy, hh:mm a' }}</span>
-          <span class="history-ago">· {{ getTimeAgo(h.ActionDate) }}</span>
-        </div>
-
-        <!-- STATUS BADGE -->
-        <!-- <span class="history-badge" [ngClass]="{
-            'badge-submit':   h.ActionName === 'Submit',
-            'badge-approve':  h.ActionName === 'Approve',
-            'badge-reject':   h.ActionName === 'Reject',
-            'badge-resubmit': h.ActionName === 'Resubmit'
-          }">
-          {{ h.ActionName }}
-        </span> -->
-
-      </div>
-    </li>
-  </ul>
 </div>
-  </div>
-
-<!-- </div> -->
