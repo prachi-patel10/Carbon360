@@ -42,7 +42,7 @@
 <div class="charts-row">
 
   <!-- 1. Fuel Type Wise Stacked Bar -->
-  <div class="chart-card">
+  <div class="chart-card" id="fuelChartExport">
     <div class="card-header">
       <div class="card-header-left">
         <div class="chart-icon-wrap vehicle-bg"><i class="fas fa-chart-bar"></i></div>
@@ -51,6 +51,11 @@
           <p>Stacked by fuel type</p>
         </div>
       </div>
+      <!-- ✅ ADD THIS BUTTON -->
+  <!-- <button (click)="exportChartToExcel('fuelChart', 'Fuel Chart')">
+    Export Excel
+  </button> -->
+    <button (click)="exportFuelChart()">Export Excel</button>
     </div>
     <div class="chart-loader" [class.hidden]="!isFuelLoading()">
       <div class="dot-loader vehicle-dots"><span></span><span></span><span></span></div>
@@ -75,7 +80,7 @@
   </div>
 
   <!-- 2. Monthly Emission Line -->
-  <div class="chart-card">
+  <div class="chart-card" id="emissionChart">
     <div class="card-header">
       <div class="card-header-left">
         <div class="chart-icon-wrap emission-bg"><i class="fas fa-chart-line"></i></div>
@@ -84,6 +89,7 @@
           <p>CO2e, CO2, NO2 &amp; CH4 (kg)</p>
         </div>
       </div>
+      <button (click)="exportEmissionChart()">Export Excel</button>
     </div>
     <div class="chart-loader" [class.hidden]="!isEmissionLoading()">
       <div class="dot-loader vehicle-dots"><span></span><span></span><span></span></div>
@@ -111,7 +117,7 @@
 
 <!-- ═══ ROW 2: Distance full width ═══ -->
 <div class="charts-row-full">
-  <div class="chart-card">
+  <div class="chart-card" id="distanceChart">
     <div class="card-header">
       <div class="card-header-left">
         <div class="chart-icon-wrap distance-bg"><i class="fas fa-route"></i></div>

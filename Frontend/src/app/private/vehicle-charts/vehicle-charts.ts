@@ -15,6 +15,12 @@ import {
   VehicleDistanceChartResponse,
   VehicleTypeDistancePivotResponse
 } from '../dashboard/dashboard-service';
+import { ChartExportService } from './chart-export.service';
+
+// import html2canvas from 'html2canvas';
+// import ExcelJS from 'exceljs';
+// //import * as XLSX from 'xlsx';
+// import { saveAs } from 'file-saver';
 
 Chart.register(...registerables);
 
@@ -78,7 +84,7 @@ export class VehicleCharts implements OnInit, AfterViewInit, OnChanges, OnDestro
   private pendingDistance: VehicleDistanceChartResponse     | null = null;
   private pendingVtype:    VehicleTypeDistancePivotResponse | null = null;
 
-  constructor(private svc: DashboardService, private router: Router) {}
+  constructor(private svc: DashboardService, private router: Router,private exportSvc: ChartExportService) {}
 
   ngOnInit(): void { this.loadAll(); }
 
@@ -448,4 +454,152 @@ export class VehicleCharts implements OnInit, AfterViewInit, OnChanges, OnDestro
   formatNum(value: number): string {
     return Math.round(value).toLocaleString('en-IN');
   }
+
+  exportFuelChart() {
+
+  if (!this._lastFuelData) return;
+
+  this.exportSvc.exportChartWithData(
+    'fuelChartExport',
+    'Fuel Chart',
+    this._lastFuelData.labels,
+    this._lastFuelData.datasets.map(d => ({
+      label: d.label,
+      data: d.data as number[]
+    }))
+  );
+}
+
+exportEmissionChart() {
+
+  if (!this._lastEmissionData) return;
+
+  this.exportSvc.exportChartWithData(
+    'emissionChart',
+    'Emission Chart',
+    this._lastEmissionData.labels,
+    this._lastEmissionData.datasets.map(d => ({
+      label: d.label,
+      data: d.data as number[]
+    }))
+  );
+}
+
+//   exportFuelChart() {
+//   const element = document.getElementById('fuelChartExport');
+//   if (!element) return;
+
+//   html2canvas(element).then(async canvas => {
+
+//     const imgData = canvas.toDataURL('image/png');
+
+//     const workbook = new ExcelJS.Workbook();
+//     const worksheet = workbook.addWorksheet('Fuel Chart');
+
+//     const imageId = workbook.addImage({
+//       base64: imgData,
+//       extension: 'png',
+//     });
+
+//     worksheet.addImage(imageId, {
+//       tl: { col: 0, row: 0 } as any,
+//       br: { col: 10, row: 12 } as any
+//     });
+
+//     const buffer = await workbook.xlsx.writeBuffer();
+
+//     saveAs(new Blob([buffer]), 'FuelChart.xlsx');
+//   });
+// }
+
+//   exportFuelChart() {
+//   const element = document.getElementById('fuelChartExport');
+
+//   if (!element) return;
+
+//   html2canvas(element).then(canvas => {
+
+//     // 👉 Convert to image
+//     const imgData = canvas.toDataURL('image/png');
+
+//     // 👉 Create worksheet
+//     const ws = XLSX.utils.aoa_to_sheet([]);
+
+//     // 👉 Workbook
+//     const wb = XLSX.utils.book_new();
+
+//     // 👉 Add image manually (important)
+//     const img = {
+//       image: imgData,
+//       type: 'png',
+//       position: {
+//         type: 'twoCellAnchor',
+//         attrs: { editAs: 'oneCell' },
+//         from: { col: 0, row: 0 },
+//         to: { col: 10, row: 25 }
+//       }
+//     };
+
+//     // @ts-ignore
+//     ws['!images'] = [img];
+
+//     XLSX.utils.book_append_sheet(wb, ws, 'Fuel Chart');
+
+//     // 👉 Download
+//     const excelBuffer = XLSX.write(wb, {
+//       bookType: 'xlsx',
+//       type: 'array'
+//     });
+
+//     const blob = new Blob([excelBuffer], {
+//       type: 'application/octet-stream'
+//     });
+
+//     saveAs(blob, 'FuelChart.xlsx');
+//   });
+// }
+
+//   exportChartToExcel(chartId: string, fileName: string) {
+//   const element = document.getElementById(chartId);
+
+//   if (!element) {
+//     console.error('Element not found:', chartId);
+//     return;
+//   }
+
+//   html2canvas(element).then(canvas => {
+
+//     const imgData = canvas.toDataURL('image/png');
+
+//     const ws: XLSX.WorkSheet = XLSX.utils.aoa_to_sheet([
+//       [fileName]
+//     ]);
+
+//     const wb: XLSX.WorkBook = {
+//       Sheets: { 'Sheet1': ws },
+//       SheetNames: ['Sheet1']
+//     };
+
+//     const fileType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8';
+
+//     const byteString = atob(imgData.split(',')[1]);
+//     const mimeString = imgData.split(',')[0].split(':')[1].split(';')[0];
+
+//     const ab = new ArrayBuffer(byteString.length);
+//     const ia = new Uint8Array(ab);
+
+//     for (let i = 0; i < byteString.length; i++) {
+//       ia[i] = byteString.charCodeAt(i);
+//     }
+
+//     const blob = new Blob([ab], { type: mimeString });
+
+//     saveAs(blob, fileName + '.png');
+
+//     const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+//     const excelBlob = new Blob([excelBuffer], { type: fileType });
+
+//     saveAs(excelBlob, fileName + '.xlsx');
+//   });
+// }
 }
