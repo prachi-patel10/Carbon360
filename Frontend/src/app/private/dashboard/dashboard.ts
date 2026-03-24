@@ -148,7 +148,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     else if (url.includes('MyActionVehicle'))   this.pageTitle = 'Actions Fleet & Transport';
     else if (url.includes('searchVehicle'))     this.pageTitle = 'Search Fleet & Transport';
     else if (url.includes('Vehicletype'))       this.pageTitle = 'Vehicle Type';
-    else                                        this.pageTitle = 'Statics';
+    else                                        this.pageTitle = 'Statistics';
   }
 
    

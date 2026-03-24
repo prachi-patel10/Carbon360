@@ -15,6 +15,7 @@ body {
     width: 100%;
     max-width: 100%;
     overflow-x: hidden;
+    overflow-y: visible;
 }
 
 /* ── container-fluid fills the sidebar content area ── */
@@ -33,7 +34,7 @@ body {
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
     background: #fff;
     width: 100%;
-    overflow: hidden;
+    overflow: visible;
 }
 
 /* ================= FILTER FORM ================= */
@@ -87,9 +88,9 @@ body {
 /* Filter fields grid — auto-fit so they never cause overflow */
 .filter-row-fields {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 12px;
-    margin-bottom: 12px;
+    /* margin-bottom: 12px; */
     width: 100%;
 }
 
@@ -273,6 +274,88 @@ body {
 .fuel-option input[type=checkbox] { accent-color: #0f5132; width: 15px; height: 15px; flex-shrink: 0; }
 .select-all-option { border-bottom: 1px solid #f0f0f0; font-weight: 600; font-size: 12px; color: #1b5e20; }
 
+
+/* ================= GENERATOR MULTI-SELECT ================= */
+
+.gen-multiselect { position: relative; min-width: 0; width: 100%; overflow: visible;}
+
+.gen-trigger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 10px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background: #fff;
+    cursor: pointer;
+    min-height: 38px;
+    gap: 6px;
+    width: 100%;
+}
+
+.gen-trigger:hover { border-color: #0f5132; }
+
+.gen-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    flex: 1;
+    overflow: hidden;
+}
+
+.gen-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: #e8f5e9;
+    color: #0f5132;
+    border-radius: 4px;
+    font-size: 11px;
+    padding: 2px 7px;
+    white-space: nowrap;
+}
+
+.gen-tag .remove {
+    cursor: pointer;
+    font-size: 10px;
+}
+
+.gen-dropdown {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    z-index: 9999;
+    max-height: 250px;
+    overflow-y: auto;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.gen-dropdown-header {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 12px;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 12px;
+}
+
+.gen-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    cursor: pointer;
+}
+
+.gen-option:hover { background: #f0fdf4; }
+.gen-option.selected { background: #e8f5e9; }
+
+.gen-option input {
+    accent-color: #0f5132;
+}
 /* ================= TABLE ================= */
 
 /* Wrapper scrolls horizontally — page never overflows */
@@ -301,14 +384,14 @@ body {
 
 /* Column widths — total = 860px */
 .gen-table th:nth-child(1) { width: 130px; } /* Generator      */
-.gen-table th:nth-child(2) { width: 115px; } /* Reported Date  */
+.gen-table th:nth-child(2) { width: 160px; } /* Reported Date  */
 .gen-table th:nth-child(3) { width: 105px; } /* Start Date     */
 .gen-table th:nth-child(4) { width: 105px; } /* End Date       */
 .gen-table th:nth-child(5) { width: 115px; } /* Load Factor    */
 .gen-table th:nth-child(6) { width: 75px;  } /* Fuel L         */
 .gen-table th:nth-child(7) { width: 150px; } /* Emission       */
 .gen-table th:nth-child(8) { width: 70px;  } /* Action         */
-.gen-table th:nth-child(9) { width: 80px;  } /* Download       */
+.gen-table th:nth-child(9) { width: 90px;  } /* Download       */
 
 .gen-table th {
     background-color: #0f5132;
@@ -318,10 +401,11 @@ body {
     letter-spacing: 0.04em;
     padding: 0.85rem 0.65rem;
     border-bottom: 2px solid rgba(255, 255, 255, 0.1);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: unset;
     vertical-align: middle;
+     line-height: 1.2;
 }
 
 .gen-table th.sortable { cursor: pointer; user-select: none; }
@@ -424,7 +508,7 @@ body {
 .page-info { font-weight: 500; color: #374151; font-size: 0.84rem; white-space: nowrap; }
 
 /* Date picker fills its grid column */
-app-date-range-picker-component { width: 100%; display: block; }
+app-date-range-picker-component { width: 100%; display: block; min-width: 260px;}
 
 /* ================= RESPONSIVE ================= */
 
@@ -436,19 +520,19 @@ app-date-range-picker-component { width: 100%; display: block; }
 /* Stack everything on small screens */
 @media (max-width: 700px) {
     .filter-row-fields { grid-template-columns: 1fr; }
-    .filter-header { flex-wrap: wrap; row-gap: 8px; }
-    .export-btn-container { margin-left: 0; width: 100%; }
+    .filter-header { display: flex;flex-wrap: wrap; row-gap: 8px;gap:8px }
+    .export-btn-container { margin-left: auto; width: 100%; }
     .export-btn { width: 100%; justify-content: center; }
-    .filter-row-search { flex-direction: column; align-items: stretch; }
-    .search-wrap { width: 100%; flex: none; }
-    .btn-reset { width: 100%; justify-content: center; }
+    .filter-row-search {display: flex; flex-direction: column; align-items: stretch;gap:8px;flex-wrap: wrap; }
+    .search-wrap { width: 100%; flex: 1 1 300px; }
+    .btn-reset { width: 100%; justify-content: center;flex-shrink: 0; }
     .table-footer { flex-direction: column; align-items: flex-start; }
     .pagination { width: 100%; justify-content: center; }
 }
 
 @media (max-width: 480px) {
     .generator-report-container .container-fluid { padding-left: 6px; padding-right: 6px; }
-    .card-body { padding: 10px !important; }
+    .card-body { padding: 10px !important; overflow: visible !important; }
     .total-records, .page-size { width: 100%; }
     .page-size { display: flex; align-items: center; gap: 4px; }
 }

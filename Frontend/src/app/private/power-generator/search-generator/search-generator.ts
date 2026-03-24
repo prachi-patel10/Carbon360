@@ -29,7 +29,9 @@ export class SearchGenerator implements OnInit {
   fuelTypes: any[]        = [];
   selectedFuels: string[] = [];
   fuelDropdownOpen        = false;
-
+  generatorTypes :any[]=[];
+selectedGenTypes: string[] = [];
+genDropdownOpen = false;
   searchText = signal<string>('');
 
   operationStartDate = signal<string | null>(null);
@@ -56,6 +58,7 @@ export class SearchGenerator implements OnInit {
   // ── ngOnInit: reads chart query params, pre-fills filters, then loads ──
   ngOnInit(): void {
     this.loadFuelTypes();
+     this.loadGeneratorTypes();
 
     this.route.queryParams.subscribe(params => {
       if (params['source'] === 'chart') {
@@ -77,23 +80,26 @@ export class SearchGenerator implements OnInit {
     });
   }
 
- loadEmissions() {
+loadEmissions() {
   const fuelParam = this.selectedFuels.length > 0 ? this.selectedFuels.join(',') : undefined;
+  const genParam  = this.selectedGenTypes.length > 0 ? this.selectedGenTypes.join(',') : undefined;
 
   this.service.searchEmissions(
     this.currentPage(),
-    this.pageSize,
-    this.searchText() || undefined,
-    fuelParam,
-    this.operationStartDate() ? this.operationStartDate()!.substring(0, 10) : undefined,
-    this.operationEndDate()   ? this.operationEndDate()!.substring(0, 10)   : undefined,
-    this.entryStartDate()     ? this.entryStartDate()!.substring(0, 10)     : undefined,
-    this.entryEndDate()       ? this.entryEndDate()!.substring(0, 10)       : undefined,
-    this.sortColumn,       // ← pass the class property
-    this.sortDirection     // ← pass the class property
+  this.pageSize,
+  this.searchText() || undefined,
+  fuelParam,
+  genParam,   // now matches signature
+  this.operationStartDate() ? this.operationStartDate()!.substring(0, 10) : undefined,
+  this.operationEndDate()   ? this.operationEndDate()!.substring(0, 10)   : undefined,
+  this.entryStartDate()     ? this.entryStartDate()!.substring(0, 10)     : undefined,
+  this.entryEndDate()       ? this.entryEndDate()!.substring(0, 10)       : undefined,
+  this.sortColumn,
+  this.sortDirection
+   
   ).subscribe({
     next: (res: any) => {
-      const records = res.data?.records     ?? [];
+      const records = res.data?.records ?? [];
       const total   = res.data?.totalRecords ?? 0;
       const mapped: GeneratorOperationDisplay[] = records.map((e: any) => ({
         ...e,
@@ -110,12 +116,65 @@ export class SearchGenerator implements OnInit {
   });
 }
 
+// Load generator types (similar to fuel types)
+loadGeneratorTypes() {
+  this.service.getGenerators().subscribe({
+    next: (res: any) => {
+      console.log('Generator API:', res);
+
+      const data = Array.isArray(res) ? res : res.data || [];
+      this.generatorTypes = data.map((g: any) => ({
+        gen_name: g.gen_name || g.generatorName || g.name || 'Unknown'
+      }));
+    },
+    error: (err) => console.error('Error loading generator types', err)
+  });
+}
+
+// Dropdown toggle
+toggleGenDropdown() {
+  this.genDropdownOpen = !this.genDropdownOpen;
+}
+isGenSelected(gen: any): boolean {
+  const name = gen.gen_name || gen.generatorName;
+  return this.selectedGenTypes.includes(name);
+}
+toggleGenType(gen: string) {
+  if (this.isGenSelected(gen)) {
+    this.selectedGenTypes = this.selectedGenTypes.filter(g => g !== gen);
+  } else {
+    this.selectedGenTypes.push(gen);
+  }
+  this.applyFilters();
+}
+
+toggleSelectAllGen() {
+  if (this.selectedGenTypes.length === this.generatorTypes.length) {
+    this.selectedGenTypes = [];
+  } else {
+    this.selectedGenTypes = this.generatorTypes.map(g => g.gen_name);
+  }
+  this.applyFilters();
+}
+
+clearGenTypes() {
+  this.selectedGenTypes = [];
+  this.applyFilters();
+}
   // ─── Fuel Multi-Select ────────────────────────────────────────
 
-  @HostListener('document:click', ['$event'])
-  onDocumentClick(e: MouseEvent) {
-    if (!(e.target as HTMLElement).closest('.fuel-multiselect')) this.fuelDropdownOpen = false;
+@HostListener('document:click', ['$event'])
+onDocumentClick(e: MouseEvent) {
+  const target = e.target as HTMLElement;
+
+  if (!target.closest('.fuel-multiselect')) {
+    this.fuelDropdownOpen = false;
   }
+
+  if (!target.closest('.gen-multiselect')) { 
+    this.genDropdownOpen = false;
+  }
+}
 
   toggleFuelDropdown() { this.fuelDropdownOpen = !this.fuelDropdownOpen; }
 
@@ -277,14 +336,15 @@ getSortIcon(column: string): string {
   // ─── Export Excel ─────────────────────────────────────────────
 
   exportExcel() {
-    const params: any = {};
-    if (this.searchText())            params.search       = this.searchText();
-    if (this.selectedFuels.length > 0) params.fuelTypes   = this.selectedFuels.join(',');
-    if (this.operationStartDate())    params.startDate    = this.operationStartDate();
-    if (this.operationEndDate())      params.endDate      = this.operationEndDate();
-    if (this.entryStartDate())        params.entryStartDate = this.entryStartDate();
-    if (this.entryEndDate())          params.entryEndDate   = this.entryEndDate();
-    params.isExport = true;
+   const params: any = {};
+  if (this.searchText())            params.search       = this.searchText();
+  if (this.selectedFuels.length > 0) params.fuelTypes   = this.selectedFuels.join(',');
+  if (this.selectedGenTypes.length > 0) params.generatorTypes = this.selectedGenTypes.join(',');
+  if (this.operationStartDate())    params.startDate    = this.operationStartDate();
+  if (this.operationEndDate())      params.endDate      = this.operationEndDate();
+  if (this.entryStartDate())        params.entryStartDate = this.entryStartDate();
+  if (this.entryEndDate())          params.entryEndDate   = this.entryEndDate();
+  params.isExport = true;
 
     this.service.exportExcel(params).subscribe(blob => {
       const file = new Blob([blob], {

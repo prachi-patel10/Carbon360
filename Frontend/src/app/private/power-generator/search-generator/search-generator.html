@@ -48,18 +48,56 @@
                     <button type="button" class="clear-btn" (click)="clearFuels()">Clear all</button>
                   </div>
                   <label class="fuel-option select-all-option">
-                    <input type="checkbox"
-                      [checked]="selectedFuels.length === fuelTypes.length"
+                    <input type="checkbox" [checked]="selectedFuels.length === fuelTypes.length"
                       [indeterminate]="selectedFuels.length > 0 && selectedFuels.length < fuelTypes.length"
                       (change)="toggleSelectAll()" />
                     <span>Select all</span>
                   </label>
                   <label class="fuel-option" *ngFor="let fuel of fuelTypes"
                     [class.selected]="isFuelSelected(fuel.fuel_name)">
-                    <input type="checkbox"
-                      [checked]="isFuelSelected(fuel.fuel_name)"
+                    <input type="checkbox" [checked]="isFuelSelected(fuel.fuel_name)"
                       (change)="toggleFuel(fuel.fuel_name)" />
                     <span>{{ fuel.fuel_name }}</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Generator Type -->
+            <div class="filter-field">
+              <label class="filter-label">
+                <i class="fas fa-cogs"></i> Generator Name
+              </label>
+              <div class="gen-multiselect" [class.open]="genDropdownOpen">
+                <div class="gen-trigger" (click)="toggleGenDropdown()">
+                  <div class="gen-tags">
+                    <span *ngIf="selectedGenTypes.length === 0"
+                     class="placeholder">All Generator Types</span>
+                    <ng-container *ngIf="selectedGenTypes.length > 0">
+                      <span *ngFor="let g of selectedGenTypes" class="gen-tag">
+                        {{ g }}
+                        <span class="remove" (click)="$event.stopPropagation(); toggleGenType(g)">✕</span>
+                      </span>
+                    </ng-container>
+                  </div>
+                  <span class="arrow">&#9660;</span>
+                </div>
+                <div class="gen-dropdown" *ngIf="genDropdownOpen">
+                  <div class="gen-dropdown-header">
+                    <span>{{ selectedGenTypes.length }} selected</span>
+                    <button type="button" class="clear-btn" (click)="clearGenTypes()">Clear all</button>
+                  </div>
+                  <label class="gen-option select-all-option">
+                    <input type="checkbox" [checked]="selectedGenTypes.length === generatorTypes.length"
+                      [indeterminate]="selectedGenTypes.length > 0 && selectedGenTypes.length < generatorTypes.length"
+                      (change)="toggleSelectAllGen()" />
+                    <span>Select all</span>
+                  </label>
+                 <label class="gen-option" *ngFor="let gen of generatorTypes"
+  [class.selected]="isGenSelected(gen)">
+                    <input type="checkbox" [checked]="isGenSelected(gen.gen_name)"
+                      (change)="toggleGenType(gen.gen_name)" />
+                   <span>{{ gen.gen_name || gen.generatorName || 'Unknown' }}</span>
                   </label>
                 </div>
               </div>
@@ -70,9 +108,7 @@
               <label class="filter-label">
                 <i class="fas fa-calendar-alt"></i> Operation Date
               </label>
-              <app-date-range-picker-component
-                #opDatePicker
-                pickerId="operation"
+              <app-date-range-picker-component #opDatePicker pickerId="operation"
                 (rangeSelected)="onDateRangeSelected($event)">
               </app-date-range-picker-component>
             </div>
@@ -82,9 +118,7 @@
               <label class="filter-label">
                 <i class="fas fa-calendar-alt"></i> Reported Date
               </label>
-              <app-date-range-picker-component
-                #entryDatePicker
-                pickerId="entry"
+              <app-date-range-picker-component #entryDatePicker pickerId="entry"
                 (rangeSelected)="onEntryDateRangeSelected($event)">
               </app-date-range-picker-component>
             </div>
@@ -95,9 +129,7 @@
           <div class="filter-row-search">
             <div class="search-wrap">
               <i class="fas fa-search search-icon"></i>
-              <input type="text" class="search-input"
-                placeholder="Quick search"
-                [value]="searchText()"
+              <input type="text" class="search-input" placeholder="Quick search" [value]="searchText()"
                 (input)="onSearch($event)" />
             </div>
             <button type="button" class="btn-reset" (click)="resetFilters()">
@@ -136,7 +168,7 @@
                 Fuel (L) <span class="sort-icon">{{ getSortIcon('fuelConsumedLiters') }}</span>
               </th>
               <th (click)="sortBy('totalEmission')" class="sortable">
-                 Total Emission (kg CO₂e) <span class="sort-icon">{{ getSortIcon('totalEmission') }}</span>
+                Total Emission (kg CO₂e) <span class="sort-icon">{{ getSortIcon('totalEmission') }}</span>
               </th>
               <th>Action</th>
               <th>Download</th>
@@ -157,10 +189,9 @@
                 </button>
               </td>
               <td>
-                <button class="btn-pdf-download"
-                        (click)="downloadTrip(e.operationId)"
-                        [disabled]="isLoading(e.operationId)"
-                        [title]="isLoading(e.operationId) ? 'Generating...' : 'Download PDF'">
+                <button class="btn-pdf-download" (click)="downloadTrip(e.operationId)"
+                  [disabled]="isLoading(e.operationId)"
+                  [title]="isLoading(e.operationId) ? 'Generating...' : 'Download PDF'">
                   <i *ngIf="!isLoading(e.operationId)" class="fas fa-file-pdf"></i>
                   <i *ngIf="isLoading(e.operationId)" class="fas fa-spinner fa-spin"></i>
                 </button>

@@ -78,23 +78,25 @@ export class SearchGeneratorService {
   pageSize: number = 10,
   search?: string,
   fuelTypes?: string,
-  startDate?: string,
-  endDate?: string,
+  generatorTypes?: string,
+  operationStartDate?: string,
+  operationEndDate?: string,
   entryStartDate?: string,
   entryEndDate?: string,
-  sortColumn: string = 'entryDate',
-  sortDirection: string = 'desc'
+  sortColumn?: string,
+  sortDirection?: 'asc' | 'desc'
 ): Observable<any> {
   let params = new HttpParams()
     .set('pageNumber', pageNumber)
     .set('pageSize', pageSize)
-    .set('sortColumn', sortColumn)
-    .set('sortDirection', sortDirection.toUpperCase());
+    .set('sortColumn', sortColumn || 'EntryDate')
+    .set('sortDirection', (sortDirection||'desc').toUpperCase());
 
   if (search)         params = params.set('search', encodeURIComponent(search));
   if (fuelTypes)      params = params.set('fuelTypes', encodeURIComponent(fuelTypes));
-  if (startDate)      params = params.set('startDate', startDate);
-  if (endDate)        params = params.set('endDate', endDate);
+   if (generatorTypes)      params = params.set('generatorTypes', encodeURIComponent(generatorTypes));
+  if (operationStartDate)  params = params.set('startDate', operationStartDate);
+  if (operationEndDate)    params = params.set('endDate', operationEndDate);
   if (entryStartDate) params = params.set('entryStartDate', entryStartDate);
   if (entryEndDate)   params = params.set('entryEndDate', entryEndDate);
 
