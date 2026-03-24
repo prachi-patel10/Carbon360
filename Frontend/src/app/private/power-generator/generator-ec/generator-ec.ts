@@ -503,7 +503,7 @@ export class GeneratorOperationComponent implements OnInit {
         this.workflowActions = [];
       }
       this.tripHistory = results.history?.History || [];
-      console.log('Trip History:', this.tripHistory);
+      console.log('Power Generator History:', this.tripHistory);
       console.log('Workflow Actions:', this.workflowActions);
       this.edit(op);
       this.calculateLiveValues();
@@ -694,10 +694,12 @@ export class GeneratorOperationComponent implements OnInit {
   }
 
   const action = this.workflowActions.find(a => a.workflowId === workflowId);
-  if (!action) return;
+  if (!action) {
+    Swal.fire('Error', 'Workflow action not found', 'error');
+    return;
+  }
 
   if (action.actionName === 'Resubmit') {
-
     if (this.operationForm.invalid) {
       this.operationForm.markAllAsTouched();
       Swal.fire('Error', 'Please fill all required fields before resubmitting', 'error');
@@ -714,42 +716,39 @@ export class GeneratorOperationComponent implements OnInit {
       fuelConsumedLiters: raw.FuelConsumedLiters
     };
 
-    this.service.update(operationId, payload).subscribe({
+    // Step 1: Update data
+    this.service.update(operationId, payload).pipe(
+      switchMap(() => {
+        // Step 2: Update status only after data update succeeds
+        return this.service.updateStatus(operationId, workflowId);
+      })
+    ).subscribe({
       next: () => {
-        // Step 2: update status only after update succeeds
-        this.service.updateStatus(operationId, workflowId).subscribe({
-          next: () => {
-            Swal.fire('Resubmitted', 'Operation updated and resubmitted successfully', 'success')
-              .then(() => this.goBack());
-          },
-          error: (err) => {
-            console.error('updateStatus error:', err);
-            Swal.fire('Error', 'Data saved but status update failed. Please try again.', 'warning');
-          }
-        });
+        Swal.fire('Resubmitted', 'Operation updated and resubmitted successfully', 'success')
+          .then(() => this.goBack());
       },
       error: (err) => {
-        console.error('update error:', err);
-        Swal.fire('Error', 'Failed to update operation data', 'error');
+        console.error('Resubmit error:', err);
+        const msg = err?.error?.Message || err?.error?.message || 'Resubmit failed. Please try again.';
+        Swal.fire('Error', msg, 'error');
       }
     });
 
   } else {
-
+    // For Approve / Reject
     this.service.updateStatus(operationId, workflowId).subscribe({
       next: () => {
-        Swal.fire('Success', 'Status updated successfully', 'success')
+        Swal.fire('Success', `Action "${action.actionName}" completed successfully`, 'success')
           .then(() => this.goBack());
       },
       error: (err) => {
         console.error('updateStatus error:', err);
-        Swal.fire('Error', 'Failed to update status', 'error');
+        const msg = err?.error?.Message || err?.error?.message || 'Failed to update status';
+        Swal.fire('Error', msg, 'error');
       }
     });
-
   }
 }
-
   getActionMessage(h: any): string {
   const role = h.ActionByRole || '';
   const name = h.FullName || '';
@@ -757,13 +756,13 @@ export class GeneratorOperationComponent implements OnInit {
 
   switch (action) {
     case 'Submit':
-      return `${name} (${role}) submitted this trip for review`;
+      return `${name} (${role}) submitted this generator for review`;
     case 'Approve':
-      return `${name} (${role}) approved this trip`;
+      return `${name} (${role}) approved this generator`;
     case 'Reject':
-      return `${name} (${role}) rejected this trip`;
+      return `${name} (${role}) rejected this generator`;
     case 'Resubmit':
-      return `${name} (${role}) resubmitted this trip after corrections`;
+      return `${name} (${role}) resubmitted this generator after corrections`;
     default:
       return `${name} (${role}) performed ${action}`;
   }

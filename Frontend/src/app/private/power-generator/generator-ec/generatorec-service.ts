@@ -54,9 +54,11 @@ export class GeneratorecService {
     return this.http.get(`${environment.apiBaseUrl}/Fuel/All`);
   }
 
-  updateStatus(id: string, workflowId: number) {
-  return this.http.patch(`${this.apiUrl}/status/${id}?workflowId=${workflowId}`, null,
-    { responseType: 'text' }
+ updateStatus(id: string, workflowId: number): Observable<any> {
+  return this.http.patch(
+    `${this.apiUrl}/status/${id}?workflowId=${workflowId}`,
+    {},  
+    { headers: { 'Content-Type': 'application/json' } }
   );
 }
 
