@@ -8,12 +8,12 @@ import { Router } from '@angular/router';
 import Swal from 'sweetalert2';
 import { ActivatedRoute } from '@angular/router';
 import { forkJoin } from 'rxjs';
-
+import { NgSelectModule } from '@ng-select/ng-select';
 
 @Component({
   selector: 'app-trip',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule,NgSelectModule],
   templateUrl: './vehicle-ec.html',
   styleUrls: ['./vehicle-ec.css']
 })
@@ -530,7 +530,7 @@ loadTrip(id: string) {
       else if (this.currentStatusId === 3) {
         this.tripForm.enable();
 
-      // 🔥 LOCK IMPORTANT FIELDS
+    
       this.tripForm.get('vehicle_id')?.disable();
       this.tripForm.get('fromCityId')?.disable();
       this.tripForm.get('toCityId')?.disable();

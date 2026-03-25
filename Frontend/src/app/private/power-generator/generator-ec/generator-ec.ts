@@ -7,6 +7,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { switchMap } from 'rxjs/operators';
 import Swal from 'sweetalert2';
 import { forkJoin } from 'rxjs';
+import { NgSelectModule } from '@ng-select/ng-select';
 
 interface GeneratorOperation {
   operationId: string;
@@ -53,7 +54,7 @@ interface Generator {
   standalone: true,
   templateUrl: './generator-ec.html',
   styleUrls: ['./generator-ec.css'],
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule,NgSelectModule],
 })
 export class GeneratorOperationComponent implements OnInit {
   operationForm!: FormGroup;
@@ -159,6 +160,11 @@ export class GeneratorOperationComponent implements OnInit {
       }
       this.mode = 'add';
     }
+
+     if (this.isResubmitMode) {
+    this.operationForm.get('SiteId')?.disable();
+    this.operationForm.get('GeneratorId')?.disable();
+  }
   }
 
   initForm() {
@@ -446,6 +452,7 @@ export class GeneratorOperationComponent implements OnInit {
   // }
  loadOperationById(id: string) {
   this.operationId = id;
+  
   const requests: any = {
     op: this.service.getById(id),
     history: this.service.getTripFullDetails(id)
@@ -458,6 +465,7 @@ export class GeneratorOperationComponent implements OnInit {
     next: (results: any) => {
       const res = results.op;
       const op = res.data || res;
+      this.currentStatusId = op.statusId || 0;
       const gwP_CH4 = 28;
       const gwP_NO2 = 265;
       const co2Factor = op.cO2 ?? 2.68;
@@ -510,6 +518,9 @@ export class GeneratorOperationComponent implements OnInit {
       console.log('Power Generator History:', this.tripHistory);
       console.log('Workflow Actions:', this.workflowActions);
       this.edit(op);
+      if (this.isResubmitMode) {
+  this.disableResubmitFields();
+}
       this.calculateLiveValues();
     },
     error: () => Swal.fire('Error', 'Failed to load operation details', 'error'),
@@ -574,55 +585,37 @@ export class GeneratorOperationComponent implements OnInit {
   }
 
   resubmitOperation() {
-    if (this.operationForm.invalid) {
-      this.operationForm.markAllAsTouched();
-      Swal.fire({
-        icon: 'warning',
-        title: 'Validation Error',
-        text: 'Please fill all required fields',
-      });
-      return;
-    }
- 
-    const id = this.operationForm.get('OperationId')?.value;
-    if (!id) {
-      Swal.fire({ icon: 'error', title: 'Operation ID not found' });
-      return;
-    }
- 
-    const raw = this.operationForm.getRawValue();
- 
-    const payload = {
-      operationId: id,
-      siteId: raw.SiteId,
-      generatorId: raw.GeneratorId,
-      startTime: raw.StartTime,
-      endTime: raw.EndTime,
-      loadFactor: raw.LoadFactor,
-      fuelConsumedLiters: raw.FuelConsumedLiters,
-      statusId: 1,
-    };
- 
-    console.log('RESUBMIT PAYLOAD:', payload);
- 
-    this.service.update(id, payload).subscribe({
-      next: () => {
-        Swal.fire({
-          icon: 'success',
-          title: 'Operation Updated Successfully',
-        }).then(() => this.goBack());
-      },
-      error: (err: any) => {
-        console.error('RESUBMIT ERROR:', err);
-        Swal.fire({
-          icon: 'error',
-          title: 'Update failed',
-          text: err?.error?.message || 'Server error',
-        });
-      },
-    });
+  if (this.operationForm.invalid) {
+    this.operationForm.markAllAsTouched();
+    Swal.fire('Validation Error', 'Please fill all required fields', 'warning');
+    return;
   }
- 
+
+  const id = this.operationForm.get('OperationId')?.value;
+  if (!id) return;
+
+  const raw = this.operationForm.getRawValue();
+
+  const payload = {
+    operationId: id,
+    siteId: raw.SiteId,
+    generatorId: raw.GeneratorId,
+    startTime: raw.StartTime,
+    endTime: raw.EndTime,
+    loadFactor: raw.LoadFactor,
+    fuelConsumedLiters: raw.FuelConsumedLiters
+  };
+
+  this.service.update(id, payload).subscribe(() => {
+
+    const resubmitAction = this.workflowActions.find(a => a.actionName === 'Resubmit');
+
+    if (resubmitAction) {
+      this.updateStatus(resubmitAction.workflowId); // ✅ THIS WILL WORK NOW
+    }
+
+  });
+}
 
   goBack() {
     if (this.pageSource === 'search') {
@@ -728,30 +721,38 @@ export class GeneratorOperationComponent implements OnInit {
     });
     }
 
-
 updateStatus(workflowId: number) {
-    const id = this.operationForm.get('OperationId')?.value;
-    if (!id) return;
- 
-    // ✅ Prevent duplicate action — same guard as vehicle-trip
+  const id = this.operationForm.get('OperationId')?.value;
+  if (!id) return;
+
+  // 🔥 Find action name
+  const action = this.workflowActions.find(a => a.workflowId === workflowId);
+  if (!action) return;
+
+  // ✅ Allow based on action type
+  if (action.actionName === 'Approve' || action.actionName === 'Reject') {
     if (this.currentStatusId !== 1) {
-      Swal.fire({
-        icon: 'warning',
-        title: 'Action already taken',
-      });
+      Swal.fire('Invalid Action', 'Only submitted records can be approved/rejected', 'warning');
       return;
     }
- 
-    this.service.updateStatus(id, workflowId).subscribe((res: any) => {
-      Swal.fire({
-        icon: 'success',
-        title: 'Status Updated Successfully',
-        confirmButtonText: 'OK',
-      }).then(() => {
-        this.goBack();
-      });
-    });
   }
+
+  if (action.actionName === 'Resubmit') {
+    if (this.currentStatusId !== 3) {
+      Swal.fire('Invalid Action', 'Only rejected records can be resubmitted', 'warning');
+      return;
+    }
+  }
+
+  // ✅ CALL API
+  this.service.updateStatus(id, workflowId).subscribe(() => {
+    Swal.fire('Success', 'Status Updated Successfully', 'success').then(() => {
+      this.goBack();
+    });
+  });
+}
+
+
   getActionMessage(h: any): string {
   const role = h.ActionByRole || '';
   const name = h.FullName || '';
@@ -811,15 +812,24 @@ lockFormIfNeeded() {
     }
 }
 
+disableResubmitFields() {
+  this.operationForm.get('SiteId')?.disable();
+  this.operationForm.get('GeneratorId')?.disable();
+}
+
 
 canSubmit(): boolean {
     return this.userRole === 'reporter' && this.mode === 'add';
   }
  
   // ✅ Matches vehicle-trip canResubmit exactly
-  canResubmit(): boolean {
-    return this.userRole === 'reporter' && this.currentStatusId === 3;
-  }
+ canResubmit(): boolean {
+  return (
+    this.userRole === 'reporter' &&
+    this.currentStatusId === 3 &&
+    this.pageSource === 'myaction'   // 🔥 IMPORTANT
+  );
+}
  
   // ✅ Matches vehicle-trip canCorporateAction exactly
   canCorporateAction(): boolean {

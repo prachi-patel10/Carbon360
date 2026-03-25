@@ -508,3 +508,103 @@
 .label-icon {
   animation: pulse 3s ease-in-out infinite;
 }
+
+/* ================= NG-SELECT CLEAN STYLE ================= */
+
+::ng-deep .ng-select {
+  width: 100% !important;
+}
+
+/* Main container */
+::ng-deep .ng-select .ng-select-container {
+  height: 52px !important;
+  border-radius: 12px;
+  border: 2px solid #e5e7eb;
+  display: flex;
+  align-items: center !important;
+  padding-left: 0 !important;
+}
+
+/* Focus effect */
+::ng-deep .ng-select.ng-select-focused .ng-select-container {
+  border-color: #0f5132;
+  box-shadow: 0 0 0 4px rgba(15, 81, 50, 0.1);
+}
+
+/* Value + placeholder */
+::ng-deep .ng-select .ng-value-container {
+  display: flex;
+  align-items: center !important;
+  padding-left: 44px !important; /* space for icon */
+}
+
+/* Typing input */
+::ng-deep .ng-select .ng-input {
+  display: flex;
+  align-items: center !important;
+  height: 100%;
+}
+
+::ng-deep .ng-select .ng-input input {
+  height: 100% !important;
+  padding-left: 44px !important; /* space for icon */
+  border: none;
+  outline: none;
+}
+
+/* Placeholder */
+::ng-deep .ng-select .ng-placeholder {
+  color: #9ca3af;
+}
+
+/* Hide placeholder when typing or value selected */
+::ng-deep .ng-select.ng-select-focused .ng-placeholder,
+::ng-deep .ng-select.ng-has-value .ng-placeholder {
+  display: none !important;
+}
+/* ================= ICON BEHAVIOR ================= */
+
+/* Show icon by default */
+.input-icon {
+  z-index: 2;
+  transition: all 0.2s ease;
+}
+
+
+/* Shift text left when icon hidden */
+.input-wrapper:has(.ng-select.ng-select-focused) .ng-select .ng-value-container,
+.input-wrapper:has(.ng-select.ng-has-value) .ng-select .ng-value-container {
+  padding-left: 12px !important;
+}
+
+.input-wrapper:has(.ng-select.ng-select-focused) .ng-select .ng-input input,
+.input-wrapper:has(.ng-select.ng-has-value) .ng-select .ng-input input {
+  padding-left: 12px !important;
+}
+
+
+/* ================= DROPDOWN ================= */
+
+::ng-deep .ng-dropdown-panel {
+  background: #ffffff !important;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+::ng-deep .ng-option {
+  padding: 12px 16px;
+  font-size: 14px;
+}
+
+::ng-deep .ng-option:hover {
+  background: #f0fdf4;
+  color: #0f5132;
+}
+
+::ng-deep .ng-option-selected {
+  background: #dcfce7;
+  color: #0f5132;
+  font-weight: 600;
+}
+
