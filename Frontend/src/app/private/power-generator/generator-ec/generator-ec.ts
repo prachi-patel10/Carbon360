@@ -62,24 +62,15 @@ export class GeneratorOperationComponent implements OnInit {
   operations: any[] = [];
   tripHistory: any[] = [];
   operation: any = {};
-
   pageSource: 'myaction' | 'search' = 'search';
-  isReviewMode = false;
-  isEditMode = false;
-  isViewMode = false;
-
   isResubmitMode: boolean = false;
   workflowActions: any[] = [];
-
-  showApproveReject = false;
-  showResubmit = false;
   operationId!: string;
-
   totalCO2: number = 0;
   totalNO2: number = 0;
   totalCH4: number = 0;
   fuelConsumed: number = 0;
-  co2Factor: number = 2.68; // default, can come from backend
+  co2Factor: number = 2.68; 
   no2Factor: number = 0.00007;
   ch4Factor: number = 0.00001;
   totalEmission: number = 0;
@@ -91,10 +82,16 @@ export class GeneratorOperationComponent implements OnInit {
     totalEmission: 0,
   };
   generatorName: string = '';
-
   showCalculation = false;
 
-  userRole: 'admin' | 'corporate' | 'reporter' = 'reporter';
+ userRole: string = '';
+  currentStatusId: number = 0;
+  mode: 'add' | 'edit' | 'view' = 'add';
+ isViewMode: boolean = false;
+  isReviewMode: boolean = false;
+  isEditMode: boolean = false;
+  showApproveReject: boolean = false;
+  showResubmit: boolean = false;
 
   constructor(
     private fb: FormBuilder,
@@ -104,33 +101,42 @@ export class GeneratorOperationComponent implements OnInit {
   ) { }
 
   ngOnInit() {
-    this.initForm();
+   this.initForm();
     this.loadSites();
-    this.loadGenerators(); // optional if you want all generators
-
+    this.loadGenerators();
+ 
+    // ✅ Read role FIRST — same as vehicle-trip
     const user = localStorage.getItem('user');
     if (user) {
       const parsed = JSON.parse(user);
-      this.userRole = parsed.currentRole?.toLowerCase();
+      this.userRole = parsed.currentRole?.toLowerCase() || '';
     }
-    // ================= SITE SELECTION CHANGE =================
+ 
+    // ✅ Read route params first (same pattern as vehicle-trip)
+    const operationId = this.route.snapshot.paramMap.get('id');
+    const queryParams = this.route.snapshot.queryParamMap;
+    const mode = queryParams.get('mode') || 'create';
+    const page = queryParams.get('page');
+ 
+    this.pageSource = page === 'myaction' || page === 'search' ? page : 'search';
+    this.isReviewMode = mode === 'review' && this.pageSource === 'myaction';
+    this.isEditMode = mode === 'edit';
+    this.isViewMode = mode === 'view';
+    this.showCalculation = !!operationId;
+ 
+    // ✅ Site change listener
     this.operationForm.get('SiteId')?.valueChanges.subscribe((selectedSiteId: string) => {
       if (!selectedSiteId) {
         this.generators = [];
         return;
       }
-
       this.service.getGeneratorsBySite(selectedSiteId).subscribe({
         next: (res: any) => {
-          this.generators = res || []; // Do NOT clear generator during edit
-
-          setTimeout(() => {
-            this.calculateLiveValues(); // ✅ trigger after load
-          });
+          this.generators = res || [];
+          setTimeout(() => this.calculateLiveValues());
           if (!this.isViewMode && !this.isReviewMode && !this.isEditMode) {
             this.operationForm.get('GeneratorId')?.setValue(null);
           }
-
           if (!this.generators.length) {
             Swal.fire('Info', 'No generators available for this site', 'info');
           }
@@ -138,60 +144,21 @@ export class GeneratorOperationComponent implements OnInit {
         error: () => Swal.fire('Error', 'Failed to load generators', 'error'),
       });
     });
-
-    // ================= READ ROUTE PARAMETERS =================
-    const operationId = this.route.snapshot.paramMap.get('id');
-    const queryParams = this.route.snapshot.queryParamMap;
-    const mode = queryParams.get('mode') || 'create';
-    const page = queryParams.get('page');
-
-    this.pageSource = page === 'myaction' || page === 'search' ? page : 'search';
-
-    // Restrict Corporate from creating new report
-    if ((this.userRole === 'corporate' || this.userRole === 'admin') && !operationId) {
-
-      Swal.fire({
-        icon: 'warning',
-        title: 'Access Restricted',
-        text: 'you are not allowed to create generator emission reports.',
-        confirmButtonText: 'Go Back'
-      }).then(() => {
-        this.router.navigate(['/dashboard/MyActionGenerator']);
-      });
-
-      return;
-    }
-    this.pageSource = page === 'myaction' || page === 'search' ? page : 'search';
-
-    this.isReviewMode = mode === 'review' && this.pageSource === 'myaction';
-    this.isEditMode = mode === 'edit';
-    this.isViewMode = mode === 'view';
-    this.showCalculation = !!operationId;
-
-
-    // ================= LOAD OPERATION & WORKFLOW =================
+ 
+    this.operationForm.valueChanges.subscribe(() => this.calculateLiveValues());
+ 
     if (operationId) {
+      // ✅ Same as vehicle-trip: role restriction only blocks ADD, not view
+      this.mode = 'view';
       this.loadOperationById(operationId);
+    } else {
+      // ✅ Same as vehicle-trip: block corporate/admin from creating
+      if (this.userRole === 'corporate' || this.userRole === 'admin') {
+        this.showAccessRestricted();
+        return;
+      }
+      this.mode = 'add';
     }
-
-    // ================= SET FORM ENABLE/DISABLE =================
-    // Corporate cannot edit
-    if (this.userRole === 'corporate') {
-      this.operationForm.disable();
-    }
-
-    // Reporter editing rejected record
-    if (this.userRole === 'reporter' && this.isEditMode) {
-      this.operationForm.enable();
-    }
-
-    // Reporter creating
-    if (!this.isViewMode && !this.isReviewMode && !this.isEditMode) {
-      this.operationForm.enable();
-    }
-    this.operationForm.valueChanges.subscribe(() => {
-      this.calculateLiveValues();
-    });
   }
 
   initForm() {
@@ -205,50 +172,45 @@ export class GeneratorOperationComponent implements OnInit {
       LoadFactor: [0, [Validators.required, Validators.min(0), Validators.max(100)]],
       FuelConsumedLiters: [0, [Validators.required, Validators.min(0)]],
     });
-
-
+  }
+ private showAccessRestricted() {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Access Restricted',
+      text: 'You are not allowed to create generator emission reports.',
+      confirmButtonText: 'Go Back',
+    }).then(() => {
+      this.router.navigate(['/dashboard/MyActionGenerator']);
+    });
   }
 
   calculateLiveValues() {
     const raw = this.operationForm.getRawValue();
-
     const start = new Date(raw.StartTime);
     const end = new Date(raw.EndTime);
-
+ 
     if (!raw.StartTime || !raw.EndTime || end <= start) {
       this.operation.runHours = 0;
       return;
     }
-
+ 
     const runHours = +((end.getTime() - start.getTime()) / (1000 * 60 * 60)).toFixed(2);
-
-    // ✅ FIXED (type safe)
-    const generator = this.generators.find(
-      g => String(g.generatorId) === String(raw.GeneratorId)
-    );
-
+    const generator = this.generators.find(g => String(g.generatorId) === String(raw.GeneratorId));
     this.ratedCapacityKW =
-      generator?.ratedCapacityKW ||
-      this.ratedCapacityKW ||
-      this.operation.ratedCapacityKW ||
-      0;
-
+      generator?.ratedCapacityKW || this.ratedCapacityKW || this.operation.ratedCapacityKW || 0;
+ 
     const powerOutputKWH = this.ratedCapacityKW * (raw.LoadFactor / 100) * runHours;
-
     const fuel = Number(raw.FuelConsumedLiters) || 0;
-
-    // ✅ IMPORTANT FIX
     this.fuelConsumed = fuel;
-
+ 
     const totalCO2 = fuel * this.co2Factor;
     const totalNO2 = fuel * this.no2Factor;
     const totalCH4 = fuel * this.ch4Factor;
-
     const totalEmission =
       totalCO2 +
       totalCH4 * (this.operation.gwP_CH4 || 28) +
       totalNO2 * (this.operation.gwP_NO2 || 265);
-
+ 
     this.operation = {
       ...this.operation,
       startTime: start,
@@ -258,21 +220,21 @@ export class GeneratorOperationComponent implements OnInit {
       powerOutputKWH,
       loadFactor: raw.LoadFactor,
       fuelConsumedLiters: fuel,
-      totalEmission
+      totalEmission,
     };
-
+ 
     this.totalCO2 = +totalCO2.toFixed(3);
     this.totalNO2 = +totalNO2.toFixed(6);
     this.totalCH4 = +totalCH4.toFixed(6);
   }
 
-  getSiteName(siteId: any): string {
-    const site = this.sites.find((s) => s.siteId == siteId);
+   getSiteName(siteId: any): string {
+    const site = this.sites.find(s => s.siteId == siteId);
     return site ? site.siteName : '';
   }
-
+ 
   getGeneratorName(generatorId: any): string {
-    const gen = this.generators.find((g) => g.generatorId == generatorId);
+    const gen = this.generators.find(g => g.generatorId == generatorId);
     return gen ? gen.generatorName : '';
   }
 
@@ -361,39 +323,55 @@ export class GeneratorOperationComponent implements OnInit {
   //
 
   loadOperation(id: string) {
-    this.service.getById(id).subscribe({
-      next: (res: any) => {
-        const selected = res.data || res;
-        if (!selected) return;
-
-        // --- GWP values ---
+   this.operationId = id;
+ 
+    const requests: any = {
+      op: this.service.getById(id),
+      history: this.service.getTripFullDetails(id),
+    };
+ 
+    // Only fetch workflow actions when NOT in search mode — same as vehicle-trip
+    if (this.pageSource !== 'search') {
+      requests.actions = this.service.getWorkflowActions(id);
+    }
+ 
+    forkJoin(requests).subscribe({
+      next: (results: any) => {
+        const res = results.op;
+        const op = res.data || res;
+ 
+        // ✅ Set currentStatusId — critical for button logic
+        this.currentStatusId = op.statusId || 0;
+ 
         const gwP_CH4 = 28;
         const gwP_NO2 = 265;
-
-        // --- Compute Run Hours ---
-        let runHours = 0;
-        if (selected.startTime && selected.endTime) {
-          const start = new Date(selected.startTime).getTime();
-          const end = new Date(selected.endTime).getTime();
-          runHours = +((end - start) / (1000 * 60 * 60)).toFixed(2);
-        }
-
-        // --- Emission factors ---
-        const co2Factor = selected.co2_kg ?? 0;
-        const no2Factor = selected.no2_kg ?? 0;
-        const ch4Factor = selected.ch4_kg ?? 0;
-
-        // --- Total emissions ---
-        const totalCO2 = (selected.totalCO2 ?? selected.fuelConsumedLiters * co2Factor) || 0;
-        const totalNO2 = (selected.totalNO2 ?? selected.fuelConsumedLiters * no2Factor) || 0;
-        const totalCH4 = (selected.totalCH4 ?? selected.fuelConsumedLiters * ch4Factor) || 0;
-
+        const co2Factor = op.cO2 ?? 2.68;
+        const no2Factor = op.nO2 ?? 0.00007;
+        const ch4Factor = op.cH4 ?? 0.00001;
+        this.co2Factor = co2Factor;
+        this.no2Factor = no2Factor;
+        this.ch4Factor = ch4Factor;
+ 
+        const runHours =
+          op.startTime && op.endTime
+            ? +((new Date(op.endTime).getTime() - new Date(op.startTime).getTime()) / (1000 * 60 * 60)).toFixed(2)
+            : 0;
+ 
+        const generator = this.generators.find(g => g.generatorId === op.generatorId);
+        const ratedCapacityKW = generator?.ratedCapacityKW || op.ratedCapacityKW || 0;
+        this.ratedCapacityKW = ratedCapacityKW;
+        const powerOutputKWH = ratedCapacityKW * (op.loadFactor / 100) * runHours;
+ 
+        const totalCO2 = (op.fuelConsumedLiters || 0) * co2Factor;
+        const totalNO2 = (op.fuelConsumedLiters || 0) * no2Factor;
+        const totalCH4 = (op.fuelConsumedLiters || 0) * ch4Factor;
         const totalEmission = totalCO2 + totalCH4 * gwP_CH4 + totalNO2 * gwP_NO2;
-
-        // --- Patch operation object ---
+ 
         this.operation = {
-          ...selected,
+          ...op,
           runHours,
+          ratedCapacityKW,
+          powerOutputKWH,
           co2Factor,
           no2Factor,
           ch4Factor,
@@ -404,16 +382,42 @@ export class GeneratorOperationComponent implements OnInit {
           gwP_NO2,
           totalEmission,
         };
-
-        // Optional: update totalCalculations for summary display
-        this.totalCalculations = {
-          runHours,
-          totalFuel: selected.fuelConsumedLiters ?? 0,
-          avgLoadFactor: selected.loadFactor ?? 0,
-          totalEmission,
-        };
+ 
+        this.fuelConsumed = op.fuelConsumedLiters || 0;
+        this.totalCO2 = +totalCO2.toFixed(3);
+        this.totalNO2 = +totalNO2.toFixed(6);
+        this.totalCH4 = +totalCH4.toFixed(6);
+        this.showCalculation = true;
+ 
+        // ✅ Workflow actions
+        if (results.actions) {
+          this.workflowActions = results.actions?.data ?? results.actions ?? [];
+          this.isResubmitMode = this.workflowActions.some(a => a.actionName === 'Resubmit');
+        } else {
+          this.workflowActions = [];
+        }
+ 
+        // ✅ Trip history
+        this.tripHistory = results.history?.History || [];
+ 
+        console.log('Generator History:', this.tripHistory);
+        console.log('Workflow Actions:', this.workflowActions);
+        console.log('Current Status ID:', this.currentStatusId);
+ 
+        // ✅ Patch form
+        this.edit(op);
+ 
+        // ✅ Lock form AFTER data is loaded — same as vehicle-trip
+        this.lockFormIfNeeded();
+ 
+        // ✅ Disable all fields if search mode — same as vehicle-trip
+        if (this.pageSource === 'search') {
+          this.operationForm.disable();
+        }
+ 
+        this.calculateLiveValues();
       },
-      error: () => Swal.fire('Error', 'Failed to load operation', 'error'),
+      error: () => Swal.fire('Error', 'Failed to load operation details', 'error'),
     });
   }
 
@@ -569,18 +573,56 @@ export class GeneratorOperationComponent implements OnInit {
     });
   }
 
-  resubmit() {
+  resubmitOperation() {
+    if (this.operationForm.invalid) {
+      this.operationForm.markAllAsTouched();
+      Swal.fire({
+        icon: 'warning',
+        title: 'Validation Error',
+        text: 'Please fill all required fields',
+      });
+      return;
+    }
+ 
     const id = this.operationForm.get('OperationId')?.value;
-    if (!id) return;
-
-    this.service.updateStatus(id, 1).subscribe({
+    if (!id) {
+      Swal.fire({ icon: 'error', title: 'Operation ID not found' });
+      return;
+    }
+ 
+    const raw = this.operationForm.getRawValue();
+ 
+    const payload = {
+      operationId: id,
+      siteId: raw.SiteId,
+      generatorId: raw.GeneratorId,
+      startTime: raw.StartTime,
+      endTime: raw.EndTime,
+      loadFactor: raw.LoadFactor,
+      fuelConsumedLiters: raw.FuelConsumedLiters,
+      statusId: 1,
+    };
+ 
+    console.log('RESUBMIT PAYLOAD:', payload);
+ 
+    this.service.update(id, payload).subscribe({
       next: () => {
-        Swal.fire('Resubmitted', 'Sent again for approval', 'success');
-        this.goBack();
+        Swal.fire({
+          icon: 'success',
+          title: 'Operation Updated Successfully',
+        }).then(() => this.goBack());
       },
-      error: () => Swal.fire('Error', 'Resubmit failed', 'error'),
+      error: (err: any) => {
+        console.error('RESUBMIT ERROR:', err);
+        Swal.fire({
+          icon: 'error',
+          title: 'Update failed',
+          text: err?.error?.message || 'Server error',
+        });
+      },
     });
   }
+ 
 
   goBack() {
     if (this.pageSource === 'search') {
@@ -590,50 +632,44 @@ export class GeneratorOperationComponent implements OnInit {
     }
   }
 
-  submitOperation() {
-
+ submitOperation() {
     if (this.userRole === 'corporate') {
       Swal.fire('Access Denied', 'Corporate users cannot submit this form', 'error');
       return;
     }
-
+ 
     if (this.operationForm.invalid) {
-      Swal.fire('Error', 'Please fill required fields', 'error');
+      this.operationForm.markAllAsTouched();
+      Swal.fire({
+        icon: 'warning',
+        title: 'Validation Error',
+        text: 'Please fill all required fields',
+      });
       return;
     }
-
+ 
     const raw = this.operationForm.getRawValue();
-    const operationId = this.operationId; // ✅ declare once
-
+ 
     const payload = {
-      operationId: operationId,
+      operationId: this.operationId,
       siteId: raw.SiteId,
       generatorId: raw.GeneratorId,
       startTime: raw.StartTime,
       endTime: raw.EndTime,
       loadFactor: raw.LoadFactor,
       fuelConsumedLiters: raw.FuelConsumedLiters,
+      statusId: 1,
     };
-
-    if (operationId) {
-      this.service.update(operationId, payload).subscribe({
-        next: () => {
-          Swal.fire('Success', 'Operation updated successfully', 'success').then(() =>
-            this.goBack(),
-          );
-        },
-        error: () => Swal.fire('Error', 'Update failed', 'error'),
-      });
-    } else {
-      this.service.create(payload).subscribe({
-        next: () => {
-          Swal.fire('Success', 'Operation created successfully', 'success').then(() =>
-            this.goBack(),
-          );
-        },
-        error: () => Swal.fire('Error', 'Save failed', 'error'),
-      });
-    }
+ 
+    this.service.create(payload).subscribe({
+      next: () => {
+        Swal.fire({
+          icon: 'success',
+          title: 'Operation Submitted Successfully',
+        }).then(() => this.goBack());
+      },
+      error: () => Swal.fire('Error', 'Save failed', 'error'),
+    });
   }
 
   edit(op: any) {
@@ -648,107 +684,74 @@ export class GeneratorOperationComponent implements OnInit {
       GeneratorName: op.generatorName || '',
     });
   }
+ 
 
   resetForm() {
-    this.operationForm.reset({
-      SiteId: null,
-      GeneratorId: null,
-      StartTime: '',
-      EndTime: '',
-      LoadFactor: 0,
-      FuelConsumedLiters: 0,
+    Swal.fire({
+      title: 'Are you sure?',
+      text: 'All entered data will be cleared',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, reset it!',
+    }).then(result => {
+      if (result.isConfirmed) {
+        this.operationForm.reset({
+          SiteId: null,
+          GeneratorId: null,
+          StartTime: '',
+          EndTime: '',
+          LoadFactor: 0,
+          FuelConsumedLiters: 0,
+        });
+        this.generators = [];
+        this.totalCO2 = 0;
+        this.totalNO2 = 0;
+        this.totalCH4 = 0;
+        this.totalEmission = 0;
+        this.operationForm.enable();
+      }
     });
-    this.generators = [];
   }
 
   goToDetail(item: any, source: 'myaction' | 'search') {
-    if (!item?.operationId) return;
-
+     if (!item?.operationId) return;
     let mode = 'view';
-
-    if (source === 'search') {
-      mode = 'view';
-    }
-
     if (source === 'myaction') {
       if (this.userRole === 'corporate' && item.statusId === 1) {
         mode = 'review';
       } else if (this.userRole === 'reporter' && item.statusId === 3) {
         mode = 'edit';
-      } else {
-        mode = 'view';
       }
     }
-
     this.router.navigate(['/dashboard/generator-ec', item.operationId], {
       queryParams: { mode, page: source },
     });
-  }
-
- performAction(workflowId: number) {
-  const operationId = this.operationForm.get('OperationId')?.value;
-
-  if (!operationId) {
-    Swal.fire('Error', 'Operation not found', 'error');
-    return;
-  }
-
-  const action = this.workflowActions.find(a => a.workflowId === workflowId);
-  if (!action) {
-    Swal.fire('Error', 'Workflow action not found', 'error');
-    return;
-  }
-
-  if (action.actionName === 'Resubmit') {
-    if (this.operationForm.invalid) {
-      this.operationForm.markAllAsTouched();
-      Swal.fire('Error', 'Please fill all required fields before resubmitting', 'error');
-      return;
     }
 
-    const raw = this.operationForm.getRawValue();
-    const payload = {
-      siteId: raw.SiteId,
-      generatorId: raw.GeneratorId,
-      startTime: raw.StartTime,
-      endTime: raw.EndTime,
-      loadFactor: raw.LoadFactor,
-      fuelConsumedLiters: raw.FuelConsumedLiters
-    };
 
-    // Step 1: Update data
-    this.service.update(operationId, payload).pipe(
-      switchMap(() => {
-        // Step 2: Update status only after data update succeeds
-        return this.service.updateStatus(operationId, workflowId);
-      })
-    ).subscribe({
-      next: () => {
-        Swal.fire('Resubmitted', 'Operation updated and resubmitted successfully', 'success')
-          .then(() => this.goBack());
-      },
-      error: (err) => {
-        console.error('Resubmit error:', err);
-        const msg = err?.error?.Message || err?.error?.message || 'Resubmit failed. Please try again.';
-        Swal.fire('Error', msg, 'error');
-      }
-    });
-
-  } else {
-    // For Approve / Reject
-    this.service.updateStatus(operationId, workflowId).subscribe({
-      next: () => {
-        Swal.fire('Success', `Action "${action.actionName}" completed successfully`, 'success')
-          .then(() => this.goBack());
-      },
-      error: (err) => {
-        console.error('updateStatus error:', err);
-        const msg = err?.error?.Message || err?.error?.message || 'Failed to update status';
-        Swal.fire('Error', msg, 'error');
-      }
+updateStatus(workflowId: number) {
+    const id = this.operationForm.get('OperationId')?.value;
+    if (!id) return;
+ 
+    // ✅ Prevent duplicate action — same guard as vehicle-trip
+    if (this.currentStatusId !== 1) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Action already taken',
+      });
+      return;
+    }
+ 
+    this.service.updateStatus(id, workflowId).subscribe((res: any) => {
+      Swal.fire({
+        icon: 'success',
+        title: 'Status Updated Successfully',
+        confirmButtonText: 'OK',
+      }).then(() => {
+        this.goBack();
+      });
     });
   }
-}
   getActionMessage(h: any): string {
   const role = h.ActionByRole || '';
   const name = h.FullName || '';
@@ -783,7 +786,46 @@ getTimeAgo(dateStr: string): string {
   if (days < 30)    return `${days} day${days > 1 ? 's' : ''} ago`;
   return date.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
 }
+lockFormIfNeeded() {
+ // Corporate always readonly
+    if (this.userRole === 'corporate') {
+      this.operationForm.disable();
+      return;
+    }
+ 
+    if (this.userRole === 'reporter') {
+      // Submitted
+      if (this.currentStatusId === 1) {
+        this.operationForm.disable();
+      }
+      // Approved
+      else if (this.currentStatusId === 2) {
+        this.operationForm.disable();
+      }
+      // Rejected → allow edit but lock key fields
+      else if (this.currentStatusId === 3) {
+        this.operationForm.enable();
+        this.operationForm.get('SiteId')?.disable();
+        this.operationForm.get('GeneratorId')?.disable();
+      }
+    }
+}
 
+
+canSubmit(): boolean {
+    return this.userRole === 'reporter' && this.mode === 'add';
+  }
+ 
+  // ✅ Matches vehicle-trip canResubmit exactly
+  canResubmit(): boolean {
+    return this.userRole === 'reporter' && this.currentStatusId === 3;
+  }
+ 
+  // ✅ Matches vehicle-trip canCorporateAction exactly
+  canCorporateAction(): boolean {
+    return this.userRole === 'corporate' && this.currentStatusId === 1;
+  }
+ 
   // ================= LOAD WORKFLOW ACTIONS =================
 //   loadWorkflowActions(operationId: string) {
 //     if (this.pageSource === 'search') {
