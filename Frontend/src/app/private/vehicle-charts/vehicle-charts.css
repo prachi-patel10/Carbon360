@@ -47,12 +47,11 @@
   display: flex; align-items: center; justify-content: center;
   font-size: 14px; color: white; flex-shrink: 0;
 }
-.vehicle-bg      { background: linear-gradient(135deg, #0f5132, #1b7d55); }
-.emission-bg     { background: linear-gradient(135deg, #1e40af, #3b82f6); }
-.distance-bg     { background: linear-gradient(135deg, #3730a3, #6366f1); }
-.vtype-bg        { background: linear-gradient(135deg, #0e7490, #0891b2); }
-.pie-bg          { background: linear-gradient(135deg, #7c3aed, #a855f7); }
-/* NEW */
+.vehicle-bg       { background: linear-gradient(135deg, #0f5132, #1b7d55); }
+.emission-bg      { background: linear-gradient(135deg, #1e40af, #3b82f6); }
+.distance-bg      { background: linear-gradient(135deg, #3730a3, #6366f1); }
+.vtype-bg         { background: linear-gradient(135deg, #0e7490, #0891b2); }
+.pie-bg           { background: linear-gradient(135deg, #7c3aed, #a855f7); }
 .city-emission-bg { background: linear-gradient(135deg, #065f46, #059669); }
 
 .card-header h3 { margin: 0; font-size: 13px; font-weight: 700; color: #1e293b; }
@@ -78,8 +77,8 @@
 /* ── CANVAS ───────────────────────────────────────────────── */
 .canvas-wrap        { position: relative; width: 100%; height: 220px; }
 .canvas-wrap canvas { width: 100% !important; height: 100% !important; }
-/* Taller canvas for charts with many X-axis labels */
-.canvas-wrap-tall   { height: 300px; }
+/* Shared side-by-side canvas height for city emission chart */
+.canvas-wrap-side   { height: 320px; }
 
 /* ── LEGEND ───────────────────────────────────────────────── */
 .fuel-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-top: 10px; padding-top: 10px; border-top: 1px solid #f1f5f9; }
@@ -91,10 +90,30 @@
 /* ── UTILITY ──────────────────────────────────────────────── */
 .hidden { display: none !important; }
 
-/* ── PIE — centered ──────────────────────────────────────── */
-.pie-chart-layout { display: flex; justify-content: center; align-items: center; padding: 8px 0 4px; }
-.pie-canvas-wrap  { width: 300px; height: 300px; flex-shrink: 0; }
-.pie-canvas-wrap canvas { width: 100% !important; height: 100% !important; }
+/* ══════════════════════════════════════════════════════════════
+   PIE — side-by-side layout (Row 4a)
+══════════════════════════════════════════════════════════════ */
+.pie-side-card  { display: flex; flex-direction: column; }
+
+/* Body stretches to fill the card so the pie is vertically centred */
+.pie-side-body  {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 8px 0 6px;
+}
+
+/* Pie canvas — sized to fill the half-width card nicely */
+.pie-side-canvas-wrap {
+  width: 320px;
+  height: 320px;
+  flex-shrink: 0;
+}
+.pie-side-canvas-wrap canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
 
 /* ══════════════════════════════════════════════════════════════
    VEHICLE TYPE × MONTH PIVOT TABLE
@@ -157,6 +176,11 @@
 
 /* ── RESPONSIVE ───────────────────────────────────────────── */
 @media (max-width: 1100px) { .module-kpi-grid { grid-template-columns: repeat(3, 1fr); } }
-@media (max-width: 900px)  { .charts-row { grid-template-columns: 1fr; } .module-kpi-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 900px)  {
+  .charts-row { grid-template-columns: 1fr; }
+  .module-kpi-grid { grid-template-columns: repeat(2, 1fr); }
+  .pie-side-canvas-wrap { width: 260px; height: 260px; }
+  .canvas-wrap-side { height: 260px; }
+}
 @media (max-width: 768px)  { .vtype-table { font-size: 11px; } .th-vtype, .td-vtype { min-width: 120px; } .th-month-col, .td-cell { min-width: 60px; } }
-@media (max-width: 480px)  { .module-kpi-grid { grid-template-columns: 1fr; } .pie-canvas-wrap { width: 240px; height: 240px; } }
+@media (max-width: 480px)  { .module-kpi-grid { grid-template-columns: 1fr; } .pie-side-canvas-wrap { width: 200px; height: 200px; } }

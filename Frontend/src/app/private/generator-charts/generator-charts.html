@@ -1,43 +1,3 @@
-<!-- ═══ KPI STRIP ═══ -->
-<!-- <div class="module-kpi-grid">
-  <div class="mkpi-card mkpi-orange">
-    <div class="mkpi-icon"><i class="fas fa-fire"></i></div>
-    <div class="mkpi-body">
-      <div class="mkpi-label">Fuel Consumption</div>
-      <div class="mkpi-value">{{ formatNum(generatorTotal()) }} <span>L</span></div>
-    </div>
-  </div>
-  <div class="mkpi-card mkpi-amber">
-    <div class="mkpi-icon"><i class="fas fa-gas-pump"></i></div>
-    <div class="mkpi-body">
-      <div class="mkpi-label">Top Fuel</div>
-      <div class="mkpi-value small">{{ topFuelType() }}</div>
-      <div class="mkpi-sub">{{ formatNum(topFuelAmount()) }} L</div>
-    </div>
-  </div>
-  <div class="mkpi-card mkpi-red">
-    <div class="mkpi-icon"><i class="fas fa-smog"></i></div>
-    <div class="mkpi-body">
-      <div class="mkpi-label">Total CO2e</div>
-      <div class="mkpi-value">{{ formatNum(totalCO2e()) }} <span>kg</span></div>
-    </div>
-  </div>
-  <div class="mkpi-card mkpi-teal">
-    <div class="mkpi-icon"><i class="fas fa-clock"></i></div>
-    <div class="mkpi-body">
-      <div class="mkpi-label">Run Hours</div>
-      <div class="mkpi-value">{{ formatNum(totalRunHours()) }} <span>hrs</span></div>
-    </div>
-  </div>
-  <div class="mkpi-card mkpi-purple">
-    <div class="mkpi-icon"><i class="fas fa-bolt"></i></div>
-    <div class="mkpi-body">
-      <div class="mkpi-label">Power Output</div>
-      <div class="mkpi-value">{{ formatNum(totalPowerOutput()) }} <span>kWh</span></div>
-    </div>
-  </div>
-</div> -->
-
 <!-- ═══ ROW 1: Fuel (left) + Emission (right) ═══ -->
 <div class="charts-row">
 
@@ -109,41 +69,7 @@
 
 </div>
 
-<!-- ═══ ROW 2: Run Hours Pie — compact ═══ -->
-<div class="charts-row-full">
-  <div class="chart-card pie-compact-card">
-    <div class="card-header">
-      <div class="card-header-left">
-        <div class="chart-icon-wrap runhours-bg"><i class="fas fa-chart-pie"></i></div>
-        <div>
-          <h3>Generator Run Hours Distribution</h3>
-          <p>Total operational run hours per generator unit for the year</p>
-        </div>
-      </div>
-    </div>
-    <div class="chart-loader" [class.hidden]="!isRunHoursLoading()">
-      <div class="dot-loader generator-dots"><span></span><span></span><span></span></div>
-      <p>Loading...</p>
-    </div>
-    <div class="chart-error" [class.hidden]="!(runHoursError() && !isRunHoursLoading())">
-      <i class="fas fa-exclamation-triangle"></i>
-      <span>{{ runHoursError() }}</span>
-      <button (click)="loadRunHoursChart()">Retry</button>
-    </div>
-    <!-- Donut — info shown on hover tooltip -->
-    <div class="pie-only-body" [class.hidden]="!showRunHoursCanvas()">
-      <div class="pie-canvas-wrap-sm">
-        <canvas #generatorRunHoursCanvas></canvas>
-        <div class="pie-centre">
-          <span class="pie-centre-value">{{ formatNum(totalRunHours()) }}</span>
-          <span class="pie-centre-label">Total hrs</span>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ═══ ROW 3: Generator Run Hours Monthly Pivot Table ═══ -->
+<!-- ═══ ROW 2: Generator Run Hours Monthly Pivot Table (full width) ═══ -->
 <div class="charts-row-full">
   <div class="chart-card">
     <div class="card-header">
@@ -151,7 +77,7 @@
         <div class="chart-icon-wrap loadfactor-bg"><i class="fas fa-table"></i></div>
         <div>
           <h3>Generator Run Hours — Month Wise</h3>
-          <p>Run hours per generator for each month — hover a cell for fuel &amp; power details</p>
+          <p>Click any cell, generator name, or total to drill into records</p>
         </div>
       </div>
     </div>
@@ -173,9 +99,13 @@
           <tr>
             <th class="th-vtype">Generator</th>
             @for (month of runHoursMonthlyData()!.monthLabels; track month; let mi = $index) {
-            @if (runHoursMonthlyData()!.monthTotals[mi] > 0) {
-            <th class="th-month-col">{{ month }}</th>
-            }
+              @if (runHoursMonthlyData()!.monthTotals[mi] > 0) {
+                <th class="th-month-col th-clickable"
+                    (click)="onRunHoursMonthTotalClick(mi)"
+                    title="View all records for {{ month }}">
+                  {{ month }}
+                </th>
+              }
             }
             <th class="th-total-col">Total (hrs)</th>
           </tr>
@@ -183,31 +113,37 @@
         <tbody>
           @for (gen of runHoursMonthlyData()!.generatorNames; track gen; let gi = $index) {
           <tr class="data-row">
-            <td class="td-vtype">
+            <td class="td-vtype td-vtype-clickable"
+                (click)="onRunHoursGeneratorTotalClick(gen)"
+                title="View all records for {{ gen }}">
               <div class="vtype-name-cell">
                 <span class="vtype-color-bar" [style.background]="runHoursMonthlyData()!.colors[gi]"></span>
                 <span class="vtype-name-text">{{ gen }}</span>
+                <i class="fas fa-arrow-right vtype-arrow-icon"></i>
               </div>
             </td>
             @for (month of runHoursMonthlyData()!.monthLabels; track month; let mi = $index) {
-            @if (runHoursMonthlyData()!.monthTotals[mi] > 0) {
-            <td class="td-cell" [class.has-data]="runHoursMonthlyData()!.runHoursMatrix[mi][gi] > 0">
-              @if (runHoursMonthlyData()!.runHoursMatrix[mi][gi] > 0) {
-              <span class="cell-bar"
-                [style.width.%]="runHoursMonthlyData()!.generatorTotals[gi] > 0 ? (runHoursMonthlyData()!.runHoursMatrix[mi][gi] / runHoursMonthlyData()!.generatorTotals[gi]) * 100 : 0"
-                [style.background]="runHoursMonthlyData()!.colors[gi] + '2a'">
-              </span>
-              <span class="cell-val"
-                [title]="gen + ' · ' + month + ' | ' + runHoursMonthlyData()!.runHoursMatrix[mi][gi].toFixed(1) + ' hrs | Fuel: ' + runHoursMonthlyData()!.fuelMatrix[mi][gi].toFixed(1) + ' L | Power: ' + runHoursMonthlyData()!.powerMatrix[mi][gi].toFixed(1) + ' kWh'">
-                {{ formatNum(runHoursMonthlyData()!.runHoursMatrix[mi][gi]) }}
-              </span>
-              } @else {
-              <span class="cell-empty">—</span>
+              @if (runHoursMonthlyData()!.monthTotals[mi] > 0) {
+                <td class="td-cell"
+                    [class.has-data]="runHoursMonthlyData()!.runHoursMatrix[mi][gi] > 0"
+                    [class.td-cell-clickable]="runHoursMonthlyData()!.runHoursMatrix[mi][gi] > 0"
+                    (click)="runHoursMonthlyData()!.runHoursMatrix[mi][gi] > 0 && onRunHoursGridCellClick(mi, gen)">
+                  @if (runHoursMonthlyData()!.runHoursMatrix[mi][gi] > 0) {
+                    <span class="cell-val"
+                      [title]="gen + ' · ' + month + ' | ' + runHoursMonthlyData()!.runHoursMatrix[mi][gi].toFixed(1) + ' hrs | Fuel: ' + runHoursMonthlyData()!.fuelMatrix[mi][gi].toFixed(1) + ' L | Power: ' + runHoursMonthlyData()!.powerMatrix[mi][gi].toFixed(1) + ' kWh'">
+                      {{ formatNum(runHoursMonthlyData()!.runHoursMatrix[mi][gi]) }}
+                    </span>
+                  } @else {
+                    <span class="cell-empty">—</span>
+                  }
+                </td>
               }
+            }
+            <td class="td-row-total td-row-total-clickable"
+                (click)="onRunHoursGeneratorTotalClick(gen)"
+                title="View all records for {{ gen }}">
+              {{ formatNum(runHoursMonthlyData()!.generatorTotals[gi]) }}
             </td>
-            }
-            }
-            <td class="td-row-total">{{ formatNum(runHoursMonthlyData()!.generatorTotals[gi]) }}</td>
           </tr>
           }
         </tbody>
@@ -215,11 +151,17 @@
           <tr class="total-row">
             <td class="td-vtype footer-label">Total (hrs)</td>
             @for (month of runHoursMonthlyData()!.monthLabels; track month; let mi = $index) {
-            @if (runHoursMonthlyData()!.monthTotals[mi] > 0) {
-            <td class="td-cell td-col-total">{{ formatNum(runHoursMonthlyData()!.monthTotals[mi]) }}</td>
+              @if (runHoursMonthlyData()!.monthTotals[mi] > 0) {
+                <td class="td-cell td-col-total td-col-total-clickable"
+                    (click)="onRunHoursMonthTotalClick(mi)"
+                    title="View all records for {{ month }}">
+                  {{ formatNum(runHoursMonthlyData()!.monthTotals[mi]) }}
+                </td>
+              }
             }
-            }
-            <td class="td-row-total grand-total">{{ formatNum(runHoursMonthlyData()!.grandTotal) }}</td>
+            <td class="td-row-total grand-total">
+              {{ formatNum(runHoursMonthlyData()!.grandTotal) }}
+            </td>
           </tr>
         </tfoot>
       </table>
@@ -228,9 +170,43 @@
   </div>
 </div>
 
+<!-- ═══ ROW 3: Run Hours Pie (left) + Site Wise Emission (right) ═══ -->
+<div class="charts-row">
 
-<!-- ═══ ROW 5: Site Wise Emission Stacked Bar ═══ -->
-<div class="charts-row-full">
+  <!-- 3a. Generator Run Hours Distribution — donut only, NO legend below -->
+  <div class="chart-card pie-side-card">
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="chart-icon-wrap runhours-bg"><i class="fas fa-chart-pie"></i></div>
+        <div>
+          <h3>Generator Run Hours Distribution</h3>
+          <p>Hover a segment for details · click to drill into records</p>
+        </div>
+      </div>
+    </div>
+    <div class="chart-loader" [class.hidden]="!isRunHoursLoading()">
+      <div class="dot-loader generator-dots"><span></span><span></span><span></span></div>
+      <p>Loading...</p>
+    </div>
+    <div class="chart-error" [class.hidden]="!(runHoursError() && !isRunHoursLoading())">
+      <i class="fas fa-exclamation-triangle"></i>
+      <span>{{ runHoursError() }}</span>
+      <button (click)="loadRunHoursChart()">Retry</button>
+    </div>
+
+    <!-- Donut canvas — legend intentionally removed; tooltip carries all details -->
+    <div class="pie-side-body" [class.hidden]="!showRunHoursCanvas()">
+      <div class="pie-side-canvas-wrap">
+        <canvas #generatorRunHoursCanvas></canvas>
+        <div class="pie-centre">
+          <span class="pie-centre-value">{{ formatNum(totalRunHours()) }}</span>
+          <span class="pie-centre-label">Total hrs</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3b. Site Wise Emission Stacked Bar -->
   <div class="chart-card">
     <div class="card-header">
       <div class="card-header-left">
@@ -250,7 +226,7 @@
       <span>{{ siteEmissionError() }}</span>
       <button (click)="loadSiteEmissionChart()">Retry</button>
     </div>
-    <div class="canvas-wrap canvas-wrap-tall" [class.hidden]="!showSiteEmissionCanvas()">
+    <div class="canvas-wrap canvas-wrap-side" [class.hidden]="!showSiteEmissionCanvas()">
       <canvas #generatorSiteEmissionCanvas></canvas>
     </div>
     <div class="fuel-legend" [class.hidden]="!showSiteEmissionCanvas()">
@@ -268,4 +244,5 @@
       </div>
     </div>
   </div>
+
 </div>

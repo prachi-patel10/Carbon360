@@ -1,43 +1,3 @@
-<!-- ═══ KPI STRIP ═══ -->
-<!-- <div class="module-kpi-grid">
-  <div class="mkpi-card mkpi-blue">
-    <div class="mkpi-icon"><i class="fas fa-fire"></i></div>
-    <div class="mkpi-body">
-      <div class="mkpi-label">Fuel Consumption</div>
-      <div class="mkpi-value">{{ formatNum(vehicleTotal()) }} <span>L</span></div>
-    </div>
-  </div>
-  <div class="mkpi-card mkpi-green">
-    <div class="mkpi-icon"><i class="fas fa-gas-pump"></i></div>
-    <div class="mkpi-body">
-      <div class="mkpi-label">Top Fuel</div>
-      <div class="mkpi-value small">{{ topFuelType() }}</div>
-      <div class="mkpi-sub">{{ formatNum(topFuelAmount()) }} L</div>
-    </div>
-  </div>
-  <div class="mkpi-card mkpi-teal">
-    <div class="mkpi-icon"><i class="fas fa-leaf"></i></div>
-    <div class="mkpi-body">
-      <div class="mkpi-label">Total CO2e</div>
-      <div class="mkpi-value">{{ formatNum(totalCO2e()) }} <span>kg</span></div>
-    </div>
-  </div>
-  <div class="mkpi-card mkpi-indigo">
-    <div class="mkpi-icon"><i class="fas fa-road"></i></div>
-    <div class="mkpi-body">
-      <div class="mkpi-label">Total Distance</div>
-      <div class="mkpi-value">{{ formatNum(totalDistanceKM()) }} <span>km</span></div>
-    </div>
-  </div>
-  <div class="mkpi-card mkpi-violet">
-    <div class="mkpi-icon"><i class="fas fa-truck-moving"></i></div>
-    <div class="mkpi-body">
-      <div class="mkpi-label">Total Trips</div>
-      <div class="mkpi-value">{{ formatNum(totalTrips()) }}</div>
-    </div>
-  </div>
-</div> -->
-
 <!-- ═══ ROW 1: Fuel (left) + Emission (right) ═══ -->
 <div class="charts-row">
 
@@ -229,9 +189,11 @@
   </div>
 </div>
 
-<!-- ═══ ROW 4: Vehicle Type Distance Pie ═══ -->
-<div class="charts-row-full">
-  <div class="chart-card">
+<!-- ═══ ROW 4: Vehicle Type Distance Pie (left) + City Wise Emission (right) ═══ -->
+<div class="charts-row">
+
+  <!-- 4a. Vehicle Type Distance Share Pie -->
+  <div class="chart-card pie-side-card">
     <div class="card-header">
       <div class="card-header-left">
         <div class="chart-icon-wrap pie-bg"><i class="fas fa-chart-pie"></i></div>
@@ -250,16 +212,14 @@
       <span>{{ vtypeError() }}</span>
       <button (click)="loadVtypeChart()">Retry</button>
     </div>
-    <div class="pie-chart-layout" [class.hidden]="!showVtypeTable()">
-      <div class="canvas-wrap pie-canvas-wrap">
+    <div class="pie-side-body" [class.hidden]="!showVtypeTable()">
+      <div class="canvas-wrap pie-side-canvas-wrap">
         <canvas #vehicleDistancePieCanvas></canvas>
       </div>
     </div>
   </div>
-</div>
 
-<!-- ═══ ROW 5: City Wise Emission Stacked Bar ═══ -->
-<div class="charts-row-full">
+  <!-- 4b. City Wise Emission Stacked Bar -->
   <div class="chart-card">
     <div class="card-header">
       <div class="card-header-left">
@@ -279,7 +239,7 @@
       <span>{{ cityEmissionError() }}</span>
       <button (click)="loadCityEmissionChart()">Retry</button>
     </div>
-    <div class="canvas-wrap canvas-wrap-tall" [class.hidden]="!showCityEmissionCanvas()">
+    <div class="canvas-wrap canvas-wrap-side" [class.hidden]="!showCityEmissionCanvas()">
       <canvas #vehicleCityEmissionCanvas></canvas>
     </div>
     <div class="fuel-legend" [class.hidden]="!showCityEmissionCanvas()">
@@ -297,4 +257,5 @@
       </div>
     </div>
   </div>
+
 </div>

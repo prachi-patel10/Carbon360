@@ -19,8 +19,6 @@
 .mkpi-red    { background: linear-gradient(135deg, #7f1d1d, #b91c1c); }
 .mkpi-teal   { background: linear-gradient(135deg, #0e7490, #06b6d4); }
 .mkpi-purple { background: linear-gradient(135deg, #5b21b6, #8b5cf6); }
-
-/* vehicle colours as fallback */
 .mkpi-blue   { background: linear-gradient(135deg, #1e40af, #3b82f6); }
 .mkpi-green  { background: linear-gradient(135deg, #0f5132, #1b7d55); }
 .mkpi-indigo { background: linear-gradient(135deg, #3730a3, #6366f1); }
@@ -51,13 +49,12 @@
 .card-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
 .card-header-left { display: flex; align-items: center; gap: 10px; }
 
-.chart-icon-wrap { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; color: #fff; flex-shrink: 0; }
-.generator-bg    { background: linear-gradient(135deg, #92400e, #d97706); }
-.emission-gen-bg { background: linear-gradient(135deg, #7f1d1d, #b91c1c); }
-.runhours-bg     { background: linear-gradient(135deg, #0e7490, #06b6d4); }
-.loadfactor-bg   { background: linear-gradient(135deg, #1e3a5f, #2563eb); }
-/* NEW */
-.site-emission-bg { background: linear-gradient(135deg, #7c2d12, #ea580c); }
+.chart-icon-wrap   { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; color: #fff; flex-shrink: 0; }
+.generator-bg      { background: linear-gradient(135deg, #92400e, #d97706); }
+.emission-gen-bg   { background: linear-gradient(135deg, #7f1d1d, #b91c1c); }
+.runhours-bg       { background: linear-gradient(135deg, #0e7490, #06b6d4); }
+.loadfactor-bg     { background: linear-gradient(135deg, #1e3a5f, #2563eb); }
+.site-emission-bg  { background: linear-gradient(135deg, #7c2d12, #ea580c); }
 
 .card-header h3 { margin: 0; font-size: 13px; font-weight: 700; color: #1e293b; }
 .card-header p  { margin: 2px 0 0; font-size: 11px; color: #64748b; }
@@ -88,11 +85,10 @@
 ══════════════════════════════════════════════════════════════ */
 .canvas-wrap        { position: relative; width: 100%; height: 220px; }
 .canvas-wrap canvas { width: 100% !important; height: 100% !important; }
-/* Taller canvas for many X-axis labels */
-.canvas-wrap-tall   { height: 300px; }
+.canvas-wrap-side   { height: 340px; }
 
 /* ══════════════════════════════════════════════════════════════
-   LEGEND
+   LEGEND  (fuel / emission charts only)
 ══════════════════════════════════════════════════════════════ */
 .fuel-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-top: 10px; padding-top: 10px; border-top: 1px solid #f1f5f9; }
 .legend-item        { display: flex; align-items: center; gap: 6px; }
@@ -101,22 +97,59 @@
 .legend-label       { font-size: 11px; color: #475569; font-family: 'Inter', sans-serif; }
 
 /* ══════════════════════════════════════════════════════════════
-   PIE / DOUGHNUT — compact donut (run hours)
+   PIE / DOUGHNUT — side-by-side layout (Row 3a)
+   Legend intentionally removed — tooltip carries all details.
 ══════════════════════════════════════════════════════════════ */
-.pie-compact-card { padding-bottom: 14px; }
-.pie-only-body { display: flex; justify-content: center; align-items: center; padding: 4px 0 0; }
-.pie-canvas-wrap-sm { position: relative; width: 140px; height: 140px; flex-shrink: 0; }
-.pie-canvas-wrap-sm canvas { width: 140px !important; height: 140px !important; max-width: 140px !important; max-height: 140px !important; display: block; }
+.pie-side-card  { display: flex; flex-direction: column; }
 
-/* Centre label inside doughnut hole */
-.pie-centre { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; pointer-events: none; }
-.pie-centre-value { display: block; font-size: 14px; font-weight: 700; color: #1e293b; line-height: 1; font-family: 'Inter', sans-serif; }
-.pie-centre-label { display: block; font-size: 8px; color: #64748b; font-weight: 500; margin-top: 2px; font-family: 'Inter', sans-serif; text-transform: uppercase; letter-spacing: .05em; }
+.pie-side-body  {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 8px 0 12px;
+}
 
+/* ✅ CSS controls 300×300. Do NOT set canvas.width/height in JS. */
+.pie-side-canvas-wrap {
+  position: relative;
+  width:  300px;
+  height: 300px;
+  flex-shrink: 0;
+}
+.pie-side-canvas-wrap canvas {
+  display: block;
+}
+
+/* Centre label inside the doughnut hole */
+.pie-centre {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  pointer-events: none;
+}
+.pie-centre-value {
+  display: block;
+  font-size: 20px;
+  font-weight: 700;
+  color: #1e293b;
+  line-height: 1;
+  font-family: 'Inter', sans-serif;
+}
+.pie-centre-label {
+  display: block;
+  font-size: 9px;
+  color: #64748b;
+  font-weight: 500;
+  margin-top: 4px;
+  font-family: 'Inter', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
 
 /* ══════════════════════════════════════════════════════════════
    GENERATOR RUN HOURS × MONTH PIVOT TABLE
-   Shared styles with vehicle pivot — generator amber header
 ══════════════════════════════════════════════════════════════ */
 .vtype-table-wrap {
   width: 100%; overflow-x: auto; margin-top: 8px;
@@ -125,7 +158,7 @@
 }
 .vtype-table { width: 100%; border-collapse: collapse; font-family: 'Inter', sans-serif; font-size: 12px; white-space: nowrap; min-width: 600px; }
 
-/* Header — amber for generator */
+/* Header */
 .vtype-table thead tr { background: #92400e; }
 .th-vtype {
   padding: 12px 16px; text-align: left; font-size: 10px; font-weight: 700;
@@ -136,6 +169,8 @@
   padding: 12px 8px; text-align: center; font-size: 11px; font-weight: 700; color: #fff;
   min-width: 76px; letter-spacing: .03em; border-left: 1px solid rgba(255,255,255,0.08);
 }
+.th-clickable { cursor: pointer; transition: background .14s; }
+.th-clickable:hover { background: #7c2d12 !important; }
 .th-total-col {
   padding: 12px 14px; text-align: right; font-size: 10px; font-weight: 700;
   text-transform: uppercase; letter-spacing: .06em; color: #fcd34d; background: #6b2d00;
@@ -149,10 +184,20 @@
 .data-row:hover { background: #fff7ed !important; }
 .data-row:hover .td-vtype { background: #fef3c7 !important; }
 
-.td-vtype { padding: 0; background: #fff; position: sticky; left: 0; border-right: 2px solid #e2e8f0; z-index: 1; transition: background .1s; }
+.td-vtype {
+  padding: 0; background: #fff;
+  position: sticky; left: 0;
+  border-right: 2px solid #e2e8f0;
+  z-index: 1; transition: background .1s;
+}
+.td-vtype-clickable { cursor: pointer; }
+.td-vtype-clickable:hover .vtype-name-text { color: #92400e; text-decoration: underline; text-underline-offset: 2px; }
+
 .vtype-name-cell { display: flex; align-items: center; gap: 0; padding: 9px 14px; }
 .vtype-color-bar { width: 4px; min-height: 28px; border-radius: 3px; flex-shrink: 0; margin-right: 10px; align-self: stretch; }
-.vtype-name-text { font-size: 12px; font-weight: 600; color: #1e293b; white-space: nowrap; }
+.vtype-name-text { font-size: 12px; font-weight: 600; color: #1e293b; white-space: nowrap; transition: color .14s; flex: 1; }
+.vtype-arrow-icon { font-size: 10px; color: #b45309; opacity: 0; margin-left: 6px; transition: opacity .14s; }
+.td-vtype-clickable:hover .vtype-arrow-icon { opacity: 1; }
 
 .td-cell { text-align: center; vertical-align: middle; padding: 0; min-width: 76px; border-left: 1px solid #f1f5f9; }
 .cell-val { display: block; padding: 9px 8px; font-size: 12px; font-weight: 600; color: #1e293b; text-align: center; cursor: default; position: relative; z-index: 1; }
@@ -162,27 +207,37 @@
     transparent var(--cell-bar-height, 20%)
   );
 }
-.td-cell.has-data:hover { background: rgba(180,83,9,0.07); }
-.td-cell.has-data:hover .cell-val { color: #92400e; }
+.td-cell-clickable { cursor: pointer !important; }
+.td-cell-clickable:hover { background: rgba(180,83,9,0.10) !important; }
+.td-cell-clickable:hover .cell-val { color: #92400e; font-weight: 700; }
 .cell-empty { display: block; padding: 9px 8px; color: #e2e8f0; text-align: center; font-size: 14px; font-weight: 300; }
 
-.td-row-total { padding: 9px 14px; text-align: right; font-weight: 700; color: #92400e; background: #fffbeb; border-left: 2px solid #fde68a; font-size: 12px; }
+.td-row-total {
+  padding: 9px 14px; text-align: right; font-weight: 700;
+  color: #92400e; background: #fffbeb;
+  border-left: 2px solid #fde68a; font-size: 12px;
+}
+.td-row-total-clickable { cursor: pointer; transition: background .14s; }
+.td-row-total-clickable:hover { background: #fef3c7 !important; text-decoration: underline; text-underline-offset: 2px; }
 
 /* Footer */
 .vtype-table tfoot .total-row { background: #fff7ed; border-top: 2px solid #fed7aa; }
 .footer-label { font-size: 11px; font-weight: 700; color: #92400e; padding: 10px 14px; background: #fff7ed !important; border-right: 2px solid #e2e8f0; }
 .td-col-total { padding: 10px 8px; text-align: center; font-weight: 700; color: #b45309; font-size: 12px; border-left: 1px solid #e2e8f0; }
+.td-col-total-clickable { cursor: pointer; transition: background .14s; }
+.td-col-total-clickable:hover { background: #fef3c7 !important; color: #92400e !important; }
 .grand-total { color: #92400e !important; font-size: 13px !important; font-weight: 800 !important; background: #fef3c7 !important; border-left: 2px solid #fcd34d !important; }
 
-/* ══════════════════════════════════════════════════════════════
-   UTILITY
-══════════════════════════════════════════════════════════════ */
+/* UTILITY */
 .hidden { display: none !important; }
 
-/* ══════════════════════════════════════════════════════════════
-   RESPONSIVE
-══════════════════════════════════════════════════════════════ */
+/* RESPONSIVE */
 @media (max-width: 1100px) { .module-kpi-grid { grid-template-columns: repeat(3, 1fr); } }
-@media (max-width: 900px)  { .charts-row { grid-template-columns: 1fr; } .module-kpi-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 900px)  {
+  .charts-row { grid-template-columns: 1fr; }
+  .module-kpi-grid { grid-template-columns: repeat(2, 1fr); }
+  .pie-side-canvas-wrap { width: 240px; height: 240px; }
+  .canvas-wrap-side { height: 260px; }
+}
 @media (max-width: 768px)  { .vtype-table { font-size: 11px; } .th-vtype, .td-vtype { min-width: 130px; } .th-month-col, .td-cell { min-width: 60px; } }
-@media (max-width: 480px)  { .module-kpi-grid { grid-template-columns: 1fr; } }
+@media (max-width: 480px)  { .module-kpi-grid { grid-template-columns: 1fr; } .pie-side-canvas-wrap { width: 180px; height: 180px; } }

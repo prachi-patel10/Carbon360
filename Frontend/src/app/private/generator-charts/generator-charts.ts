@@ -135,21 +135,9 @@ export class GeneratorCharts implements OnInit, AfterViewInit, OnChanges, OnDest
   }
 
   // ════════════════════════════════════════════════════════════════
-  //  NAVIGATION — central helper used by every chart / grid click
+  //  NAVIGATION
   // ════════════════════════════════════════════════════════════════
 
-  /**
-   * Builds query params and navigates to the generator search page.
-   *
-   * Rules:
-   *  • fuelType / generatorName  → forwarded as their own params;
-   *    the search page populates their respective multi-select dropdowns.
-   *  • siteName                  → forwarded as its own param;
-   *    the search page populates the search box (no site dropdown exists).
-   *  • month specified           → sends a precise month date range.
-   *  • month NOT specified       → ✅ sends a full-year date range so results
-   *    are scoped to the currently displayed year (previously missing!).
-   */
   private navigateToGeneratorSearch(params: {
     month?: number;
     fuelType?: string;
@@ -168,17 +156,14 @@ export class GeneratorCharts implements OnInit, AfterViewInit, OnChanges, OnDest
     if (params.siteName)      queryParams['siteName']      = params.siteName.trim();
     if (params.search)        queryParams['search']        = params.search.trim();
 
-    // ✅ Always include a date range so the search page is scoped to this year.
     const y = this.year;
 
     if (params.month) {
-      // ── Month-level: first → last day of that month ───────────
       const m       = params.month;
       const lastDay = new Date(y, m, 0).getDate();
       queryParams['startDate'] = `${y}-${String(m).padStart(2, '0')}-01`;
       queryParams['endDate']   = `${y}-${String(m).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
     } else {
-      // ── Year-level: Jan 1 → Dec 31 ────────────────────────────
       queryParams['startDate'] = `${y}-01-01`;
       queryParams['endDate']   = `${y}-12-31`;
     }
@@ -197,22 +182,18 @@ export class GeneratorCharts implements OnInit, AfterViewInit, OnChanges, OnDest
     this.navigateToGeneratorSearch({ month: monthIndex + 1, fuelType });
   }
 
-  // ── Grid / legend click handlers (called from HTML template) ─
-
-  /** Fuel stacked-bar grid row: month + optional fuel type */
   onFuelGridRowClick(monthIndex: number, fuelType?: string): void {
     this.navigateToGeneratorSearch({ month: monthIndex + 1, fuelType });
   }
 
-  /** Monthly emission grid row: month only */
   onEmissionGridRowClick(monthIndex: number): void {
     this.navigateToGeneratorSearch({ month: monthIndex + 1 });
   }
 
   /**
-   * Run-hours monthly pivot table cell.
-   * @param monthIndex   0-based month index  (-1 = totals row, skip month filter)
-   * @param generatorName generator name       ('' = month-total column, skip gen filter)
+   * Pivot table cell click.
+   * monthIndex: 0-based (pass -1 for totals row)
+   * generatorName: '' to skip generator filter
    */
   onRunHoursGridCellClick(monthIndex: number, generatorName: string): void {
     const p: { month?: number; generatorName?: string } = {};
@@ -221,22 +202,18 @@ export class GeneratorCharts implements OnInit, AfterViewInit, OnChanges, OnDest
     this.navigateToGeneratorSearch(p);
   }
 
-  /** Run-hours pivot: generator-total column header clicked */
   onRunHoursGeneratorTotalClick(generatorName: string): void {
     this.navigateToGeneratorSearch({ generatorName });
   }
 
-  /** Run-hours pivot: month-total row cell clicked */
   onRunHoursMonthTotalClick(monthIndex: number): void {
     this.navigateToGeneratorSearch({ month: monthIndex + 1 });
   }
 
-  /** Run-hours doughnut legend item clicked */
   onRunHoursLegendClick(generatorName: string): void {
     this.navigateToGeneratorSearch({ generatorName });
   }
 
-  /** Site-emission bar chart bar / grid row clicked */
   onSiteGridRowClick(siteName: string): void {
     this.navigateToGeneratorSearch({ siteName });
   }
@@ -548,6 +525,9 @@ export class GeneratorCharts implements OnInit, AfterViewInit, OnChanges, OnDest
   }
 
   // ── Render: Doughnut (Run Hours) ──────────────────────────────
+  // FIX: Removed hardcoded canvas.width/height = 140 — CSS handles sizing.
+  //      Set responsive:true so Chart.js fills the 300×300 wrapper correctly.
+  //      Tooltip uses getBoundingClientRect offset so it positions accurately.
 
   private renderRunHoursChart(data: GeneratorRunHoursChartResponse): void {
     const canvas = this.runHoursCanvasRef?.nativeElement;
@@ -557,35 +537,56 @@ export class GeneratorCharts implements OnInit, AfterViewInit, OnChanges, OnDest
     this.runHoursChart?.destroy(); this.runHoursChart = null;
     if (!(data?.data ?? []).some(v => v > 0)) { this.runHoursError.set('No run hours data for this year.'); return; }
 
+    // Remove any stale tooltip element
     const oldTip = canvas.parentNode?.querySelector('#rh-tooltip');
     if (oldTip) oldTip.remove();
 
     const getOrCreateTooltip = (chart: Chart): HTMLDivElement => {
       let el = chart.canvas.parentNode?.querySelector<HTMLDivElement>('#rh-tooltip');
       if (!el) {
-        el = document.createElement('div'); el.id = 'rh-tooltip';
+        el = document.createElement('div');
+        el.id = 'rh-tooltip';
         Object.assign(el.style, {
-          position: 'absolute', pointerEvents: 'none', transition: 'opacity 0.15s ease', opacity: '0',
-          background: '#1e293b', border: '2px solid #38bdf8', borderRadius: '10px', padding: '12px 16px',
-          minWidth: '190px', boxShadow: '0 8px 28px rgba(0,0,0,0.5)', zIndex: '9999',
+          position:      'absolute',
+          pointerEvents: 'none',
+          transition:    'opacity 0.15s ease',
+          opacity:       '0',
+          background:    '#1e293b',
+          border:        '2px solid #38bdf8',
+          borderRadius:  '10px',
+          padding:       '12px 16px',
+          minWidth:      '200px',
+          boxShadow:     '0 8px 28px rgba(0,0,0,0.5)',
+          zIndex:        '9999',
+          whiteSpace:    'nowrap',
         });
-        (chart.canvas.parentNode as HTMLElement).style.position = 'relative';
-        chart.canvas.parentNode?.appendChild(el);
+        const wrapper = chart.canvas.parentNode as HTMLElement;
+        wrapper.style.position = 'relative';
+        wrapper.appendChild(el);
       }
       return el;
     };
 
-    canvas.width  = 140; canvas.height = 140;
-    canvas.style.width = '140px'; canvas.style.height = '140px';
+    // ✅ Do NOT set canvas.width / canvas.height here.
+    //    The CSS (.pie-side-canvas-wrap canvas) already sets 300×300.
+    //    Forcing 140 caused the blurry / wrong-hit-area bug.
 
     this.runHoursChart = new Chart(canvas, {
       type: 'doughnut',
       data: {
         labels: data.labels,
-        datasets: [{ data: data.data, backgroundColor: data.colors, borderColor: '#ffffff', borderWidth: 2, hoverOffset: 10 }]
+        datasets: [{
+          data:            data.data,
+          backgroundColor: data.colors,
+          borderColor:     '#ffffff',
+          borderWidth:     2,
+          hoverOffset:     10
+        }]
       },
       options: {
-        responsive: false, maintainAspectRatio: true, cutout: '68%',
+        responsive:          true,   // ✅ fills the 300×300 wrapper
+        maintainAspectRatio: true,
+        cutout:              '68%',
         onClick: (_e: any, elements: any[]) => {
           if (!elements.length) return;
           const genName = (data.labels ?? [])[elements[0].index] ?? '';
@@ -601,28 +602,48 @@ export class GeneratorCharts implements OnInit, AfterViewInit, OnChanges, OnDest
             external: context => {
               const { chart, tooltip } = context;
               const el = getOrCreateTooltip(chart);
+
               if (tooltip.opacity === 0) { el.style.opacity = '0'; return; }
+
               const idx   = tooltip.dataPoints?.[0]?.dataIndex ?? 0;
-              const hrs   = (data.data      ?? [])[idx] ?? 0;
-              const total = (data.data      ?? []).reduce((a, b) => a + b, 0);
+              const hrs   = (data.data         ?? [])[idx] ?? 0;
+              const total = (data.data         ?? []).reduce((a, b) => a + b, 0);
               const pct   = total > 0 ? ((hrs / total) * 100).toFixed(1) : '0';
-              const site  = (data.siteNames ?? [])[idx] ?? '-';
+              const site  = (data.siteNames    ?? [])[idx] ?? '-';
               const fuel  = (data.fuelConsumed ?? [])[idx] ?? 0;
-              const color = (data.colors    ?? [])[idx] ?? '#888';
-              const name  = (data.labels    ?? [])[idx] ?? '';
+              const color = (data.colors       ?? [])[idx] ?? '#888';
+              const name  = (data.labels       ?? [])[idx] ?? '';
+
               el.innerHTML = `
                 <div style="display:flex;align-items:center;gap:8px;margin-bottom:9px;">
-                  <span style="display:inline-block;width:11px;height:11px;border-radius:50%;background:${color};flex-shrink:0;box-shadow:0 0 0 2px rgba(255,255,255,0.3);"></span>
-                  <span style="font-size:13px;font-weight:700;color:#f1f5f9;font-family:Inter,sans-serif;">${name}</span>
+                  <span style="display:inline-block;width:11px;height:11px;border-radius:50%;
+                        background:${color};flex-shrink:0;
+                        box-shadow:0 0 0 2px rgba(255,255,255,0.3);"></span>
+                  <span style="font-size:13px;font-weight:700;color:#f1f5f9;
+                        font-family:Inter,sans-serif;">${name}</span>
                 </div>
-                <div style="font-size:12px;font-family:Inter,sans-serif;line-height:2;">
-                  <div style="color:#94a3b8;">Run Hours &nbsp;<span style="color:#38bdf8;font-weight:600;">${Number(hrs).toLocaleString()} hrs</span> &nbsp;<span style="color:#64748b;">(${pct}%)</span></div>
-                  <div style="color:#94a3b8;">Site &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#e2e8f0;">${site}</span></div>
-                  <div style="color:#94a3b8;">Fuel &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#e2e8f0;">${Number(fuel).toLocaleString()} L</span></div>
+                <div style="font-size:12px;font-family:Inter,sans-serif;line-height:2.1;">
+                  <div style="color:#94a3b8;">Run Hours &nbsp;
+                    <span style="color:#38bdf8;font-weight:600;">${Number(hrs).toLocaleString()} hrs</span>
+                    &nbsp;<span style="color:#64748b;">(${pct}%)</span>
+                  </div>
+                  <div style="color:#94a3b8;">Site &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    <span style="color:#e2e8f0;">${site}</span>
+                  </div>
+                  <div style="color:#94a3b8;">Fuel &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    <span style="color:#e2e8f0;">${Number(fuel).toLocaleString()} L</span>
+                  </div>
                 </div>`;
+
+              // ✅ Position relative to the canvas wrapper (not page)
+              const wrapperRect = (chart.canvas.parentNode as HTMLElement).getBoundingClientRect();
+              const canvasRect  = chart.canvas.getBoundingClientRect();
+              const offsetLeft  = canvasRect.left - wrapperRect.left;
+              const offsetTop   = canvasRect.top  - wrapperRect.top;
+
               el.style.opacity = '1';
-              el.style.left    = `${tooltip.caretX + 16}px`;
-              el.style.top     = `${tooltip.caretY - 20}px`;
+              el.style.left    = `${offsetLeft + tooltip.caretX + 18}px`;
+              el.style.top     = `${offsetTop  + tooltip.caretY - 24}px`;
             }
           }
         },
