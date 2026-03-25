@@ -14,7 +14,7 @@ import { jwtDecode } from "jwt-decode";
   styleUrls: ['./login.css'],
 })
 export class Login {
-
+showPassword: boolean = false;
   loginData: FormGroup = new FormGroup({
      Email: new FormControl('', Validators.required),
     Password: new FormControl('', Validators.required)
@@ -66,5 +66,9 @@ export class Login {
       this.toastr.error("Invalid username or password");
     }
   });
+}
+
+togglePassword() {
+  this.showPassword = !this.showPassword;
 }
 }

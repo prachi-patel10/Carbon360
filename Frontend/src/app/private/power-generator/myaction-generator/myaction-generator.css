@@ -37,14 +37,15 @@
 }
 
 /* Column widths */
-.generator-table th:nth-child(1) { width: 150px; } /* Generator     */
-.generator-table th:nth-child(2) { width: 120px; } /* Reported Date */
-.generator-table th:nth-child(3) { width: 90px;  } /* Fuel Type     */
-.generator-table th:nth-child(4) { width: 90px;  } /* Run Hours     */
-.generator-table th:nth-child(5) { width: 110px; } /* Load Factor   */
-.generator-table th:nth-child(6) { width: 80px;  } /* Fuel L        */
-.generator-table th:nth-child(7) { width: 160px; } /* Total Emission */
-.generator-table th:nth-child(8) { width: 80px;  } /* Action        */
+.generator-table th:nth-child(1) { width: 190px; } /* ReportId     */
+.generator-table th:nth-child(2) { width: 220px; } /* Generator     */
+.generator-table th:nth-child(3) { width: 150px; } /* Reported Date */
+.generator-table th:nth-child(4) { width: 120px;  } /* Fuel Type     */
+.generator-table th:nth-child(5) { width: 120px;  } /* Run Hours     */
+.generator-table th:nth-child(6) { width: 150px; } /* Load Factor   */
+.generator-table th:nth-child(7) { width: 100px;  } /* Fuel L        */
+.generator-table th:nth-child(8) { width: 220px; } /* Total Emission */
+.generator-table th:nth-child(9) { width: 80px;  } /* Action        */
 
 /* ================= HEADER ================= */
 .generator-table thead { background: #0f5132; color: white; }

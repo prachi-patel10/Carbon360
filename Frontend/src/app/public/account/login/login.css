@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
 /* ===== Background ===== */
 .login-page {
   position: relative;
@@ -39,11 +41,19 @@
 
 /* Title */
 
+.brand {
+  display: flex;
+  flex-direction: column;
+}
+
 .brand h1 {
   font-size: 24px;
   letter-spacing: 1px;
   text-align: center;
   align-items: center;
+   font-weight: 700;
+    line-height: 1;
+  letter-spacing: .5px;
 }
 
 .brand span {
@@ -57,6 +67,7 @@
   margin-bottom: 30px;
    text-align: center;
   align-items: center;
+  font-weight: 500;
 }
 
 .login-card h4 {
@@ -128,6 +139,30 @@
   text-decoration: underline;
 }
 
+.password-toggle {
+  position: absolute;
+  right: 15px;
+  top: 38px; /* adjust based on label height */
+  cursor: pointer;
+  color: #6b7280;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+}
+
+.password-toggle:hover {
+  color: #000;
+}
+/* Remove default browser eye icon */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+  display: none;
+}
+
+input[type="password"]::-webkit-credentials-auto-fill-button,
+input[type="password"]::-webkit-textfield-decoration-container {
+  display: none !important;
+}
 /* ===============================
    RESPONSIVE DESIGN
 ================================= */

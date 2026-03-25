@@ -3,12 +3,13 @@
     <table class="generator-table">
       <thead>
         <tr>
+           <th (click)="sortBy('reportId')" class="sortable">
+  Report ID <span class="sort-icon">{{ getSortIcon('reportId') }}</span>
+</th>
           <th (click)="sortBy('generatorName')" class="sortable">
             Generator <span class="sort-icon">{{ getSortIcon('generatorName') }}</span>
           </th>
-             <th (click)="sortBy('reportId')" class="sortable">
-  Report ID <span class="sort-icon">{{ getSortIcon('reportId') }}</span>
-</th>
+            
           <th (click)="sortBy('entryDate')" class="sortable">
             Reported Date <span class="sort-icon">{{ getSortIcon('entryDate') }}</span>
           </th>
@@ -34,8 +35,8 @@
 
       <tbody>
         <tr *ngFor="let item of data()">
-          <td>{{ item.generatorName }}</td>
-           <td>{{ item.reportId }}</td>
+           <td class="fw-bold text-primary">{{ item.reportId }}</td>
+          <td>{{ item.generatorName }}</td>       
           <td>{{ item.entryDate | date: 'dd-MMM-yyyy' : 'UTC' }}</td>
           <td>{{ item.fuelType }}</td>
           <td>{{ item.runHours }}</td>
