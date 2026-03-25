@@ -72,19 +72,22 @@
                 <path d="M9 17h6"></path>
                 <circle cx="17" cy="17" r="2"></circle>
               </svg>
-              <select
+              <ng-select
                 formControlName="vehicle_id"
+                [items]="vehicles"
+                bindLabel="vehicle_number"
+                bindValue="vehicle_id"
+                [placeholder]="tripForm.get('vehicle_id')?.value ? '' : 'Select Vehicle'"
+                [searchable]="true"
+                [clearable]="true"
+                dropdownPosition="auto"
                 [disabled]="mode === 'edit'"
                 [ngClass]="{
                   invalid:
                     tripForm.get('vehicle_id')?.touched && tripForm.get('vehicle_id')?.invalid,
                 }"
               >
-                <option value="">Select Vehicle</option>
-                <option *ngFor="let v of vehicles" [value]="v.vehicle_id">
-                  {{ v.vehicle_number }}
-                </option>
-              </select>
+              </ng-select>
             </div>
             <small
               class="error"
@@ -129,19 +132,23 @@
                 <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path>
                 <circle cx="12" cy="10" r="3"></circle>
               </svg>
-              <select
-                formControlName="fromCityId"
-                [disabled]="mode === 'edit'"
-                [ngClass]="{
-                  invalid:
-                    tripForm.get('fromCityId')?.touched && tripForm.get('fromCityId')?.invalid,
-                }"
-              >
-                <option value="">Select From City</option>
-                <option *ngFor="let city of cities" [value]="city.cityId">
-                  {{ city.cityName }}
-                </option>
-              </select>
+              <ng-select
+  formControlName="fromCityId"
+  [items]="cities"
+  bindLabel="cityName"
+  bindValue="cityId"
+  [placeholder]="tripForm.get('fromCityId')?.value ? '' : 'Select From City'"
+  [searchable]="true"
+  [clearable]="true"
+  dropdownPosition="auto"
+  [disabled]="mode === 'edit'"
+  [ngClass]="{
+    invalid:
+      tripForm.get('fromCityId')?.touched &&
+      tripForm.get('fromCityId')?.invalid
+  }"
+>
+</ng-select>
             </div>
             <small
               class="error"
@@ -186,18 +193,23 @@
                 <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path>
                 <circle cx="12" cy="10" r="3"></circle>
               </svg>
-              <select
-                formControlName="toCityId"
-                [disabled]="mode === 'edit'"
-                [ngClass]="{
-                  invalid: tripForm.get('toCityId')?.touched && tripForm.get('toCityId')?.invalid,
-                }"
-              >
-                <option value="">Select To City</option>
-                <option *ngFor="let city of cities" [value]="city.cityId">
-                  {{ city.cityName }}
-                </option>
-              </select>
+              <ng-select
+  formControlName="toCityId"
+  [items]="cities"
+  bindLabel="cityName"
+  bindValue="cityId"
+  [placeholder]="tripForm.get('toCityId')?.value ? '' : 'Select To City'"
+  [searchable]="true"
+  [clearable]="true"
+  dropdownPosition="auto"
+  [disabled]="mode === 'edit'"
+  [ngClass]="{
+    invalid:
+      tripForm.get('toCityId')?.touched &&
+      tripForm.get('toCityId')?.invalid
+  }"
+>
+</ng-select>
             </div>
             <small
               class="error"
@@ -283,7 +295,7 @@
                 type="text"
                 formControlName="vehicleType"
                 readonly
-                placeholder="Auto-populated"
+                placeholder="Vehicle Type"
               />
             </div>
           </div>
@@ -803,24 +815,24 @@
       <h5 class="section-title">History</h5>
 
       <ul class="history-list">
-        <li *ngFor="let h of tripHistory"
-    class="history-item"
-    [ngClass]="{
-      'approve': h.ActionName === 'Approve',
-      'reject': h.ActionName === 'Reject',
-      'resubmit': h.ActionName === 'Resubmit'
-    }">
+        <li
+          *ngFor="let h of tripHistory"
+          class="history-item"
+          [ngClass]="{
+            approve: h.ActionName === 'Approve',
+            reject: h.ActionName === 'Reject',
+            resubmit: h.ActionName === 'Resubmit',
+          }"
+        >
+          <span class="dot"></span>
 
-  <span class="dot"></span>
-
-  <div class="history-content">
-    <div class="history-message">{{ getActionMessage(h) }}</div>
-    <div class="history-meta">
-      {{ h.ActionDate | date:'dd MMM yyyy, hh:mm a' }} · {{ getTimeAgo(h.ActionDate) }}
-    </div>
-  </div>
-
-</li>
+          <div class="history-content">
+            <div class="history-message">{{ getActionMessage(h) }}</div>
+            <div class="history-meta">
+              {{ h.ActionDate | date: 'dd MMM yyyy, hh:mm a' }} · {{ getTimeAgo(h.ActionDate) }}
+            </div>
+          </div>
+        </li>
       </ul>
     </div>
   </div>
