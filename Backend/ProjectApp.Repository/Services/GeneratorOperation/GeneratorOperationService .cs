@@ -68,6 +68,7 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
                 list.Add(new GeneratorOperationResponseDTO
                 {
                     OperationId = _idEncoder.Encode(Convert.ToInt32(row["OperationId"])),
+                    ReportId = row["ReportId"]?.ToString(),
                     GeneratorId = _idEncoder.Encode(Convert.ToInt32(row["GeneratorId"])),
                     SiteId = row["SiteId"] != DBNull.Value ? _idEncoder.Encode(Convert.ToInt32(row["SiteId"])) : null,
                     SiteName = row["SiteName"]?.ToString(),
@@ -132,6 +133,7 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
                 dto = new GeneratorOperationResponseDTO
                 {
                     OperationId = _idEncoder.Encode(reader.GetInt32(reader.GetOrdinal("OperationId"))),
+                    ReportId = reader["ReportId"]?.ToString(),
                     GeneratorId = _idEncoder.Encode(reader.GetInt32(reader.GetOrdinal("GeneratorId"))),
                     SiteId = siteId.HasValue ? _idEncoder.Encode(siteId.Value) : null,
                     SiteName = siteName,
@@ -200,6 +202,7 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
             return new GeneratorOperationResponseDTO
             {
                 OperationId = _idEncoder.Encode(entity.OperationId),
+                ReportId = entity.reportId,
                 GeneratorId = _idEncoder.Encode(entity.GeneratorId),
                 SiteId = siteIdEncoded,
                 SiteName = siteName,
@@ -332,6 +335,7 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
                 records.Add(new GeneratorOperationResponseDTO
                 {
                     OperationId = _idEncoder.Encode(reader.GetInt32(reader.GetOrdinal("OperationId"))),
+                    ReportId = reader["ReportId"]?.ToString(),
                     GeneratorId = _idEncoder.Encode(reader.GetInt32(reader.GetOrdinal("GeneratorId"))),
                     GeneratorName = reader["GeneratorName"]?.ToString(),
                     FuelType = reader["FuelType"]?.ToString(),
@@ -498,6 +502,7 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
             return new GeneratorOperationResponseDTO
             {
                 OperationId = _idEncoder.Encode(updatedEntity.OperationId),
+                ReportId = updatedEntity.reportId,
                 GeneratorId = _idEncoder.Encode(updatedEntity.GeneratorId),
                 SiteId = siteIdEncoded,
                 SiteName = siteName,
@@ -566,6 +571,7 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
                 list.Add(new GeneratorOperationResponseDTO
                 {
                     OperationId = _idEncoder.Encode(reader.GetInt32(reader.GetOrdinal("OperationId"))),
+                    ReportId = reader["ReportId"]?.ToString(),
                     GeneratorId = _idEncoder.Encode(reader.GetInt32(reader.GetOrdinal("GeneratorId"))),
 
                     SiteId = reader.IsDBNull(reader.GetOrdinal("SiteId"))
@@ -835,8 +841,8 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
             contentHtml = contentHtml.Replace("{{EntryByEmail}}", GetString("EntryByEmail"));
             contentHtml = contentHtml.Replace("{{status}}", GetString("Status"));
             contentHtml = contentHtml.Replace("{{EntryDate}}", entryDateStr);
-            contentHtml = contentHtml.Replace("{{operationId}}", operationId);
-
+            contentHtml = contentHtml.Replace("{{operationId}}", GetString("ReportId"));
+            contentHtml = contentHtml.Replace("{{reportId}}", GetString("ReportId"));
             contentHtml = contentHtml.Replace("{{generatorName}}", GetString("GeneratorName"));
             contentHtml = contentHtml.Replace("{{ratedCapacity}}", GetDecimal("RatedCapacityKW").ToString("0.##"));
             contentHtml = contentHtml.Replace("{{fuelType}}", GetString("FuelTypeName"));
@@ -965,6 +971,7 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
                 list.Add(new GeneratorOperationResponseDTO
                 {
                     GeneratorName = reader["GeneratorName"]?.ToString(),
+                    ReportId = reader["ReportId"]?.ToString(),
                     FuelType = reader["FuelType"]?.ToString(),
 
                     EntryDate = reader.IsDBNull(reader.GetOrdinal("EntryDate"))

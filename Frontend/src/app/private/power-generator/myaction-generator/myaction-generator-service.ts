@@ -4,6 +4,7 @@ import { map, Observable } from 'rxjs';
 
 export interface GeneratorOp {
   operationId: string;
+  reportId?: string;
   generatorId: string;
   generatorName: string;
   fuelType: string;

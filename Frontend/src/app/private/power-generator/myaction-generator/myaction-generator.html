@@ -1,108 +1,115 @@
 <div class="container generator-page">
-
-
   <div class="table-responsive">
-
     <table class="generator-table">
-
-     <thead>
-  <tr>
-    <th (click)="sortBy('generatorName')" class="sortable">
-      Generator <span class="sort-icon">{{ getSortIcon('generatorName') }}</span>
-    </th>
-    <th (click)="sortBy('entryDate')" class="sortable">
-      Reported Date <span class="sort-icon">{{ getSortIcon('entryDate') }}</span>
-    </th>
-    <th (click)="sortBy('fuelType')" class="sortable">
-      Fuel Type <span class="sort-icon">{{ getSortIcon('fuelType') }}</span>
-    </th>
-    <th (click)="sortBy('runHours')" class="sortable">
-      Run Hours <span class="sort-icon">{{ getSortIcon('runHours') }}</span>
-    </th>
-    <th (click)="sortBy('loadFactor')" class="sortable">
-      Load Factor (%) <span class="sort-icon">{{ getSortIcon('loadFactor') }}</span>
-    </th>
-    <th (click)="sortBy('fuelConsumedLiters')" class="sortable">
-      Fuel (L) <span class="sort-icon">{{ getSortIcon('fuelConsumedLiters') }}</span>
-    </th>
-     <th (click)="sortBy('totalEmission')" class="sortable emission-header">
-     Total Emission (kg CO₂e) <span class="sort-icon">{{ getSortIcon('totalEmission') }}</span>
-    </th>
-    <th class="text-center">Action</th>
-  </tr>
-</thead>
+      <thead>
+        <tr>
+          <th (click)="sortBy('generatorName')" class="sortable">
+            Generator <span class="sort-icon">{{ getSortIcon('generatorName') }}</span>
+          </th>
+             <th (click)="sortBy('reportId')" class="sortable">
+  Report ID <span class="sort-icon">{{ getSortIcon('reportId') }}</span>
+</th>
+          <th (click)="sortBy('entryDate')" class="sortable">
+            Reported Date <span class="sort-icon">{{ getSortIcon('entryDate') }}</span>
+          </th>
+          <th (click)="sortBy('fuelType')" class="sortable">
+            Fuel Type <span class="sort-icon">{{ getSortIcon('fuelType') }}</span>
+          </th>
+          <th (click)="sortBy('runHours')" class="sortable">
+            Run Hours <span class="sort-icon">{{ getSortIcon('runHours') }}</span>
+          </th>
+          <th (click)="sortBy('loadFactor')" class="sortable">
+            Load Factor (%) <span class="sort-icon">{{ getSortIcon('loadFactor') }}</span>
+          </th>
+          <th (click)="sortBy('fuelConsumedLiters')" class="sortable">
+            Fuel (L) <span class="sort-icon">{{ getSortIcon('fuelConsumedLiters') }}</span>
+          </th>
+          <th (click)="sortBy('totalEmission')" class="sortable emission-header">
+            Total Emission (kg CO₂e)
+            <span class="sort-icon">{{ getSortIcon('totalEmission') }}</span>
+          </th>
+          <th class="text-center">Action</th>
+        </tr>
+      </thead>
 
       <tbody>
         <tr *ngFor="let item of data()">
           <td>{{ item.generatorName }}</td>
-          <td>{{ item.entryDate | date:'dd-MMM-yyyy':'UTC' }}</td>
+           <td>{{ item.reportId }}</td>
+          <td>{{ item.entryDate | date: 'dd-MMM-yyyy' : 'UTC' }}</td>
           <td>{{ item.fuelType }}</td>
           <td>{{ item.runHours }}</td>
           <td>{{ item.loadFactor }}</td>
           <td>{{ item.fuelConsumedLiters }}</td>
- <td class="emission-value">{{ item.totalEmission }}</td>           
-                
-              
+          <td class="emission-value">{{ item.totalEmission }}</td>
+
           <td class="action-buttons">
+            <!-- CORPORATE REVIEW -->
+            <button
+              *ngIf="userRole === 'corporate' && item.status === 1"
+              class="action-btn"
+              (click)="handleAction(item)"
+            >
+              <i class="fa fa-edit"></i>
+            </button>
+            <!-- ADMIN VIEW -->
+            <!-- Approved -->
+            <i
+              *ngIf="userRole === 'admin' && item.status === 2"
+              class="fa fa-arrow-circle-right text-success action-icon"
+              title="Approved"
+            ></i>
 
-  <!-- CORPORATE REVIEW -->
-  <button 
-    *ngIf="userRole === 'corporate' && item.status === 1"
-    class="action-btn"
-    (click)="handleAction(item)">
-    <i class="fa fa-edit"></i>
-  </button>
-<!-- ADMIN VIEW -->
-  <!-- Approved -->
-  <i *ngIf="userRole === 'admin' && item.status === 2"
-     class="fa fa-arrow-circle-right text-success action-icon"
-     title="Approved"></i>
+            <!-- Rejected -->
+            <i
+              *ngIf="userRole === 'admin' && item.status === 3"
+              class="fa fa-times-circle text-danger action-icon"
+              title="Rejected"
+            ></i>
 
-  <!-- Rejected -->
-  <i *ngIf="userRole === 'admin' && item.status === 3"
-     class="fa fa-times-circle text-danger action-icon"
-     title="Rejected"></i>
+            <!-- Review -->
+            <i
+              *ngIf="userRole === 'admin' && item.status === 1"
+              class="fa fa-info-circle action-icon"
+              (click)="handleAction(item)"
+              title="Review"
+            ></i>
 
-  <!-- Review -->
-  <i *ngIf="userRole === 'admin' && item.status === 1"
-     class="fa fa-info-circle action-icon"
-     (click)="handleAction(item)"
-     title="Review"></i>
+            <!-- REPORTER RESUBMIT -->
+            <button
+              *ngIf="userRole === 'reporter' && item.status === 3"
+              class="action-btn"
+              (click)="handleAction(item)"
+            >
+              <i class="fa fa-arrow-circle-right"></i>
+            </button>
 
-  <!-- REPORTER RESUBMIT -->
-  <button 
-    *ngIf="userRole === 'reporter' && item.status === 3"
-    class="action-btn"
-    (click)="handleAction(item)">
-    <i class="fa fa-arrow-circle-right"></i>
-  </button>
+            <!-- APPROVED -->
+            <button *ngIf="item.status === 2" class="action-btn text-success" disabled>
+              <i class="fa fa-check-circle"></i>
+            </button>
 
-  <!-- APPROVED -->
-  <button *ngIf="item.status === 2" class="action-btn text-success" disabled>
-    <i class="fa fa-check-circle"></i>
-  </button>
-
-  <!-- REJECTED (Corporate view only) -->
-  <button *ngIf="item.status === 3 && userRole === 'corporate'" class="action-btn text-danger" disabled>
-    <i class="fa fa-times-circle"></i>
-  </button>
-
-</td>
+            <!-- REJECTED (Corporate view only) -->
+            <button
+              *ngIf="item.status === 3 && userRole === 'corporate'"
+              class="action-btn text-danger"
+              disabled
+            >
+              <i class="fa fa-times-circle"></i>
+            </button>
+          </td>
         </tr>
 
         <tr *ngIf="data().length === 0">
           <td colspan="7" class="text-center no-data">No records found</td>
         </tr>
       </tbody>
-
     </table>
-
   </div>
 
   <!-- Pagination Footer -->
 
   <div class="table-footer">
-
     <div class="total-records">
       Total Records : <b>{{ totalRecords() }}</b>
     </div>
@@ -115,27 +122,16 @@
         <option>20</option>
         <option>50</option>
       </select>
-
     </div>
 
     <div class="pagination">
+      <button (click)="goToPage(currentPage() - 1)" [disabled]="currentPage() === 1">Prev</button>
 
-      <button (click)="goToPage(currentPage()-1)" [disabled]="currentPage() === 1">
+      <span class="page-info"> Page {{ currentPage() }} of {{ totalPages() }} </span>
 
-        Prev
-      </button>
-
-      <span class="page-info">
-        Page {{ currentPage() }} of {{ totalPages() }}
-      </span>
-
-      <button (click)="goToPage(currentPage()+1)" [disabled]="currentPage() === totalPages()">
-
+      <button (click)="goToPage(currentPage() + 1)" [disabled]="currentPage() === totalPages()">
         Next
       </button>
-
     </div>
-
   </div>
-
 </div>

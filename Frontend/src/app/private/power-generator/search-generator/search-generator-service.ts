@@ -5,6 +5,7 @@ import { environment } from '../../../enviorments/environment';
 
 export interface GeneratorOperation {
   operationId: string;
+  reportId?: string;
   generatorId: string;
   generatorName: string | null;
   entryDate: string;

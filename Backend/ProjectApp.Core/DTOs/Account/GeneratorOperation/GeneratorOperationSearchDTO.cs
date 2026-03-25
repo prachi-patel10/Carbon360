@@ -9,6 +9,7 @@ namespace ProjectApp.Core.DTOs.Account.GeneratorOperation
     public class GeneratorOperationSearchDTO
     {
         public string? Search { get; set; }
+        public string ReportId { get; set; }
 
         public string? GeneratorName { get; set; }
 
