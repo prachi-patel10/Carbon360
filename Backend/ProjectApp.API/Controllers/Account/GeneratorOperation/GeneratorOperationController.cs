@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using ProjectApp.Core.DTOs.Account.GeneratorOperation;
+using ProjectApp.Core.DTOs.Account.VehicleTripEmission;
 using ProjectApp.Core.DTOs.Masters.Generator;
 using ProjectApp.Core.Entities;
 using ProjectApp.Repository.Interfaces.GenerationOperation;
@@ -146,49 +147,45 @@ namespace ProjectApp.API.Controllers.Account.GeneratorOperation
             }
         }
 
-
         [HttpGet("search")]
         public async Task<IActionResult> Search(
-    string? search = null,
-    string? generatorName = null,
-    [FromQuery] List<string>? fuelTypes = null,
-    DateTime? startDate = null,
-    DateTime? endDate = null,
-    DateTime? entryStartDate = null,
-    DateTime? entryEndDate = null,
-    int? statusId = null,
-    int pageNumber = 1,
-    int pageSize = 10,
-     string sortColumn = "EntryDate",      // ← ADD
-    string sortDirection = "DESC")
+            string? search = null,
+            [FromQuery] List<string>? fuelType = null,
+            [FromQuery] List<string>? generatorName = null,
+            DateTime? startDate = null,
+            DateTime? endDate = null,
+            DateTime? entryStartDate = null,
+            DateTime? entryEndDate = null,
+            int? statusId = null,
+            int pageNumber = 1,
+            int pageSize = 10,
+            string sortColumn = "EntryDate",
+            string sortDirection = "DESC")
         {
-            string? fuelTypesString = fuelTypes != null && fuelTypes.Any()
-                ? string.Join(",", fuelTypes)
-                : null;
-
             var result = await _service.SearchAsync(
                 search,
-                fuelTypesString,
+                fuelType,
                 generatorName,
                 startDate,
                 endDate,
-                 entryStartDate,
+                entryStartDate,
                 entryEndDate,
                 statusId,
                 pageNumber,
                 pageSize,
-                  sortColumn,      // ← ADD
-        sortDirection    // ← ADD
+                sortColumn,
+                sortDirection
             );
 
             return Ok(new
             {
-                status = true,
-                statusCode = 200,
-                data = result
+                success = true,
+                data = result.Records,
+                totalRecords = result.TotalRecords,
+                pageNumber,
+                pageSize
             });
         }
-
         // GET /api/generator
         [HttpGet("allgenerator")]
         public async Task<IActionResult> Getallgenerator()

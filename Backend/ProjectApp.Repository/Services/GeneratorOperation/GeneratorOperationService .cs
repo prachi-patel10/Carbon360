@@ -282,8 +282,8 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
 
         public async Task<GeneratorOperationPagedResponseDTO> SearchAsync(
      string search,
-     string fuelTypes,       // already comma-separated string e.g. "Diesel,Petrol"
-     string generatorName,
+      List<string>? fuelType,
+    List<string>? generatorName,
      DateTime? startDate,
      DateTime? endDate,
       DateTime? entryStartDate,
@@ -291,7 +291,7 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
      int? statusId,
      int pageNumber,
      int pageSize,
-      string sortColumn = "EntryDate",      // ← ADD
+      string sortColumn = "EntryDate",      
     string sortDirection = "DESC")
         {
             var result = new GeneratorOperationPagedResponseDTO();
@@ -299,12 +299,20 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
             await using var connection = _context.Database.GetDbConnection();
             await using var command = connection.CreateCommand();
 
+            string? fuelTypeCsv = (fuelType != null && fuelType.Count > 0)
+      ? string.Join(",", fuelType)
+      : null;
+
+            string? generatorNameCsv = (generatorName != null && generatorName.Count > 0)
+                ? string.Join(",", generatorName)
+                : null;
+
             command.CommandText = "USP_CB_SearchGeneratorOperation";
             command.CommandType = CommandType.StoredProcedure;
 
             command.Parameters.Add(new SqlParameter("@Search", (object)search ?? DBNull.Value));
-            command.Parameters.Add(new SqlParameter("@GeneratorName", (object)generatorName ?? DBNull.Value));
-            command.Parameters.Add(new SqlParameter("@FuelTypes", (object)fuelTypes ?? DBNull.Value));  // pass as-is
+            command.Parameters.Add(new SqlParameter("@GeneratorNames", (object?)generatorNameCsv ?? DBNull.Value));
+            command.Parameters.Add(new SqlParameter("@FuelTypes", (object?)fuelTypeCsv ?? DBNull.Value));
             command.Parameters.Add(new SqlParameter("@StartDate", (object)startDate ?? DBNull.Value));
             command.Parameters.Add(new SqlParameter("@EndDate", (object)endDate ?? DBNull.Value));
             command.Parameters.Add(new SqlParameter("@EntryStartDate", (object)entryStartDate ?? DBNull.Value));
@@ -314,8 +322,8 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
             command.Parameters.Add(new SqlParameter("@UserRole", _userContext.Role ?? "Reporter"));
             command.Parameters.Add(new SqlParameter("@PageNumber", pageNumber));
             command.Parameters.Add(new SqlParameter("@PageSize", pageSize));
-            command.Parameters.Add(new SqlParameter("@SortColumn", sortColumn ?? "EntryDate"));   // ← ADD
-            command.Parameters.Add(new SqlParameter("@SortDirection", sortDirection ?? "DESC"));        // ← ADD
+            command.Parameters.Add(new SqlParameter("@SortColumn", sortColumn ?? "EntryDate"));   
+            command.Parameters.Add(new SqlParameter("@SortDirection", sortDirection ?? "DESC"));        
 
 
             var totalParam = new SqlParameter("@TotalRecords", SqlDbType.Int)

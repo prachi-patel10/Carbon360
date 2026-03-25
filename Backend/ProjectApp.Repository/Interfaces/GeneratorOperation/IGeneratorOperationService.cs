@@ -32,8 +32,8 @@ namespace ProjectApp.Repository.Interfaces.GenerationOperation
 
         Task<GeneratorOperationPagedResponseDTO> SearchAsync(
     string search,
-    string fuelTypes,        
-    string generatorName,
+    List<string>? fuelType,
+    List<string>? generatorName,
     DateTime? startDate,
     DateTime? endDate,
     DateTime? entryStartDate,   

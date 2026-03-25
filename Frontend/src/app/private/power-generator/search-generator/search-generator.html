@@ -148,12 +148,13 @@
         <table class="gen-table">
           <thead>
             <tr>
-              <th (click)="sortBy('generatorName')" class="sortable">
-                Generator <span class="sort-icon">{{ getSortIcon('generatorName') }}</span>
-              </th>
               <th (click)="sortBy('reportId')" class="sortable">
                 Report ID <span class="sort-icon">{{ getSortIcon('reportId') }}</span>
               </th>
+              <th (click)="sortBy('generatorName')" class="sortable">
+                Generator <span class="sort-icon">{{ getSortIcon('generatorName') }}</span>
+              </th>
+              
               <th (click)="sortBy('entryDate')" class="sortable">
                 Reported Date <span class="sort-icon">{{ getSortIcon('entryDate') }}</span>
               </th>
@@ -178,8 +179,9 @@
           </thead>
           <tbody>
             <tr *ngFor="let e of paginatedData()">
+              <td class="fw-bold text-primary">{{ e.reportId }}</td>
               <td>{{ e.generatorName }}</td>
-              <td>{{ e.reportId }}</td>
+              
               <td>{{ e.entryDate | date:'dd-MMM-yyyy' }}</td>
               <td>{{ e.startTime | date:'dd-MMM-yyyy' }}</td>
               <td>{{ e.endTime | date:'dd-MMM-yyyy' }}</td>

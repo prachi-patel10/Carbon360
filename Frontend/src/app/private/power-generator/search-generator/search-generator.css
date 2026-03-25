@@ -383,15 +383,16 @@ body {
 }
 
 /* Column widths — total = 860px */
-.gen-table th:nth-child(1) { width: 130px; } /* Generator      */
-.gen-table th:nth-child(2) { width: 160px; } /* Reported Date  */
-.gen-table th:nth-child(3) { width: 105px; } /* Start Date     */
-.gen-table th:nth-child(4) { width: 105px; } /* End Date       */
-.gen-table th:nth-child(5) { width: 115px; } /* Load Factor    */
-.gen-table th:nth-child(6) { width: 75px;  } /* Fuel L         */
-.gen-table th:nth-child(7) { width: 150px; } /* Emission       */
-.gen-table th:nth-child(8) { width: 70px;  } /* Action         */
-.gen-table th:nth-child(9) { width: 90px;  } /* Download       */
+.gen-table th:nth-child(1) { width: 150px; } /*  Report     */
+.gen-table th:nth-child(2) { width: 200px; } /*Generator   */
+.gen-table th:nth-child(3) { width: 130px; } /* Reported Date    */
+.gen-table th:nth-child(4) { width: 120px; } /*Start Date        */
+.gen-table th:nth-child(5) { width: 120px; } /* End Date     */
+.gen-table th:nth-child(6) { width: 140px;  } /*Load Factor       */
+.gen-table th:nth-child(7) { width: 150px; } /*  Fuel L     */
+.gen-table th:nth-child(8) { width: 200px;  } /*  Emission          */
+.gen-table th:nth-child(9) { width: 90px;  } /* Action       */
+.gen-table th:nth-child(10) { width: 110px;  } /* Download       */
 
 .gen-table th {
     background-color: #0f5132;

@@ -73,8 +73,8 @@ export class SearchGenerator implements OnInit {
       this.searchText.set('');
       this.operationStartDate.set(null);
       this.operationEndDate.set(null);
-      this.entryStartDate.set(null);   // ✅ was missing
-      this.entryEndDate.set(null);     // ✅ was missing
+      this.entryStartDate.set(null);  
+      this.entryEndDate.set(null);     
       this.currentPage.set(1);
 
       // ── 2. Apply chart-driven filters ─────────────────────────
@@ -128,25 +128,20 @@ export class SearchGenerator implements OnInit {
 
   // ─── Data Loading ──────────────────────────────────────────────
 
-  loadFuelTypes(): void {
-    this.fuelService.getAll().subscribe({
-      next: (res: any) => { this.fuelTypes = Array.isArray(res) ? res : res.data ?? []; },
-      error: err => console.error('Error loading fuel types', err)
+ loadFuelTypes() {
+    this.fuelService.getAll().subscribe(res => {
+      this.fuelTypes = Array.isArray(res) ? res : res.data || [];
     });
   }
 
-  loadGeneratorTypes(): void {
-    this.service.getGenerators().subscribe({
-      next: (res: any) => {
-        const data = Array.isArray(res) ? res : res.data ?? [];
-        this.generatorTypes = data.map((g: any) => ({
-          gen_name: g.gen_name ?? g.generatorName ?? g.name ?? 'Unknown'
-        }));
-      },
-      error: err => console.error('Error loading generator types', err)
+  loadGeneratorTypes() {
+    this.service.getGenerators().subscribe(res => {
+      const data = Array.isArray(res) ? res : res.data || [];
+      this.generatorTypes = data.map((g: any) => ({
+        gen_name: g.gen_name || g.generatorName || g.name
+      }));
     });
   }
-
   loadEmissions(): void {
     const fuelParam = this.selectedFuels.length > 0
       ? this.selectedFuels.map(f => f.trim()).join(',')
@@ -160,16 +155,6 @@ export class SearchGenerator implements OnInit {
       ? this.chartSiteName.trim()
       : undefined;
 
-    /*
-     * ✅ Search-text logic
-     *
-     * When any dedicated chart-filter (fuel / generator / site) is active,
-     * those params handle the filtering — the free-text search param is
-     * intentionally cleared so they don't conflict with each other.
-     *
-     * Site name is the only chart filter that uses the search box visually;
-     * it is forwarded via `siteParam`, not `searchParam`.
-     */
     const hasChartFilter = !!(fuelParam || genParam || siteParam);
     const searchParam    = hasChartFilter
       ? undefined
@@ -188,6 +173,7 @@ export class SearchGenerator implements OnInit {
       this.currentPage(),
       this.pageSize,
       searchParam,
+        //  this.searchText() || undefined,
       fuelParam,
       genParam,
       this.operationStartDate() ? this.operationStartDate()!.substring(0, 10) : undefined,
@@ -200,9 +186,8 @@ export class SearchGenerator implements OnInit {
     ).subscribe({
       next: (res: any) => {
         console.log('API RESPONSE:', res);
-        const records = res.data?.records ?? [];
-        const total   = res.data?.totalRecords ?? 0;
-
+       const records = res.data ?? [];
+const total   = res.totalRecords ?? 0;
         this.filteredData.set(records.map((e: any) => ({
           ...e,
           generatorName: e.generatorName ?? 'Unknown Generator',
@@ -218,21 +203,30 @@ export class SearchGenerator implements OnInit {
     });
   }
 
-  // ─── Generator Multi-Select ────────────────────────────────────
-
+  // ─── Multi-Select ────────────────────────────────────
+  toggleFuel(name: string) {
+    const i = this.selectedFuels.indexOf(name);
+    i > -1 ? this.selectedFuels.splice(i, 1) : this.selectedFuels.push(name);
+    this.applyFilters();
+  }
   toggleGenDropdown(): void { this.genDropdownOpen = !this.genDropdownOpen; }
 
   isGenSelected(name: string): boolean {
     return this.selectedGenTypes.includes(name);
   }
 
-  toggleGenType(name: string): void {
-    const idx = this.selectedGenTypes.indexOf(name);
-    if (idx > -1) this.selectedGenTypes.splice(idx, 1);
-    else          this.selectedGenTypes.push(name);
-    this.applyFilters();
+  
+toggleGenType(gen: any) {
+  const name = typeof gen === 'string' ? gen : (gen.gen_name || gen.generatorName);
+
+  if (this.selectedGenTypes.includes(name)) {
+    this.selectedGenTypes = this.selectedGenTypes.filter(g => g !== name);
+  } else {
+    this.selectedGenTypes.push(name);
   }
 
+  this.applyFilters(); 
+}
   toggleSelectAllGen(): void {
     this.selectedGenTypes = this.selectedGenTypes.length === this.generatorTypes.length
       ? []
@@ -253,13 +247,7 @@ export class SearchGenerator implements OnInit {
 
   toggleFuelDropdown(): void { this.fuelDropdownOpen = !this.fuelDropdownOpen; }
 
-  toggleFuel(name: string): void {
-    const idx = this.selectedFuels.indexOf(name);
-    if (idx > -1) this.selectedFuels.splice(idx, 1);
-    else          this.selectedFuels.push(name);
-    this.applyFilters();
-  }
-
+ 
   isFuelSelected(name: string): boolean { return this.selectedFuels.includes(name); }
 
   toggleSelectAll(): void {

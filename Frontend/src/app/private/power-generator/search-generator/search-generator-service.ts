@@ -78,8 +78,8 @@ export class SearchGeneratorService {
   pageNumber: number = 1,
   pageSize: number = 10,
   search?: string,
-  fuelTypes?: string,
-  generatorTypes?: string,
+  fuelType?: string,
+  generatorName?: string,
   operationStartDate?: string,
   operationEndDate?: string,
   entryStartDate?: string,
@@ -95,10 +95,9 @@ export class SearchGeneratorService {
     .set('sortColumn', sortColumn || 'EntryDate')
     .set('sortDirection', (sortDirection || 'desc').toUpperCase());
 
-  // ✅ FIX: removed encodeURIComponent
   if (search) params = params.set('search', search);
-  if (fuelTypes) params = params.set('fuelTypes', fuelTypes);
-  if (generatorTypes) params = params.set('generatorTypes', generatorTypes);
+    if (fuelType) params = params.set('fuelType', fuelType);
+  if (generatorName) params = params.set('generatorName', generatorName);
   if (operationStartDate) params = params.set('startDate', operationStartDate);
   if (operationEndDate) params = params.set('endDate', operationEndDate);
   if (entryStartDate) params = params.set('entryStartDate', entryStartDate);
