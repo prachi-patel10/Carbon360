@@ -27,8 +27,7 @@ namespace ProjectApp.Repository.Services.SiteLocation
         {
             var parameters = new[]
             {
-                new SqlParameter("@SiteName",     dto.SiteName),
-                new SqlParameter("@BuildingName", dto.BuildingName ?? (object)DBNull.Value),
+                new SqlParameter("@SiteName",     dto.SiteName),     
                 new SqlParameter("@City",         dto.City        ?? (object)DBNull.Value),
                 new SqlParameter("@State",        dto.State       ?? (object)DBNull.Value),
                 new SqlParameter("@ShortCode",    dto.ShortCode),
@@ -56,8 +55,7 @@ namespace ProjectApp.Repository.Services.SiteLocation
             var parameters = new[]
             {
                 new SqlParameter("@SiteId",       id),
-                new SqlParameter("@SiteName",     dto.SiteName),
-                new SqlParameter("@BuildingName", dto.BuildingName ?? (object)DBNull.Value),
+                new SqlParameter("@SiteName",     dto.SiteName),      
                 new SqlParameter("@City",         dto.City        ?? (object)DBNull.Value),
                 new SqlParameter("@State",        dto.State       ?? (object)DBNull.Value),
                 new SqlParameter("@ShortCode",    dto.ShortCode),
@@ -117,7 +115,6 @@ namespace ProjectApp.Repository.Services.SiteLocation
             return dataList.Select(MapToResponseDto).ToList();
         }
 
-        // ================= SEARCH =================
         // ================= SEARCH =================
         public async Task<PageResult> SearchAsync(SiteLocationSearchRequest request)
         {
@@ -198,7 +195,6 @@ namespace ProjectApp.Repository.Services.SiteLocation
                 Id = siteId,
                 SiteId = _idEncoder.Encode(siteId),
                 SiteName = GetString("SiteName"),
-                BuildingName = GetString("BuildingName"),
                 City = GetString("City"),
                 State = GetString("State"),
                 ShortCode = GetString("ShortCode"),

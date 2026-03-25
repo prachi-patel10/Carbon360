@@ -7,14 +7,13 @@
       <div class="form-group">
         <label>Site Name <span class="req">*</span></label>
         <input type="text" formControlName="siteName" placeholder="Enter Site Name"
-               [class.input-error]="form.get('siteName')?.invalid && form.get('siteName')?.touched" />
-        <small class="error-text"
-               *ngIf="form.get('siteName')?.invalid && form.get('siteName')?.touched">
+          [class.input-error]="form.get('siteName')?.invalid && form.get('siteName')?.touched" />
+        <small class="error-text" *ngIf="form.get('siteName')?.invalid && form.get('siteName')?.touched">
           Site Name is required
         </small>
       </div>
 
-      <div class="form-group">
+      <!-- <div class="form-group">
         <label>Building Name <span class="req">*</span></label>
         <input type="text" formControlName="buildingName" placeholder="Enter Building Name"
                [class.input-error]="form.get('buildingName')?.invalid && form.get('buildingName')?.touched" />
@@ -22,21 +21,19 @@
                *ngIf="form.get('buildingName')?.invalid && form.get('buildingName')?.touched">
           Building Name is required
         </small>
-      </div>
+      </div> -->
 
       <div class="form-group">
         <label>City <span class="req">*</span></label>
-        <select formControlName="city"
-                (change)="onCityChange($event)"
-                [class.input-error]="form.get('city')?.invalid && form.get('city')?.touched"
-                [style.color]="!form.get('city')?.value ? '#999' : '#000'">
+        <select formControlName="city" (change)="onCityChange($event)"
+          [class.input-error]="form.get('city')?.invalid && form.get('city')?.touched"
+          [style.color]="!form.get('city')?.value ? '#999' : '#000'">
           <option value="" disabled>Select City</option>
           <option *ngFor="let c of cityList" [value]="c.cityName" style="color:#000">
             {{ c.cityName }}
           </option>
         </select>
-        <small class="error-text"
-               *ngIf="form.get('city')?.invalid && form.get('city')?.touched">
+        <small class="error-text" *ngIf="form.get('city')?.invalid && form.get('city')?.touched">
           City is required
         </small>
       </div>
@@ -44,20 +41,17 @@
       <div class="form-group">
         <label>State <span class="req">*</span></label>
         <input type="text" formControlName="state" placeholder="State (auto-filled)"
-               [class.input-error]="form.get('state')?.invalid && form.get('state')?.touched" />
-        <small class="error-text"
-               *ngIf="form.get('state')?.invalid && form.get('state')?.touched">
+          [class.input-error]="form.get('state')?.invalid && form.get('state')?.touched" />
+        <small class="error-text" *ngIf="form.get('state')?.invalid && form.get('state')?.touched">
           State is required
         </small>
       </div>
 
       <div class="form-group">
         <label>Short Code <span class="req">*</span></label>
-        <input type="text" formControlName="shortCode" placeholder="2-3 chars"
-               (blur)="validateShortCode()"
-               [class.input-error]="form.get('shortCode')?.invalid && form.get('shortCode')?.touched" />
-        <small class="error-text"
-               *ngIf="form.get('shortCode')?.invalid && form.get('shortCode')?.touched">
+        <input type="text" formControlName="shortCode" placeholder="2-3 chars" (blur)="validateShortCode()"
+          [class.input-error]="form.get('shortCode')?.invalid && form.get('shortCode')?.touched" />
+        <small class="error-text" *ngIf="form.get('shortCode')?.invalid && form.get('shortCode')?.touched">
           Short Code is required (2-3 characters)
         </small>
       </div>
@@ -81,11 +75,8 @@
       <div class="search-left">
         <div class="search-wrap">
           <i class="bi bi-search search-icon"></i>
-          <input type="text"
-                 class="search-input"
-                 placeholder="Quick Search"
-                 [(ngModel)]="searchText"
-                 (input)="applySearch()" />
+          <input type="text" class="search-input" placeholder="Quick Search" [(ngModel)]="searchText"
+            (input)="applySearch()" />
         </div>
       </div>
 
@@ -93,9 +84,7 @@
         <div class="status-toggle">
           <span>Active Only</span>
           <label class="switch">
-            <input type="checkbox"
-                   [checked]="isActiveFilter === true"
-                   (change)="onToggleActive()" />
+            <input type="checkbox" [checked]="isActiveFilter === true" (change)="onToggleActive()" />
             <span class="slider"></span>
           </label>
         </div>
@@ -111,8 +100,7 @@
     </div>
 
     <!-- Active filter chips row -->
-    <div class="active-chips-row"
-         *ngIf="selectedSiteNames.length > 0 || selectedCityNames.length > 0">
+    <div class="active-chips-row" *ngIf="selectedSiteNames.length > 0 || selectedCityNames.length > 0">
       <span class="vf-chip" *ngFor="let name of selectedSiteNames">
         <i class="bi bi-building"></i> {{ name }}
         <button class="vf-chip-remove" (click)="removeSiteName(name); applySearch()">✕</button>
@@ -128,30 +116,34 @@
       <table>
         <thead>
           <tr>
-            <th (click)="sort('siteName')"     class="sortable">Site Name     <span class="sort-icon">{{ getSortIcon('siteName')     }}</span></th>
-            <th (click)="sort('buildingName')" class="sortable">Building      <span class="sort-icon">{{ getSortIcon('buildingName') }}</span></th>
-            <th (click)="sort('city')"         class="sortable">City          <span class="sort-icon">{{ getSortIcon('city')         }}</span></th>
-            <th (click)="sort('state')"        class="sortable">State         <span class="sort-icon">{{ getSortIcon('state')        }}</span></th>
-            <th (click)="sort('shortCode')"    class="sortable">Short Code    <span class="sort-icon">{{ getSortIcon('shortCode')    }}</span></th>
+            <th (click)="sort('siteName')" class="sortable">Site Name <span class="sort-icon">{{ getSortIcon('siteName')
+                }}</span></th>
+            <!-- <th (click)="sort('buildingName')" class="sortable">Building      <span class="sort-icon">{{ getSortIcon('buildingName') }}</span></th> -->
+            <th (click)="sort('city')" class="sortable">City <span class="sort-icon">{{ getSortIcon('city') }}</span>
+            </th>
+            <th (click)="sort('state')" class="sortable">State <span class="sort-icon">{{ getSortIcon('state') }}</span>
+            </th>
+            <th (click)="sort('shortCode')" class="sortable">Short Code <span class="sort-icon">{{
+                getSortIcon('shortCode') }}</span></th>
             <th>Status</th>
             <th>Actions</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let v of siteList()">
-            <td>{{ v.siteName     || '-' }}</td>
-            <td>{{ v.buildingName || '-' }}</td>
-            <td>{{ v.city         || '-' }}</td>
-            <td>{{ v.state        || '-' }}</td>
-            <td>{{ v.shortCode    || '-' }}</td>
+            <td>{{ v.siteName || '-' }}</td>
+            <!-- <td>{{ v.buildingName || '-' }}</td> -->
+            <td>{{ v.city || '-' }}</td>
+            <td>{{ v.state || '-' }}</td>
+            <td>{{ v.shortCode || '-' }}</td>
             <td>
               <label class="switch">
-                <input type="checkbox" [checked]="v.isActive" (change)="toggleStatus(v)" />
+                <input type="checkbox" [checked]="v.isActive" (click)="confirmToggleStatus(v, $event)" />
                 <span class="slider"></span>
               </label>
             </td>
             <td class="actions">
-              <button class="edit-btn"   (click)="edit(v)">Edit</button>
+              <button class="edit-btn" (click)="edit(v)">Edit</button>
               <button class="delete-btn" (click)="delete(v)">Delete</button>
             </td>
           </tr>
@@ -201,8 +193,7 @@
     </div>
 
     <!-- Active chips inside modal -->
-    <div class="vf-chips"
-         *ngIf="selectedSiteNames.length > 0 || selectedCityNames.length > 0">
+    <div class="vf-chips" *ngIf="selectedSiteNames.length > 0 || selectedCityNames.length > 0">
       <span class="vf-chip" *ngFor="let name of selectedSiteNames">
         <i class="bi bi-building"></i>
         {{ name }}
@@ -228,9 +219,7 @@
           </span>
         </div>
 
-        <div class="vf-trigger"
-             [class.open]="siteNameDropOpen"
-             (click)="siteNameDropOpen = !siteNameDropOpen">
+        <div class="vf-trigger" [class.open]="siteNameDropOpen" (click)="siteNameDropOpen = !siteNameDropOpen">
           <span class="vf-trigger-text">
             <ng-container *ngIf="selectedSiteNames.length === 0">All Sites</ng-container>
             <ng-container *ngIf="selectedSiteNames.length > 0">
@@ -249,30 +238,26 @@
           <ng-container *ngIf="!loadingSiteNames()">
 
             <div class="vf-panel-search">
-              <input type="text"
-                     placeholder="Search site..."
-                     [(ngModel)]="siteNameSearch"
-                     (click)="$event.stopPropagation()" />
+              <input type="text" placeholder="Search site..." [(ngModel)]="siteNameSearch"
+                (click)="$event.stopPropagation()" />
             </div>
 
             <div class="vf-check-row vf-select-all" (click)="toggleAllSiteNames()">
               <span class="vf-checkbox"
-                    [class.checked]="selectedSiteNames.length === filteredSiteNamesList.length && filteredSiteNamesList.length > 0"
-                    [class.indeterminate]="selectedSiteNames.length > 0 && selectedSiteNames.length < filteredSiteNamesList.length">
+                [class.checked]="selectedSiteNames.length === filteredSiteNamesList.length && filteredSiteNamesList.length > 0"
+                [class.indeterminate]="selectedSiteNames.length > 0 && selectedSiteNames.length < filteredSiteNamesList.length">
                 <i class="bi bi-check"
-                   *ngIf="selectedSiteNames.length === filteredSiteNamesList.length && filteredSiteNamesList.length > 0"></i>
+                  *ngIf="selectedSiteNames.length === filteredSiteNamesList.length && filteredSiteNamesList.length > 0"></i>
                 <i class="bi bi-dash"
-                   *ngIf="selectedSiteNames.length > 0 && selectedSiteNames.length < filteredSiteNamesList.length"></i>
+                  *ngIf="selectedSiteNames.length > 0 && selectedSiteNames.length < filteredSiteNamesList.length"></i>
               </span>
               <span class="vf-check-label">Select All</span>
             </div>
 
             <div class="vf-divider"></div>
 
-            <div class="vf-check-row"
-                 *ngFor="let opt of filteredSiteNamesList"
-                 (click)="toggleSiteName(opt.value)"
-                 [class.selected]="isSiteNameSelected(opt.value)">
+            <div class="vf-check-row" *ngFor="let opt of filteredSiteNamesList" (click)="toggleSiteName(opt.value)"
+              [class.selected]="isSiteNameSelected(opt.value)">
               <span class="vf-checkbox" [class.checked]="isSiteNameSelected(opt.value)">
                 <i class="bi bi-check" *ngIf="isSiteNameSelected(opt.value)"></i>
               </span>
@@ -297,9 +282,7 @@
           </span>
         </div>
 
-        <div class="vf-trigger"
-             [class.open]="cityDropOpen"
-             (click)="cityDropOpen = !cityDropOpen">
+        <div class="vf-trigger" [class.open]="cityDropOpen" (click)="cityDropOpen = !cityDropOpen">
           <span class="vf-trigger-text">
             <ng-container *ngIf="selectedCityNames.length === 0">All Cities</ng-container>
             <ng-container *ngIf="selectedCityNames.length > 0">
@@ -318,30 +301,26 @@
           <ng-container *ngIf="!loadingCities()">
 
             <div class="vf-panel-search">
-              <input type="text"
-                     placeholder="Search city..."
-                     [(ngModel)]="citySearch"
-                     (click)="$event.stopPropagation()" />
+              <input type="text" placeholder="Search city..." [(ngModel)]="citySearch"
+                (click)="$event.stopPropagation()" />
             </div>
 
             <div class="vf-check-row vf-select-all" (click)="toggleAllCityNames()">
               <span class="vf-checkbox"
-                    [class.checked]="selectedCityNames.length === filteredCitiesList.length && filteredCitiesList.length > 0"
-                    [class.indeterminate]="selectedCityNames.length > 0 && selectedCityNames.length < filteredCitiesList.length">
+                [class.checked]="selectedCityNames.length === filteredCitiesList.length && filteredCitiesList.length > 0"
+                [class.indeterminate]="selectedCityNames.length > 0 && selectedCityNames.length < filteredCitiesList.length">
                 <i class="bi bi-check"
-                   *ngIf="selectedCityNames.length === filteredCitiesList.length && filteredCitiesList.length > 0"></i>
+                  *ngIf="selectedCityNames.length === filteredCitiesList.length && filteredCitiesList.length > 0"></i>
                 <i class="bi bi-dash"
-                   *ngIf="selectedCityNames.length > 0 && selectedCityNames.length < filteredCitiesList.length"></i>
+                  *ngIf="selectedCityNames.length > 0 && selectedCityNames.length < filteredCitiesList.length"></i>
               </span>
               <span class="vf-check-label">Select All</span>
             </div>
 
             <div class="vf-divider"></div>
 
-            <div class="vf-check-row"
-                 *ngFor="let opt of filteredCitiesList"
-                 (click)="toggleCityName(opt.value)"
-                 [class.selected]="isCityNameSelected(opt.value)">
+            <div class="vf-check-row" *ngFor="let opt of filteredCitiesList" (click)="toggleCityName(opt.value)"
+              [class.selected]="isCityNameSelected(opt.value)">
               <span class="vf-checkbox" [class.checked]="isCityNameSelected(opt.value)">
                 <i class="bi bi-check" *ngIf="isCityNameSelected(opt.value)"></i>
               </span>

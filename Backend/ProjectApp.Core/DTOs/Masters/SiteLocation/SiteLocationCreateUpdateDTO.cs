@@ -11,7 +11,6 @@ namespace ProjectApp.Core.DTOs.Masters.SiteLocation
     {
         [Required(ErrorMessage = "Site name is required")]
         public string SiteName { get; set; }
-        public string BuildingName { get; set; }
         public string City { get; set; }
         public string State { get; set; }
   
