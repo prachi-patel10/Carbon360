@@ -147,33 +147,47 @@ export class GeneratorCharts implements OnInit, AfterViewInit, OnChanges, OnDest
    * (so parent DashboardComponent can handle it) AND navigates directly.
    */
   private navigateToGeneratorSearch(params: {
-    month?:         number;
-    fuelType?:      string;
-    generatorName?: string;
-    siteName?:      string;
-    search?:        string;
-  }): void {
-    const queryParams: Record<string, any> = { source: 'chart', year: this.year };
+  month?: number;
+  fuelType?: string;
+  generatorName?: string;
+  siteName?: string;
+  search?: string;
+}): void {
 
-    if (params.fuelType)      queryParams['fuelType']      = params.fuelType;
-    if (params.generatorName) queryParams['generatorName'] = params.generatorName;
-    if (params.siteName)      queryParams['siteName']      = params.siteName;
-    if (params.search)        queryParams['search']        = params.search;
+  const queryParams: any = {
+    source: 'chart',
+    year: this.year
+  };
 
-    if (params.month) {
-      const y = this.year, m = params.month;
-      const lastDay = new Date(y, m, 0).getDate();
-      queryParams['startDate'] = `${y}-${String(m).padStart(2, '0')}-01`;
-      queryParams['endDate']   = `${y}-${String(m).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
-    }
-
-    // Emit to parent (DashboardComponent)
-    this.gridRowClick.emit(queryParams);
-
-    // Also navigate directly
-    this.router.navigate(['/dashboard/searchGenerator'], { queryParams });
+  if (params.fuelType) {
+    queryParams.fuelType = params.fuelType.trim();
   }
 
+  if (params.generatorName) {
+    queryParams.generatorName = params.generatorName.trim();
+  }
+
+  if (params.siteName) {
+    queryParams.siteName = params.siteName.trim();
+  }
+
+  if (params.search) {
+    queryParams.search = params.search.trim();
+  }
+
+  if (params.month) {
+    const y = this.year;
+    const m = params.month;
+    const lastDay = new Date(y, m, 0).getDate();
+
+    queryParams.startDate = `${y}-${String(m).padStart(2, '0')}-01`;
+    queryParams.endDate   = `${y}-${String(m).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
+  }
+
+  console.log("NAVIGATING WITH:", queryParams); 
+
+  this.router.navigate(['/dashboard/searchGenerator'], { queryParams });
+}
   // ── Convenience wrappers (called from chart onClick) ─────────
   navigateByGeneratorMonth(monthIndex: number): void {
     this.navigateToGeneratorSearch({ month: monthIndex + 1 });

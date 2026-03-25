@@ -71,8 +71,7 @@
               <div class="gen-multiselect" [class.open]="genDropdownOpen">
                 <div class="gen-trigger" (click)="toggleGenDropdown()">
                   <div class="gen-tags">
-                    <span *ngIf="selectedGenTypes.length === 0"
-                     class="placeholder">All Generator Types</span>
+                    <span *ngIf="selectedGenTypes.length === 0" class="placeholder">All Generator Types</span>
                     <ng-container *ngIf="selectedGenTypes.length > 0">
                       <span *ngFor="let g of selectedGenTypes" class="gen-tag">
                         {{ g }}
@@ -93,11 +92,11 @@
                       (change)="toggleSelectAllGen()" />
                     <span>Select all</span>
                   </label>
-                 <label class="gen-option" *ngFor="let gen of generatorTypes"
-  [class.selected]="isGenSelected(gen)">
+                  <label class="gen-option" *ngFor="let gen of generatorTypes"
+                    [class.selected]="isGenSelected(gen.gen_name)">
                     <input type="checkbox" [checked]="isGenSelected(gen.gen_name)"
                       (change)="toggleGenType(gen.gen_name)" />
-                   <span>{{ gen.gen_name || gen.generatorName || 'Unknown' }}</span>
+                    <span>{{ gen.gen_name || gen.generatorName || 'Unknown' }}</span>
                   </label>
                 </div>
               </div>
@@ -153,8 +152,8 @@
                 Generator <span class="sort-icon">{{ getSortIcon('generatorName') }}</span>
               </th>
               <th (click)="sortBy('reportId')" class="sortable">
-  Report ID <span class="sort-icon">{{ getSortIcon('reportId') }}</span>
-</th>
+                Report ID <span class="sort-icon">{{ getSortIcon('reportId') }}</span>
+              </th>
               <th (click)="sortBy('entryDate')" class="sortable">
                 Reported Date <span class="sort-icon">{{ getSortIcon('entryDate') }}</span>
               </th>

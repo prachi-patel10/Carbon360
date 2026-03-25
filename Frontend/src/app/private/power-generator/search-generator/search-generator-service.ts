@@ -74,7 +74,7 @@ export class SearchGeneratorService {
   }
 
   // ================= SEARCH API =================
- searchEmissions(
+  searchEmissions(
   pageNumber: number = 1,
   pageSize: number = 10,
   search?: string,
@@ -85,25 +85,30 @@ export class SearchGeneratorService {
   entryStartDate?: string,
   entryEndDate?: string,
   sortColumn?: string,
-  sortDirection?: 'asc' | 'desc'
+  sortDirection?: 'asc' | 'desc',
+  siteNames?: string
 ): Observable<any> {
+
   let params = new HttpParams()
     .set('pageNumber', pageNumber)
     .set('pageSize', pageSize)
     .set('sortColumn', sortColumn || 'EntryDate')
-    .set('sortDirection', (sortDirection||'desc').toUpperCase());
+    .set('sortDirection', (sortDirection || 'desc').toUpperCase());
 
-  if (search)         params = params.set('search', encodeURIComponent(search));
-  if (fuelTypes)      params = params.set('fuelTypes', encodeURIComponent(fuelTypes));
-   if (generatorTypes)      params = params.set('generatorTypes', encodeURIComponent(generatorTypes));
-  if (operationStartDate)  params = params.set('startDate', operationStartDate);
-  if (operationEndDate)    params = params.set('endDate', operationEndDate);
+  // ✅ FIX: removed encodeURIComponent
+  if (search) params = params.set('search', search);
+  if (fuelTypes) params = params.set('fuelTypes', fuelTypes);
+  if (generatorTypes) params = params.set('generatorTypes', generatorTypes);
+  if (operationStartDate) params = params.set('startDate', operationStartDate);
+  if (operationEndDate) params = params.set('endDate', operationEndDate);
   if (entryStartDate) params = params.set('entryStartDate', entryStartDate);
-  if (entryEndDate)   params = params.set('entryEndDate', entryEndDate);
+  if (entryEndDate) params = params.set('entryEndDate', entryEndDate);
+  if (siteNames) params = params.set('siteNames', siteNames);
 
   return this.http.get<any>(`${this.apiUrl}/search`, { params });
 }
-   exportExcel(params: any) {
+
+  exportExcel(params: any) {
     return this.http.get(`${this.apiUrl}/export`, {
       params,
       responseType: 'blob'

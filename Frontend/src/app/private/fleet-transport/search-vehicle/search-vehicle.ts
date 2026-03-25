@@ -3,14 +3,14 @@ import { FueltypeService } from '../../masters/fueltype/fueltype-service';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { SearchVehcileService } from './search-vehcile-service';
-import { Router, ActivatedRoute } from '@angular/router';   // ← added ActivatedRoute
+import { Router, ActivatedRoute } from '@angular/router';
 import { DateRangePickerComponent } from '../../../public/date-range-picker-component/date-range-picker-component';
 import { TripService } from '../vehicle-ec/vehicle-service-ec';
 import { VehicletypeService } from '../vehicletype/vehicletype-service';
 
 interface VehicleEmissionDisplay {
   tripId: string;
-   reportId: string;
+  reportId: string;
   vehicleNumber: string;
   vehicleType: string;
   fuelType: string;
@@ -24,6 +24,7 @@ interface VehicleEmissionDisplay {
   totalNO2: number;
   totalCH4: number;
   totalEmission: number;
+  city?: string;
 }
 
 @Component({
@@ -35,7 +36,7 @@ interface VehicleEmissionDisplay {
 })
 export class SearchVehicle implements OnInit {
 
-  @ViewChild('opDatePicker') opDatePicker!: DateRangePickerComponent;
+  @ViewChild('opDatePicker')    opDatePicker!: DateRangePickerComponent;
   @ViewChild('entryDatePicker') entryDatePicker!: DateRangePickerComponent;
 
   emissions    = signal<VehicleEmissionDisplay[]>([]);
@@ -46,6 +47,13 @@ export class SearchVehicle implements OnInit {
   selectedFuels: string[] = [];
   fuelDropdownOpen        = false;
 
+  vehicleTypes: any[]        = [];
+  selectedVehicles: string[] = [];
+  vehicleDropdownOpen        = false;
+
+  // City from chart click — shown in search box, used in client-side filter
+  chartCity: string | null = null;
+
   operationStartDate = signal<string | null>(null);
   operationEndDate   = signal<string | null>(null);
   entryStartDate     = signal<string | null>(null);
@@ -53,9 +61,6 @@ export class SearchVehicle implements OnInit {
 
   selectedFuelType: string = 'All';
   loadingTrips: Record<string, boolean> = {};
-  vehicleTypes: any[] = [];
-selectedVehicles: string[] = [];
-vehicleDropdownOpen = false;
 
   totalRecordsCount = signal<number>(0);
   pageSize          = 10;
@@ -64,27 +69,55 @@ vehicleDropdownOpen = false;
   currentPage       = signal<number>(1);
   totalPages        = signal<number>(1);
 
-  
   constructor(
     private service: SearchVehcileService,
     private fuelService: FueltypeService,
-     private vehicleService: VehicletypeService, 
+    private vehicleService: VehicletypeService,
     private router: Router,
-    private route: ActivatedRoute      // ← added
+    private route: ActivatedRoute
   ) { }
 
-  // ── ngOnInit: reads chart query params, pre-fills filters, then loads ──
   ngOnInit(): void {
     this.loadFuelTypes();
-      this.loadVehicleTypes(); 
+    this.loadVehicleTypes();
 
     this.route.queryParams.subscribe(params => {
       if (params['source'] === 'chart') {
-        if (params['fuelType'])  this.selectedFuels = [params['fuelType']];
-        if (params['startDate']) this.operationStartDate.set(params['startDate']);
-        if (params['endDate'])   this.operationEndDate.set(params['endDate'] + 'T23:59:59');
-        if (params['search'])    this.searchText.set(params['search']);
+
+        // ── Fuel type (from fuel stacked bar click) ──
+        if (params['fuelType']) {
+          this.selectedFuels = [params['fuelType']];
+        }
+
+        // ── Vehicle type (from vehicle type pivot / pie click) ──
+        // Pre-selects in dropdown AND shows in search box
+        if (params['vehicleType']) {
+          this.selectedVehicles = [params['vehicleType']];
+          this.searchText.set(params['vehicleType']);
+        }
+
+        // ── City (from city emission bar click) ──
+        // Show in search box and use in client-side filter
+        if (params['city']) {
+          this.chartCity = params['city'];
+          this.searchText.set(params['city']);
+        }
+
+        // ── Free-text search ──
+        if (params['search']) {
+          this.searchText.set(params['search']);
+        }
+
+        // ── Operation date range (from month bar click) ──
+        if (params['startDate']) {
+          this.operationStartDate.set(params['startDate']);
+        }
+        if (params['endDate']) {
+          const raw = params['endDate'] as string;
+          this.operationEndDate.set(raw.includes('T') ? raw : raw + 'T23:59:59');
+        }
       }
+
       this.loadTrips();
     });
   }
@@ -98,10 +131,19 @@ vehicleDropdownOpen = false;
     });
   }
 
+  loadVehicleTypes() {
+    this.vehicleService.getAll().subscribe({
+      next: (res: any) => {
+        this.vehicleTypes = Array.isArray(res) ? res : res.data || [];
+      },
+      error: (err) => console.error('Error loading vehicle types', err)
+    });
+  }
+
   loadTrips() {
     this.service.searchTrips(1, 10000, 'entryDate', 'DESC').subscribe({
       next: (res: any) => {
-        const mapped = res.data.map((e: any) => ({
+        const mapped: VehicleEmissionDisplay[] = res.data.map((e: any) => ({
           tripId:            e.tripId,
           reportId:          e.reportId,
           vehicleNumber:     e.vehicleNumber,
@@ -116,43 +158,15 @@ vehicleDropdownOpen = false;
           totalCO2:          e.totalCO2          ?? 0,
           totalNO2:          e.totalNO2          ?? 0,
           totalCH4:          e.totalCH4          ?? 0,
-          totalEmission:     e.totalEmission     ?? 0
+          totalEmission:     e.totalEmission     ?? 0,
+          city:              e.city              ?? ''
         }));
         this.emissions.set(mapped);
         this.applyFilters();
-      }
+      },
+      error: (err) => console.error('Error loading trips', err)
     });
   }
-
-  loadVehicleTypes() {
-  this.vehicleService.getAll().subscribe({
-    next: (res: any) => {
-      console.log('Vehicle API Response:', res); 
-
-      this.vehicleTypes = Array.isArray(res)
-        ? res
-        : res.data || [];
-
-      console.log('Vehicle Types:', this.vehicleTypes); 
-    },
-    error: (err) => console.error('Error loading vehicle types', err)
-  });
-}
-  // getEmissionClass(value: number): string {
-  //   if (value <= 100)  return 'emission-low';
-  //   if (value <= 500)  return 'emission-moderate';
-  //   if (value <= 1000) return 'emission-high';
-  //   if (value <= 5000) return 'emission-very-high';
-  //   return 'emission-critical';
-  // }
-
-  // getEmissionLabel(value: number): string {
-  //   if (value <= 100)  return '🟢 Low Emission';
-  //   if (value <= 500)  return '🟡 Moderate Emission';
-  //   if (value <= 1000) return '🟠 High Emission';
-  //   if (value <= 5000) return '🔴 Very High Emission';
-  //   return '🔴 Critical Emission';
-  // }
 
   isLoading(tripId: string): boolean { return !!this.loadingTrips[tripId]; }
 
@@ -166,20 +180,20 @@ vehicleDropdownOpen = false;
     })
     .then(res => {
       if (!res.ok) return res.text().then(text => { throw new Error(`Server error ${res.status}: ${text}`); });
-      const contentType = res.headers.get('content-type');
-      if (!contentType || !contentType.includes('application/pdf'))
-        return res.text().then(text => { throw new Error(`Expected PDF but got: ${contentType} — ${text}`); });
+      const ct = res.headers.get('content-type');
+      if (!ct || !ct.includes('application/pdf'))
+        return res.text().then(text => { throw new Error(`Expected PDF but got: ${ct} — ${text}`); });
       return res.blob();
     })
     .then((blob: any) => {
-        const now = new Date();
-  const dateStr = now.getFullYear().toString() +
-    String(now.getMonth() + 1).padStart(2, '0') +
-    String(now.getDate()).padStart(2, '0') + '_' +
-    String(now.getHours()).padStart(2, '0') +
-    String(now.getMinutes()).padStart(2, '0') +
-    String(now.getSeconds()).padStart(2, '0');
-      const url = window.URL.createObjectURL(blob);
+      const now = new Date();
+      const dateStr = now.getFullYear() +
+        String(now.getMonth() + 1).padStart(2, '0') +
+        String(now.getDate()).padStart(2, '0') + '_' +
+        String(now.getHours()).padStart(2, '0') +
+        String(now.getMinutes()).padStart(2, '0') +
+        String(now.getSeconds()).padStart(2, '0');
+      const url  = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url; link.download = `Search_Fleet&Transport_${dateStr}.pdf`;
       document.body.appendChild(link); link.click();
@@ -191,16 +205,13 @@ vehicleDropdownOpen = false;
 
   // ─── Fuel Multi-Select ────────────────────────────────────────
 
- @HostListener('document:click', ['$event'])
-onDocumentClick(e: MouseEvent) {
-  if (!(e.target as HTMLElement).closest('.fuel-multiselect')) {
-    this.fuelDropdownOpen = false;
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(e: MouseEvent) {
+    const target = e.target as HTMLElement;
+    if (!target.closest('.fuel-multiselect'))    this.fuelDropdownOpen    = false;
+    if (!target.closest('.vehicle-multiselect')) this.vehicleDropdownOpen = false;
   }
 
-  if (!(e.target as HTMLElement).closest('.vehicle-multiselect')) {
-    this.vehicleDropdownOpen = false;
-  }
-}
   toggleFuelDropdown() { this.fuelDropdownOpen = !this.fuelDropdownOpen; }
 
   toggleFuel(name: string) {
@@ -219,19 +230,44 @@ onDocumentClick(e: MouseEvent) {
 
   clearFuels() { this.selectedFuels = []; this.applyFilters(); }
 
+  // ─── Vehicle Multi-Select ─────────────────────────────────────
+
+  toggleVehicleDropdown() { this.vehicleDropdownOpen = !this.vehicleDropdownOpen; }
+
+  toggleVehicle(name: string) {
+    const idx = this.selectedVehicles.indexOf(name);
+    if (idx > -1) this.selectedVehicles.splice(idx, 1); else this.selectedVehicles.push(name);
+    this.applyFilters();
+  }
+
+  isVehicleSelected(name: string): boolean { return this.selectedVehicles.includes(name); }
+
+  toggleSelectAllVehicles() {
+    if (this.selectedVehicles.length === this.vehicleTypes.length) this.selectedVehicles = [];
+    else this.selectedVehicles = this.vehicleTypes.map((v: any) => v.vehicle_name);
+    this.applyFilters();
+  }
+
+  clearVehicles() { this.selectedVehicles = []; this.applyFilters(); }
+
   // ─── Search ───────────────────────────────────────────────────
 
-  onSearch(event: any) { this.searchText.set(event.target.value); this.applyFilters(); }
+  onSearch(event: any) {
+    this.searchText.set(event.target.value);
+    // Clear chart city if user manually types
+    if (this.chartCity) this.chartCity = null;
+    this.applyFilters();
+  }
 
   // ─── Date Range ───────────────────────────────────────────────
 
-  onOperationDateRangeSelected(range: { startDate: Date | null, endDate: Date | null }) {
+  onOperationDateRangeSelected(range: { startDate: Date | null; endDate: Date | null }) {
     this.operationStartDate.set(range.startDate ? range.startDate.toISOString() : null);
     this.operationEndDate.set(range.endDate ? range.endDate.toISOString() : null);
     this.currentPage.set(1); this.applyFilters();
   }
 
-  onEntryDateRangeSelected(range: { startDate: Date | null, endDate: Date | null }) {
+  onEntryDateRangeSelected(range: { startDate: Date | null; endDate: Date | null }) {
     this.entryStartDate.set(range.startDate ? range.startDate.toISOString() : null);
     this.entryEndDate.set(range.endDate ? range.endDate.toISOString() : null);
     this.currentPage.set(1); this.applyFilters();
@@ -240,17 +276,20 @@ onDocumentClick(e: MouseEvent) {
   // ─── Reset ────────────────────────────────────────────────────
 
   resetFilters() {
-    this.selectedFuels = []; this.fuelDropdownOpen = false;
-      this.selectedVehicles = [];  this.vehicleDropdownOpen = false; 
+    this.selectedFuels    = []; this.fuelDropdownOpen    = false;
+    this.selectedVehicles = []; this.vehicleDropdownOpen = false;
+    this.chartCity        = null;
     this.searchText.set('');
     this.operationStartDate.set(null); this.operationEndDate.set(null);
     this.entryStartDate.set(null);     this.entryEndDate.set(null);
     this.currentPage.set(1);
     this.opDatePicker?.reset(); this.entryDatePicker?.reset();
     this.filteredData.set(this.emissions());
+    this.totalRecordsCount.set(this.emissions().length);
+    this.totalPages.set(Math.ceil(this.emissions().length / this.pageSize) || 1);
   }
 
-  // ─── Filters ──────────────────────────────────────────────────
+  // ─── Filters (client-side) ────────────────────────────────────
 
   applyFilters() {
     const sText       = this.searchText().toLowerCase();
@@ -262,74 +301,53 @@ onDocumentClick(e: MouseEvent) {
     if (enEndDate) enEndDate.setHours(23, 59, 59, 999);
 
     const filtered = this.emissions().filter(e => {
+
+      // Text search — also searches city field
       const matchesSearch =
+        !sText ||
         e.vehicleNumber.toLowerCase().includes(sText) ||
         e.vehicleType.toLowerCase().includes(sText)   ||
-        e.fuelType.toLowerCase().includes(sText);
+        e.fuelType.toLowerCase().includes(sText)      ||
+        (e.city ?? '').toLowerCase().includes(sText);
 
+      // Fuel type multi-select
       const matchesFuel =
         this.selectedFuels.length === 0 ||
         this.selectedFuels.map(f => f.toLowerCase()).includes(e.fuelType.toLowerCase());
 
+      // Vehicle type multi-select
+      const matchesVehicle =
+        this.selectedVehicles.length === 0 ||
+        this.selectedVehicles.map(v => v.toLowerCase()).includes(e.vehicleType.toLowerCase());
+
+      // City filter — from chart click
+      const matchesCity =
+        !this.chartCity ||
+        (e.city ?? '').toLowerCase() === this.chartCity.toLowerCase();
+
+      // Operation date range
       const tripStart = new Date(e.tripStartDateTime);
       const tripEnd   = new Date(e.tripEndDateTime);
       let matchesOperation = true;
       if (opStartDate && tripEnd   < opStartDate) matchesOperation = false;
       if (opEndDate   && tripStart > opEndDate)   matchesOperation = false;
 
+      // Entry date range
       const entry = new Date(e.entryDate);
       let matchesEntry = true;
       if (enStartDate && entry < enStartDate) matchesEntry = false;
       if (enEndDate   && entry > enEndDate)   matchesEntry = false;
 
-      const matchesVehicle =
-  this.selectedVehicles.length === 0 ||
-  this.selectedVehicles
-    .map(v => v.toLowerCase())
-    .includes(e.vehicleType.toLowerCase());
-
-return matchesSearch && matchesFuel && matchesVehicle && matchesOperation && matchesEntry;
+      return matchesSearch && matchesFuel && matchesVehicle &&
+             matchesCity   && matchesOperation && matchesEntry;
     });
 
     this.filteredData.set(filtered);
     this.totalRecordsCount.set(filtered.length);
-    this.totalPages.set(Math.ceil(filtered.length / this.pageSize));
+    this.totalPages.set(Math.ceil(filtered.length / this.pageSize) || 1);
     this.currentPage.set(1);
   }
-toggleVehicleDropdown() {
-  this.vehicleDropdownOpen = !this.vehicleDropdownOpen;
-}
 
-toggleVehicle(name: string) {
-  const index = this.selectedVehicles.indexOf(name);
-
-  if (index > -1) {
-    this.selectedVehicles.splice(index, 1);
-  } else {
-    this.selectedVehicles.push(name);
-  }
-
-  this.applyFilters();
-}
-
-isVehicleSelected(name: string): boolean {
-  return this.selectedVehicles.includes(name);
-}
-
-toggleSelectAllVehicles() {
-  if (this.selectedVehicles.length === this.vehicleTypes.length) {
-    this.selectedVehicles = [];
-  } else {
-    this.selectedVehicles = this.vehicleTypes.map(v => v.vehicle_name);
-  }
-
-  this.applyFilters();
-}
-
-clearVehicles() {
-  this.selectedVehicles = [];
-  this.applyFilters();
-}
   // ─── Pagination ───────────────────────────────────────────────
 
   paginatedData() {
@@ -359,7 +377,7 @@ clearVehicles() {
 
     const sorted = [...this.filteredData()].sort((a: any, b: any) => {
       let valA = a[column] ?? '', valB = b[column] ?? '';
-      if (column === 'entryDate' || column === 'tripStartDateTime' || column === 'tripEndDateTime') {
+      if (['entryDate', 'tripStartDateTime', 'tripEndDateTime'].includes(column)) {
         valA = new Date(valA).getTime(); valB = new Date(valB).getTime();
       } else if (typeof valA === 'string') {
         valA = valA.toLowerCase(); valB = valB.toLowerCase();
@@ -387,12 +405,14 @@ clearVehicles() {
 
   exportExcel() {
     const params: any = {};
-    if (this.searchText())               params.search         = this.searchText();
-    if (this.selectedFuelType !== 'All') params.fuelType       = this.selectedFuelType;
-    if (this.operationStartDate())       params.startDate      = this.operationStartDate();
-    if (this.operationEndDate())         params.endDate        = this.operationEndDate();
-    if (this.entryStartDate())           params.entryStartDate = this.entryStartDate();
-    if (this.entryEndDate())             params.entryEndDate   = this.entryEndDate();
+    if (this.searchText())                 params.search         = this.searchText();
+    if (this.selectedFuels.length > 0)     params.fuelTypes      = this.selectedFuels.join(',');
+    if (this.selectedVehicles.length > 0)  params.vehicleTypes   = this.selectedVehicles.join(',');
+    if (this.chartCity)                    params.cities         = this.chartCity;
+    if (this.operationStartDate())         params.startDate      = this.operationStartDate();
+    if (this.operationEndDate())           params.endDate        = this.operationEndDate();
+    if (this.entryStartDate())             params.entryStartDate = this.entryStartDate();
+    if (this.entryEndDate())               params.entryEndDate   = this.entryEndDate();
     params.sortColumn    = this.sortColumn;
     params.sortDirection = this.sortDirection;
 
@@ -403,13 +423,10 @@ clearVehicles() {
       const url = window.URL.createObjectURL(file);
       const a   = document.createElement('a');
       const now = new Date();
-      const day     = ('0' + now.getDate()).slice(-2);
-      const month   = ('0' + (now.getMonth() + 1)).slice(-2);
-      const year    = now.getFullYear();
-      const hours   = ('0' + now.getHours()).slice(-2);
-      const minutes = ('0' + now.getMinutes()).slice(-2);
-      const seconds = ('0' + now.getSeconds()).slice(-2);
-      const formatted = `${day}${month}${year}_${hours}${minutes}${seconds}`;
+      const formatted = ('0' + now.getDate()).slice(-2) +
+        ('0' + (now.getMonth() + 1)).slice(-2) + now.getFullYear() + '_' +
+        ('0' + now.getHours()).slice(-2) + ('0' + now.getMinutes()).slice(-2) +
+        ('0' + now.getSeconds()).slice(-2);
       a.download = `Search_Fleet&Transport_${formatted}.xlsx`;
       a.href = url; a.click(); window.URL.revokeObjectURL(url);
     });
