@@ -46,6 +46,12 @@ public partial class CBContext : DbContext
     public virtual DbSet<CB_VehicleTripEmission> CB_VehicleTripEmissions { get; set; }
 
     public virtual DbSet<CB_VehicleTypeCategory> CB_VehicleTypeCategories { get; set; }
+<<<<<<< Updated upstream
+=======
+
+    public virtual DbSet<DashboardSummaryDto> DashboardSummary { get; set; }
+    public virtual DbSet<GeneratorRunHoursMonthlyRawDto> GeneratorRunHoursMonthly { get; set; }
+>>>>>>> Stashed changes
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -492,6 +498,48 @@ public partial class CBContext : DbContext
         });
 
         OnModelCreatingPartial(modelBuilder);
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+
+        modelBuilder.Entity<MonthlyEmissionRawDto>()
+    .HasNoKey()
+    .ToView(null);
+
+        modelBuilder.Entity<GeneratorRunHoursRawDto>()
+    .HasNoKey()
+    .ToView(null);
+
+        modelBuilder.Entity<VehicleDistanceMonthlyRawDto>()
+            .HasNoKey()
+            .ToView(null);
+
+        modelBuilder.Entity<GeneratorLoadFactorRawDto>()
+    .HasNoKey()
+    .ToView(null);
+
+        modelBuilder.Entity<VehicleTypeDistanceRawDto>()
+    .HasNoKey()
+    .ToView(null);
+
+        modelBuilder.Entity<DashboardSummaryDto>()
+    .HasNoKey()
+    .ToView(null);
+
+        modelBuilder.Entity<GeneratorRunHoursMonthlyRawDto>()
+            .HasNoKey()
+            .ToView(null);
+
+        modelBuilder.Entity<CityEmissionDto>()
+            .HasNoKey()
+            .ToView(null);
+
+        modelBuilder.Entity<SiteEmissionDto>()
+            .HasNoKey()
+            .ToView(null);
+=======
+>>>>>>> 11f76733e80cbaf23fc9bbf768fa58ed98c8c95a
+>>>>>>> Stashed changes
     }
 
     partial void OnModelCreatingPartial(ModelBuilder modelBuilder);

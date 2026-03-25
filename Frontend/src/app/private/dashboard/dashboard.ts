@@ -1,16 +1,18 @@
+
 import {
   Component, ElementRef, HostListener, ViewChild,
   signal, computed, OnInit, AfterViewInit, OnDestroy
 } from '@angular/core';
 import { Router, NavigationEnd, ActivatedRoute, RouterOutlet } from '@angular/router';
 import { AuthService } from '../../core/guards/auth-service';
-import { filter } from 'rxjs/operators';
+import { filter, finalize, takeUntil } from 'rxjs/operators';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LoaderService } from '../../core/loader/loader-service';
 import { Subject } from 'rxjs';
-import { VehicleCharts }   from '../vehicle-charts/vehicle-charts';
+import { VehicleCharts } from '../vehicle-charts/vehicle-charts';
 import { GeneratorCharts } from '../generator-charts/generator-charts';
+import { DashboardService, DashboardSummaryResponse } from './dashboard-service';
 
 @Component({
   selector: 'app-dashboard',
@@ -23,25 +25,36 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
   // ── Non-signal properties ─────────────────────────────────
   loggedInUser: string = '';
-  roles: string[]      = [];
+  roles: string[] = [];
   selectedRole: string = '';
   sidebarOpen: boolean = true;
-  pageTitle: string    = '';
+  pageTitle: string = '';
   openedConfigMenu: string | null = null;
-  openedSubMenu:    string | null = null;
-  openedMainMenu:   string | null = null;
+  openedSubMenu: string | null = null;
+  openedMainMenu: string | null = null;
 
-  @ViewChild(VehicleCharts)   vehicleChartsRef!: VehicleCharts;
+  @ViewChild(VehicleCharts) vehicleChartsRef!: VehicleCharts;
   @ViewChild(GeneratorCharts) generatorChartsRef!: GeneratorCharts;
 
   // ── All UI state as signals ───────────────────────────────
   showProfileCard = signal(false);
-  selectedYear    = signal<number>(new Date().getFullYear());
-  activeTab       = signal<'vehicle' | 'generator'>('vehicle');
-  showYearPicker  = signal(false);
-  decadeStart     = signal<number>(
+  selectedYear = signal<number>(new Date().getFullYear());
+  activeTab = signal<'vehicle' | 'generator'>('vehicle');
+  showYearPicker = signal(false);
+  decadeStart = signal<number>(
     Math.floor(new Date().getFullYear() / 12) * 12
   );
+
+  // ── Dashboard summary signals ────────────────────────────────
+  isSummaryLoading = signal(false);
+  summaryData = signal<DashboardSummaryResponse | null>(null);
+
+  summaryTotalCO2e = computed(() => this.summaryData()?.totalCO2e ?? 0);
+  summaryTotalCO2 = computed(() => this.summaryData()?.totalCO2 ?? 0);
+  summaryTotalNO2 = computed(() => this.summaryData()?.totalNO2 ?? 0);
+  summaryTotalCH4 = computed(() => this.summaryData()?.totalCH4 ?? 0);
+  summaryFuel = computed(() => this.summaryData()?.totalFuelConsumed ?? 0);
+  summaryDistance = computed(() => this.summaryData()?.totalDistanceKM ?? 0);
 
   // ── Computed ──────────────────────────────────────────────
   currentYear = computed(() => new Date().getFullYear());
@@ -57,15 +70,16 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     private authService: AuthService,
     public router: Router,
     private route: ActivatedRoute,
-    private loader: LoaderService
-  ) {}
+    private loader: LoaderService,
+    private svc: DashboardService
+  ) { }
 
   ngOnInit(): void {
     const user = this.authService.getLoggedInUser();
     if (!user) { this.router.navigate(['/login']); return; }
 
     this.loggedInUser = user.name;
-    this.roles        = user.roles ?? [];
+    this.roles = user.roles ?? [];
     this.selectedRole = user.currentRole ?? '';
 
     this.setPageTitle(this.router.url);
@@ -77,12 +91,14 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     if (saved) {
       const s = JSON.parse(saved);
       this.openedConfigMenu = s.config;
-      this.openedSubMenu    = s.sub;
-      this.openedMainMenu   = s.main;
+      this.openedSubMenu = s.sub;
+      this.openedMainMenu = s.main;
     }
+
+    this.loadSummary();
   }
 
-  ngAfterViewInit(): void {}
+  ngAfterViewInit(): void { }
 
   ngOnDestroy(): void {
     this.destroy$.next();
@@ -109,10 +125,14 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   setTab(tab: 'vehicle' | 'generator'): void {
     this.activeTab.set(tab);
     setTimeout(() => {
-      if (tab === 'vehicle') this.vehicleChartsRef?.refreshCharts();
-      else                   this.generatorChartsRef?.refreshCharts();
+      if (tab === 'vehicle') {
+        this.vehicleChartsRef?.loadAll();
+      } else {
+        this.generatorChartsRef?.loadAll();
+      }
     }, 0);
   }
+
 
   // ── Profile dropdown ──────────────────────────────────────
   toggleProfile(event: Event): void {
@@ -132,82 +152,82 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   setPageTitle(url: string): void {
-    if      (url.includes('user'))              this.pageTitle = 'User Administration';
-    else if (url.includes('department'))        this.pageTitle = 'Organizational Units';
-    else if (url.includes('vehiclereport'))     this.pageTitle = 'Fleet Report';
-    else if (url.includes('vehiclemaster'))     this.pageTitle = 'Vehicles';
-    else if (url.includes('fueltype'))          this.pageTitle = 'Fuel Management';
-    else if (url.includes('vehicle'))           this.pageTitle = 'Report Fleet & Transport';
-    else if (url.includes('emissionFactors'))   this.pageTitle = 'Emission Factors';
-    else if (url.includes('generator-ec'))      this.pageTitle = 'Report Power Generation';
-    else if (url.includes('citymaster'))        this.pageTitle = 'Cities';
-    else if (url.includes('sitelocation'))      this.pageTitle = 'Site Location';
-    else if (url.includes('generator'))         this.pageTitle = 'Generators';
-    else if (url.includes('searchGenerator'))   this.pageTitle = 'Search Power Generator';
+    if (url.includes('user')) this.pageTitle = 'User Administration';
+    else if (url.includes('department')) this.pageTitle = 'Organizational Units';
+    else if (url.includes('vehiclereport')) this.pageTitle = 'Fleet Report';
+    else if (url.includes('vehiclemaster')) this.pageTitle = 'Vehicles';
+    else if (url.includes('fueltype')) this.pageTitle = 'Fuel Management';
+    else if (url.includes('vehicle')) this.pageTitle = 'Report Fleet & Transport';
+    else if (url.includes('emissionFactors')) this.pageTitle = 'Emission Factors';
+    else if (url.includes('generator-ec')) this.pageTitle = 'Report Power Generation';
+    else if (url.includes('citymaster')) this.pageTitle = 'Cities';
+    else if (url.includes('sitelocation')) this.pageTitle = 'Site Location';
+    else if (url.includes('generator')) this.pageTitle = 'Generators';
+    else if (url.includes('searchGenerator')) this.pageTitle = 'Search Power Generator';
     else if (url.includes('MyActionGenerator')) this.pageTitle = 'Actions Power Generator';
-    else if (url.includes('MyActionVehicle'))   this.pageTitle = 'Actions Fleet & Transport';
-    else if (url.includes('searchVehicle'))     this.pageTitle = 'Search Fleet & Transport';
-    else if (url.includes('Vehicletype'))       this.pageTitle = 'Vehicle Type';
-    else                                        this.pageTitle = 'Statistics';
+    else if (url.includes('MyActionVehicle')) this.pageTitle = 'Actions Fleet & Transport';
+    else if (url.includes('searchVehicle')) this.pageTitle = 'Search Fleet & Transport';
+    else if (url.includes('Vehicletype')) this.pageTitle = 'Vehicle Type';
+    else this.pageTitle = 'Statics';
   }
 
-   
-// Checks if ANY config sub-page is active (for closed sidebar icon highlight)
-isAnyConfigActive(): boolean {
-  const url = this.router.url;
-  return url.includes('/user') || url.includes('/department') ||
-         url.includes('/emissionFactors') || url.includes('/fueltype') ||
-         url.includes('/vehiclemaster') || url.includes('/citymaster') ||
-         url.includes('/Vehicletype') || url.includes('/generator') ||
-         url.includes('/sitelocation');
-}
- 
-// Checks if ANY fleet page is active
-isAnyFleetActive(): boolean {
-  const url = this.router.url;
-  return url.includes('/vehicle') || url.includes('/searchVehicle') ||
-         url.includes('/MyActionVehicle');
-}
- 
-// Checks if ANY power generation page is active
-isAnyPowerActive(): boolean {
-  const url = this.router.url;
-  return url.includes('/generator-ec') || url.includes('/searchGenerator') ||
-         url.includes('/MyActionGenerator');
-}
+
+  // Checks if ANY config sub-page is active (for closed sidebar icon highlight)
+  isAnyConfigActive(): boolean {
+    const url = this.router.url;
+    return url.includes('/user') || url.includes('/department') ||
+      url.includes('/emissionFactors') || url.includes('/fueltype') ||
+      url.includes('/vehiclemaster') || url.includes('/citymaster') ||
+      url.includes('/Vehicletype') || url.includes('/generator') ||
+      url.includes('/sitelocation');
+  }
+
+  // Checks if ANY fleet page is active
+  isAnyFleetActive(): boolean {
+    const url = this.router.url;
+    return url.includes('/vehicle') || url.includes('/searchVehicle') ||
+      url.includes('/MyActionVehicle');
+  }
+
+  // Checks if ANY power generation page is active
+  isAnyPowerActive(): boolean {
+    const url = this.router.url;
+    return url.includes('/generator-ec') || url.includes('/searchGenerator') ||
+      url.includes('/MyActionGenerator');
+  }
 
   // Returns the active page label for Configuration tooltip
-getActiveConfigLabel(): string {
-  const url = this.router.url;
-  if (url.includes('/user'))            return 'User Administration';
-  if (url.includes('/department'))      return 'Organizational Units';
-  if (url.includes('/emissionFactors')) return 'Emission Factors';
-  if (url.includes('/fueltype'))        return 'Fuel Management';
-  if (url.includes('/vehiclemaster'))   return 'Vehicles';
-  if (url.includes('/citymaster'))      return 'Cities';
-  if (url.includes('/Vehicletype'))     return 'Vehicle Type';
-  if (url.includes('/sitelocation'))    return 'Site Location';
-  if (url.includes('/generator'))       return 'Generators';
-  return 'Configuration';
-}
- 
-// Returns the active page label for Fleet tooltip
-getActiveFleetLabel(): string {
-  const url = this.router.url;
-  if (url.includes('/searchVehicle'))   return 'Search';
-  if (url.includes('/MyActionVehicle')) return 'My Action';
-  if (url.includes('/vehicle'))         return 'Report';
-  return 'Fleet & Transport';
-}
- 
-// Returns the active page label for Power Generation tooltip
-getActivePowerLabel(): string {
-  const url = this.router.url;
-  if (url.includes('/searchGenerator'))   return 'Search';
-  if (url.includes('/MyActionGenerator')) return 'My Action';
-  if (url.includes('/generator-ec'))      return 'Report';
-  return 'Power Generation';
-}
+  getActiveConfigLabel(): string {
+    const url = this.router.url;
+    if (url.includes('/user')) return 'User Administration';
+    if (url.includes('/department')) return 'Organizational Units';
+    if (url.includes('/emissionFactors')) return 'Emission Factors';
+    if (url.includes('/fueltype')) return 'Fuel Management';
+    if (url.includes('/vehiclemaster')) return 'Vehicles';
+    if (url.includes('/citymaster')) return 'Cities';
+    if (url.includes('/Vehicletype')) return 'Vehicle Type';
+    if (url.includes('/sitelocation')) return 'Site Location';
+    if (url.includes('/generator')) return 'Generators';
+    return 'Configuration';
+  }
+
+  // Returns the active page label for Fleet tooltip
+  getActiveFleetLabel(): string {
+    const url = this.router.url;
+    if (url.includes('/searchVehicle')) return 'Search';
+    if (url.includes('/MyActionVehicle')) return 'My Action';
+    if (url.includes('/vehicle')) return 'Report';
+    return 'Fleet & Transport';
+  }
+
+  // Returns the active page label for Power Generation tooltip
+  getActivePowerLabel(): string {
+    const url = this.router.url;
+    if (url.includes('/searchGenerator')) return 'Search';
+    if (url.includes('/MyActionGenerator')) return 'My Action';
+    if (url.includes('/generator-ec')) return 'Report';
+    return 'Power Generation';
+  }
 
   goTo(path: string): void { this.router.navigate([path], { relativeTo: this.route }); }
   isActive(path: string): boolean { return this.router.url.includes(path); }
@@ -221,8 +241,8 @@ getActivePowerLabel(): string {
 
   goToDashboard(): void {
     this.openedConfigMenu = null;
-    this.openedSubMenu    = null;
-    this.openedMainMenu   = null;
+    this.openedSubMenu = null;
+    this.openedMainMenu = null;
     localStorage.removeItem('sidebarState');
     this.router.navigate(['/dashboard']);
   }
@@ -232,12 +252,12 @@ getActivePowerLabel(): string {
     this.authService.switchRole(this.selectedRole).subscribe({
       next: (res: any) => {
         const updatedUser = { name: res.userName, roles: res.roles, currentRole: res.currentRole, token: res.token };
-        localStorage.setItem('user',  JSON.stringify(updatedUser));
+        localStorage.setItem('user', JSON.stringify(updatedUser));
         localStorage.setItem('token', res.token);
         this.showProfileCard.set(false);
         this.openedConfigMenu = null;
-        this.openedSubMenu    = null;
-        this.openedMainMenu   = null;
+        this.openedSubMenu = null;
+        this.openedMainMenu = null;
         localStorage.removeItem('sidebarState');
         this.loader.hide();
         this.router.navigate(['/dashboard']);
@@ -247,8 +267,8 @@ getActivePowerLabel(): string {
 
   toggleConfigMenu(menu: string): void {
     this.openedConfigMenu = this.openedConfigMenu === menu ? null : menu;
-    this.openedMainMenu   = null;
-    this.openedSubMenu    = null;
+    this.openedMainMenu = null;
+    this.openedSubMenu = null;
     this.saveSidebarState();
   }
 
@@ -258,24 +278,39 @@ getActivePowerLabel(): string {
   }
 
   toggleMainMenu(menu: string): void {
-    this.openedMainMenu   = this.openedMainMenu === menu ? null : menu;
+    this.openedMainMenu = this.openedMainMenu === menu ? null : menu;
     this.openedConfigMenu = null;
-    this.openedSubMenu    = null;
+    this.openedSubMenu = null;
     this.saveSidebarState();
   }
 
   saveSidebarState(): void {
     localStorage.setItem('sidebarState', JSON.stringify({
       config: this.openedConfigMenu,
-      sub:    this.openedSubMenu,
-      main:   this.openedMainMenu
+      sub: this.openedSubMenu,
+      main: this.openedMainMenu
     }));
   }
 
-  isConfigMenuOpen(menu: string): boolean  { return this.openedConfigMenu === menu; }
-  isSubMenuOpen(submenu: string): boolean  { return this.openedSubMenu    === submenu; }
-  isMainMenuOpen(menu: string): boolean    { return this.openedMainMenu   === menu; }
-  isAdmin(): boolean     { return this.selectedRole === 'Admin'; }
+  isConfigMenuOpen(menu: string): boolean { return this.openedConfigMenu === menu; }
+  isSubMenuOpen(submenu: string): boolean { return this.openedSubMenu === submenu; }
+  isMainMenuOpen(menu: string): boolean { return this.openedMainMenu === menu; }
+  isAdmin(): boolean { return this.selectedRole === 'Admin'; }
   isCorporate(): boolean { return this.selectedRole === 'Corporate'; }
-  isReporter(): boolean  { return this.selectedRole === 'Reporter'; }
+  isReporter(): boolean { return this.selectedRole === 'Reporter'; }
+
+  formatNum(value: number): string {
+    return Math.round(value).toLocaleString('en-IN');
+  }
+
+  // ── Load summary from backend ────────────────────────────────
+  loadSummary(): void {
+    this.isSummaryLoading.set(true);
+    this.svc.getDashboardSummary(this.selectedYear())
+      .pipe(takeUntil(this.destroy$), finalize(() => this.isSummaryLoading.set(false)))
+      .subscribe({
+        next: res => { if (res.status && res.data) this.summaryData.set(res.data); },
+        error: () => { }
+      });
+  }
 }

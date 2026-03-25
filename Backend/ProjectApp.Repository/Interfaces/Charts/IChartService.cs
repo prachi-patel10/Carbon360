@@ -27,6 +27,18 @@ namespace ProjectApp.Repository.Interfaces.Charts
 
         //VehicleTypeWise vs Distance
         Task<VehicleTypeDistancePivotDto> GetVehicleTypeWiseDistanceAsync(int year);
+
+        //Total CO2e, CO2, NO2, CH4
+        Task<DashboardSummaryDto> GetDashboardSummaryAsync(int year);
+
+        //Piechart for GeneratorRunHours
+        Task<GeneratorRunHoursMonthlyPivotDto> GetGeneratorRunHoursMonthlyAsync(int year);
+
+        // Vehicle City‑wise Emissions (stacked bar)
+        Task<List<CityEmissionDto>> GetVehicleCityWiseEmissionsAsync(int year);
+
+        // Generator Site‑wise Emissions (stacked column)
+        Task<List<SiteEmissionDto>> GetGeneratorSiteWiseEmissionsAsync(int year);
     }
 }
 

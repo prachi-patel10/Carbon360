@@ -315,5 +315,81 @@ namespace ProjectApp.Repository.Services.Charts
                 GrandTotal = monthTotals.Sum()
             };
         }
+
+        // ── Dashboard Summary ──────────────────────────────────────────
+        public async Task<DashboardSummaryDto> GetDashboardSummaryAsync(int year)
+        {
+            var result = await _context.Set<DashboardSummaryDto>()
+                .FromSqlInterpolated($"EXEC USP_CB_DashboardEmissionSummary {year}")
+                .ToListAsync();
+            return result.FirstOrDefault() ?? new DashboardSummaryDto();
+        }
+
+        // ── Generator Run Hours Monthly Pivot ─────────────────────────
+        public async Task<GeneratorRunHoursMonthlyPivotDto> GetGeneratorRunHoursMonthlyAsync(int year)
+        {
+            var rows = await _context.Set<GeneratorRunHoursMonthlyRawDto>()
+                .FromSqlInterpolated($"EXEC USP_CB_GeneratorRunHoursMonthly {year}")
+                .ToListAsync();
+
+            var generators = rows.Select(r => r.GeneratorName).Distinct().OrderBy(n => n).ToList();
+            var colors = generators.Select((_, i) => _lineColors[i % _lineColors.Length]).ToList();
+
+            var rhMatrix = new List<List<decimal>>();
+            var fuelMatrix = new List<List<decimal>>();
+            var powerMatrix = new List<List<decimal>>();
+            var monthTotals = new List<decimal>();
+
+            for (int m = 1; m <= 12; m++)
+            {
+                var rhRow = new List<decimal>();
+                var fuelRow = new List<decimal>();
+                var powerRow = new List<decimal>();
+
+                foreach (var gen in generators)
+                {
+                    var cell = rows.FirstOrDefault(r => r.MonthNumber == m && r.GeneratorName == gen);
+                    rhRow.Add(cell?.TotalRunHours ?? 0m);
+                    fuelRow.Add(cell?.TotalFuelConsumed ?? 0m);
+                    powerRow.Add(cell?.TotalPowerOutputKWH ?? 0m);
+                }
+
+                rhMatrix.Add(rhRow);
+                fuelMatrix.Add(fuelRow);
+                powerMatrix.Add(powerRow);
+                monthTotals.Add(rhRow.Sum());
+            }
+
+            var generatorTotals = generators.Select((_, gi) =>
+                rhMatrix.Sum(row => row[gi])).ToList();
+
+            return new GeneratorRunHoursMonthlyPivotDto
+            {
+                MonthLabels = _monthNames.ToList(),
+                GeneratorNames = generators,
+                Colors = colors,
+                RunHoursMatrix = rhMatrix,
+                FuelMatrix = fuelMatrix,
+                PowerMatrix = powerMatrix,
+                MonthTotals = monthTotals,
+                GeneratorTotals = generatorTotals,
+                GrandTotal = monthTotals.Sum()
+            };
+        }
+
+        public async Task<List<CityEmissionDto>> GetVehicleCityWiseEmissionsAsync(int year)
+        {
+            return await _context.Set<CityEmissionDto>()
+                .FromSqlInterpolated($"EXEC USP_CB_VehicleCityWiseEmissions {year}")
+                .ToListAsync();
+        }
+
+        public async Task<List<SiteEmissionDto>> GetGeneratorSiteWiseEmissionsAsync(int year)
+        {
+            return await _context.Set<SiteEmissionDto>()
+                .FromSqlInterpolated($"EXEC USP_CB_GeneratorSiteWiseEmissions {year}")
+                .ToListAsync();
+        }
+
     }
 }      

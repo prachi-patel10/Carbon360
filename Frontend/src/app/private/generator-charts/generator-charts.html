@@ -66,10 +66,10 @@
     </div>
     <div class="fuel-legend" [class.hidden]="!showFuelCanvas()">
       @for (item of fuelLegend(); track item.fuelType) {
-        <div class="legend-item">
-          <span class="legend-swatch" [style.background]="item.color"></span>
-          <span class="legend-label">{{ item.fuelType }}</span>
-        </div>
+      <div class="legend-item">
+        <span class="legend-swatch" [style.background]="item.color"></span>
+        <span class="legend-label">{{ item.fuelType }}</span>
+      </div>
       }
     </div>
   </div>
@@ -99,17 +99,17 @@
     </div>
     <div class="fuel-legend" [class.hidden]="!showEmissionCanvas()">
       @for (item of emissionLegend(); track item.label) {
-        <div class="legend-item">
-          <span class="legend-line-swatch" [style.background]="item.color"></span>
-          <span class="legend-label">{{ item.label }}</span>
-        </div>
+      <div class="legend-item">
+        <span class="legend-line-swatch" [style.background]="item.color"></span>
+        <span class="legend-label">{{ item.label }}</span>
+      </div>
       }
     </div>
   </div>
 
 </div>
 
-<!-- ═══ ROW 2: Run Hours Pie — compact side-by-side layout ═══ -->
+<!-- ═══ ROW 2: Run Hours Pie — compact ═══ -->
 <div class="charts-row-full">
   <div class="chart-card pie-compact-card">
     <div class="card-header">
@@ -121,7 +121,6 @@
         </div>
       </div>
     </div>
-
     <div class="chart-loader" [class.hidden]="!isRunHoursLoading()">
       <div class="dot-loader generator-dots"><span></span><span></span><span></span></div>
       <p>Loading...</p>
@@ -131,8 +130,7 @@
       <span>{{ runHoursError() }}</span>
       <button (click)="loadRunHoursChart()">Retry</button>
     </div>
-
-    <!-- Donut only — info shown on hover tooltip -->
+    <!-- Donut — info shown on hover tooltip -->
     <div class="pie-only-body" [class.hidden]="!showRunHoursCanvas()">
       <div class="pie-canvas-wrap-sm">
         <canvas #generatorRunHoursCanvas></canvas>
@@ -140,6 +138,133 @@
           <span class="pie-centre-value">{{ formatNum(totalRunHours()) }}</span>
           <span class="pie-centre-label">Total hrs</span>
         </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ ROW 3: Generator Run Hours Monthly Pivot Table ═══ -->
+<div class="charts-row-full">
+  <div class="chart-card">
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="chart-icon-wrap loadfactor-bg"><i class="fas fa-table"></i></div>
+        <div>
+          <h3>Generator Run Hours — Month Wise</h3>
+          <p>Run hours per generator for each month — hover a cell for fuel &amp; power details</p>
+        </div>
+      </div>
+    </div>
+    <div class="chart-loader" [class.hidden]="!isRunHoursMonthlyLoading()">
+      <div class="dot-loader generator-dots"><span></span><span></span><span></span></div>
+      <p>Loading...</p>
+    </div>
+    <div class="chart-error" [class.hidden]="!(runHoursMonthlyError() && !isRunHoursMonthlyLoading())">
+      <i class="fas fa-exclamation-triangle"></i>
+      <span>{{ runHoursMonthlyError() }}</span>
+      <button (click)="loadRunHoursMonthlyChart()">Retry</button>
+    </div>
+
+    <!-- Pivot Table -->
+    <div class="vtype-table-wrap" [class.hidden]="!showRunHoursMonthlyTable()">
+      @if (runHoursMonthlyData()) {
+      <table class="vtype-table">
+        <thead>
+          <tr>
+            <th class="th-vtype">Generator</th>
+            @for (month of runHoursMonthlyData()!.monthLabels; track month; let mi = $index) {
+            @if (runHoursMonthlyData()!.monthTotals[mi] > 0) {
+            <th class="th-month-col">{{ month }}</th>
+            }
+            }
+            <th class="th-total-col">Total (hrs)</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (gen of runHoursMonthlyData()!.generatorNames; track gen; let gi = $index) {
+          <tr class="data-row">
+            <td class="td-vtype">
+              <div class="vtype-name-cell">
+                <span class="vtype-color-bar" [style.background]="runHoursMonthlyData()!.colors[gi]"></span>
+                <span class="vtype-name-text">{{ gen }}</span>
+              </div>
+            </td>
+            @for (month of runHoursMonthlyData()!.monthLabels; track month; let mi = $index) {
+            @if (runHoursMonthlyData()!.monthTotals[mi] > 0) {
+            <td class="td-cell" [class.has-data]="runHoursMonthlyData()!.runHoursMatrix[mi][gi] > 0">
+              @if (runHoursMonthlyData()!.runHoursMatrix[mi][gi] > 0) {
+              <span class="cell-bar"
+                [style.width.%]="runHoursMonthlyData()!.generatorTotals[gi] > 0 ? (runHoursMonthlyData()!.runHoursMatrix[mi][gi] / runHoursMonthlyData()!.generatorTotals[gi]) * 100 : 0"
+                [style.background]="runHoursMonthlyData()!.colors[gi] + '2a'">
+              </span>
+              <span class="cell-val"
+                [title]="gen + ' · ' + month + ' | ' + runHoursMonthlyData()!.runHoursMatrix[mi][gi].toFixed(1) + ' hrs | Fuel: ' + runHoursMonthlyData()!.fuelMatrix[mi][gi].toFixed(1) + ' L | Power: ' + runHoursMonthlyData()!.powerMatrix[mi][gi].toFixed(1) + ' kWh'">
+                {{ formatNum(runHoursMonthlyData()!.runHoursMatrix[mi][gi]) }}
+              </span>
+              } @else {
+              <span class="cell-empty">—</span>
+              }
+            </td>
+            }
+            }
+            <td class="td-row-total">{{ formatNum(runHoursMonthlyData()!.generatorTotals[gi]) }}</td>
+          </tr>
+          }
+        </tbody>
+        <tfoot>
+          <tr class="total-row">
+            <td class="td-vtype footer-label">Total (hrs)</td>
+            @for (month of runHoursMonthlyData()!.monthLabels; track month; let mi = $index) {
+            @if (runHoursMonthlyData()!.monthTotals[mi] > 0) {
+            <td class="td-cell td-col-total">{{ formatNum(runHoursMonthlyData()!.monthTotals[mi]) }}</td>
+            }
+            }
+            <td class="td-row-total grand-total">{{ formatNum(runHoursMonthlyData()!.grandTotal) }}</td>
+          </tr>
+        </tfoot>
+      </table>
+      }
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══ ROW 5: Site Wise Emission Stacked Bar ═══ -->
+<div class="charts-row-full">
+  <div class="chart-card">
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="chart-icon-wrap site-emission-bg"><i class="fas fa-industry"></i></div>
+        <div>
+          <h3>Site Wise Emission Profile</h3>
+          <p>CO₂, NO₂ &amp; CH₄ (kg) stacked by site — generator sources</p>
+        </div>
+      </div>
+    </div>
+    <div class="chart-loader" [class.hidden]="!isSiteEmissionLoading()">
+      <div class="dot-loader generator-dots"><span></span><span></span><span></span></div>
+      <p>Loading...</p>
+    </div>
+    <div class="chart-error" [class.hidden]="!(siteEmissionError() && !isSiteEmissionLoading())">
+      <i class="fas fa-exclamation-triangle"></i>
+      <span>{{ siteEmissionError() }}</span>
+      <button (click)="loadSiteEmissionChart()">Retry</button>
+    </div>
+    <div class="canvas-wrap canvas-wrap-tall" [class.hidden]="!showSiteEmissionCanvas()">
+      <canvas #generatorSiteEmissionCanvas></canvas>
+    </div>
+    <div class="fuel-legend" [class.hidden]="!showSiteEmissionCanvas()">
+      <div class="legend-item">
+        <span class="legend-swatch" style="background:#1D9E75"></span>
+        <span class="legend-label">CO₂ (kg)</span>
+      </div>
+      <div class="legend-item">
+        <span class="legend-swatch" style="background:#EF9F27"></span>
+        <span class="legend-label">NO₂ (kg)</span>
+      </div>
+      <div class="legend-item">
+        <span class="legend-swatch" style="background:#D4537E"></span>
+        <span class="legend-label">CH₄ (kg)</span>
       </div>
     </div>
   </div>

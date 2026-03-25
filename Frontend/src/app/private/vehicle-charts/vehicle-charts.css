@@ -1,36 +1,22 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
-/* Host scoping — ensures vehicle colours never override generator colours */
-:host {
-  display: block;
-  font-family: 'Inter', sans-serif;
-}
+:host { display: block; font-family: 'Inter', sans-serif; }
 
 /* ── KPI GRID ─────────────────────────────────────────────── */
 .module-kpi-grid {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 10px;
-  margin-bottom: 16px;
-  font-family: 'Inter', sans-serif;
+  display: grid; grid-template-columns: repeat(5, 1fr);
+  gap: 10px; margin-bottom: 16px; font-family: 'Inter', sans-serif;
 }
-
 .mkpi-card {
-  border-radius: 12px;
-  padding: 12px 14px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  color: white;
-  box-shadow: 0 3px 10px rgba(0,0,0,0.12);
+  border-radius: 12px; padding: 12px 14px;
+  display: flex; align-items: center; gap: 10px;
+  color: white; box-shadow: 0 3px 10px rgba(0,0,0,0.12);
 }
-
 .mkpi-blue   { background: linear-gradient(135deg, #1e40af, #3b82f6); }
 .mkpi-green  { background: linear-gradient(135deg, #0f5132, #1b7d55); }
 .mkpi-teal   { background: linear-gradient(135deg, #0e7490, #06b6d4); }
 .mkpi-indigo { background: linear-gradient(135deg, #3730a3, #6366f1); }
 .mkpi-violet { background: linear-gradient(135deg, #5b21b6, #8b5cf6); }
-
 .mkpi-icon {
   width: 36px; height: 36px; border-radius: 8px;
   background: rgba(255,255,255,0.22);
@@ -44,331 +30,133 @@
 .mkpi-value.small { font-size: 13px; }
 .mkpi-sub   { font-size: 10px; opacity: .78; }
 
-/* ── TWO-COLUMN CHART GRID ───────────────────────────────── */
-/* Fuel + Emission side by side, Distance full width */
-.charts-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px;
-  margin-bottom: 14px;
-}
-
-.charts-row-full {
-  margin-bottom: 14px;
-}
+/* ── GRID LAYOUTS ─────────────────────────────────────────── */
+.charts-row       { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+.charts-row-full  { margin-bottom: 14px; }
 
 /* ── CHART CARD ───────────────────────────────────────────── */
 .chart-card {
-  background: #fff;
-  border-radius: 14px;
-  padding: 16px 18px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.07);
-  border: 1px solid #e2e8f0;
+  background: #fff; border-radius: 14px; padding: 16px 18px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.07); border: 1px solid #e2e8f0;
   font-family: 'Inter', sans-serif;
 }
-
-.card-header {
-  display: flex; align-items: flex-start;
-  justify-content: space-between;
-  gap: 10px; margin-bottom: 12px;
-}
+.card-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
 .card-header-left { display: flex; align-items: center; gap: 10px; }
-
 .chart-icon-wrap {
   width: 32px; height: 32px; border-radius: 8px;
   display: flex; align-items: center; justify-content: center;
   font-size: 14px; color: white; flex-shrink: 0;
 }
-.vehicle-bg  { background: linear-gradient(135deg, #0f5132, #1b7d55); }
-.emission-bg { background: linear-gradient(135deg, #1e40af, #3b82f6); }
-.distance-bg { background: linear-gradient(135deg, #3730a3, #6366f1); }
+.vehicle-bg      { background: linear-gradient(135deg, #0f5132, #1b7d55); }
+.emission-bg     { background: linear-gradient(135deg, #1e40af, #3b82f6); }
+.distance-bg     { background: linear-gradient(135deg, #3730a3, #6366f1); }
+.vtype-bg        { background: linear-gradient(135deg, #0e7490, #0891b2); }
+.pie-bg          { background: linear-gradient(135deg, #7c3aed, #a855f7); }
+/* NEW */
+.city-emission-bg { background: linear-gradient(135deg, #065f46, #059669); }
 
 .card-header h3 { margin: 0; font-size: 13px; font-weight: 700; color: #1e293b; }
 .card-header p  { margin: 2px 0 0; font-size: 11px; color: #64748b; }
 
 /* ── LOADER ───────────────────────────────────────────────── */
-.chart-loader {
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  height: 200px; gap: 10px;
-}
+.chart-loader { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 200px; gap: 10px; }
 .chart-loader p { color: #94a3b8; font-size: 12px; margin: 0; }
-
 .dot-loader { display: flex; gap: 6px; }
-.dot-loader span {
-  width: 8px; height: 8px; border-radius: 50%;
-  animation: dotBounce 1.2s infinite ease-in-out;
-}
+.dot-loader span { width: 8px; height: 8px; border-radius: 50%; animation: dotBounce 1.2s infinite ease-in-out; }
 .vehicle-dots span { background: #1b7d55; }
 .dot-loader span:nth-child(2) { animation-delay: .2s; }
 .dot-loader span:nth-child(3) { animation-delay: .4s; }
-
 @keyframes dotBounce {
   0%,80%,100% { transform: scale(.6); opacity: .4; }
   40%         { transform: scale(1);  opacity: 1;  }
 }
 
 /* ── ERROR ────────────────────────────────────────────────── */
-.chart-error {
-  display: flex; align-items: center; justify-content: center;
-  gap: 8px; height: 160px; color: #dc2626; font-size: 13px;
-}
-.chart-error button {
-  padding: 4px 12px; background: #fef2f2;
-  border: 1px solid #dc2626; border-radius: 6px;
-  color: #dc2626; cursor: pointer; font-size: 11px;
-}
+.chart-error { display: flex; align-items: center; justify-content: center; gap: 8px; height: 160px; color: #dc2626; font-size: 13px; }
+.chart-error button { padding: 4px 12px; background: #fef2f2; border: 1px solid #dc2626; border-radius: 6px; color: #dc2626; cursor: pointer; font-size: 11px; }
 
-/* ── CANVAS — smaller height ──────────────────────────────── */
+/* ── CANVAS ───────────────────────────────────────────────── */
 .canvas-wrap        { position: relative; width: 100%; height: 220px; }
 .canvas-wrap canvas { width: 100% !important; height: 100% !important; }
+/* Taller canvas for charts with many X-axis labels */
+.canvas-wrap-tall   { height: 300px; }
 
 /* ── LEGEND ───────────────────────────────────────────────── */
-.fuel-legend {
-  display: flex; flex-wrap: wrap;
-  gap: 6px 16px; margin-top: 10px;
-  padding-top: 10px; border-top: 1px solid #f1f5f9;
-}
+.fuel-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-top: 10px; padding-top: 10px; border-top: 1px solid #f1f5f9; }
 .legend-item        { display: flex; align-items: center; gap: 6px; }
 .legend-swatch      { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
-.legend-line-swatch { width: 18px; height: 3px;  border-radius: 2px; flex-shrink: 0; }
+.legend-line-swatch { width: 18px; height: 3px; border-radius: 2px; flex-shrink: 0; }
 .legend-label       { font-size: 11px; color: #475569; font-family: 'Inter', sans-serif; }
 
 /* ── UTILITY ──────────────────────────────────────────────── */
 .hidden { display: none !important; }
 
-/* ── RESPONSIVE ───────────────────────────────────────────── */
-@media (max-width: 1100px) { .module-kpi-grid { grid-template-columns: repeat(3,1fr); } }
-@media (max-width: 900px)  {
-  .charts-row { grid-template-columns: 1fr; }
-  .module-kpi-grid { grid-template-columns: repeat(2,1fr); }
-}
-@media (max-width: 480px)  { .module-kpi-grid { grid-template-columns: 1fr; } }
-
+/* ── PIE — centered ──────────────────────────────────────── */
+.pie-chart-layout { display: flex; justify-content: center; align-items: center; padding: 8px 0 4px; }
+.pie-canvas-wrap  { width: 300px; height: 300px; flex-shrink: 0; }
+.pie-canvas-wrap canvas { width: 100% !important; height: 100% !important; }
 
 /* ══════════════════════════════════════════════════════════════
    VEHICLE TYPE × MONTH PIVOT TABLE
-   Rows = Vehicle Types (left), Columns = Months (header)
 ══════════════════════════════════════════════════════════════ */
-.vtype-bg { background: linear-gradient(135deg, #0e7490, #0891b2); }
-
-/* ── Scrollable outer wrapper ── */
 .vtype-table-wrap {
-  width: 100%;
-  overflow-x: auto;
-  margin-top: 8px;
-  border-radius: 12px;
-  border: 1px solid #e2e8f0;
+  width: 100%; overflow-x: auto; margin-top: 8px;
+  border-radius: 12px; border: 1px solid #e2e8f0;
   box-shadow: 0 1px 6px rgba(0,0,0,0.05);
 }
+.vtype-table { width: 100%; border-collapse: collapse; font-family: 'Inter', sans-serif; font-size: 12px; white-space: nowrap; min-width: 600px; }
 
-/* ── Table base ── */
-.vtype-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-family: 'Inter', sans-serif;
-  font-size: 12px;
-  white-space: nowrap;
-  min-width: 600px;
-}
-
-/* ── HEADER ── */
-.vtype-table thead tr {
-  background: #0f5132;
-}
-
-/* Top-left corner — Vehicle Type label */
+/* Header */
+.vtype-table thead tr { background: #0f5132; }
 .th-vtype {
-  padding: 12px 16px;
-  text-align: left;
-  font-size: 10px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: .08em;
-  color: #a7f3d0;
-  background: #0f5132;
-  position: sticky;
-  left: 0;
-  z-index: 3;
-  border-right: 1px solid rgba(255,255,255,0.15);
-  min-width: 160px;
+  padding: 12px 16px; text-align: left; font-size: 10px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .08em; color: #a7f3d0; background: #0f5132;
+  position: sticky; left: 0; z-index: 3; border-right: 1px solid rgba(255,255,255,0.15); min-width: 160px;
 }
-
-/* Month column headers */
 .th-month-col {
-  padding: 12px 8px;
-  text-align: center;
-  font-size: 11px;
-  font-weight: 700;
-  color: #ffffff;
-  min-width: 76px;
-  letter-spacing: .03em;
-  border-left: 1px solid rgba(255,255,255,0.08);
+  padding: 12px 8px; text-align: center; font-size: 11px; font-weight: 700; color: #fff;
+  min-width: 76px; letter-spacing: .03em; border-left: 1px solid rgba(255,255,255,0.08);
 }
-
-/* Total column header */
 .th-total-col {
-  padding: 12px 14px;
-  text-align: right;
-  font-size: 10px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: .06em;
-  color: #6ee7a0;
-  background: #0a3d26;
-  border-left: 1px solid rgba(255,255,255,0.2);
-  min-width: 90px;
+  padding: 12px 14px; text-align: right; font-size: 10px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .06em; color: #6ee7a0; background: #0a3d26;
+  border-left: 1px solid rgba(255,255,255,0.2); min-width: 90px;
 }
 
-/* ── BODY ROWS ── */
-.data-row {
-  border-bottom: 1px solid #f1f5f9;
-  transition: background .1s;
-}
-.data-row:nth-child(even) {
-  background: #f8fafc;
-}
-.data-row:last-child {
-  border-bottom: none;
-}
-.data-row:hover {
-  background: #ecfdf5 !important;
-}
-.data-row:hover .td-vtype {
-  background: #d1fae5 !important;
-}
+/* Body rows */
+.data-row { border-bottom: 1px solid #f1f5f9; transition: background .1s; }
+.data-row:nth-child(even) { background: #f8fafc; }
+.data-row:last-child { border-bottom: none; }
+.data-row:hover { background: #ecfdf5 !important; }
+.data-row:hover .td-vtype { background: #d1fae5 !important; }
 
-/* Vehicle type name cell — sticky left */
-.td-vtype {
-  padding: 0;
-  background: #ffffff;
-  position: sticky;
-  left: 0;
-  border-right: 2px solid #e2e8f0;
-  z-index: 1;
-  transition: background .1s;
-}
+.td-vtype { padding: 0; background: #fff; position: sticky; left: 0; border-right: 2px solid #e2e8f0; z-index: 1; transition: background .1s; }
+.vtype-name-cell { display: flex; align-items: center; gap: 0; padding: 9px 14px; }
+.vtype-color-bar { width: 4px; min-height: 28px; border-radius: 3px; flex-shrink: 0; margin-right: 10px; align-self: stretch; }
+.vtype-name-text { font-size: 12px; font-weight: 600; color: #1e293b; white-space: nowrap; }
 
-.vtype-name-cell {
-  display: flex;
-  align-items: center;
-  gap: 0;
-  padding: 9px 14px;
-}
-
-/* Coloured left accent strip */
-.vtype-color-bar {
-  width: 4px;
-  min-height: 28px;
-  border-radius: 3px;
-  flex-shrink: 0;
-  margin-right: 10px;
-  align-self: stretch;
-}
-
-.vtype-name-text {
-  font-size: 12px;
-  font-weight: 600;
-  color: #1e293b;
-  white-space: nowrap;
-}
-
-/* ── DATA CELL ── */
-/* The cell itself uses a CSS linear-gradient background for the mini bar
-   so text always sits on top cleanly — no z-index issues */
-.td-cell {
-  text-align: center;
-  vertical-align: middle;
-  padding: 0;
-  min-width: 76px;
-  border-left: 1px solid #f1f5f9;
-}
-
-/* Value text — always visible, no positioning tricks */
-.cell-val {
-  display: block;
-  padding: 9px 8px;
-  font-size: 12px;
-  font-weight: 600;
-  color: #1e293b;
-  text-align: center;
-  cursor: default;
-  position: relative;
-  z-index: 1;
-}
-
-/* Cells with data get a subtle gradient background acting as bar */
+.td-cell { text-align: center; vertical-align: middle; padding: 0; min-width: 76px; border-left: 1px solid #f1f5f9; }
+.cell-val { display: block; padding: 9px 8px; font-size: 12px; font-weight: 600; color: #1e293b; text-align: center; cursor: default; position: relative; z-index: 1; }
 .td-cell.has-data {
-  background: linear-gradient(
-    to top,
+  background: linear-gradient(to top,
     var(--cell-bar-color, rgba(55,138,221,0.12)) var(--cell-bar-height, 20%),
     transparent var(--cell-bar-height, 20%)
   );
 }
+.td-cell.has-data:hover { background: rgba(3,105,161,0.08); }
+.td-cell.has-data:hover .cell-val { color: #0369a1; }
+.cell-empty { display: block; padding: 9px 8px; color: #e2e8f0; text-align: center; font-size: 14px; font-weight: 300; }
 
-.td-cell.has-data:hover {
-  background: rgba(3,105,161,0.08);
-}
-.td-cell.has-data:hover .cell-val {
-  color: #0369a1;
-}
+.td-row-total { padding: 9px 14px; text-align: right; font-weight: 700; color: #0f5132; background: #f0fdf4; border-left: 2px solid #bbf7d0; font-size: 12px; }
 
-/* Empty cell */
-.cell-empty {
-  display: block;
-  padding: 9px 8px;
-  color: #e2e8f0;
-  text-align: center;
-  font-size: 14px;
-  font-weight: 300;
-}
+/* Footer */
+.vtype-table tfoot .total-row { background: #f0f9ff; border-top: 2px solid #bae6fd; }
+.footer-label { font-size: 11px; font-weight: 700; color: #0369a1; padding: 10px 14px; background: #f0f9ff !important; border-right: 2px solid #e2e8f0; }
+.td-col-total { padding: 10px 8px; text-align: center; font-weight: 700; color: #0369a1; font-size: 12px; border-left: 1px solid #e2e8f0; }
+.grand-total { color: #0f5132 !important; font-size: 13px !important; font-weight: 800 !important; background: #dcfce7 !important; border-left: 2px solid #86efac !important; }
 
-/* Row total */
-.td-row-total {
-  padding: 9px 14px;
-  text-align: right;
-  font-weight: 700;
-  color: #0f5132;
-  background: #f0fdf4;
-  border-left: 2px solid #bbf7d0;
-  font-size: 12px;
-}
-
-/* ── FOOTER ── */
-.vtype-table tfoot .total-row {
-  background: #f0f9ff;
-  border-top: 2px solid #bae6fd;
-}
-
-.footer-label {
-  font-size: 11px;
-  font-weight: 700;
-  color: #0369a1;
-  padding: 10px 14px;
-  background: #f0f9ff !important;
-  border-right: 2px solid #e2e8f0;
-}
-
-.td-col-total {
-  padding: 10px 8px;
-  text-align: center;
-  font-weight: 700;
-  color: #0369a1;
-  font-size: 12px;
-  border-left: 1px solid #e2e8f0;
-}
-
-.grand-total {
-  color: #0f5132 !important;
-  font-size: 13px !important;
-  font-weight: 800 !important;
-  background: #dcfce7 !important;
-  border-left: 2px solid #86efac !important;
-}
-
-/* ── Responsive ── */
-@media (max-width: 768px) {
-  .vtype-table { font-size: 11px; }
-  .th-vtype, .td-vtype { min-width: 120px; }
-  .th-month-col, .td-cell { min-width: 60px; }
-}
+/* ── RESPONSIVE ───────────────────────────────────────────── */
+@media (max-width: 1100px) { .module-kpi-grid { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 900px)  { .charts-row { grid-template-columns: 1fr; } .module-kpi-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 768px)  { .vtype-table { font-size: 11px; } .th-vtype, .td-vtype { min-width: 120px; } .th-month-col, .td-cell { min-width: 60px; } }
+@media (max-width: 480px)  { .module-kpi-grid { grid-template-columns: 1fr; } .pie-canvas-wrap { width: 240px; height: 240px; } }

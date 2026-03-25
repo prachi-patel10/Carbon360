@@ -33,7 +33,7 @@ export interface VehicleDistanceChartResponse {
   labels: string[]; distanceData: number[]; tripData: number[]; fuelData: number[];
 }
 
-// ── NEW: Load Factor ──────────────────────────────────────────
+// ── Load Factor ───────────────────────────────────────────────
 export interface LoadFactorLineDataset {
   generatorName: string;
   color: string;
@@ -47,18 +47,57 @@ export interface GeneratorLoadFactorChartResponse {
   datasets: LoadFactorLineDataset[];
 }
 
-
-// ── NEW: Vehicle Type Wise Distance (pivot) ──────────────────
+// ── Vehicle Type Wise Distance (pivot) ───────────────────────
 export interface VehicleTypeDistancePivotResponse {
-  monthLabels:    string[];           // Jan–Dec
-  vehicleTypes:   string[];           // column headers
-  colors:         string[];           // one per vehicle type
-  distanceMatrix: number[][];         // [monthIdx][typeIdx]
+  monthLabels:    string[];
+  vehicleTypes:   string[];
+  colors:         string[];
+  distanceMatrix: number[][];
   tripsMatrix:    number[][];
   fuelMatrix:     number[][];
-  monthTotals:    number[];           // row totals
-  typeTotals:     number[];           // column totals
+  monthTotals:    number[];
+  typeTotals:     number[];
   grandTotal:     number;
+}
+
+// ── Generator Run Hours Monthly Pivot ────────────────────────
+export interface GeneratorRunHoursMonthlyPivotResponse {
+  monthLabels:      string[];
+  generatorNames:   string[];
+  colors:           string[];
+  runHoursMatrix:   number[][];
+  fuelMatrix:       number[][];
+  powerMatrix:      number[][];
+  monthTotals:      number[];
+  generatorTotals:  number[];
+  grandTotal:       number;
+}
+
+// ── City Wise Emissions (Vehicle) ────────────────────────────
+export interface CityEmissionResponse {
+  cityName:    string;
+  totalCO2:    number;
+  totalNO2:    number;
+  totalCH4:    number;
+  totalCO2e:   number;
+}
+
+// ── Site Wise Emissions (Generator) ─────────────────────────
+export interface SiteEmissionResponse {
+  siteName:    string;
+  totalCO2:    number;
+  totalNO2:    number;
+  totalCH4:    number;
+  totalCO2e:   number;
+}
+
+export interface DashboardSummaryResponse {
+  totalCO2e: number;
+  totalCO2: number;
+  totalNO2: number;
+  totalCH4: number;
+  totalFuelConsumed: number;
+  totalDistanceKM: number;
 }
 
 export interface ApiResponse<T> { status: boolean; data: T; }
@@ -117,15 +156,39 @@ export class DashboardService {
     return this.http.get<ApiResponse<VehicleDistanceChartResponse>>(`${this.base}/Chart/VehicleDistanceMonthly?year=${year}`);
   }
 
-  // ── NEW ───────────────────────────────────────────────────────
   getGeneratorLoadFactor(year: number): Observable<ApiResponse<GeneratorLoadFactorChartResponse>> {
     return this.http.get<ApiResponse<GeneratorLoadFactorChartResponse>>(`${this.base}/Chart/GeneratorLoadFactor?year=${year}`);
   }
 
-  // ── NEW: Vehicle Type Wise Distance ──────────────────────────
   getVehicleTypeWiseDistance(year: number): Observable<ApiResponse<VehicleTypeDistancePivotResponse>> {
     return this.http.get<ApiResponse<VehicleTypeDistancePivotResponse>>(
       `${this.base}/Chart/VehicleTypeDistance?year=${year}`
+    );
+  }
+
+  getGeneratorRunHoursMonthly(year: number): Observable<ApiResponse<GeneratorRunHoursMonthlyPivotResponse>> {
+    return this.http.get<ApiResponse<GeneratorRunHoursMonthlyPivotResponse>>(
+      `${this.base}/Chart/GeneratorRunHoursMonthly?year=${year}`
+    );
+  }
+
+  // ── NEW: City Wise Emissions (Vehicle) ───────────────────────
+  getVehicleCityEmissions(year: number): Observable<ApiResponse<CityEmissionResponse[]>> {
+    return this.http.get<ApiResponse<CityEmissionResponse[]>>(
+      `${this.base}/Chart/VehicleCityEmissions?year=${year}`
+    );
+  }
+
+  // ── NEW: Site Wise Emissions (Generator) ────────────────────
+  getGeneratorSiteEmissions(year: number): Observable<ApiResponse<SiteEmissionResponse[]>> {
+    return this.http.get<ApiResponse<SiteEmissionResponse[]>>(
+      `${this.base}/Chart/GeneratorSiteEmissions?year=${year}`
+    );
+  }
+
+  getDashboardSummary(year: number): Observable<ApiResponse<DashboardSummaryResponse>> {
+    return this.http.get<ApiResponse<DashboardSummaryResponse>>(
+      `${this.base}/Chart/DashboardSummary?year=${year}`
     );
   }
 }

@@ -42,7 +42,7 @@
 <div class="charts-row">
 
   <!-- 1. Fuel Type Wise Stacked Bar -->
-  <div class="chart-card" id="fuelChartExport">
+  <div class="chart-card">
     <div class="card-header">
       <div class="card-header-left">
         <div class="chart-icon-wrap vehicle-bg"><i class="fas fa-chart-bar"></i></div>
@@ -51,11 +51,6 @@
           <p>Stacked by fuel type</p>
         </div>
       </div>
-      <!-- ✅ ADD THIS BUTTON -->
-  <!-- <button (click)="exportChartToExcel('fuelChart', 'Fuel Chart')">
-    Export Excel
-  </button> -->
-    <button (click)="exportFuelChart()">Export Excel</button>
     </div>
     <div class="chart-loader" [class.hidden]="!isFuelLoading()">
       <div class="dot-loader vehicle-dots"><span></span><span></span><span></span></div>
@@ -71,16 +66,16 @@
     </div>
     <div class="fuel-legend" [class.hidden]="!showFuelCanvas()">
       @for (item of fuelLegend(); track item.fuelType) {
-        <div class="legend-item">
-          <span class="legend-swatch" [style.background]="item.color"></span>
-          <span class="legend-label">{{ item.fuelType }}</span>
-        </div>
+      <div class="legend-item">
+        <span class="legend-swatch" [style.background]="item.color"></span>
+        <span class="legend-label">{{ item.fuelType }}</span>
+      </div>
       }
     </div>
   </div>
 
   <!-- 2. Monthly Emission Line -->
-  <div class="chart-card" id="emissionChart">
+  <div class="chart-card">
     <div class="card-header">
       <div class="card-header-left">
         <div class="chart-icon-wrap emission-bg"><i class="fas fa-chart-line"></i></div>
@@ -89,7 +84,6 @@
           <p>CO2e, CO2, NO2 &amp; CH4 (kg)</p>
         </div>
       </div>
-      <button (click)="exportEmissionChart()">Export Excel</button>
     </div>
     <div class="chart-loader" [class.hidden]="!isEmissionLoading()">
       <div class="dot-loader vehicle-dots"><span></span><span></span><span></span></div>
@@ -105,10 +99,10 @@
     </div>
     <div class="fuel-legend" [class.hidden]="!showEmissionCanvas()">
       @for (item of emissionLegend(); track item.label) {
-        <div class="legend-item">
-          <span class="legend-line-swatch" [style.background]="item.color"></span>
-          <span class="legend-label">{{ item.label }}</span>
-        </div>
+      <div class="legend-item">
+        <span class="legend-line-swatch" [style.background]="item.color"></span>
+        <span class="legend-label">{{ item.label }}</span>
+      </div>
       }
     </div>
   </div>
@@ -117,7 +111,7 @@
 
 <!-- ═══ ROW 2: Distance full width ═══ -->
 <div class="charts-row-full">
-  <div class="chart-card" id="distanceChart">
+  <div class="chart-card">
     <div class="card-header">
       <div class="card-header-left">
         <div class="chart-icon-wrap distance-bg"><i class="fas fa-route"></i></div>
@@ -152,7 +146,6 @@
   </div>
 </div>
 
-
 <!-- ═══ ROW 3: Vehicle Type × Month Pivot Table ═══ -->
 <div class="charts-row-full">
   <div class="chart-card">
@@ -165,109 +158,143 @@
         </div>
       </div>
     </div>
-
-    <!-- Loader -->
     <div class="chart-loader" [class.hidden]="!isVtypeLoading()">
       <div class="dot-loader vehicle-dots"><span></span><span></span><span></span></div>
       <p>Loading...</p>
     </div>
-
-    <!-- Error -->
     <div class="chart-error" [class.hidden]="!(vtypeError() && !isVtypeLoading())">
       <i class="fas fa-exclamation-triangle"></i>
       <span>{{ vtypeError() }}</span>
       <button (click)="loadVtypeChart()">Retry</button>
     </div>
-
-
-    <!-- Pivot Table: rows = Vehicle Types, columns = Months -->
     <div class="vtype-table-wrap" [class.hidden]="!showVtypeTable()">
       @if (vtypeTableRows()) {
-        <table class="vtype-table">
-
-          <!-- ── Header: Vehicle Type | Jan | Feb | Mar | ... | Total ── -->
-          <thead>
-            <tr>
-              <th class="th-vtype">Vehicle Type</th>
-              @for (month of vtypeTableRows()!.monthLabels; track month; let mi = $index) {
-                <!-- Only show months that have data across any vehicle type -->
-                @if (vtypeTableRows()!.monthTotals[mi] > 0) {
-                  <th class="th-month-col">{{ month }}</th>
-                }
-              }
-              <th class="th-total-col">Total</th>
-            </tr>
-          </thead>
-
-          <!-- ── Body: one row per vehicle type ── -->
-          <tbody>
-            @for (vt of vtypeTableRows()!.vehicleTypes; track vt; let ti = $index) {
-              <tr class="data-row">
-
-                <!-- Vehicle type name cell -->
-                <td class="td-vtype">
-                  <div class="vtype-name-cell">
-                    <span class="vtype-color-bar" [style.background]="vtypeTableRows()!.colors[ti]"></span>
-                    <span class="vtype-name-text">{{ vt }}</span>
-                  </div>
-                </td>
-
-                <!-- One cell per month — skip empty months -->
-                @for (month of vtypeTableRows()!.monthLabels; track month; let mi = $index) {
-                  @if (vtypeTableRows()!.monthTotals[mi] > 0) {
-                    <td class="td-cell"
-                        [class.has-data]="vtypeTableRows()!.distanceMatrix[mi][ti] > 0">
-                      @if (vtypeTableRows()!.distanceMatrix[mi][ti] > 0) {
-                        <!-- Mini bar width = % of this type's annual total -->
-                        <span class="cell-bar"
-                              [style.width.%]="vtypeTableRows()!.typeTotals[ti] > 0
-                                ? (vtypeTableRows()!.distanceMatrix[mi][ti] / vtypeTableRows()!.typeTotals[ti]) * 100
-                                : 0"
-                              [style.background]="vtypeTableRows()!.colors[ti] + '2a'">
-                        </span>
-                        <span class="cell-val"
-                              [title]="vt + ' · ' + month
-                                + ' | ' + vtypeTableRows()!.distanceMatrix[mi][ti].toFixed(1) + ' km'
-                                + ' | Trips: ' + vtypeTableRows()!.tripsMatrix[mi][ti]
-                                + ' | Fuel: ' + vtypeTableRows()!.fuelMatrix[mi][ti].toFixed(1) + ' L'">
-                          {{ formatNum(vtypeTableRows()!.distanceMatrix[mi][ti]) }}
-                        </span>
-                      } @else {
-                        <span class="cell-empty">—</span>
-                      }
-                    </td>
-                  }
-                }
-
-                <!-- Row total for this vehicle type -->
-                <td class="td-row-total">
-                  {{ formatNum(vtypeTableRows()!.typeTotals[ti]) }}
-                </td>
-
-              </tr>
+      <table class="vtype-table">
+        <thead>
+          <tr>
+            <th class="th-vtype">Vehicle Type</th>
+            @for (month of vtypeTableRows()!.monthLabels; track month; let mi = $index) {
+            @if (vtypeTableRows()!.monthTotals[mi] > 0) {
+            <th class="th-month-col">{{ month }}</th>
             }
-          </tbody>
-
-          <!-- ── Footer: monthly totals ── -->
-          <tfoot>
-            <tr class="total-row">
-              <td class="td-vtype footer-label">Total (km)</td>
-              @for (month of vtypeTableRows()!.monthLabels; track month; let mi = $index) {
-                @if (vtypeTableRows()!.monthTotals[mi] > 0) {
-                  <td class="td-cell td-col-total">
-                    {{ formatNum(vtypeTableRows()!.monthTotals[mi]) }}
-                  </td>
-                }
+            }
+            <th class="th-total-col">Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (vt of vtypeTableRows()!.vehicleTypes; track vt; let ti = $index) {
+          <tr class="data-row">
+            <td class="td-vtype">
+              <div class="vtype-name-cell">
+                <span class="vtype-color-bar" [style.background]="vtypeTableRows()!.colors[ti]"></span>
+                <span class="vtype-name-text">{{ vt }}</span>
+              </div>
+            </td>
+            @for (month of vtypeTableRows()!.monthLabels; track month; let mi = $index) {
+            @if (vtypeTableRows()!.monthTotals[mi] > 0) {
+            <td class="td-cell" [class.has-data]="vtypeTableRows()!.distanceMatrix[mi][ti] > 0">
+              @if (vtypeTableRows()!.distanceMatrix[mi][ti] > 0) {
+              <span class="cell-bar"
+                [style.width.%]="vtypeTableRows()!.typeTotals[ti] > 0 ? (vtypeTableRows()!.distanceMatrix[mi][ti] / vtypeTableRows()!.typeTotals[ti]) * 100 : 0"
+                [style.background]="vtypeTableRows()!.colors[ti] + '2a'">
+              </span>
+              <span class="cell-val"
+                [title]="vt + ' · ' + month + ' | ' + vtypeTableRows()!.distanceMatrix[mi][ti].toFixed(1) + ' km | Trips: ' + vtypeTableRows()!.tripsMatrix[mi][ti] + ' | Fuel: ' + vtypeTableRows()!.fuelMatrix[mi][ti].toFixed(1) + ' L'">
+                {{ formatNum(vtypeTableRows()!.distanceMatrix[mi][ti]) }}
+              </span>
+              } @else {
+              <span class="cell-empty">—</span>
               }
-              <td class="td-row-total grand-total">
-                {{ formatNum(vtypeTotalDist()) }}
-              </td>
-            </tr>
-          </tfoot>
-
-        </table>
+            </td>
+            }
+            }
+            <td class="td-row-total">{{ formatNum(vtypeTableRows()!.typeTotals[ti]) }}</td>
+          </tr>
+          }
+        </tbody>
+        <tfoot>
+          <tr class="total-row">
+            <td class="td-vtype footer-label">Total (km)</td>
+            @for (month of vtypeTableRows()!.monthLabels; track month; let mi = $index) {
+            @if (vtypeTableRows()!.monthTotals[mi] > 0) {
+            <td class="td-cell td-col-total">{{ formatNum(vtypeTableRows()!.monthTotals[mi]) }}</td>
+            }
+            }
+            <td class="td-row-total grand-total">{{ formatNum(vtypeTotalDist()) }}</td>
+          </tr>
+        </tfoot>
+      </table>
       }
     </div>
+  </div>
+</div>
 
+<!-- ═══ ROW 4: Vehicle Type Distance Pie ═══ -->
+<div class="charts-row-full">
+  <div class="chart-card">
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="chart-icon-wrap pie-bg"><i class="fas fa-chart-pie"></i></div>
+        <div>
+          <h3>Vehicle Type Distance Share</h3>
+          <p>Distribution of total distance (km) by vehicle type</p>
+        </div>
+      </div>
+    </div>
+    <div class="chart-loader" [class.hidden]="!isVtypeLoading()">
+      <div class="dot-loader vehicle-dots"><span></span><span></span><span></span></div>
+      <p>Loading...</p>
+    </div>
+    <div class="chart-error" [class.hidden]="!(vtypeError() && !isVtypeLoading())">
+      <i class="fas fa-exclamation-triangle"></i>
+      <span>{{ vtypeError() }}</span>
+      <button (click)="loadVtypeChart()">Retry</button>
+    </div>
+    <div class="pie-chart-layout" [class.hidden]="!showVtypeTable()">
+      <div class="canvas-wrap pie-canvas-wrap">
+        <canvas #vehicleDistancePieCanvas></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ ROW 5: City Wise Emission Stacked Bar ═══ -->
+<div class="charts-row-full">
+  <div class="chart-card">
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="chart-icon-wrap city-emission-bg"><i class="fas fa-city"></i></div>
+        <div>
+          <h3>City Wise Emission Profile</h3>
+          <p>CO₂, NO₂ &amp; CH₄ (kg) stacked by city — vehicle sources</p>
+        </div>
+      </div>
+    </div>
+    <div class="chart-loader" [class.hidden]="!isCityEmissionLoading()">
+      <div class="dot-loader vehicle-dots"><span></span><span></span><span></span></div>
+      <p>Loading...</p>
+    </div>
+    <div class="chart-error" [class.hidden]="!(cityEmissionError() && !isCityEmissionLoading())">
+      <i class="fas fa-exclamation-triangle"></i>
+      <span>{{ cityEmissionError() }}</span>
+      <button (click)="loadCityEmissionChart()">Retry</button>
+    </div>
+    <div class="canvas-wrap canvas-wrap-tall" [class.hidden]="!showCityEmissionCanvas()">
+      <canvas #vehicleCityEmissionCanvas></canvas>
+    </div>
+    <div class="fuel-legend" [class.hidden]="!showCityEmissionCanvas()">
+      <div class="legend-item">
+        <span class="legend-swatch" style="background:#1D9E75"></span>
+        <span class="legend-label">CO₂ (kg)</span>
+      </div>
+      <div class="legend-item">
+        <span class="legend-swatch" style="background:#EF9F27"></span>
+        <span class="legend-label">NO₂ (kg)</span>
+      </div>
+      <div class="legend-item">
+        <span class="legend-swatch" style="background:#D4537E"></span>
+        <span class="legend-label">CH₄ (kg)</span>
+      </div>
+    </div>
   </div>
 </div>

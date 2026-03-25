@@ -13,14 +13,9 @@ import {
   FuelCombinedChartResponse,
   MonthlyEmissionChartResponse,
   VehicleDistanceChartResponse,
-  VehicleTypeDistancePivotResponse
+  VehicleTypeDistancePivotResponse,
+  CityEmissionResponse
 } from '../dashboard/dashboard-service';
-import { ChartExportService } from './chart-export.service';
-
-// import html2canvas from 'html2canvas';
-// import ExcelJS from 'exceljs';
-// //import * as XLSX from 'xlsx';
-// import { saveAs } from 'file-saver';
 
 Chart.register(...registerables);
 
@@ -35,19 +30,28 @@ export class VehicleCharts implements OnInit, AfterViewInit, OnChanges, OnDestro
 
   @Input() year: number = new Date().getFullYear();
 
-  @ViewChild('vehicleFuelCanvas')     fuelCanvasRef!: ElementRef<HTMLCanvasElement>;
-  @ViewChild('vehicleEmissionCanvas') emissionCanvasRef!: ElementRef<HTMLCanvasElement>;
-  @ViewChild('vehicleDistanceCanvas') distanceCanvasRef!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('vehicleFuelCanvas')          fuelCanvasRef!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('vehicleEmissionCanvas')      emissionCanvasRef!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('vehicleDistanceCanvas')      distanceCanvasRef!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('vehicleDistancePieCanvas')   distancePieCanvasRef!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('vehicleCityEmissionCanvas')  cityEmissionCanvasRef!: ElementRef<HTMLCanvasElement>;
 
   // ── Signals ──────────────────────────────────────────────────
-  isFuelLoading     = signal(false);
-  isEmissionLoading = signal(false);
-  isDistanceLoading = signal(false);
-  fuelError         = signal('');
-  emissionError     = signal('');
-  distanceError     = signal('');
-  fuelLegend        = signal<{ fuelType: string; color: string }[]>([]);
-  emissionLegend    = signal<{ label: string; color: string }[]>([]);
+  isFuelLoading         = signal(false);
+  isEmissionLoading     = signal(false);
+  isDistanceLoading     = signal(false);
+  isVtypeLoading        = signal(false);
+  isCityEmissionLoading = signal(false);
+
+  fuelError             = signal('');
+  emissionError         = signal('');
+  distanceError         = signal('');
+  vtypeError            = signal('');
+  cityEmissionError     = signal('');
+
+  fuelLegend      = signal<{ fuelType: string; color: string }[]>([]);
+  emissionLegend  = signal<{ label: string; color: string }[]>([]);
+  pieLegend       = signal<{ label: string; color: string; value: number; pct: string }[]>([]);
 
   vehicleTotal    = signal(0);
   topFuelType     = signal('-');
@@ -56,44 +60,53 @@ export class VehicleCharts implements OnInit, AfterViewInit, OnChanges, OnDestro
   totalDistanceKM = signal(0);
   totalTrips      = signal(0);
 
-  isVtypeLoading = signal(false);
-  vtypeError     = signal('');
   vtypeTableRows = signal<VehicleTypeDistancePivotResponse | null>(null);
 
-  showFuelCanvas     = computed(() => !this.isFuelLoading()     && !this.fuelError());
-  showEmissionCanvas = computed(() => !this.isEmissionLoading() && !this.emissionError());
-  showDistanceCanvas = computed(() => !this.isDistanceLoading() && !this.distanceError());
-  showVtypeTable     = computed(() => !this.isVtypeLoading()    && !this.vtypeError());
+  showFuelCanvas         = computed(() => !this.isFuelLoading()         && !this.fuelError());
+  showEmissionCanvas     = computed(() => !this.isEmissionLoading()     && !this.emissionError());
+  showDistanceCanvas     = computed(() => !this.isDistanceLoading()     && !this.distanceError());
+  showVtypeTable         = computed(() => !this.isVtypeLoading()        && !this.vtypeError());
+  showCityEmissionCanvas = computed(() => !this.isCityEmissionLoading() && !this.cityEmissionError());
 
-  vtypeTotalDist  = computed(() => (this.vtypeTableRows()?.grandTotal ?? 0));
-  vtypeTotalTrips = computed(() => (this.vtypeTableRows()?.tripsMatrix ?? []).reduce((sum: number, row: number[]) => sum + row.reduce((a: number, b: number) => a + b, 0), 0));
-  vtypeTotalFuel  = computed(() => (this.vtypeTableRows()?.fuelMatrix  ?? []).reduce((sum: number, row: number[]) => sum + row.reduce((a: number, b: number) => a + b, 0), 0));
+  vtypeTotalDist  = computed(() => this.vtypeTableRows()?.grandTotal ?? 0);
+  vtypeTotalTrips = computed(() =>
+    (this.vtypeTableRows()?.tripsMatrix ?? []).reduce((s, r) => s + r.reduce((a, b) => a + b, 0), 0));
+  vtypeTotalFuel  = computed(() =>
+    (this.vtypeTableRows()?.fuelMatrix  ?? []).reduce((s, r) => s + r.reduce((a, b) => a + b, 0), 0));
 
-  private fuelChart:     Chart | null = null;
-  private emissionChart: Chart | null = null;
-  private distanceChart: Chart | null = null;
+  // ── Chart instances ───────────────────────────────────────────
+  private fuelChart:         Chart | null = null;
+  private emissionChart:     Chart | null = null;
+  private distanceChart:     Chart | null = null;
+  private distancePieChart:  Chart | null = null;
+  private cityEmissionChart: Chart | null = null;
+
   private destroy$  = new Subject<void>();
   private viewReady = false;
 
-  private _lastFuelData:     FuelCombinedChartResponse        | null = null;
-  private _lastEmissionData: MonthlyEmissionChartResponse     | null = null;
-  private _lastDistanceData: VehicleDistanceChartResponse     | null = null;
-  private _lastVtypeData:    VehicleTypeDistancePivotResponse | null = null;
-  private pendingFuel:     FuelCombinedChartResponse        | null = null;
-  private pendingEmission: MonthlyEmissionChartResponse     | null = null;
-  private pendingDistance: VehicleDistanceChartResponse     | null = null;
-  private pendingVtype:    VehicleTypeDistancePivotResponse | null = null;
+  private _lastFuelData:         FuelCombinedChartResponse        | null = null;
+  private _lastEmissionData:     MonthlyEmissionChartResponse     | null = null;
+  private _lastDistanceData:     VehicleDistanceChartResponse     | null = null;
+  private _lastVtypeData:        VehicleTypeDistancePivotResponse | null = null;
+  private _lastCityEmissionData: CityEmissionResponse[]           | null = null;
 
-  constructor(private svc: DashboardService, private router: Router,private exportSvc: ChartExportService) {}
+  private pendingFuel:         FuelCombinedChartResponse        | null = null;
+  private pendingEmission:     MonthlyEmissionChartResponse     | null = null;
+  private pendingDistance:     VehicleDistanceChartResponse     | null = null;
+  private pendingVtype:        VehicleTypeDistancePivotResponse | null = null;
+  private pendingCityEmission: CityEmissionResponse[]           | null = null;
+
+  constructor(private svc: DashboardService, private router: Router) {}
 
   ngOnInit(): void { this.loadAll(); }
 
   ngAfterViewInit(): void {
     this.viewReady = true;
-    if (this.pendingFuel)     { this.deferRenderFuel(this.pendingFuel);         this.pendingFuel     = null; }
-    if (this.pendingEmission) { this.deferRenderEmission(this.pendingEmission); this.pendingEmission = null; }
-    if (this.pendingDistance) { this.deferRenderDistance(this.pendingDistance); this.pendingDistance = null; }
-    if (this.pendingVtype)    { this.deferRenderVtype(this.pendingVtype);       this.pendingVtype    = null; }
+    if (this.pendingFuel)         { this.deferRenderFuel(this.pendingFuel);                   this.pendingFuel         = null; }
+    if (this.pendingEmission)     { this.deferRenderEmission(this.pendingEmission);           this.pendingEmission     = null; }
+    if (this.pendingDistance)     { this.deferRenderDistance(this.pendingDistance);           this.pendingDistance     = null; }
+    if (this.pendingVtype)        { this.deferRenderVtype(this.pendingVtype);                 this.pendingVtype        = null; }
+    if (this.pendingCityEmission) { this.deferRenderCityEmission(this.pendingCityEmission);   this.pendingCityEmission = null; }
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -102,17 +115,19 @@ export class VehicleCharts implements OnInit, AfterViewInit, OnChanges, OnDestro
 
   ngOnDestroy(): void {
     this.destroy$.next(); this.destroy$.complete();
-    this.fuelChart?.destroy(); this.emissionChart?.destroy(); this.distanceChart?.destroy();
+    this.fuelChart?.destroy();
+    this.emissionChart?.destroy();
+    this.distanceChart?.destroy();
+    this.distancePieChart?.destroy();
+    this.cityEmissionChart?.destroy();
   }
 
   loadAll(): void {
-    this.loadFuelChart(); this.loadEmissionChart();
-    this.loadDistanceChart(); this.loadVtypeChart();
-  }
-
-  refreshCharts(): void {
-    this.deferRenderFuel(null); this.deferRenderEmission(null);
-    this.deferRenderDistance(null); this.deferRenderVtype(null);
+    this.loadFuelChart();
+    this.loadEmissionChart();
+    this.loadDistanceChart();
+    this.loadVtypeChart();
+    this.loadCityEmissionChart();
   }
 
   // ── Navigation helpers ────────────────────────────────────────
@@ -194,9 +209,25 @@ export class VehicleCharts implements OnInit, AfterViewInit, OnChanges, OnDestro
         next: res => {
           if (!res.status || !res.data) { this.vtypeError.set('No data returned.'); return; }
           this.vtypeTableRows.set(res.data);
+          this.buildPieLegend(res.data);
           if (this.viewReady) this.deferRenderVtype(res.data); else this.pendingVtype = res.data;
         },
         error: err => this.vtypeError.set(err?.message || 'Failed to load vehicle type chart.')
+      });
+  }
+
+  // ── Load: City Emissions ──────────────────────────────────────
+  loadCityEmissionChart(): void {
+    this.isCityEmissionLoading.set(true); this.cityEmissionError.set('');
+    this.cityEmissionChart?.destroy(); this.cityEmissionChart = null;
+    this.svc.getVehicleCityEmissions(this.year)
+      .pipe(takeUntil(this.destroy$), finalize(() => this.isCityEmissionLoading.set(false)))
+      .subscribe({
+        next: res => {
+          if (!res.status || !res.data?.length) { this.cityEmissionError.set('No data returned.'); return; }
+          if (this.viewReady) this.deferRenderCityEmission(res.data); else this.pendingCityEmission = res.data;
+        },
+        error: err => this.cityEmissionError.set(err?.message || 'Failed to load city emission chart.')
       });
   }
 
@@ -226,7 +257,14 @@ export class VehicleCharts implements OnInit, AfterViewInit, OnChanges, OnDestro
     if (data) this._lastVtypeData = data;
     if (!this._lastVtypeData) return;
     const snap = this._lastVtypeData;
-    setTimeout(() => this.renderVtypeChart(snap), 0);
+    setTimeout(() => { this.renderDistancePieChart(snap); }, 0);
+  }
+
+  private deferRenderCityEmission(data: CityEmissionResponse[] | null): void {
+    if (data) this._lastCityEmissionData = data;
+    if (!this._lastCityEmissionData) return;
+    const snap = this._lastCityEmissionData;
+    setTimeout(() => this.renderCityEmissionChart(snap), 0);
   }
 
   // ── KPIs ──────────────────────────────────────────────────────
@@ -261,6 +299,15 @@ export class VehicleCharts implements OnInit, AfterViewInit, OnChanges, OnDestro
     this.emissionLegend.set((data?.datasets ?? []).map(d => ({ label: d.label, color: d.color })));
   }
 
+  private buildPieLegend(data: VehicleTypeDistancePivotResponse): void {
+    const grand = data.grandTotal || 1;
+    const items = data.vehicleTypes
+      .map((vt, i) => ({ label: vt, color: data.colors[i], value: data.typeTotals[i], pct: ((data.typeTotals[i] / grand) * 100).toFixed(1) }))
+      .filter(item => item.value > 0)
+      .sort((a, b) => b.value - a.value);
+    this.pieLegend.set(items);
+  }
+
   // ── Render: Stacked Bar (Fuel) ────────────────────────────────
   private renderFuelChart(data: FuelCombinedChartResponse): void {
     const canvas = this.fuelCanvasRef?.nativeElement;
@@ -287,20 +334,17 @@ export class VehicleCharts implements OnInit, AfterViewInit, OnChanges, OnDestro
         responsive: true, maintainAspectRatio: false,
         onClick: (_e: any, elements: any[]) => {
           if (!elements.length) return;
-          const el = elements[0];
+          const el  = elements[0];
           const ds2 = data.datasets[el.datasetIndex];
-          if ((ds2?.data?.[el.index] ?? 0) > 0)
-            this.navigateByVehicleMonthAndFuel(el.index, ds2.fuelType);
+          if ((ds2?.data?.[el.index] ?? 0) > 0) this.navigateByVehicleMonthAndFuel(el.index, ds2.fuelType);
         },
-        onHover: (_e: any, elements: any[]) => {
-          if (canvas) canvas.style.cursor = elements.length ? 'pointer' : 'default';
-        },
+        onHover: (_e: any, elements: any[]) => { if (canvas) canvas.style.cursor = elements.length ? 'pointer' : 'default'; },
         plugins: {
           legend: { display: false },
           tooltip: {
             mode: 'nearest', intersect: true,
-            backgroundColor: '#0f5132', titleColor: '#c5f2d7',
-            bodyColor: '#e0f2f1', borderColor: '#1b7d55', borderWidth: 1, padding: 12,
+            backgroundColor: '#0f5132', titleColor: '#c5f2d7', bodyColor: '#e0f2f1',
+            borderColor: '#1b7d55', borderWidth: 1, padding: 12,
             filter: (item: TooltipItem<'bar'>) => (item.parsed.y ?? 0) > 0,
             callbacks: {
               title: (items: TooltipItem<'bar'>[]) => {
@@ -318,9 +362,11 @@ export class VehicleCharts implements OnInit, AfterViewInit, OnChanges, OnDestro
         },
         scales: {
           x: { stacked: true, grid: { display: false }, ticks: { color: '#64748b', font: { size: 11 }, maxRotation: 0 } },
-          y: { stacked: true, grid: { color: '#f0fdf4' },
+          y: {
+            stacked: true, grid: { color: '#f0fdf4' },
             ticks: { color: '#64748b', font: { size: 11 }, callback: (v: any) => `${Number(v).toLocaleString()} L` },
-            title: { display: true, text: 'Fuel Consumed (Litres)', color: '#94a3b8', font: { size: 11 } } }
+            title: { display: true, text: 'Fuel Consumed (Litres)', color: '#94a3b8', font: { size: 11 } }
+          }
         },
         animation: { duration: 400, easing: 'easeInOutQuart' }
       }
@@ -351,27 +397,24 @@ export class VehicleCharts implements OnInit, AfterViewInit, OnChanges, OnDestro
       },
       options: {
         responsive: true, maintainAspectRatio: false,
-        onClick: (_e: any, elements: any[]) => {
-          if (!elements.length) return;
-          this.navigateByVehicleMonth(elements[0].index);
-        },
-        onHover: (_e: any, elements: any[]) => {
-          if (canvas) canvas.style.cursor = elements.length ? 'pointer' : 'default';
-        },
+        onClick: (_e: any, elements: any[]) => { if (!elements.length) return; this.navigateByVehicleMonth(elements[0].index); },
+        onHover: (_e: any, elements: any[]) => { if (canvas) canvas.style.cursor = elements.length ? 'pointer' : 'default'; },
         plugins: {
           legend: { display: false },
           tooltip: {
             mode: 'index', intersect: false,
-            backgroundColor: '#1e293b', titleColor: '#94a3b8',
-            bodyColor: '#e2e8f0', borderColor: '#334155', borderWidth: 1, padding: 12,
+            backgroundColor: '#1e293b', titleColor: '#94a3b8', bodyColor: '#e2e8f0',
+            borderColor: '#334155', borderWidth: 1, padding: 12,
             callbacks: { label: (ctx: TooltipItem<'line'>) => ` ${ctx.dataset.label}: ${(ctx.parsed.y as number).toLocaleString()} kg` }
           }
         },
         scales: {
           x: { grid: { display: false }, ticks: { color: '#64748b', font: { size: 11 } } },
-          y: { grid: { color: '#f0fdf4' },
+          y: {
+            grid: { color: '#f0fdf4' },
             ticks: { color: '#64748b', font: { size: 11 }, callback: (v: any) => `${Number(v).toLocaleString()}` },
-            title: { display: true, text: 'Emissions (kg)', color: '#94a3b8', font: { size: 11 } } }
+            title: { display: true, text: 'Emissions (kg)', color: '#94a3b8', font: { size: 11 } }
+          }
         },
         animation: { duration: 500, easing: 'easeInOutQuart' }
       }
@@ -409,19 +452,14 @@ export class VehicleCharts implements OnInit, AfterViewInit, OnChanges, OnDestro
       },
       options: {
         responsive: true, maintainAspectRatio: false,
-        onClick: (_e: any, elements: any[]) => {
-          if (!elements.length) return;
-          this.navigateByVehicleMonth(elements[0].index);
-        },
-        onHover: (_e: any, elements: any[]) => {
-          if (canvas) canvas.style.cursor = elements.length ? 'pointer' : 'default';
-        },
+        onClick: (_e: any, elements: any[]) => { if (!elements.length) return; this.navigateByVehicleMonth(elements[0].index); },
+        onHover: (_e: any, elements: any[]) => { if (canvas) canvas.style.cursor = elements.length ? 'pointer' : 'default'; },
         plugins: {
           legend: { display: false },
           tooltip: {
             mode: 'index', intersect: false,
-            backgroundColor: '#1e293b', titleColor: '#94a3b8',
-            bodyColor: '#e2e8f0', borderColor: '#334155', borderWidth: 1, padding: 12,
+            backgroundColor: '#1e293b', titleColor: '#94a3b8', bodyColor: '#e2e8f0',
+            borderColor: '#334155', borderWidth: 1, padding: 12,
             callbacks: {
               label: (ctx: TooltipItem<'bar'>) => {
                 const val = ctx.parsed.y as number;
@@ -432,174 +470,151 @@ export class VehicleCharts implements OnInit, AfterViewInit, OnChanges, OnDestro
         },
         scales: {
           x: { grid: { display: false }, ticks: { color: '#64748b', font: { size: 11 }, maxRotation: 0 } },
-          yDist: { type: 'linear', position: 'left', grid: { color: '#f0fdf4' },
+          yDist: {
+            type: 'linear', position: 'left', grid: { color: '#f0fdf4' },
             ticks: { color: '#64748b', font: { size: 11 }, callback: (v: any) => `${Number(v).toLocaleString()} km` },
-            title: { display: true, text: 'Distance (km)', color: '#94a3b8', font: { size: 11 } } },
-          yTrips: { type: 'linear', position: 'right', grid: { drawOnChartArea: false },
+            title: { display: true, text: 'Distance (km)', color: '#94a3b8', font: { size: 11 } }
+          },
+          yTrips: {
+            type: 'linear', position: 'right', grid: { drawOnChartArea: false },
             ticks: { color: '#1D9E75', font: { size: 11 } },
-            title: { display: true, text: 'Trips', color: '#1D9E75', font: { size: 11 } } }
+            title: { display: true, text: 'Trips', color: '#1D9E75', font: { size: 11 } }
+          }
         },
         animation: { duration: 400, easing: 'easeInOutQuart' }
       }
     });
   }
 
-  // ── Render: Vtype table (pure HTML — no canvas needed) ────────
-  private renderVtypeChart(data: VehicleTypeDistancePivotResponse): void {
-    if (!data?.vehicleTypes?.length) {
-      this.vtypeError.set('No vehicle type data for this year.');
+  // ── Render: Doughnut Pie (Vehicle Type Distance Share) ────────
+  private renderDistancePieChart(data: VehicleTypeDistancePivotResponse): void {
+    const canvas = this.distancePieCanvasRef?.nativeElement;
+    if (!canvas) return;
+    if (canvas.offsetParent === null || canvas.offsetWidth === 0) {
+      requestAnimationFrame(() => this.renderDistancePieChart(data)); return;
     }
+    this.distancePieChart?.destroy(); this.distancePieChart = null;
+
+    const labels = data.vehicleTypes.filter((_, i) => data.typeTotals[i] > 0);
+    const values = data.typeTotals.filter(v => v > 0);
+    const colors = data.colors.filter((_, i) => data.typeTotals[i] > 0);
+    if (!values.length) return;
+
+    this.distancePieChart = new Chart(canvas, {
+      type: 'doughnut',
+      data: {
+        labels,
+        datasets: [{ data: values, backgroundColor: colors, borderColor: '#ffffff', borderWidth: 3, hoverOffset: 10, hoverBorderWidth: 4 }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false, cutout: '62%',
+        plugins: {
+          legend: {
+            display: true, position: 'bottom',
+            labels: { padding: 16, boxWidth: 12, boxHeight: 12, borderRadius: 3, useBorderRadius: true, font: { size: 12, family: 'Inter, sans-serif' }, color: '#475569' }
+          },
+          tooltip: {
+            backgroundColor: '#1e293b', titleColor: '#94a3b8', bodyColor: '#e2e8f0',
+            borderColor: '#334155', borderWidth: 1, padding: 12,
+            callbacks: {
+              label: (ctx: TooltipItem<'doughnut'>) => {
+                const val  = ctx.parsed as number;
+                const pct  = ((val / (data.grandTotal || 1)) * 100).toFixed(1);
+                return `  ${val.toLocaleString('en-IN')} km  (${pct}%)`;
+              }
+            }
+          }
+        },
+        animation: { duration: 600, easing: 'easeInOutQuart' }
+      }
+    });
+  }
+
+  // ── Render: City Wise Emission Stacked Bar ────────────────────
+  private renderCityEmissionChart(data: CityEmissionResponse[]): void {
+    const canvas = this.cityEmissionCanvasRef?.nativeElement;
+    if (!canvas) return;
+    if (canvas.offsetParent === null || canvas.offsetWidth === 0) {
+      requestAnimationFrame(() => this.renderCityEmissionChart(data)); return;
+    }
+    this.cityEmissionChart?.destroy(); this.cityEmissionChart = null;
+    if (!data?.length) { this.cityEmissionError.set('No city emission data for this year.'); return; }
+
+    // Sort cities by total CO2e descending
+    const sorted = [...data].sort((a, b) => b.totalCO2e - a.totalCO2e);
+    const labels  = sorted.map(d => d.cityName);
+
+    this.cityEmissionChart = new Chart(canvas, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [
+          {
+            label: 'CO₂ (kg)',
+            data: sorted.map(d => d.totalCO2),
+            backgroundColor: '#1D9E75CC',
+            borderColor: '#1D9E75',
+            borderWidth: 1, borderRadius: 4, borderSkipped: false as const,
+            stack: 'emission'
+          },
+          {
+            label: 'NO₂ (kg)',
+            data: sorted.map(d => d.totalNO2),
+            backgroundColor: '#EF9F27CC',
+            borderColor: '#EF9F27',
+            borderWidth: 1, borderRadius: 4, borderSkipped: false as const,
+            stack: 'emission'
+          },
+          {
+            label: 'CH₄ (kg)',
+            data: sorted.map(d => d.totalCH4),
+            backgroundColor: '#D4537ECC',
+            borderColor: '#D4537E',
+            borderWidth: 1, borderRadius: 4, borderSkipped: false as const,
+            stack: 'emission'
+          }
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            mode: 'index', intersect: false,
+            backgroundColor: '#0f172a', titleColor: '#94a3b8', bodyColor: '#e2e8f0',
+            borderColor: '#1D9E75', borderWidth: 1, padding: 12,
+            callbacks: {
+              title: (items: TooltipItem<'bar'>[]) => {
+                const idx   = items[0]?.dataIndex ?? 0;
+                const total = sorted[idx]?.totalCO2e ?? 0;
+                return `${items[0]?.label}   —   CO2e: ${total.toLocaleString('en-IN')} kg`;
+              },
+              label: (ctx: TooltipItem<'bar'>) => {
+                const val = ctx.parsed.y as number;
+                return val === 0 ? '' : ` ${ctx.dataset.label}: ${val.toLocaleString('en-IN')} kg`;
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            stacked: true,
+            grid: { display: false },
+            ticks: { color: '#64748b', font: { size: 11 }, maxRotation: 35, minRotation: 0 }
+          },
+          y: {
+            stacked: true,
+            grid: { color: '#f0fdf4' },
+            ticks: { color: '#64748b', font: { size: 11 }, callback: (v: any) => `${Number(v).toLocaleString()}` },
+            title: { display: true, text: 'Emissions (kg)', color: '#94a3b8', font: { size: 11 } }
+          }
+        },
+        animation: { duration: 500, easing: 'easeInOutQuart' }
+      }
+    });
   }
 
   formatNum(value: number): string {
     return Math.round(value).toLocaleString('en-IN');
   }
-
-  exportFuelChart() {
-
-  if (!this._lastFuelData) return;
-
-  this.exportSvc.exportChartWithData(
-    'fuelChartExport',
-    'Fuel Chart',
-    this._lastFuelData.labels,
-    this._lastFuelData.datasets.map(d => ({
-      label: d.label,
-      data: d.data as number[]
-    }))
-  );
-}
-
-exportEmissionChart() {
-
-  if (!this._lastEmissionData) return;
-
-  this.exportSvc.exportChartWithData(
-    'emissionChart',
-    'Emission Chart',
-    this._lastEmissionData.labels,
-    this._lastEmissionData.datasets.map(d => ({
-      label: d.label,
-      data: d.data as number[]
-    }))
-  );
-}
-
-//   exportFuelChart() {
-//   const element = document.getElementById('fuelChartExport');
-//   if (!element) return;
-
-//   html2canvas(element).then(async canvas => {
-
-//     const imgData = canvas.toDataURL('image/png');
-
-//     const workbook = new ExcelJS.Workbook();
-//     const worksheet = workbook.addWorksheet('Fuel Chart');
-
-//     const imageId = workbook.addImage({
-//       base64: imgData,
-//       extension: 'png',
-//     });
-
-//     worksheet.addImage(imageId, {
-//       tl: { col: 0, row: 0 } as any,
-//       br: { col: 10, row: 12 } as any
-//     });
-
-//     const buffer = await workbook.xlsx.writeBuffer();
-
-//     saveAs(new Blob([buffer]), 'FuelChart.xlsx');
-//   });
-// }
-
-//   exportFuelChart() {
-//   const element = document.getElementById('fuelChartExport');
-
-//   if (!element) return;
-
-//   html2canvas(element).then(canvas => {
-
-//     // 👉 Convert to image
-//     const imgData = canvas.toDataURL('image/png');
-
-//     // 👉 Create worksheet
-//     const ws = XLSX.utils.aoa_to_sheet([]);
-
-//     // 👉 Workbook
-//     const wb = XLSX.utils.book_new();
-
-//     // 👉 Add image manually (important)
-//     const img = {
-//       image: imgData,
-//       type: 'png',
-//       position: {
-//         type: 'twoCellAnchor',
-//         attrs: { editAs: 'oneCell' },
-//         from: { col: 0, row: 0 },
-//         to: { col: 10, row: 25 }
-//       }
-//     };
-
-//     // @ts-ignore
-//     ws['!images'] = [img];
-
-//     XLSX.utils.book_append_sheet(wb, ws, 'Fuel Chart');
-
-//     // 👉 Download
-//     const excelBuffer = XLSX.write(wb, {
-//       bookType: 'xlsx',
-//       type: 'array'
-//     });
-
-//     const blob = new Blob([excelBuffer], {
-//       type: 'application/octet-stream'
-//     });
-
-//     saveAs(blob, 'FuelChart.xlsx');
-//   });
-// }
-
-//   exportChartToExcel(chartId: string, fileName: string) {
-//   const element = document.getElementById(chartId);
-
-//   if (!element) {
-//     console.error('Element not found:', chartId);
-//     return;
-//   }
-
-//   html2canvas(element).then(canvas => {
-
-//     const imgData = canvas.toDataURL('image/png');
-
-//     const ws: XLSX.WorkSheet = XLSX.utils.aoa_to_sheet([
-//       [fileName]
-//     ]);
-
-//     const wb: XLSX.WorkBook = {
-//       Sheets: { 'Sheet1': ws },
-//       SheetNames: ['Sheet1']
-//     };
-
-//     const fileType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8';
-
-//     const byteString = atob(imgData.split(',')[1]);
-//     const mimeString = imgData.split(',')[0].split(':')[1].split(';')[0];
-
-//     const ab = new ArrayBuffer(byteString.length);
-//     const ia = new Uint8Array(ab);
-
-//     for (let i = 0; i < byteString.length; i++) {
-//       ia[i] = byteString.charCodeAt(i);
-//     }
-
-//     const blob = new Blob([ab], { type: mimeString });
-
-//     saveAs(blob, fileName + '.png');
-
-//     const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-//     const excelBlob = new Blob([excelBuffer], { type: fileType });
-
-//     saveAs(excelBlob, fileName + '.xlsx');
-//   });
-// }
 }

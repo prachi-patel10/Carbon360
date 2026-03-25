@@ -83,6 +83,30 @@ namespace ProjectApp.API.Controllers.Charts
             var data = await _service.GetVehicleTypeWiseDistanceAsync(year);
             return Ok(new { status = true, data });
         }
+
+        [HttpGet("DashboardSummary")]
+        public async Task<IActionResult> DashboardSummary([FromQuery] int year)
+            => Ok(new { status = true, data = await _service.GetDashboardSummaryAsync(year) });
+
+        [HttpGet("GeneratorRunHoursMonthly")]
+        public async Task<IActionResult> GeneratorRunHoursMonthly([FromQuery] int year)
+            => Ok(new { status = true, data = await _service.GetGeneratorRunHoursMonthlyAsync(year) });
+
+        [HttpGet("VehicleCityEmissions")]
+        public async Task<IActionResult> VehicleCityEmissions([FromQuery] int year)
+        {
+            var data = await _service.GetVehicleCityWiseEmissionsAsync(year);
+            return Ok(new { status = true, data });
+        }
+
+        [HttpGet("GeneratorSiteEmissions")]
+        public async Task<IActionResult> GeneratorSiteEmissions([FromQuery] int year)
+        {
+            var data = await _service.GetGeneratorSiteWiseEmissionsAsync(year);
+            return Ok(new { status = true, data });
+        }
+
+
     }
 }
 
