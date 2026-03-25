@@ -1,7 +1,7 @@
 import {
   Component, OnInit, OnDestroy, AfterViewInit,
   ViewChild, ElementRef, Input, OnChanges, SimpleChanges,
-  signal, computed
+  signal, computed, Output, EventEmitter
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
@@ -34,26 +34,31 @@ export class GeneratorCharts implements OnInit, AfterViewInit, OnChanges, OnDest
 
   @Input() year: number = new Date().getFullYear();
 
+  /**
+   * Emitted whenever the user clicks a grid row / chart element.
+   * The parent (DashboardComponent) navigates to searchGenerator with these queryParams.
+   */
+  @Output() gridRowClick = new EventEmitter<Record<string, any>>();
+
   @ViewChild('generatorFuelCanvas')         fuelCanvasRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('generatorEmissionCanvas')     emissionCanvasRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('generatorRunHoursCanvas')     runHoursCanvasRef!: ElementRef<HTMLCanvasElement>;
-  // @ViewChild('generatorLoadFactorCanvas')   loadFactorCanvasRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('generatorSiteEmissionCanvas') siteEmissionCanvasRef!: ElementRef<HTMLCanvasElement>;
 
   // ── Signals ───────────────────────────────────────────────────
-  isFuelLoading           = signal(false);
-  isEmissionLoading       = signal(false);
-  isRunHoursLoading       = signal(false);
-  isLoadFactorLoading     = signal(false);
+  isFuelLoading            = signal(false);
+  isEmissionLoading        = signal(false);
+  isRunHoursLoading        = signal(false);
+  isLoadFactorLoading      = signal(false);
   isRunHoursMonthlyLoading = signal(false);
-  isSiteEmissionLoading   = signal(false);
+  isSiteEmissionLoading    = signal(false);
 
-  fuelError             = signal('');
-  emissionError         = signal('');
-  runHoursError         = signal('');
-  loadFactorError       = signal('');
-  runHoursMonthlyError  = signal('');
-  siteEmissionError     = signal('');
+  fuelError            = signal('');
+  emissionError        = signal('');
+  runHoursError        = signal('');
+  loadFactorError      = signal('');
+  runHoursMonthlyError = signal('');
+  siteEmissionError    = signal('');
 
   fuelLegend       = signal<{ fuelType: string; color: string }[]>([]);
   emissionLegend   = signal<{ label: string; color: string }[]>([]);
@@ -69,12 +74,12 @@ export class GeneratorCharts implements OnInit, AfterViewInit, OnChanges, OnDest
 
   runHoursMonthlyData = signal<GeneratorRunHoursMonthlyPivotResponse | null>(null);
 
-  showFuelCanvas            = computed(() => !this.isFuelLoading()            && !this.fuelError());
-  showEmissionCanvas        = computed(() => !this.isEmissionLoading()        && !this.emissionError());
-  showRunHoursCanvas        = computed(() => !this.isRunHoursLoading()        && !this.runHoursError());
-  showLoadFactorCanvas      = computed(() => !this.isLoadFactorLoading()      && !this.loadFactorError());
-  showRunHoursMonthlyTable  = computed(() => !this.isRunHoursMonthlyLoading() && !this.runHoursMonthlyError());
-  showSiteEmissionCanvas    = computed(() => !this.isSiteEmissionLoading()    && !this.siteEmissionError());
+  showFuelCanvas           = computed(() => !this.isFuelLoading()            && !this.fuelError());
+  showEmissionCanvas       = computed(() => !this.isEmissionLoading()        && !this.emissionError());
+  showRunHoursCanvas       = computed(() => !this.isRunHoursLoading()        && !this.runHoursError());
+  showLoadFactorCanvas     = computed(() => !this.isLoadFactorLoading()      && !this.loadFactorError());
+  showRunHoursMonthlyTable = computed(() => !this.isRunHoursMonthlyLoading() && !this.runHoursMonthlyError());
+  showSiteEmissionCanvas   = computed(() => !this.isSiteEmissionLoading()    && !this.siteEmissionError());
 
   // ── Chart instances ───────────────────────────────────────────
   private fuelChart:         Chart | null = null;
@@ -86,17 +91,17 @@ export class GeneratorCharts implements OnInit, AfterViewInit, OnChanges, OnDest
   private destroy$  = new Subject<void>();
   private viewReady = false;
 
-  private _lastFuelData:         FuelCombinedChartResponse              | null = null;
-  private _lastEmissionData:     MonthlyEmissionChartResponse           | null = null;
-  private _lastRunHoursData:     GeneratorRunHoursChartResponse         | null = null;
-  private _lastLoadFactorData:   GeneratorLoadFactorChartResponse       | null = null;
-  private _lastSiteEmissionData: SiteEmissionResponse[]                 | null = null;
+  private _lastFuelData:         FuelCombinedChartResponse        | null = null;
+  private _lastEmissionData:     MonthlyEmissionChartResponse     | null = null;
+  private _lastRunHoursData:     GeneratorRunHoursChartResponse   | null = null;
+  private _lastLoadFactorData:   GeneratorLoadFactorChartResponse | null = null;
+  private _lastSiteEmissionData: SiteEmissionResponse[]           | null = null;
 
-  private pendingFuel:         FuelCombinedChartResponse              | null = null;
-  private pendingEmission:     MonthlyEmissionChartResponse           | null = null;
-  private pendingRunHours:     GeneratorRunHoursChartResponse         | null = null;
-  private pendingLoadFactor:   GeneratorLoadFactorChartResponse       | null = null;
-  private pendingSiteEmission: SiteEmissionResponse[]                 | null = null;
+  private pendingFuel:         FuelCombinedChartResponse        | null = null;
+  private pendingEmission:     MonthlyEmissionChartResponse     | null = null;
+  private pendingRunHours:     GeneratorRunHoursChartResponse   | null = null;
+  private pendingLoadFactor:   GeneratorLoadFactorChartResponse | null = null;
+  private pendingSiteEmission: SiteEmissionResponse[]           | null = null;
 
   constructor(private svc: DashboardService, private router: Router) {}
 
@@ -133,26 +138,93 @@ export class GeneratorCharts implements OnInit, AfterViewInit, OnChanges, OnDest
     this.loadSiteEmissionChart();
   }
 
-  // ── Navigation helpers ────────────────────────────────────────
-  private navigateToGeneratorSearch(params: { month?: number; fuelType?: string; search?: string }): void {
-    const queryParams: any = { source: 'chart' };
-    if (params.fuelType) queryParams['fuelType'] = params.fuelType;
-    if (params.search)   queryParams['search']   = params.search;
+  // ═══════════════════════════════════════════════════════════════
+  //  NAVIGATION HELPERS — used by both chart clicks & grid clicks
+  // ═══════════════════════════════════════════════════════════════
+
+  /**
+   * Central navigation method. Builds query params, emits gridRowClick
+   * (so parent DashboardComponent can handle it) AND navigates directly.
+   */
+  private navigateToGeneratorSearch(params: {
+    month?:         number;
+    fuelType?:      string;
+    generatorName?: string;
+    siteName?:      string;
+    search?:        string;
+  }): void {
+    const queryParams: Record<string, any> = { source: 'chart', year: this.year };
+
+    if (params.fuelType)      queryParams['fuelType']      = params.fuelType;
+    if (params.generatorName) queryParams['generatorName'] = params.generatorName;
+    if (params.siteName)      queryParams['siteName']      = params.siteName;
+    if (params.search)        queryParams['search']        = params.search;
+
     if (params.month) {
       const y = this.year, m = params.month;
       const lastDay = new Date(y, m, 0).getDate();
       queryParams['startDate'] = `${y}-${String(m).padStart(2, '0')}-01`;
       queryParams['endDate']   = `${y}-${String(m).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
     }
+
+    // Emit to parent (DashboardComponent)
+    this.gridRowClick.emit(queryParams);
+
+    // Also navigate directly
     this.router.navigate(['/dashboard/searchGenerator'], { queryParams });
   }
 
+  // ── Convenience wrappers (called from chart onClick) ─────────
   navigateByGeneratorMonth(monthIndex: number): void {
     this.navigateToGeneratorSearch({ month: monthIndex + 1 });
   }
 
   navigateByGeneratorMonthAndFuel(monthIndex: number, fuelType: string): void {
     this.navigateToGeneratorSearch({ month: monthIndex + 1, fuelType });
+  }
+
+  // ── Grid row click handlers (called from HTML template) ──────
+
+  /** Fuel grid row clicked: month + optional fuelType */
+  onFuelGridRowClick(monthIndex: number, fuelType?: string): void {
+    this.navigateToGeneratorSearch({ month: monthIndex + 1, fuelType });
+  }
+
+  /** Emission grid row clicked: month */
+  onEmissionGridRowClick(monthIndex: number): void {
+    this.navigateToGeneratorSearch({ month: monthIndex + 1 });
+  }
+
+  /**
+   * Run-hours monthly pivot table cell clicked.
+   * @param monthIndex  0-based month index (-1 = totals row)
+   * @param generatorName  generator name ('' = month-total column)
+   */
+  onRunHoursGridCellClick(monthIndex: number, generatorName: string): void {
+    const params: { month?: number; generatorName?: string } = {};
+    if (monthIndex >= 0)  params.month         = monthIndex + 1;
+    if (generatorName)    params.generatorName = generatorName;
+    this.navigateToGeneratorSearch(params);
+  }
+
+  /** Run-hours generator total column (bottom bar) clicked */
+  onRunHoursGeneratorTotalClick(generatorName: string): void {
+    this.navigateToGeneratorSearch({ generatorName });
+  }
+
+  /** Run-hours month total row clicked */
+  onRunHoursMonthTotalClick(monthIndex: number): void {
+    this.navigateToGeneratorSearch({ month: monthIndex + 1 });
+  }
+
+  /** Run-hours pie legend item clicked */
+  onRunHoursLegendClick(generatorName: string): void {
+    this.navigateToGeneratorSearch({ generatorName });
+  }
+
+  /** Site emission grid row clicked */
+  onSiteGridRowClick(siteName: string): void {
+    this.navigateToGeneratorSearch({ siteName });
   }
 
   // ── Deferred render dispatcher ────────────────────────────────
@@ -468,7 +540,7 @@ export class GeneratorCharts implements OnInit, AfterViewInit, OnChanges, OnDest
         onClick: (_e: any, elements: any[]) => {
           if (!elements.length) return;
           const genName = (data.labels ?? [])[elements[0].index] ?? '';
-          if (genName) this.navigateToGeneratorSearch({ search: genName });
+          if (genName) this.onRunHoursLegendClick(genName);
         },
         onHover: (_e: any, elements: any[]) => { if (canvas) canvas.style.cursor = elements.length ? 'pointer' : 'default'; },
         plugins: {
@@ -518,7 +590,6 @@ export class GeneratorCharts implements OnInit, AfterViewInit, OnChanges, OnDest
     this.siteEmissionChart?.destroy(); this.siteEmissionChart = null;
     if (!data?.length) { this.siteEmissionError.set('No site emission data for this year.'); return; }
 
-    // Sort sites by total CO2e descending
     const sorted = [...data].sort((a, b) => b.totalCO2e - a.totalCO2e);
     const labels  = sorted.map(d => d.siteName);
 
@@ -530,31 +601,31 @@ export class GeneratorCharts implements OnInit, AfterViewInit, OnChanges, OnDest
           {
             label: 'CO₂ (kg)',
             data: sorted.map(d => d.totalCO2),
-            backgroundColor: '#1D9E75CC',
-            borderColor: '#1D9E75',
-            borderWidth: 1, borderRadius: 4, borderSkipped: false as const,
-            stack: 'emission'
+            backgroundColor: '#1D9E75CC', borderColor: '#1D9E75',
+            borderWidth: 1, borderRadius: 4, borderSkipped: false as const, stack: 'emission'
           },
           {
             label: 'NO₂ (kg)',
             data: sorted.map(d => d.totalNO2),
-            backgroundColor: '#EF9F27CC',
-            borderColor: '#EF9F27',
-            borderWidth: 1, borderRadius: 4, borderSkipped: false as const,
-            stack: 'emission'
+            backgroundColor: '#EF9F27CC', borderColor: '#EF9F27',
+            borderWidth: 1, borderRadius: 4, borderSkipped: false as const, stack: 'emission'
           },
           {
             label: 'CH₄ (kg)',
             data: sorted.map(d => d.totalCH4),
-            backgroundColor: '#D4537ECC',
-            borderColor: '#D4537E',
-            borderWidth: 1, borderRadius: 4, borderSkipped: false as const,
-            stack: 'emission'
+            backgroundColor: '#D4537ECC', borderColor: '#D4537E',
+            borderWidth: 1, borderRadius: 4, borderSkipped: false as const, stack: 'emission'
           }
         ]
       },
       options: {
         responsive: true, maintainAspectRatio: false,
+        onClick: (_e: any, elements: any[]) => {
+          if (!elements.length) return;
+          const site = sorted[elements[0].index]?.siteName;
+          if (site) this.onSiteGridRowClick(site);
+        },
+        onHover: (_e: any, elements: any[]) => { if (canvas) canvas.style.cursor = elements.length ? 'pointer' : 'default'; },
         plugins: {
           legend: { display: false },
           tooltip: {
@@ -576,13 +647,11 @@ export class GeneratorCharts implements OnInit, AfterViewInit, OnChanges, OnDest
         },
         scales: {
           x: {
-            stacked: true,
-            grid: { display: false },
+            stacked: true, grid: { display: false },
             ticks: { color: '#64748b', font: { size: 11 }, maxRotation: 35, minRotation: 0 }
           },
           y: {
-            stacked: true,
-            grid: { color: '#fff7ed' },
+            stacked: true, grid: { color: '#fff7ed' },
             ticks: { color: '#64748b', font: { size: 11 }, callback: (v: any) => `${Number(v).toLocaleString()}` },
             title: { display: true, text: 'Emissions (kg)', color: '#94a3b8', font: { size: 11 } }
           }

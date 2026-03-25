@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ProjectApp.Core.DTOs.Charts
 {
-    public class DashboardSummaryDto
+    public class VehicleSummaryDto
     {
         public decimal TotalCO2e { get; set; }
         public decimal TotalCO2 { get; set; }
@@ -14,6 +14,5 @@ namespace ProjectApp.Core.DTOs.Charts
         public decimal TotalNO2 { get; set; }
         public decimal TotalFuelConsumed { get; set; }
         public decimal TotalDistanceKM { get; set; }
-        public decimal? TotalPowerOutputKWH { get; set; }
     }
 }

@@ -6,14 +6,13 @@ using System.Threading.Tasks;
 
 namespace ProjectApp.Core.DTOs.Charts
 {
-    public class DashboardSummaryDto
+    public class GeneratorSummaryDto
     {
         public decimal TotalCO2e { get; set; }
         public decimal TotalCO2 { get; set; }
         public decimal TotalCH4 { get; set; }
         public decimal TotalNO2 { get; set; }
         public decimal TotalFuelConsumed { get; set; }
-        public decimal TotalDistanceKM { get; set; }
-        public decimal? TotalPowerOutputKWH { get; set; }
+        public decimal TotalPowerOutputKWH { get; set; }
     }
 }

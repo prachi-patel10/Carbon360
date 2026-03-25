@@ -9,37 +9,31 @@ namespace ProjectApp.Repository.Interfaces.Charts
 {
     public interface IChartService
     {
-        //fuel consumption
+        // ── Fuel consumption ─────────────────────────────────
         Task<List<FuelTypeMonthlyConsumptionDto>> GetVehicleFuelMonthlyConsumptionAsync(int year);
         Task<List<FuelTypeMonthlyConsumptionDto>> GetGeneratorFuelMonthlyConsumptionAsync(int year);
         Task<FuelCombinedChartResponseDto> GetCombinedFuelChartAsync(int year);
 
-        // separate emission charts
+        // ── Emission charts ──────────────────────────────────
         Task<MonthlyEmissionChartResponseDto> GetVehicleEmissionChartAsync(int year);
         Task<MonthlyEmissionChartResponseDto> GetGeneratorEmissionChartAsync(int year);
 
-        // Generator Run Hours Pie Chart 
+        // ── Generator run hours ──────────────────────────────
         Task<GeneratorRunHoursChartResponseDto> GetGeneratorRunHoursByBaseAsync(int year);
+        Task<GeneratorRunHoursMonthlyPivotDto> GetGeneratorRunHoursMonthlyAsync(int year);
         Task<GeneratorLoadFactorChartResponseDto> GetGeneratorLoadFactorMonthlyAsync(int year);
 
-        // Vehicle Total Distance Monthly Bar Chart
+        // ── Vehicle distance ─────────────────────────────────
         Task<VehicleDistanceChartResponseDto> GetVehicleTotalDistanceMonthlyAsync(int year);
-
-        //VehicleTypeWise vs Distance
         Task<VehicleTypeDistancePivotDto> GetVehicleTypeWiseDistanceAsync(int year);
 
-        //Total CO2e, CO2, NO2, CH4
-        Task<DashboardSummaryDto> GetDashboardSummaryAsync(int year);
-
-        //Piechart for GeneratorRunHours
-        Task<GeneratorRunHoursMonthlyPivotDto> GetGeneratorRunHoursMonthlyAsync(int year);
-
-        // Vehicle City‑wise Emissions (stacked bar)
+        // ── City / Site emissions ────────────────────────────
         Task<List<CityEmissionDto>> GetVehicleCityWiseEmissionsAsync(int year);
-
-        // Generator Site‑wise Emissions (stacked column)
         Task<List<SiteEmissionDto>> GetGeneratorSiteWiseEmissionsAsync(int year);
+
+        // ── Dashboard summaries ──────────────────────────────
+        Task<VehicleSummaryDto> GetVehicleSummaryAsync(int year);
+        Task<GeneratorSummaryDto> GetGeneratorSummaryAsync(int year);
+        Task<DashboardSummaryDto> GetDashboardSummaryAsync(int year);  // ← added
     }
 }
-
-

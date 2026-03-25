@@ -1,7 +1,7 @@
 import {
   Component, OnInit, OnDestroy, AfterViewInit,
   ViewChild, ElementRef, Input, OnChanges, SimpleChanges,
-  signal, computed
+  signal, computed, Output, EventEmitter
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
@@ -29,6 +29,12 @@ Chart.register(...registerables);
 export class VehicleCharts implements OnInit, AfterViewInit, OnChanges, OnDestroy {
 
   @Input() year: number = new Date().getFullYear();
+
+  /**
+   * Emitted whenever the user clicks a grid row / chart element.
+   * The parent (DashboardComponent) navigates to searchVehicle with these queryParams.
+   */
+  @Output() gridRowClick = new EventEmitter<Record<string, any>>();
 
   @ViewChild('vehicleFuelCanvas')          fuelCanvasRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('vehicleEmissionCanvas')      emissionCanvasRef!: ElementRef<HTMLCanvasElement>;
@@ -102,11 +108,11 @@ export class VehicleCharts implements OnInit, AfterViewInit, OnChanges, OnDestro
 
   ngAfterViewInit(): void {
     this.viewReady = true;
-    if (this.pendingFuel)         { this.deferRenderFuel(this.pendingFuel);                   this.pendingFuel         = null; }
-    if (this.pendingEmission)     { this.deferRenderEmission(this.pendingEmission);           this.pendingEmission     = null; }
-    if (this.pendingDistance)     { this.deferRenderDistance(this.pendingDistance);           this.pendingDistance     = null; }
-    if (this.pendingVtype)        { this.deferRenderVtype(this.pendingVtype);                 this.pendingVtype        = null; }
-    if (this.pendingCityEmission) { this.deferRenderCityEmission(this.pendingCityEmission);   this.pendingCityEmission = null; }
+    if (this.pendingFuel)         { this.deferRenderFuel(this.pendingFuel);                 this.pendingFuel         = null; }
+    if (this.pendingEmission)     { this.deferRenderEmission(this.pendingEmission);         this.pendingEmission     = null; }
+    if (this.pendingDistance)     { this.deferRenderDistance(this.pendingDistance);         this.pendingDistance     = null; }
+    if (this.pendingVtype)        { this.deferRenderVtype(this.pendingVtype);               this.pendingVtype        = null; }
+    if (this.pendingCityEmission) { this.deferRenderCityEmission(this.pendingCityEmission); this.pendingCityEmission = null; }
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -130,25 +136,94 @@ export class VehicleCharts implements OnInit, AfterViewInit, OnChanges, OnDestro
     this.loadCityEmissionChart();
   }
 
-  // ── Navigation helpers ────────────────────────────────────────
-  private navigateToVehicleSearch(params: { month?: number; fuelType?: string }): void {
-    const queryParams: any = { source: 'chart' };
-    if (params.fuelType) queryParams['fuelType'] = params.fuelType;
+  // ═══════════════════════════════════════════════════════════════
+  //  NAVIGATION HELPERS — used by both chart clicks & grid clicks
+  // ═══════════════════════════════════════════════════════════════
+
+  /**
+   * Central navigation method. Builds query params and either
+   * emits the gridRowClick output (so the parent can navigate)
+   * OR navigates directly — both are kept for flexibility.
+   */
+  private navigateToVehicleSearch(params: {
+    month?:       number;
+    fuelType?:    string;
+    vehicleType?: string;
+    city?:        string;
+    search?:      string;
+  }): void {
+    const queryParams: Record<string, any> = { source: 'chart', year: this.year };
+
+    if (params.fuelType)    queryParams['fuelType']    = params.fuelType;
+    if (params.vehicleType) queryParams['vehicleType'] = params.vehicleType;
+    if (params.city)        queryParams['city']        = params.city;
+    if (params.search)      queryParams['search']      = params.search;
+
     if (params.month) {
       const y = this.year, m = params.month;
       const lastDay = new Date(y, m, 0).getDate();
       queryParams['startDate'] = `${y}-${String(m).padStart(2, '0')}-01`;
       queryParams['endDate']   = `${y}-${String(m).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
     }
+
+    // Emit to parent (DashboardComponent) so it can navigate
+    this.gridRowClick.emit(queryParams);
+
+    // Also navigate directly (works when used standalone, parent handler is a no-op duplicate)
     this.router.navigate(['/dashboard/searchVehicle'], { queryParams });
   }
 
+  // ── Convenience wrappers (called from chart onClick) ─────────
   navigateByVehicleMonth(monthIndex: number): void {
     this.navigateToVehicleSearch({ month: monthIndex + 1 });
   }
 
   navigateByVehicleMonthAndFuel(monthIndex: number, fuelType: string): void {
     this.navigateToVehicleSearch({ month: monthIndex + 1, fuelType });
+  }
+
+  // ── Grid row click handlers (called from HTML template) ──────
+
+  /** Fuel grid row clicked: month + optional fuelType */
+  onFuelGridRowClick(monthIndex: number, fuelType?: string): void {
+    this.navigateToVehicleSearch({ month: monthIndex + 1, fuelType });
+  }
+
+  /** Emission grid row clicked: month */
+  onEmissionGridRowClick(monthIndex: number): void {
+    this.navigateToVehicleSearch({ month: monthIndex + 1 });
+  }
+
+  /** Distance grid row clicked: month */
+  onDistanceGridRowClick(monthIndex: number): void {
+    this.navigateToVehicleSearch({ month: monthIndex + 1 });
+  }
+
+  /**
+   * Vehicle-type pivot table cell clicked.
+   * @param monthIndex  0-based month index (pass -1 for the column-total row)
+   * @param vehicleType vehicle type name (pass '' for the row-total column)
+   */
+  onVtypeGridCellClick(monthIndex: number, vehicleType: string): void {
+    const params: { month?: number; vehicleType?: string } = {};
+    if (monthIndex >= 0) params.month       = monthIndex + 1;
+    if (vehicleType)     params.vehicleType = vehicleType;
+    this.navigateToVehicleSearch(params);
+  }
+
+  /** Vehicle-type total row (bottom totals bar) clicked */
+  onVtypeTypeTotalClick(vehicleType: string): void {
+    this.navigateToVehicleSearch({ vehicleType });
+  }
+
+  /** Vehicle-type month total column clicked */
+  onVtypeMonthTotalClick(monthIndex: number): void {
+    this.navigateToVehicleSearch({ month: monthIndex + 1 });
+  }
+
+  /** City emission grid row clicked */
+  onCityGridRowClick(cityName: string): void {
+    this.navigateToVehicleSearch({ city: cityName });
   }
 
   // ── Load: Fuel ────────────────────────────────────────────────
@@ -508,6 +583,12 @@ export class VehicleCharts implements OnInit, AfterViewInit, OnChanges, OnDestro
       },
       options: {
         responsive: true, maintainAspectRatio: false, cutout: '62%',
+        onClick: (_e: any, elements: any[]) => {
+          if (!elements.length) return;
+          const vt = labels[elements[0].index];
+          if (vt) this.onVtypeTypeTotalClick(vt);
+        },
+        onHover: (_e: any, elements: any[]) => { if (canvas) canvas.style.cursor = elements.length ? 'pointer' : 'default'; },
         plugins: {
           legend: {
             display: true, position: 'bottom',
@@ -518,8 +599,8 @@ export class VehicleCharts implements OnInit, AfterViewInit, OnChanges, OnDestro
             borderColor: '#334155', borderWidth: 1, padding: 12,
             callbacks: {
               label: (ctx: TooltipItem<'doughnut'>) => {
-                const val  = ctx.parsed as number;
-                const pct  = ((val / (data.grandTotal || 1)) * 100).toFixed(1);
+                const val = ctx.parsed as number;
+                const pct = ((val / (data.grandTotal || 1)) * 100).toFixed(1);
                 return `  ${val.toLocaleString('en-IN')} km  (${pct}%)`;
               }
             }
@@ -540,7 +621,6 @@ export class VehicleCharts implements OnInit, AfterViewInit, OnChanges, OnDestro
     this.cityEmissionChart?.destroy(); this.cityEmissionChart = null;
     if (!data?.length) { this.cityEmissionError.set('No city emission data for this year.'); return; }
 
-    // Sort cities by total CO2e descending
     const sorted = [...data].sort((a, b) => b.totalCO2e - a.totalCO2e);
     const labels  = sorted.map(d => d.cityName);
 
@@ -552,31 +632,31 @@ export class VehicleCharts implements OnInit, AfterViewInit, OnChanges, OnDestro
           {
             label: 'CO₂ (kg)',
             data: sorted.map(d => d.totalCO2),
-            backgroundColor: '#1D9E75CC',
-            borderColor: '#1D9E75',
-            borderWidth: 1, borderRadius: 4, borderSkipped: false as const,
-            stack: 'emission'
+            backgroundColor: '#1D9E75CC', borderColor: '#1D9E75',
+            borderWidth: 1, borderRadius: 4, borderSkipped: false as const, stack: 'emission'
           },
           {
             label: 'NO₂ (kg)',
             data: sorted.map(d => d.totalNO2),
-            backgroundColor: '#EF9F27CC',
-            borderColor: '#EF9F27',
-            borderWidth: 1, borderRadius: 4, borderSkipped: false as const,
-            stack: 'emission'
+            backgroundColor: '#EF9F27CC', borderColor: '#EF9F27',
+            borderWidth: 1, borderRadius: 4, borderSkipped: false as const, stack: 'emission'
           },
           {
             label: 'CH₄ (kg)',
             data: sorted.map(d => d.totalCH4),
-            backgroundColor: '#D4537ECC',
-            borderColor: '#D4537E',
-            borderWidth: 1, borderRadius: 4, borderSkipped: false as const,
-            stack: 'emission'
+            backgroundColor: '#D4537ECC', borderColor: '#D4537E',
+            borderWidth: 1, borderRadius: 4, borderSkipped: false as const, stack: 'emission'
           }
         ]
       },
       options: {
         responsive: true, maintainAspectRatio: false,
+        onClick: (_e: any, elements: any[]) => {
+          if (!elements.length) return;
+          const city = sorted[elements[0].index]?.cityName;
+          if (city) this.onCityGridRowClick(city);
+        },
+        onHover: (_e: any, elements: any[]) => { if (canvas) canvas.style.cursor = elements.length ? 'pointer' : 'default'; },
         plugins: {
           legend: { display: false },
           tooltip: {
@@ -598,13 +678,11 @@ export class VehicleCharts implements OnInit, AfterViewInit, OnChanges, OnDestro
         },
         scales: {
           x: {
-            stacked: true,
-            grid: { display: false },
+            stacked: true, grid: { display: false },
             ticks: { color: '#64748b', font: { size: 11 }, maxRotation: 35, minRotation: 0 }
           },
           y: {
-            stacked: true,
-            grid: { color: '#f0fdf4' },
+            stacked: true, grid: { color: '#f0fdf4' },
             ticks: { color: '#64748b', font: { size: 11 }, callback: (v: any) => `${Number(v).toLocaleString()}` },
             title: { display: true, text: 'Emissions (kg)', color: '#94a3b8', font: { size: 11 } }
           }

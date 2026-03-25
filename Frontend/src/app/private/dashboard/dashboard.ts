@@ -1,4 +1,3 @@
-
 import {
   Component, ElementRef, HostListener, ViewChild,
   signal, computed, OnInit, AfterViewInit, OnDestroy
@@ -9,10 +8,16 @@ import { filter, finalize, takeUntil } from 'rxjs/operators';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LoaderService } from '../../core/loader/loader-service';
-import { Subject } from 'rxjs';
+import { Subject, forkJoin } from 'rxjs';
 import { VehicleCharts } from '../vehicle-charts/vehicle-charts';
 import { GeneratorCharts } from '../generator-charts/generator-charts';
 import { DashboardService, DashboardSummaryResponse } from './dashboard-service';
+
+// ── Extended summary that tracks vehicle vs generator separately ──────────────
+export interface SplitSummary {
+  vehicle: DashboardSummaryResponse;
+  generator: DashboardSummaryResponse;
+}
 
 @Component({
   selector: 'app-dashboard',
@@ -41,20 +46,36 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   selectedYear = signal<number>(new Date().getFullYear());
   activeTab = signal<'vehicle' | 'generator'>('vehicle');
   showYearPicker = signal(false);
-  decadeStart = signal<number>(
-    Math.floor(new Date().getFullYear() / 12) * 12
-  );
+  decadeStart = signal<number>(Math.floor(new Date().getFullYear() / 12) * 12);
 
-  // ── Dashboard summary signals ────────────────────────────────
+  // ── Split summary signals (vehicle vs generator) ─────────
   isSummaryLoading = signal(false);
-  summaryData = signal<DashboardSummaryResponse | null>(null);
+  vehicleSummary = signal<DashboardSummaryResponse | null>(null);
+  generatorSummary = signal<DashboardSummaryResponse | null>(null);
 
-  summaryTotalCO2e = computed(() => this.summaryData()?.totalCO2e ?? 0);
-  summaryTotalCO2 = computed(() => this.summaryData()?.totalCO2 ?? 0);
-  summaryTotalNO2 = computed(() => this.summaryData()?.totalNO2 ?? 0);
-  summaryTotalCH4 = computed(() => this.summaryData()?.totalCH4 ?? 0);
-  summaryFuel = computed(() => this.summaryData()?.totalFuelConsumed ?? 0);
-  summaryDistance = computed(() => this.summaryData()?.totalDistanceKM ?? 0);
+  // ── Active-tab computed KPIs ─────────────────────────────
+  activeTabCO2e = computed(() => {
+    const s = this.activeTab() === 'vehicle' ? this.vehicleSummary() : this.generatorSummary();
+    return s?.totalCO2e ?? 0;
+  });
+  activeTabCO2 = computed(() => {
+    const s = this.activeTab() === 'vehicle' ? this.vehicleSummary() : this.generatorSummary();
+    return s?.totalCO2 ?? 0;
+  });
+  activeTabNO2 = computed(() => {
+    const s = this.activeTab() === 'vehicle' ? this.vehicleSummary() : this.generatorSummary();
+    return s?.totalNO2 ?? 0;
+  });
+  activeTabCH4 = computed(() => {
+    const s = this.activeTab() === 'vehicle' ? this.vehicleSummary() : this.generatorSummary();
+    return s?.totalCH4 ?? 0;
+  });
+  activeTabFuel = computed(() => {
+    const s = this.activeTab() === 'vehicle' ? this.vehicleSummary() : this.generatorSummary();
+    return s?.totalFuelConsumed ?? 0;
+  });
+  activeTabDistance = computed(() => this.vehicleSummary()?.totalDistanceKM ?? 0);
+  activeTabPower = computed(() => this.generatorSummary()?.totalPowerOutputKWH ?? 0);
 
   // ── Computed ──────────────────────────────────────────────
   currentYear = computed(() => new Date().getFullYear());
@@ -95,7 +116,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       this.openedMainMenu = s.main;
     }
 
-    this.loadSummary();
+    this.loadSummaries();
   }
 
   ngAfterViewInit(): void { }
@@ -115,6 +136,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     if (y > this.currentYear()) return;
     this.selectedYear.set(y);
     this.showYearPicker.set(false);
+    this.loadSummaries();
   }
 
   shiftDecade(dir: 1 | -1): void {
@@ -133,7 +155,6 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     }, 0);
   }
 
-
   // ── Profile dropdown ──────────────────────────────────────
   toggleProfile(event: Event): void {
     event.stopPropagation();
@@ -146,7 +167,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     this.showYearPicker.set(false);
   }
 
-  // ── Helpers ───────────────────────────────────────────────
+  // ── Dashboard root check ──────────────────────────────────
   isDashboardRoot(): boolean {
     return this.router.url === '/dashboard' || this.router.url === '/dashboard/';
   }
@@ -171,8 +192,6 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     else this.pageTitle = 'Statics';
   }
 
-
-  // Checks if ANY config sub-page is active (for closed sidebar icon highlight)
   isAnyConfigActive(): boolean {
     const url = this.router.url;
     return url.includes('/user') || url.includes('/department') ||
@@ -182,21 +201,18 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       url.includes('/sitelocation');
   }
 
-  // Checks if ANY fleet page is active
   isAnyFleetActive(): boolean {
     const url = this.router.url;
     return url.includes('/vehicle') || url.includes('/searchVehicle') ||
       url.includes('/MyActionVehicle');
   }
 
-  // Checks if ANY power generation page is active
   isAnyPowerActive(): boolean {
     const url = this.router.url;
     return url.includes('/generator-ec') || url.includes('/searchGenerator') ||
       url.includes('/MyActionGenerator');
   }
 
-  // Returns the active page label for Configuration tooltip
   getActiveConfigLabel(): string {
     const url = this.router.url;
     if (url.includes('/user')) return 'User Administration';
@@ -211,7 +227,6 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     return 'Configuration';
   }
 
-  // Returns the active page label for Fleet tooltip
   getActiveFleetLabel(): string {
     const url = this.router.url;
     if (url.includes('/searchVehicle')) return 'Search';
@@ -220,7 +235,6 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     return 'Fleet & Transport';
   }
 
-  // Returns the active page label for Power Generation tooltip
   getActivePowerLabel(): string {
     const url = this.router.url;
     if (url.includes('/searchGenerator')) return 'Search';
@@ -231,7 +245,6 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
   goTo(path: string): void { this.router.navigate([path], { relativeTo: this.route }); }
   isActive(path: string): boolean { return this.router.url.includes(path); }
-
   toggleSidebar(): void { this.sidebarOpen = !this.sidebarOpen; }
 
   logout(): void {
@@ -300,17 +313,50 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   isReporter(): boolean { return this.selectedRole === 'Reporter'; }
 
   formatNum(value: number): string {
-    return Math.round(value).toLocaleString('en-IN');
+    if (value == null) return '0';
+    return value.toFixed(2); // shows 2 decimal places
   }
 
-  // ── Load summary from backend ────────────────────────────────
-  loadSummary(): void {
+
+  // ── Load split summaries (vehicle + generator separately) ────────────────────
+  loadSummaries(): void {
     this.isSummaryLoading.set(true);
-    this.svc.getDashboardSummary(this.selectedYear())
+
+    forkJoin({
+      vehicle: this.svc.getVehicleSummary(this.selectedYear()),
+      generator: this.svc.getGeneratorSummary(this.selectedYear()),
+    })
       .pipe(takeUntil(this.destroy$), finalize(() => this.isSummaryLoading.set(false)))
       .subscribe({
-        next: res => { if (res.status && res.data) this.summaryData.set(res.data); },
+        next: ({ vehicle, generator }) => {
+          if (vehicle.status) this.vehicleSummary.set(vehicle.data);
+          if (generator.status) this.generatorSummary.set(generator.data);
+        },
         error: () => { }
       });
+  }
+
+  // ── Grid click handlers — navigate to search with query params ────────────────
+
+  /**
+   * Called by VehicleCharts when a user clicks on a grid row/cell.
+   * payload can carry: year, month, fuelType, vehicleType, city, etc.
+   */
+  onVehicleGridClick(payload: Record<string, any>): void {
+    this.router.navigate(['searchVehicle'], {
+      relativeTo: this.route,
+      queryParams: { year: this.selectedYear(), ...payload }
+    });
+  }
+
+  /**
+   * Called by GeneratorCharts when a user clicks on a grid row/cell.
+   * payload can carry: year, month, generatorName, siteName, etc.
+   */
+  onGeneratorGridClick(payload: Record<string, any>): void {
+    this.router.navigate(['searchGenerator'], {
+      relativeTo: this.route,
+      queryParams: { year: this.selectedYear(), ...payload }
+    });
   }
 }

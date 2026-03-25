@@ -91,13 +91,16 @@ export interface SiteEmissionResponse {
   totalCO2e:   number;
 }
 
+// ── Dashboard Summary (combined) ─────────────────────────────
 export interface DashboardSummaryResponse {
-  totalCO2e: number;
-  totalCO2: number;
-  totalNO2: number;
-  totalCH4: number;
+  totalCO2e:         number;
+  totalCO2:          number;
+  totalNO2:          number;
+  totalCH4:          number;
   totalFuelConsumed: number;
-  totalDistanceKM: number;
+  totalDistanceKM:   number;
+  /** Only populated for generator summary */
+  totalPowerOutputKWH?: number;
 }
 
 export interface ApiResponse<T> { status: boolean; data: T; }
@@ -172,23 +175,36 @@ export class DashboardService {
     );
   }
 
-  // ── NEW: City Wise Emissions (Vehicle) ───────────────────────
   getVehicleCityEmissions(year: number): Observable<ApiResponse<CityEmissionResponse[]>> {
     return this.http.get<ApiResponse<CityEmissionResponse[]>>(
       `${this.base}/Chart/VehicleCityEmissions?year=${year}`
     );
   }
 
-  // ── NEW: Site Wise Emissions (Generator) ────────────────────
   getGeneratorSiteEmissions(year: number): Observable<ApiResponse<SiteEmissionResponse[]>> {
     return this.http.get<ApiResponse<SiteEmissionResponse[]>>(
       `${this.base}/Chart/GeneratorSiteEmissions?year=${year}`
     );
   }
 
+  // ── Combined (both) summary — kept for backwards-compat ──────────────────────
   getDashboardSummary(year: number): Observable<ApiResponse<DashboardSummaryResponse>> {
     return this.http.get<ApiResponse<DashboardSummaryResponse>>(
       `${this.base}/Chart/DashboardSummary?year=${year}`
+    );
+  }
+
+  // ── Vehicle-only summary ──────────────────────────────────────────────────────
+  getVehicleSummary(year: number): Observable<ApiResponse<DashboardSummaryResponse>> {
+    return this.http.get<ApiResponse<DashboardSummaryResponse>>(
+      `${this.base}/Chart/VehicleSummary?year=${year}`
+    );
+  }
+
+  // ── Generator-only summary ────────────────────────────────────────────────────
+  getGeneratorSummary(year: number): Observable<ApiResponse<DashboardSummaryResponse>> {
+    return this.http.get<ApiResponse<DashboardSummaryResponse>>(
+      `${this.base}/Chart/GeneratorSummary?year=${year}`
     );
   }
 }
