@@ -1,4 +1,4 @@
-import { Component, EventEmitter, HostListener, Input, Output, signal } from '@angular/core';
+import { Component, EventEmitter, HostListener, Input, Output, signal, SimpleChanges } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { DatePickerStateServiceTs } from './date-picker-state.service.ts'; // adjust path
 
@@ -11,7 +11,10 @@ import { DatePickerStateServiceTs } from './date-picker-state.service.ts'; // ad
 })
 export class DateRangePickerComponent {
 
-  @Input() pickerId: string = 'default'; // unique id per instance
+  @Input() pickerId: string = 'default';
+  @Input() startDate: string | null = null;
+  @Input() endDate: string | null = null;
+
   @Output() rangeSelected = new EventEmitter<{ startDate: Date | null, endDate: Date | null }>();
 
   today = new Date().toISOString().split('T')[0];
@@ -22,7 +25,20 @@ export class DateRangePickerComponent {
   toValue: string = '';
   activeQuick: string = '';
 
-  constructor(public pickerState: DatePickerStateServiceTs) {}
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['startDate'] || changes['endDate']) {
+      if (this.startDate) {
+        this.selectedStart = new Date(this.startDate);
+        this.fromValue = this.startDate.split('T')[0];
+      }
+      if (this.endDate) {
+        this.selectedEnd = new Date(this.endDate);
+        this.toValue = this.endDate.split('T')[0];
+      }
+    }
+  }
+
+  constructor(public pickerState: DatePickerStateServiceTs) { }
 
   get showPicker(): boolean {
     return this.pickerState.isOpen(this.pickerId);

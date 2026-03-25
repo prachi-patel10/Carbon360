@@ -167,6 +167,21 @@ export class VehicleCharts implements OnInit, AfterViewInit, OnChanges, OnDestro
       queryParams['endDate']   = `${y}-${String(m).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
     }
 
+    if (params.month) {
+  const y = this.year, m = params.month;
+  const lastDay = new Date(y, m, 0).getDate();
+  const start = `${y}-${String(m).padStart(2, '0')}-01`;
+  const end   = `${y}-${String(m).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
+
+  queryParams['startDate'] = start;
+  queryParams['endDate']   = end;
+
+  // also set reported date range
+  queryParams['reportedStartDate'] = start;
+  queryParams['reportedEndDate']   = end;
+}
+
+
     // Emit to parent (DashboardComponent) so it can navigate
     this.gridRowClick.emit(queryParams);
 

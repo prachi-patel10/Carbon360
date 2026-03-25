@@ -121,12 +121,32 @@
               </div>
             </div>
             <!-- Operation Date -->
-            <div class="filter-field">
+            <!-- <div class="filter-field">
               <label class="filter-label">
                 <i class="fas fa-calendar-alt"></i> Operation Date
               </label>
               <app-date-range-picker-component #opDatePicker pickerId="veh-operation"
                 (rangeSelected)="onOperationDateRangeSelected($event)">
+              </app-date-range-picker-component>
+            </div> -->
+
+            <!-- Entry Date -->
+            <!-- <div class="filter-field">
+              <label class="filter-label">
+                <i class="fas fa-calendar-alt"></i> Reported Date
+              </label>
+              <app-date-range-picker-component #entryDatePicker pickerId="veh-entry"
+                (rangeSelected)="onEntryDateRangeSelected($event)">
+              </app-date-range-picker-component>
+            </div> -->
+
+            <!-- Operation Date -->
+            <div class="filter-field">
+              <label class="filter-label">
+                <i class="fas fa-calendar-alt"></i> Operation Date
+              </label>
+              <app-date-range-picker-component #opDatePicker pickerId="veh-operation" [startDate]="operationStartDate()"
+                [endDate]="operationEndDate()" (rangeSelected)="onOperationDateRangeSelected($event)">
               </app-date-range-picker-component>
             </div>
 
@@ -135,10 +155,11 @@
               <label class="filter-label">
                 <i class="fas fa-calendar-alt"></i> Reported Date
               </label>
-              <app-date-range-picker-component #entryDatePicker pickerId="veh-entry"
-                (rangeSelected)="onEntryDateRangeSelected($event)">
+              <app-date-range-picker-component #entryDatePicker pickerId="veh-entry" [startDate]="entryStartDate()"
+                [endDate]="entryEndDate()" (rangeSelected)="onEntryDateRangeSelected($event)">
               </app-date-range-picker-component>
             </div>
+
 
           </div>
 

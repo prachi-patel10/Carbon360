@@ -75,21 +75,29 @@ export class SearchVehicle implements OnInit {
 
   // ── ngOnInit: reads chart query params, pre-fills filters, then loads ──
   ngOnInit(): void {
-    this.loadFuelTypes();
-    this.loadVehicleTypes();
+  this.loadFuelTypes();
+  this.loadVehicleTypes();
 
-    this.route.queryParams.subscribe(params => {
-      if (params['source'] === 'chart') {
-        if (params['fuelType']) this.selectedFuels = [params['fuelType']];
-        if (params['startDate']) this.operationStartDate.set(params['startDate']);
-        if (params['endDate']) this.operationEndDate.set(params['endDate'] + 'T23:59:59');
-        if (params['search']) this.searchText.set(params['search']);
-      }
-      this.loadTrips(1);
-    });
-  }
+  this.route.queryParams.subscribe(params => {
+    if (params['source'] === 'chart') {
+      if (params['fuelType']) this.selectedFuels = [params['fuelType']];
+      if (params['vehicleType']) this.selectedVehicles = [params['vehicleType']]; 
+      if (params['search']) this.searchText.set(params['search']);
 
-  // ─── Data Loading ─────────────────────────────────────────────
+      if (params['startDate']) this.operationStartDate.set(params['startDate']);
+      if (params['endDate'])   this.operationEndDate.set(params['endDate'] + 'T23:59:59');
+      if (params['entryStartDate']) this.entryStartDate.set(params['entryStartDate']);
+      if (params['entryEndDate'])   this.entryEndDate.set(params['entryEndDate'] + 'T23:59:59');
+      // Reported date range (entry date)
+    if (params['reportedStartDate']) this.entryStartDate.set(params['reportedStartDate']);
+    if (params['reportedEndDate'])   this.entryEndDate.set(params['reportedEndDate'] + 'T23:59:59');
+    }
+    this.loadTrips(1);
+  });
+}
+
+
+  // ─── Data Loading ────
 
   loadFuelTypes() {
     this.fuelService.getAll().subscribe({
@@ -104,7 +112,7 @@ export class SearchVehicle implements OnInit {
     });
   }
 
-  loadTrips(page:number) {
+  loadTrips(page: number) {
     this.service.searchTrips(
       page,
       this.pageSize,
@@ -148,7 +156,7 @@ export class SearchVehicle implements OnInit {
 
   isLoading(tripId: string): boolean { return !!this.loadingTrips[tripId]; }
 
- 
+
   // getEmissionClass(value: number): string {
   //   if (value <= 100)  return 'emission-low';
   //   if (value <= 500)  return 'emission-moderate';
@@ -254,13 +262,14 @@ export class SearchVehicle implements OnInit {
   // ─── Date Range ───────────────────────────────────────────────
 
   onOperationDateRangeSelected(range: { startDate: Date | null, endDate: Date | null }) {
-      this.operationStartDate.set(range.startDate ? range.startDate.toISOString() : null);
-    this.operationEndDate.set(range.endDate     ? range.endDate.toISOString()   : null);
-    this.loadTrips(1);}
+    this.operationStartDate.set(range.startDate ? range.startDate.toISOString() : null);
+    this.operationEndDate.set(range.endDate ? range.endDate.toISOString() : null);
+    this.loadTrips(1);
+  }
 
   onEntryDateRangeSelected(range: { startDate: Date | null, endDate: Date | null }) {
-     this.entryStartDate.set(range.startDate ? range.startDate.toISOString() : null);
-    this.entryEndDate.set(range.endDate     ? range.endDate.toISOString()   : null);
+    this.entryStartDate.set(range.startDate ? range.startDate.toISOString() : null);
+    this.entryEndDate.set(range.endDate ? range.endDate.toISOString() : null);
     this.loadTrips(1);
   }
 
@@ -391,4 +400,3 @@ export class SearchVehicle implements OnInit {
 
 
 
- 
