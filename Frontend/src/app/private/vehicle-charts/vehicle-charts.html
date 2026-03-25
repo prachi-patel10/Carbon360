@@ -11,10 +11,10 @@
           <p>Stacked by fuel type</p>
         </div>
       </div>
-          <!-- ✅ ADD THIS BUTTON -->
-  <button (click)="exportFuelChart()">
-    Export Excel
-  </button>
+      <!-- ✅ ADD THIS BUTTON -->
+      <button (click)="exportFuelChart()">
+        Export Excel
+      </button>
     </div>
     <div class="chart-loader" [class.hidden]="!isFuelLoading()">
       <div class="dot-loader vehicle-dots"><span></span><span></span><span></span></div>
@@ -48,10 +48,10 @@
           <p>CO2e, CO2, NO2 &amp; CH4 (kg)</p>
         </div>
       </div>
-                <!-- ✅ ADD THIS BUTTON -->
-  <button (click)="exportVehicleEmissionChartExport()">
-    Export Excel
-  </button>
+      <!-- ✅ ADD THIS BUTTON -->
+      <button (click)="exportVehicleEmissionChartExport()">
+        Export Excel
+      </button>
     </div>
     <div class="chart-loader" [class.hidden]="!isEmissionLoading()">
       <div class="dot-loader vehicle-dots"><span></span><span></span><span></span></div>
@@ -152,7 +152,7 @@
         <tbody>
           @for (vt of vtypeTableRows()!.vehicleTypes; track vt; let ti = $index) {
           <tr class="data-row">
-            <td class="td-vtype">
+            <td class="td-vtype" (click)="onVtypeTypeTotalClick(vt)">
               <div class="vtype-name-cell">
                 <span class="vtype-color-bar" [style.background]="vtypeTableRows()!.colors[ti]"></span>
                 <span class="vtype-name-text">{{ vt }}</span>
@@ -160,14 +160,10 @@
             </td>
             @for (month of vtypeTableRows()!.monthLabels; track month; let mi = $index) {
             @if (vtypeTableRows()!.monthTotals[mi] > 0) {
-            <td class="td-cell" [class.has-data]="vtypeTableRows()!.distanceMatrix[mi][ti] > 0">
+            <td class="td-cell" [class.has-data]="vtypeTableRows()!.distanceMatrix[mi][ti] > 0"
+              (click)="onVtypeGridCellClick(mi, vt)">
               @if (vtypeTableRows()!.distanceMatrix[mi][ti] > 0) {
-              <span class="cell-bar"
-                [style.width.%]="vtypeTableRows()!.typeTotals[ti] > 0 ? (vtypeTableRows()!.distanceMatrix[mi][ti] / vtypeTableRows()!.typeTotals[ti]) * 100 : 0"
-                [style.background]="vtypeTableRows()!.colors[ti] + '2a'">
-              </span>
-              <span class="cell-val"
-                [title]="vt + ' · ' + month + ' | ' + vtypeTableRows()!.distanceMatrix[mi][ti].toFixed(1) + ' km | Trips: ' + vtypeTableRows()!.tripsMatrix[mi][ti] + ' | Fuel: ' + vtypeTableRows()!.fuelMatrix[mi][ti].toFixed(1) + ' L'">
+              <span class="cell-val">
                 {{ formatNum(vtypeTableRows()!.distanceMatrix[mi][ti]) }}
               </span>
               } @else {
@@ -176,7 +172,9 @@
             </td>
             }
             }
-            <td class="td-row-total">{{ formatNum(vtypeTableRows()!.typeTotals[ti]) }}</td>
+            <td class="td-row-total" (click)="onVtypeTypeTotalClick(vt)">
+              {{ formatNum(vtypeTableRows()!.typeTotals[ti]) }}
+            </td>
           </tr>
           }
         </tbody>
@@ -185,7 +183,9 @@
             <td class="td-vtype footer-label">Total (km)</td>
             @for (month of vtypeTableRows()!.monthLabels; track month; let mi = $index) {
             @if (vtypeTableRows()!.monthTotals[mi] > 0) {
-            <td class="td-cell td-col-total">{{ formatNum(vtypeTableRows()!.monthTotals[mi]) }}</td>
+            <td class="td-cell td-col-total" (click)="onVtypeMonthTotalClick(mi)">
+              {{ formatNum(vtypeTableRows()!.monthTotals[mi]) }}
+            </td>
             }
             }
             <td class="td-row-total grand-total">{{ formatNum(vtypeTotalDist()) }}</td>
@@ -194,6 +194,7 @@
       </table>
       }
     </div>
+
   </div>
 </div>
 

@@ -75,26 +75,26 @@ export class SearchVehicle implements OnInit {
 
   // ── ngOnInit: reads chart query params, pre-fills filters, then loads ──
   ngOnInit(): void {
-  this.loadFuelTypes();
-  this.loadVehicleTypes();
+    this.loadFuelTypes();
+    this.loadVehicleTypes();
 
-  this.route.queryParams.subscribe(params => {
-    if (params['source'] === 'chart') {
-      if (params['fuelType']) this.selectedFuels = [params['fuelType']];
-      if (params['vehicleType']) this.selectedVehicles = [params['vehicleType']]; 
-      if (params['search']) this.searchText.set(params['search']);
+    this.route.queryParams.subscribe(params => {
+      if (params['source'] === 'chart') {
+        if (params['fuelType']) this.selectedFuels = [params['fuelType']];
+        if (params['vehicleType']) this.selectedVehicles = [params['vehicleType']];
+        if (params['search']) this.searchText.set(params['search']);
 
-      if (params['startDate']) this.operationStartDate.set(params['startDate']);
-      if (params['endDate'])   this.operationEndDate.set(params['endDate'] + 'T23:59:59');
-      if (params['entryStartDate']) this.entryStartDate.set(params['entryStartDate']);
-      if (params['entryEndDate'])   this.entryEndDate.set(params['entryEndDate'] + 'T23:59:59');
-      // Reported date range (entry date)
-    if (params['reportedStartDate']) this.entryStartDate.set(params['reportedStartDate']);
-    if (params['reportedEndDate'])   this.entryEndDate.set(params['reportedEndDate'] + 'T23:59:59');
-    }
-    this.loadTrips(1);
-  });
-}
+        if (params['startDate']) this.operationStartDate.set(params['startDate']);
+        if (params['endDate']) this.operationEndDate.set(params['endDate'] + 'T23:59:59');
+        if (params['entryStartDate']) this.entryStartDate.set(params['entryStartDate']);
+        if (params['entryEndDate']) this.entryEndDate.set(params['entryEndDate'] + 'T23:59:59');
+        // Reported date range (entry date)
+        if (params['reportedStartDate']) this.entryStartDate.set(params['reportedStartDate']);
+        if (params['reportedEndDate']) this.entryEndDate.set(params['reportedEndDate'] + 'T23:59:59');
+      }
+      this.loadTrips(1);
+    });
+  }
 
 
   // ─── Data Loading ────
@@ -281,9 +281,13 @@ export class SearchVehicle implements OnInit {
     this.operationStartDate.set(null); this.operationEndDate.set(null);
     this.entryStartDate.set(null); this.entryEndDate.set(null);
     this.currentPage.set(1);
-    this.opDatePicker?.reset(); this.entryDatePicker?.reset();
+
+    this.opDatePicker?.reset();
+    this.entryDatePicker?.reset();
+
     this.loadTrips(1);
   }
+
 
   // ─── Filters ──────────────────────────────────────────────────
   // applyFilters() {
