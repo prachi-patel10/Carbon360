@@ -138,7 +138,7 @@ namespace ProjectApp.API.Controllers.Account.VehicleTripEmission
            string? search = null,
            string? vehicleNumber = null,
            [FromQuery] List<string>? fuelType = null,
-           string? vehicleType = null,
+            [FromQuery] List<string>? vehicleType=null,
            DateTime? startDate = null,
            DateTime? endDate = null,
            int? statusId = null,
@@ -147,25 +147,21 @@ namespace ProjectApp.API.Controllers.Account.VehicleTripEmission
            string sortColumn = "tripstartdatetime",
            string sortDirection = "DESC")
         {
-            // Convert list to CSV e.g. "Petrol,CNG" — SP handles splitting via CB_SplitString
-            string? fuelTypeCsv = (fuelType != null && fuelType.Any())
-                ? string.Join(",", fuelType)
-                : null;
 
-            var (data, totalRecords) = await _service.SearchVehicleTrips(
-                search,
-                vehicleNumber,
-                fuelTypeCsv,
-                vehicleType,
-                startDate,
-                endDate,
-                statusId,
-                null,
-                pageNumber,
-                pageSize,
-                sortColumn,
-                sortDirection
-            );
+            (IEnumerable<SearchVehicleTripEmissionDTO> data, int totalRecords) = await _service.SearchVehicleTrips(
+       search,
+       vehicleNumber,
+       fuelType,      
+       vehicleType,    
+       startDate,
+       endDate,
+       statusId,
+       null,
+       pageNumber,
+       pageSize,
+       sortColumn,
+       sortDirection
+   );
 
             return Ok(new
             {
@@ -241,7 +237,8 @@ namespace ProjectApp.API.Controllers.Account.VehicleTripEmission
         [HttpGet("export-excel")]
         public async Task<IActionResult> ExportExcel(
    string? search,
-   string? fuelType,
+ [FromQuery] List<string>? fuelType ,
+    [FromQuery] List<string>? vehicleType ,
    DateTime? startDate,
    DateTime? endDate,
    DateTime? entryStartDate,
@@ -252,6 +249,7 @@ namespace ProjectApp.API.Controllers.Account.VehicleTripEmission
             var fileBytes = await _service.ExportVehicleTripsExcel(
                 search,
                 fuelType,
+                vehicleType,
                 startDate,
                 endDate,
                 entryStartDate,

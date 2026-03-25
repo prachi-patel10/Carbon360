@@ -32,8 +32,8 @@ namespace ProjectApp.Repository.Interfaces.VehicleTripEmission
         Task<(IEnumerable<SearchVehicleTripEmissionDTO>, int)> SearchVehicleTrips(
            string? search,
            string? vehicleNumber,
-           string? fuelType,
-           string? vehicleType,
+           List<string>? fuelType,         
+           List<string>? vehicleType,
            DateTime? startDate,
            DateTime? endDate,
            int? statusId,
@@ -52,7 +52,8 @@ namespace ProjectApp.Repository.Interfaces.VehicleTripEmission
 
         Task<byte[]> ExportVehicleTripsExcel(
         string? search,
-        string? fuelType,
+        List<string>? fuelType,      
+    List<string>? vehicleType,
         DateTime? startDate,
         DateTime? endDate,
         DateTime? entryStartDate,
