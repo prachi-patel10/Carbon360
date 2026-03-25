@@ -833,7 +833,7 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
             headerHtml = headerHtml.Replace("{{ReportTitle}}", "Generator Operation Emission Report");
             headerHtml = headerHtml.Replace("{{EntryDate}}", entryDateStr);
             headerHtml = headerHtml.Replace("{{status}}", GetString("Status"));
-
+            headerHtml = headerHtml.Replace("{{reportId}}", GetString("ReportId"));
             footerHtml = footerHtml.Replace("{{generatedDate}}", DateTime.Now.ToString("dd-MMM-yyyy HH:mm"));
 
             contentHtml = contentHtml.Replace("{{EntryByFullName}}", GetString("EntryByFullName"));

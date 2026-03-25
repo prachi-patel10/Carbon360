@@ -344,65 +344,105 @@
   grid-column: span 2;
 }
 
-/* HISTORY CARD */
+/* ================= ADVANCED TIMELINE ================= */
 .history-card {
   margin-top: 32px;
-  padding: 32px;
-  background: #f9fafb;
-  border-radius: 16px;
+  padding: 24px 0;
+  background: transparent;
 }
 
 .history-list {
   list-style: none;
-  padding: 0;
-  margin: 16px 0 0 0;
+  margin: 0;
+  padding-left: 40px;
+  position: relative;
 }
 
+/* Each Item */
 .history-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 16px;
-  padding: 16px;
-  margin-bottom: 12px;
-  background: white;
-  border-radius: 12px;
-  border-left: 4px solid #0f5132;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  position: relative;
+  margin-bottom: 28px;
+  padding-left: 20px;
 }
 
-.history-item:last-child {
-  margin-bottom: 0;
+/* TOP LINE (before dot) */
+.history-item::before {
+  content: '';
+  position: absolute;
+  left: -20px;
+  top: -28px;
+  width: 2px;
+  height: 28px;
+  background: #d1d5db;
 }
 
+/* BOTTOM LINE (after dot) */
+.history-item::after {
+  content: '';
+  position: absolute;
+  left: -20px;
+  top: 12px;
+  width: 2px;
+  height: calc(100% - 12px);
+  background: #d1d5db;
+}
+
+/* REMOVE TOP LINE FOR FIRST ITEM */
+.history-item:first-child::before {
+  display: none;
+}
+
+/* REMOVE BOTTOM LINE FOR LAST ITEM */
+.history-item:last-child::after {
+  display: none;
+}
+
+/* DOT */
+.history-item .dot {
+  position: absolute;
+  left: -26px;
+  top: 4px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #0f5132;
+  border: 3px solid #ffffff;
+  box-shadow: 0 0 0 2px #0f5132;
+}
+
+/* STATUS COLORS */
+.history-item.approve .dot {
+  background: #16a34a;
+  box-shadow: 0 0 0 2px #16a34a;
+}
+
+.history-item.reject .dot {
+  background: #dc2626;
+  box-shadow: 0 0 0 2px #dc2626;
+}
+
+.history-item.resubmit .dot {
+  background: #f59e0b;
+  box-shadow: 0 0 0 2px #f59e0b;
+}
+
+/* CONTENT */
 .history-content {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  flex: 1;
+  gap: 4px;
 }
 
 .history-message {
-  font-size: 15px;
-  color: #1f2937;
+  font-size: 14px;
   font-weight: 500;
+  color: #1f2937;
 }
 
 .history-meta {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.history-date {
-  font-size: 13px;
+  font-size: 12px;
   color: #6b7280;
 }
-
-.history-ago {
-  font-size: 13px;
-  color: #9ca3af;
-}
-
 /* RESPONSIVE */
 @media (max-width: 768px) {
   .generator-ecpage {
