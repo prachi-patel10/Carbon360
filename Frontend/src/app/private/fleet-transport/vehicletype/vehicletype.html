@@ -188,11 +188,7 @@
       </span>
 
     </div>
-
-    <!-- Body — two columns -->
     <div class="vf-body">
-
-      <!-- ── Column 1: Vehicle Type Name ── -->
       <div class="vf-col">
         <div class="vf-col-label">
           <i class="bi bi-tag"></i>
@@ -259,7 +255,6 @@
         </div>
       </div>
 
-      <!-- ── Column 2: Category ── -->
       <div class="vf-col">
         <div class="vf-col-label">
           <i class="bi bi-grid"></i>
@@ -308,7 +303,6 @@
 
             <div class="vf-divider"></div>
 
-            <!-- opt.id = "1"/"2"/"3", opt.value = "LDV"/"MDV"/"HDV" -->
             <div class="vf-check-row"
                  *ngFor="let opt of categoryList"
                  (click)="toggleCategory(opt.id)"
@@ -327,7 +321,7 @@
         </div>
       </div>
 
-    </div><!-- /vf-body -->
+    </div>
 
     <!-- Footer -->
     <div class="vf-footer">

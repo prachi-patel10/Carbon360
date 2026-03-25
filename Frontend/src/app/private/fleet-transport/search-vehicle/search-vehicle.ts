@@ -5,6 +5,8 @@ import { CommonModule } from '@angular/common';
 import { SearchVehcileService } from './search-vehcile-service';
 import { Router, ActivatedRoute } from '@angular/router';   // ← added ActivatedRoute
 import { DateRangePickerComponent } from '../../../public/date-range-picker-component/date-range-picker-component';
+import { TripService } from '../vehicle-ec/vehicle-service-ec';
+import { VehicletypeService } from '../vehicletype/vehicletype-service';
 
 interface VehicleEmissionDisplay {
   tripId: string;
@@ -51,6 +53,9 @@ export class SearchVehicle implements OnInit {
 
   selectedFuelType: string = 'All';
   loadingTrips: Record<string, boolean> = {};
+  vehicleTypes: any[] = [];
+selectedVehicles: string[] = [];
+vehicleDropdownOpen = false;
 
   totalRecordsCount = signal<number>(0);
   pageSize          = 10;
@@ -59,9 +64,11 @@ export class SearchVehicle implements OnInit {
   currentPage       = signal<number>(1);
   totalPages        = signal<number>(1);
 
+  
   constructor(
     private service: SearchVehcileService,
     private fuelService: FueltypeService,
+     private vehicleService: VehicletypeService, 
     private router: Router,
     private route: ActivatedRoute      // ← added
   ) { }
@@ -69,6 +76,7 @@ export class SearchVehicle implements OnInit {
   // ── ngOnInit: reads chart query params, pre-fills filters, then loads ──
   ngOnInit(): void {
     this.loadFuelTypes();
+      this.loadVehicleTypes(); 
 
     this.route.queryParams.subscribe(params => {
       if (params['source'] === 'chart') {
@@ -116,6 +124,20 @@ export class SearchVehicle implements OnInit {
     });
   }
 
+  loadVehicleTypes() {
+  this.vehicleService.getAll().subscribe({
+    next: (res: any) => {
+      console.log('Vehicle API Response:', res); 
+
+      this.vehicleTypes = Array.isArray(res)
+        ? res
+        : res.data || [];
+
+      console.log('Vehicle Types:', this.vehicleTypes); 
+    },
+    error: (err) => console.error('Error loading vehicle types', err)
+  });
+}
   // getEmissionClass(value: number): string {
   //   if (value <= 100)  return 'emission-low';
   //   if (value <= 500)  return 'emission-moderate';
@@ -169,11 +191,16 @@ export class SearchVehicle implements OnInit {
 
   // ─── Fuel Multi-Select ────────────────────────────────────────
 
-  @HostListener('document:click', ['$event'])
-  onDocumentClick(e: MouseEvent) {
-    if (!(e.target as HTMLElement).closest('.fuel-multiselect')) this.fuelDropdownOpen = false;
+ @HostListener('document:click', ['$event'])
+onDocumentClick(e: MouseEvent) {
+  if (!(e.target as HTMLElement).closest('.fuel-multiselect')) {
+    this.fuelDropdownOpen = false;
   }
 
+  if (!(e.target as HTMLElement).closest('.vehicle-multiselect')) {
+    this.vehicleDropdownOpen = false;
+  }
+}
   toggleFuelDropdown() { this.fuelDropdownOpen = !this.fuelDropdownOpen; }
 
   toggleFuel(name: string) {
@@ -214,6 +241,7 @@ export class SearchVehicle implements OnInit {
 
   resetFilters() {
     this.selectedFuels = []; this.fuelDropdownOpen = false;
+      this.selectedVehicles = [];  this.vehicleDropdownOpen = false; 
     this.searchText.set('');
     this.operationStartDate.set(null); this.operationEndDate.set(null);
     this.entryStartDate.set(null);     this.entryEndDate.set(null);
@@ -254,7 +282,13 @@ export class SearchVehicle implements OnInit {
       if (enStartDate && entry < enStartDate) matchesEntry = false;
       if (enEndDate   && entry > enEndDate)   matchesEntry = false;
 
-      return matchesSearch && matchesFuel && matchesOperation && matchesEntry;
+      const matchesVehicle =
+  this.selectedVehicles.length === 0 ||
+  this.selectedVehicles
+    .map(v => v.toLowerCase())
+    .includes(e.vehicleType.toLowerCase());
+
+return matchesSearch && matchesFuel && matchesVehicle && matchesOperation && matchesEntry;
     });
 
     this.filteredData.set(filtered);
@@ -262,7 +296,40 @@ export class SearchVehicle implements OnInit {
     this.totalPages.set(Math.ceil(filtered.length / this.pageSize));
     this.currentPage.set(1);
   }
+toggleVehicleDropdown() {
+  this.vehicleDropdownOpen = !this.vehicleDropdownOpen;
+}
 
+toggleVehicle(name: string) {
+  const index = this.selectedVehicles.indexOf(name);
+
+  if (index > -1) {
+    this.selectedVehicles.splice(index, 1);
+  } else {
+    this.selectedVehicles.push(name);
+  }
+
+  this.applyFilters();
+}
+
+isVehicleSelected(name: string): boolean {
+  return this.selectedVehicles.includes(name);
+}
+
+toggleSelectAllVehicles() {
+  if (this.selectedVehicles.length === this.vehicleTypes.length) {
+    this.selectedVehicles = [];
+  } else {
+    this.selectedVehicles = this.vehicleTypes.map(v => v.vehicle_name);
+  }
+
+  this.applyFilters();
+}
+
+clearVehicles() {
+  this.selectedVehicles = [];
+  this.applyFilters();
+}
   // ─── Pagination ───────────────────────────────────────────────
 
   paginatedData() {
