@@ -2,6 +2,7 @@
 using ProjectApp.Core.DTOs.Charts;
 using ProjectApp.Core.Models;
 using ProjectApp.Repository.Interfaces.Charts;
+using ProjectApp.Repository.Services.Common;
 
 namespace ProjectApp.Repository.Services.Charts
 {
@@ -534,6 +535,142 @@ namespace ProjectApp.Repository.Services.Charts
                 .FromSqlInterpolated($"EXEC USP_CB_DashboardEmissionSummary {year}")
                 .ToListAsync();
             return result.FirstOrDefault() ?? new DashboardSummaryDto();
+        }
+
+        public async Task<byte[]> ExportVehicleFuelExcelAsync(int year)
+        {
+            var data = await GetVehicleFuelMonthlyConsumptionAsync(year);
+
+            var rows = Enumerable.Range(1, 12).Select(m =>
+            {
+                var monthData = data.Where(x => x.MonthNumber == m).ToList();
+
+                return new VehicleFuelExportDto
+                {
+                    Month = _monthNames[m - 1],
+
+                    Diesel = monthData
+                        .Where(x => x.FuelType == "Diesel")
+                        .Sum(x => x.TotalFuelConsumed),
+
+                    Petrol = monthData
+                        .Where(x => x.FuelType == "Petrol")
+                        .Sum(x => x.TotalFuelConsumed),
+
+                    CNG = monthData
+                        .Where(x => x.FuelType == "CNG")
+                        .Sum(x => x.TotalFuelConsumed),
+
+                    LPG = monthData
+                        .Where(x => x.FuelType == "LPG")
+                        .Sum(x => x.TotalFuelConsumed)
+                };
+            }).ToList();
+
+            //var rows = data
+            //.GroupBy(x => x.MonthNumber)
+            //.Select(g => new VehicleFuelExportDto
+            //{
+            //    Month = g.First().MonthName,
+
+            //    Diesel = g.Where(x => x.FuelType == "Diesel")
+            //              .Sum(x => x.TotalFuelConsumed),
+
+            //    Petrol = g.Where(x => x.FuelType == "Petrol")
+            //              .Sum(x => x.TotalFuelConsumed),
+
+            //    CNG = g.Where(x => x.FuelType == "CNG")
+            //           .Sum(x => x.TotalFuelConsumed),
+
+            //    LPG = g.Where(x => x.FuelType == "LPG")
+            //           .Sum(x => x.TotalFuelConsumed)
+            //})
+            //.ToList();
+
+            //var rows = data.Select(x => new VehicleFuelExportDto
+            //{
+            //    Month = x.MonthName,
+            //    Diesel = x.FuelType == "Diesel" ? x.TotalFuelConsumed : 0,
+            //    Petrol = x.FuelType == "Petrol" ? x.TotalFuelConsumed : 0,
+            //    CNG = x.FuelType == "CNG" ? x.TotalFuelConsumed : 0,
+            //    LPG = x.FuelType == "LPG" ? x.TotalFuelConsumed : 0
+            //}).ToList();
+
+            //var rows = Enumerable.Range(1, 12).Select(m => new VehicleFuelExportDto
+            //{
+            //    Month = _monthNames[m - 1],
+
+            //    Diesel = data
+            //        .Where(x => x.MonthNumber == m && x.FuelType == "Diesel")
+            //        .Sum(x => x.TotalFuelConsumed),
+
+            //    Petrol = data
+            //        .Where(x => x.MonthNumber == m && x.FuelType == "Petrol")
+            //        .Sum(x => x.TotalFuelConsumed),
+
+            //    CNG = data
+            //        .Where(x => x.MonthNumber == m && x.FuelType == "CNG")
+            //        .Sum(x => x.TotalFuelConsumed),
+
+            //    LPG = data
+            //        .Where(x => x.MonthNumber == m && x.FuelType == "LPG")
+            //        .Sum(x => x.TotalFuelConsumed)
+            //}).ToList();
+
+            // ✅ IMPORTANT FIX
+            var columns = new Dictionary<string, string>
+            {
+                { "Month", "Month" },
+                { "Diesel", "Diesel" },
+                { "Petrol", "Petrol" },
+                { "CNG", "CNG" },
+                { "LPG", "LPG" }
+            };
+
+                    return await ExcelExportHelper.ExportExcelWithChartAsync<VehicleFuelExportDto>(
+                        rows,
+                        columns,
+                        "Fuel Report",
+                        $"Vehicle Fuel Report - {year}"
+                    );
+        }
+
+
+        public async Task<byte[]> ExportVehicleEmissionExcelAsync(int year)
+        {
+            var raw = await _context.Set<MonthlyEmissionRawDto>()
+                .FromSqlInterpolated($"EXEC USP_CB_VehicleEmissionMonthlyChart {year}")
+                .ToListAsync();
+
+            var rows = Enumerable.Range(1, 12).Select(m =>
+            {
+                var row = raw.FirstOrDefault(r => r.MonthNumber == m);
+                return new VehicleEmissionExportDto
+                {
+                    Month = _monthNames[m - 1],
+                    TotalCO2e = (double)(row?.TotalEmission ?? 0m),
+                    TotalCO2 = (double)(row?.TotalCO2 ?? 0m),
+                    TotalNO2 = (double)(row?.TotalNO2 ?? 0m),
+                    TotalCH4 = (double)(row?.TotalCH4 ?? 0m),
+                };
+            }).ToList();
+
+            var columns = new Dictionary<string, string>
+    {
+        { "Month",           "Month"     },
+        { "Total CO2e (kg)", "TotalCO2e" },
+        { "CO2 (kg)",        "TotalCO2"  },
+        { "NO2 (kg)",        "TotalNO2"  },
+        { "CH4 (kg)",        "TotalCH4"  },
+    };
+
+            // ✅ Use LINE chart method now
+            return await ExcelExportHelper.ExportExcelWithLineChartAsync<VehicleEmissionExportDto>(
+                rows,
+                columns,
+                "Emission Report",
+                $"Vehicle Emission Report - {year}"
+            );
         }
     }
 }

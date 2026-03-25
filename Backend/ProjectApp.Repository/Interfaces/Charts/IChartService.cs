@@ -35,5 +35,9 @@ namespace ProjectApp.Repository.Interfaces.Charts
         Task<VehicleSummaryDto> GetVehicleSummaryAsync(int year);
         Task<GeneratorSummaryDto> GetGeneratorSummaryAsync(int year);
         Task<DashboardSummaryDto> GetDashboardSummaryAsync(int year);  // ← added
+
+        Task<byte[]> ExportVehicleFuelExcelAsync(int year);
+
+        Task<byte[]> ExportVehicleEmissionExcelAsync(int year);
     }
 }

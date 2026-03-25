@@ -16,6 +16,7 @@ import {
   VehicleTypeDistancePivotResponse,
   CityEmissionResponse
 } from '../dashboard/dashboard-service';
+import { saveAs } from 'file-saver';
 
 Chart.register(...registerables);
 
@@ -695,4 +696,28 @@ export class VehicleCharts implements OnInit, AfterViewInit, OnChanges, OnDestro
   formatNum(value: number): string {
     return Math.round(value).toLocaleString('en-IN');
   }
+
+    // newly added
+  exportFuelChart() {
+  this.svc.exportVehicleFuelExcel(this.year).subscribe({
+    next: (blob) => {
+      saveAs(blob, `FuelData_${this.year}.xlsx`);
+    },
+    error: (err) => {
+      console.error('Export failed', err);
+    }
+  });
+}
+
+
+  exportVehicleEmissionChartExport() {
+  this.svc.exportVehicleEmissionChart(this.year).subscribe({
+    next: (blob) => {
+      saveAs(blob, `VehicleEmissionData_${this.year}.xlsx`);
+    },
+    error: (err) => {
+      console.error('Export failed', err);
+    }
+  });
+}
 }

@@ -173,5 +173,29 @@ namespace ProjectApp.API.Controllers.Charts
             var data = await _service.GetDashboardSummaryAsync(year);
             return Ok(new { status = true, data });
         }
+
+        [HttpGet("ExportVehicleFuel")]
+        public async Task<IActionResult> ExportVehicleFuel([FromQuery] int year)
+        {
+            var fileBytes = await _service.ExportVehicleFuelExcelAsync(year);
+
+            return File(
+                fileBytes,
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                $"VehicleFuel_{year}.xlsx"
+            );
+        }
+
+        [HttpGet("ExportVehicleEmission")]
+        public async Task<IActionResult> ExportVehicleEmission([FromQuery] int year)
+        {
+            var fileBytes = await _service.ExportVehicleEmissionExcelAsync(year);
+            return File(
+                fileBytes,
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                $"VehicleEmission_{year}.xlsx"
+            );
+        }
+
     }
 }

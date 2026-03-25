@@ -11,6 +11,10 @@
           <p>Stacked by fuel type</p>
         </div>
       </div>
+          <!-- ✅ ADD THIS BUTTON -->
+  <button (click)="exportFuelChart()">
+    Export Excel
+  </button>
     </div>
     <div class="chart-loader" [class.hidden]="!isFuelLoading()">
       <div class="dot-loader vehicle-dots"><span></span><span></span><span></span></div>
@@ -44,6 +48,10 @@
           <p>CO2e, CO2, NO2 &amp; CH4 (kg)</p>
         </div>
       </div>
+                <!-- ✅ ADD THIS BUTTON -->
+  <button (click)="exportVehicleEmissionChartExport()">
+    Export Excel
+  </button>
     </div>
     <div class="chart-loader" [class.hidden]="!isEmissionLoading()">
       <div class="dot-loader vehicle-dots"><span></span><span></span><span></span></div>

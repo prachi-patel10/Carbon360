@@ -207,4 +207,23 @@ export class DashboardService {
       `${this.base}/Chart/GeneratorSummary?year=${year}`
     );
   }
+
+  exportVehicleFuelExcel(year: number) {
+  return this.http.get(
+    `${this.base}/Chart/ExportVehicleFuel?year=${year}`,  // ✅ CORRECT
+    {
+      responseType: 'blob'
+    }
+  );
 }
+
+exportVehicleEmissionChart(year:number){
+   return this.http.get(
+    `${this.base}/Chart/ExportVehicleEmission?year=${year}`,  // ✅ CORRECT
+    {
+      responseType: 'blob'
+    }
+  );
+}
+}
+
