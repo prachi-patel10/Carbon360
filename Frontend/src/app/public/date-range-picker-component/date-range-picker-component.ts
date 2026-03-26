@@ -133,4 +133,19 @@ export class DateRangePickerComponent {
     this.clearRange();
     this.pickerState.close();
   }
+
+  setRange(start: Date, end: Date): void {
+  this.selectedStart = start;
+  this.selectedEnd = end;
+  this.fromValue = start.toISOString().split('T')[0];
+  this.toValue = end.toISOString().split('T')[0];
+
+  // keep Inputs in sync
+  this.startDate = start.toISOString();
+  this.endDate = end.toISOString();
+
+  // emit so parent knows values changed
+  this.rangeSelected.emit({ startDate: start, endDate: end });
+}
+
 }

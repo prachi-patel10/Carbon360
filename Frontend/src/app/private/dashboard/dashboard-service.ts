@@ -11,8 +11,13 @@ export interface FuelMonthlyRawRow {
 }
 
 export interface FuelStackDataset {
-  label: string; fuelType: string; source: string; color: string; data: number[];
+  label: string;       // this is the generator/source label
+  fuelType: string;    // the fuel type
+  source: string;
+  color: string;
+  data: number[];
 }
+
 export interface FuelCombinedChartResponse {
   labels: string[]; datasets: FuelStackDataset[];
 }

@@ -20,7 +20,7 @@ import {
 
 Chart.register(...registerables);
 
-interface RunHoursLegendItem   { name: string; color: string; hours: number; pct: string; site: string; }
+interface RunHoursLegendItem { name: string; color: string; hours: number; pct: string; site: string; }
 interface LoadFactorLegendItem { name: string; color: string; }
 
 @Component({
@@ -36,79 +36,79 @@ export class GeneratorCharts implements OnInit, AfterViewInit, OnChanges, OnDest
 
   @Output() gridRowClick = new EventEmitter<Record<string, any>>();
 
-  @ViewChild('generatorFuelCanvas')         fuelCanvasRef!: ElementRef<HTMLCanvasElement>;
-  @ViewChild('generatorEmissionCanvas')     emissionCanvasRef!: ElementRef<HTMLCanvasElement>;
-  @ViewChild('generatorRunHoursCanvas')     runHoursCanvasRef!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('generatorFuelCanvas') fuelCanvasRef!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('generatorEmissionCanvas') emissionCanvasRef!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('generatorRunHoursCanvas') runHoursCanvasRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('generatorSiteEmissionCanvas') siteEmissionCanvasRef!: ElementRef<HTMLCanvasElement>;
 
   // ── Signals ────────────────────────────────────────────────────
-  isFuelLoading            = signal(false);
-  isEmissionLoading        = signal(false);
-  isRunHoursLoading        = signal(false);
-  isLoadFactorLoading      = signal(false);
+  isFuelLoading = signal(false);
+  isEmissionLoading = signal(false);
+  isRunHoursLoading = signal(false);
+  isLoadFactorLoading = signal(false);
   isRunHoursMonthlyLoading = signal(false);
-  isSiteEmissionLoading    = signal(false);
+  isSiteEmissionLoading = signal(false);
 
-  fuelError            = signal('');
-  emissionError        = signal('');
-  runHoursError        = signal('');
-  loadFactorError      = signal('');
+  fuelError = signal('');
+  emissionError = signal('');
+  runHoursError = signal('');
+  loadFactorError = signal('');
   runHoursMonthlyError = signal('');
-  siteEmissionError    = signal('');
+  siteEmissionError = signal('');
 
-  fuelLegend       = signal<{ fuelType: string; color: string }[]>([]);
-  emissionLegend   = signal<{ label: string; color: string }[]>([]);
-  runHoursLegend   = signal<RunHoursLegendItem[]>([]);
+  fuelLegend = signal<{ fuelType: string; color: string }[]>([]);
+  emissionLegend = signal<{ label: string; color: string }[]>([]);
+  runHoursLegend = signal<RunHoursLegendItem[]>([]);
   loadFactorLegend = signal<LoadFactorLegendItem[]>([]);
 
-  generatorTotal   = signal(0);
-  topFuelType      = signal('-');
-  topFuelAmount    = signal(0);
-  totalCO2e        = signal(0);
-  totalRunHours    = signal(0);
+  generatorTotal = signal(0);
+  topFuelType = signal('-');
+  topFuelAmount = signal(0);
+  totalCO2e = signal(0);
+  totalRunHours = signal(0);
   totalPowerOutput = signal(0);
 
   runHoursMonthlyData = signal<GeneratorRunHoursMonthlyPivotResponse | null>(null);
 
-  showFuelCanvas           = computed(() => !this.isFuelLoading()            && !this.fuelError());
-  showEmissionCanvas       = computed(() => !this.isEmissionLoading()        && !this.emissionError());
-  showRunHoursCanvas       = computed(() => !this.isRunHoursLoading()        && !this.runHoursError());
-  showLoadFactorCanvas     = computed(() => !this.isLoadFactorLoading()      && !this.loadFactorError());
+  showFuelCanvas = computed(() => !this.isFuelLoading() && !this.fuelError());
+  showEmissionCanvas = computed(() => !this.isEmissionLoading() && !this.emissionError());
+  showRunHoursCanvas = computed(() => !this.isRunHoursLoading() && !this.runHoursError());
+  showLoadFactorCanvas = computed(() => !this.isLoadFactorLoading() && !this.loadFactorError());
   showRunHoursMonthlyTable = computed(() => !this.isRunHoursMonthlyLoading() && !this.runHoursMonthlyError());
-  showSiteEmissionCanvas   = computed(() => !this.isSiteEmissionLoading()    && !this.siteEmissionError());
+  showSiteEmissionCanvas = computed(() => !this.isSiteEmissionLoading() && !this.siteEmissionError());
 
   // ── Chart instances ────────────────────────────────────────────
-  private fuelChart:         Chart | null = null;
-  private emissionChart:     Chart | null = null;
-  private runHoursChart:     Chart | null = null;
-  private loadFactorChart:   Chart | null = null;
+  private fuelChart: Chart | null = null;
+  private emissionChart: Chart | null = null;
+  private runHoursChart: Chart | null = null;
+  private loadFactorChart: Chart | null = null;
   private siteEmissionChart: Chart | null = null;
 
-  private destroy$  = new Subject<void>();
+  private destroy$ = new Subject<void>();
   private viewReady = false;
 
-  private _lastFuelData:         FuelCombinedChartResponse        | null = null;
-  private _lastEmissionData:     MonthlyEmissionChartResponse     | null = null;
-  private _lastRunHoursData:     GeneratorRunHoursChartResponse   | null = null;
-  private _lastLoadFactorData:   GeneratorLoadFactorChartResponse | null = null;
-  private _lastSiteEmissionData: SiteEmissionResponse[]           | null = null;
+  private _lastFuelData: FuelCombinedChartResponse | null = null;
+  private _lastEmissionData: MonthlyEmissionChartResponse | null = null;
+  private _lastRunHoursData: GeneratorRunHoursChartResponse | null = null;
+  private _lastLoadFactorData: GeneratorLoadFactorChartResponse | null = null;
+  private _lastSiteEmissionData: SiteEmissionResponse[] | null = null;
 
-  private pendingFuel:         FuelCombinedChartResponse        | null = null;
-  private pendingEmission:     MonthlyEmissionChartResponse     | null = null;
-  private pendingRunHours:     GeneratorRunHoursChartResponse   | null = null;
-  private pendingLoadFactor:   GeneratorLoadFactorChartResponse | null = null;
-  private pendingSiteEmission: SiteEmissionResponse[]           | null = null;
+  private pendingFuel: FuelCombinedChartResponse | null = null;
+  private pendingEmission: MonthlyEmissionChartResponse | null = null;
+  private pendingRunHours: GeneratorRunHoursChartResponse | null = null;
+  private pendingLoadFactor: GeneratorLoadFactorChartResponse | null = null;
+  private pendingSiteEmission: SiteEmissionResponse[] | null = null;
 
-  constructor(private svc: DashboardService, private router: Router) {}
+  constructor(private svc: DashboardService, private router: Router) { }
 
   ngOnInit(): void { this.loadAll(); }
 
   ngAfterViewInit(): void {
     this.viewReady = true;
-    if (this.pendingFuel)         { this.deferRender('fuel',         this.pendingFuel);         this.pendingFuel         = null; }
-    if (this.pendingEmission)     { this.deferRender('emission',     this.pendingEmission);     this.pendingEmission     = null; }
-    if (this.pendingRunHours)     { this.deferRender('runHours',     this.pendingRunHours);     this.pendingRunHours     = null; }
-    if (this.pendingLoadFactor)   { this.deferRender('loadFactor',   this.pendingLoadFactor);   this.pendingLoadFactor   = null; }
+    if (this.pendingFuel) { this.deferRender('fuel', this.pendingFuel); this.pendingFuel = null; }
+    if (this.pendingEmission) { this.deferRender('emission', this.pendingEmission); this.pendingEmission = null; }
+    if (this.pendingRunHours) { this.deferRender('runHours', this.pendingRunHours); this.pendingRunHours = null; }
+    if (this.pendingLoadFactor) { this.deferRender('loadFactor', this.pendingLoadFactor); this.pendingLoadFactor = null; }
     if (this.pendingSiteEmission) { this.deferRender('siteEmission', this.pendingSiteEmission); this.pendingSiteEmission = null; }
   }
 
@@ -145,32 +145,38 @@ export class GeneratorCharts implements OnInit, AfterViewInit, OnChanges, OnDest
     siteName?: string;
     search?: string;
   }): void {
-
     const queryParams: Record<string, any> = {
       source: 'chart',
-      year:   this.year,
+      year: this.year,
     };
 
-    if (params.fuelType)      queryParams['fuelType']      = params.fuelType.trim();
+    if (params.fuelType) queryParams['fuelType'] = params.fuelType.trim();
     if (params.generatorName) queryParams['generatorName'] = params.generatorName.trim();
-    if (params.siteName)      queryParams['siteName']      = params.siteName.trim();
-    if (params.search)        queryParams['search']        = params.search.trim();
+    if (params.siteName) queryParams['siteName'] = params.siteName.trim();
+    if (params.search) queryParams['search'] = params.search.trim();
 
     const y = this.year;
 
     if (params.month) {
-      const m       = params.month;
+      const m = params.month;
       const lastDay = new Date(y, m, 0).getDate();
-      queryParams['startDate'] = `${y}-${String(m).padStart(2, '0')}-01`;
-      queryParams['endDate']   = `${y}-${String(m).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
+      const start = `${y}-${String(m).padStart(2, '0')}-01`;
+      const end = `${y}-${String(m).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
+
+      queryParams['startDate'] = start;
+      queryParams['endDate'] = end;
+      queryParams['entryStartDate'] = start;
+      queryParams['entryEndDate'] = end;
     } else {
       queryParams['startDate'] = `${y}-01-01`;
-      queryParams['endDate']   = `${y}-12-31`;
+      queryParams['endDate'] = `${y}-12-31`;
+      queryParams['entryStartDate'] = `${y}-01-01`;
+      queryParams['entryEndDate'] = `${y}-12-31`;
     }
 
-    console.log('NAVIGATING WITH:', queryParams);
     this.router.navigate(['/dashboard/searchGenerator'], { queryParams });
   }
+
 
   // ── Convenience wrappers ──────────────────────────────────────
 
@@ -197,8 +203,8 @@ export class GeneratorCharts implements OnInit, AfterViewInit, OnChanges, OnDest
    */
   onRunHoursGridCellClick(monthIndex: number, generatorName: string): void {
     const p: { month?: number; generatorName?: string } = {};
-    if (monthIndex >= 0) p.month         = monthIndex + 1;
-    if (generatorName)  p.generatorName  = generatorName;
+    if (monthIndex >= 0) p.month = monthIndex + 1;
+    if (generatorName) p.generatorName = generatorName;
     this.navigateToGeneratorSearch(p);
   }
 
@@ -387,12 +393,12 @@ export class GeneratorCharts implements OnInit, AfterViewInit, OnChanges, OnDest
     const total = (data?.data ?? []).reduce((a, b) => a + b, 0);
     this.runHoursLegend.set((data?.labels ?? []).map((name, i) => ({
       name,
-      color: (data.colors ?? [])[i]    ?? '#888',
-      hours: (data.data   ?? [])[i]    ?? 0,
-      pct:   total > 0
+      color: (data.colors ?? [])[i] ?? '#888',
+      hours: (data.data ?? [])[i] ?? 0,
+      pct: total > 0
         ? (((data.data ?? [])[i] ?? 0) / total * 100).toFixed(1)
         : '0',
-      site:  (data.siteNames ?? [])[i] ?? '-',
+      site: (data.siteNames ?? [])[i] ?? '-',
     })));
   }
 
@@ -426,7 +432,7 @@ export class GeneratorCharts implements OnInit, AfterViewInit, OnChanges, OnDest
         responsive: true, maintainAspectRatio: false,
         onClick: (_e: any, elements: any[]) => {
           if (!elements.length) return;
-          const el  = elements[0];
+          const el = elements[0];
           const ds2 = data.datasets[el.datasetIndex];
           if ((ds2?.data?.[el.index] ?? 0) > 0)
             this.navigateByGeneratorMonthAndFuel(el.index, ds2.fuelType);
@@ -444,7 +450,7 @@ export class GeneratorCharts implements OnInit, AfterViewInit, OnChanges, OnDest
             callbacks: {
               title: (items: TooltipItem<'bar'>[]) => {
                 if (!items.length) return '';
-                const ft    = (items[0].dataset as any).stack;
+                const ft = (items[0].dataset as any).stack;
                 const total = items.reduce((s, i) => s + (i.parsed.y ?? 0), 0);
                 return `${items[0].label} — ${ft}: ${total.toLocaleString()} L`;
               },
@@ -547,18 +553,18 @@ export class GeneratorCharts implements OnInit, AfterViewInit, OnChanges, OnDest
         el = document.createElement('div');
         el.id = 'rh-tooltip';
         Object.assign(el.style, {
-          position:      'absolute',
+          position: 'absolute',
           pointerEvents: 'none',
-          transition:    'opacity 0.15s ease',
-          opacity:       '0',
-          background:    '#1e293b',
-          border:        '2px solid #38bdf8',
-          borderRadius:  '10px',
-          padding:       '12px 16px',
-          minWidth:      '200px',
-          boxShadow:     '0 8px 28px rgba(0,0,0,0.5)',
-          zIndex:        '9999',
-          whiteSpace:    'nowrap',
+          transition: 'opacity 0.15s ease',
+          opacity: '0',
+          background: '#1e293b',
+          border: '2px solid #38bdf8',
+          borderRadius: '10px',
+          padding: '12px 16px',
+          minWidth: '200px',
+          boxShadow: '0 8px 28px rgba(0,0,0,0.5)',
+          zIndex: '9999',
+          whiteSpace: 'nowrap',
         });
         const wrapper = chart.canvas.parentNode as HTMLElement;
         wrapper.style.position = 'relative';
@@ -576,17 +582,17 @@ export class GeneratorCharts implements OnInit, AfterViewInit, OnChanges, OnDest
       data: {
         labels: data.labels,
         datasets: [{
-          data:            data.data,
+          data: data.data,
           backgroundColor: data.colors,
-          borderColor:     '#ffffff',
-          borderWidth:     2,
-          hoverOffset:     10
+          borderColor: '#ffffff',
+          borderWidth: 2,
+          hoverOffset: 10
         }]
       },
       options: {
-        responsive:          true,   // ✅ fills the 300×300 wrapper
+        responsive: true,   // ✅ fills the 300×300 wrapper
         maintainAspectRatio: true,
-        cutout:              '68%',
+        cutout: '68%',
         onClick: (_e: any, elements: any[]) => {
           if (!elements.length) return;
           const genName = (data.labels ?? [])[elements[0].index] ?? '';
@@ -605,14 +611,14 @@ export class GeneratorCharts implements OnInit, AfterViewInit, OnChanges, OnDest
 
               if (tooltip.opacity === 0) { el.style.opacity = '0'; return; }
 
-              const idx   = tooltip.dataPoints?.[0]?.dataIndex ?? 0;
-              const hrs   = (data.data         ?? [])[idx] ?? 0;
-              const total = (data.data         ?? []).reduce((a, b) => a + b, 0);
-              const pct   = total > 0 ? ((hrs / total) * 100).toFixed(1) : '0';
-              const site  = (data.siteNames    ?? [])[idx] ?? '-';
-              const fuel  = (data.fuelConsumed ?? [])[idx] ?? 0;
-              const color = (data.colors       ?? [])[idx] ?? '#888';
-              const name  = (data.labels       ?? [])[idx] ?? '';
+              const idx = tooltip.dataPoints?.[0]?.dataIndex ?? 0;
+              const hrs = (data.data ?? [])[idx] ?? 0;
+              const total = (data.data ?? []).reduce((a, b) => a + b, 0);
+              const pct = total > 0 ? ((hrs / total) * 100).toFixed(1) : '0';
+              const site = (data.siteNames ?? [])[idx] ?? '-';
+              const fuel = (data.fuelConsumed ?? [])[idx] ?? 0;
+              const color = (data.colors ?? [])[idx] ?? '#888';
+              const name = (data.labels ?? [])[idx] ?? '';
 
               el.innerHTML = `
                 <div style="display:flex;align-items:center;gap:8px;margin-bottom:9px;">
@@ -637,13 +643,13 @@ export class GeneratorCharts implements OnInit, AfterViewInit, OnChanges, OnDest
 
               // ✅ Position relative to the canvas wrapper (not page)
               const wrapperRect = (chart.canvas.parentNode as HTMLElement).getBoundingClientRect();
-              const canvasRect  = chart.canvas.getBoundingClientRect();
-              const offsetLeft  = canvasRect.left - wrapperRect.left;
-              const offsetTop   = canvasRect.top  - wrapperRect.top;
+              const canvasRect = chart.canvas.getBoundingClientRect();
+              const offsetLeft = canvasRect.left - wrapperRect.left;
+              const offsetTop = canvasRect.top - wrapperRect.top;
 
               el.style.opacity = '1';
-              el.style.left    = `${offsetLeft + tooltip.caretX + 18}px`;
-              el.style.top     = `${offsetTop  + tooltip.caretY - 24}px`;
+              el.style.left = `${offsetLeft + tooltip.caretX + 18}px`;
+              el.style.top = `${offsetTop + tooltip.caretY - 24}px`;
             }
           }
         },
@@ -709,7 +715,7 @@ export class GeneratorCharts implements OnInit, AfterViewInit, OnChanges, OnDest
             borderColor: '#d97706', borderWidth: 1, padding: 12,
             callbacks: {
               title: (items: TooltipItem<'bar'>[]) => {
-                const idx   = items[0]?.dataIndex ?? 0;
+                const idx = items[0]?.dataIndex ?? 0;
                 const total = sorted[idx]?.totalCO2e ?? 0;
                 return `${items[0]?.label}   —   CO2e: ${total.toLocaleString('en-IN')} kg`;
               },
@@ -746,10 +752,10 @@ export class GeneratorCharts implements OnInit, AfterViewInit, OnChanges, OnDest
         if (!yScale) return;
         const toY = (val: number) => yScale.getPixelForValue(val);
         const { left, right } = chartArea;
-        ctx.fillStyle = 'rgba(220,38,38,0.06)';  ctx.fillRect(left, toY(30),  right - left, toY(0)   - toY(30));
-        ctx.fillStyle = 'rgba(234,179,8,0.06)';  ctx.fillRect(left, toY(75),  right - left, toY(30)  - toY(75));
-        ctx.fillStyle = 'rgba(34,197,94,0.10)';  ctx.fillRect(left, toY(90),  right - left, toY(75)  - toY(90));
-        ctx.fillStyle = 'rgba(249,115,22,0.07)'; ctx.fillRect(left, toY(100), right - left, toY(90)  - toY(100));
+        ctx.fillStyle = 'rgba(220,38,38,0.06)'; ctx.fillRect(left, toY(30), right - left, toY(0) - toY(30));
+        ctx.fillStyle = 'rgba(234,179,8,0.06)'; ctx.fillRect(left, toY(75), right - left, toY(30) - toY(75));
+        ctx.fillStyle = 'rgba(34,197,94,0.10)'; ctx.fillRect(left, toY(90), right - left, toY(75) - toY(90));
+        ctx.fillStyle = 'rgba(249,115,22,0.07)'; ctx.fillRect(left, toY(100), right - left, toY(90) - toY(100));
         ctx.save(); ctx.setLineDash([5, 4]); ctx.strokeStyle = 'rgba(220,38,38,0.4)'; ctx.lineWidth = 1;
         ctx.beginPath(); ctx.moveTo(left, toY(30)); ctx.lineTo(right, toY(30)); ctx.stroke(); ctx.restore();
         ctx.save(); ctx.setLineDash([5, 4]); ctx.strokeStyle = 'rgba(34,197,94,0.5)'; ctx.lineWidth = 1;

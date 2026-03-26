@@ -814,16 +814,12 @@ ul.deep-submenu>li:hover {
 
 /* ── Base card — gradient background, white text ── */
 .kpi-card {
-  position: relative;
-  border-radius: 12px;
-  padding: 14px 16px 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  border: 1px solid #e5e7eb;
-  background: #fff;
-  color: #374151;
+  border-radius: 10px;
+  padding: 12px 14px 13px;
+  border: 1px solid;
   transition: transform .2s ease, box-shadow .2s ease;
-  overflow: hidden;
   cursor: default;
+  font-family: 'Inter', sans-serif;
 }
 
 .kpi-card::before {
@@ -851,8 +847,8 @@ ul.deep-submenu>li:hover {
 }
 
 .kpi-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
 }
 
 /* Top row: label + badge icon */
@@ -860,17 +856,31 @@ ul.deep-submenu>li:hover {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .kpi-label {
-  font-size: 10.5px;
+  font-size: 10px;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.8px;
-  font-family: 'Inter', sans-serif;
-  color: rgba(255, 255, 255, 0.82);
+  letter-spacing: 1px;
 }
+
+.kpi-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.kpi-icon svg {
+  width: 12px;
+  height: 12px;
+}
+
 
 /* Badge circle with icon */
 /* Badge circle with soft pastel background */
@@ -889,124 +899,120 @@ ul.deep-submenu>li:hover {
 /* Value */
 /* Value text darker for readability */
 .kpi-value {
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 700;
   line-height: 1.1;
   margin-bottom: 3px;
-  color: #111827;
 }
 
 /* Unit */
 .kpi-unit {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 500;
-  color: #6b7280;
-  margin-bottom: 10px;
+  display: block;
 }
 
 /* Thin accent bar at bottom */
 .kpi-bar {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
   height: 3px;
-  background: #f3f4f6;
-  border-radius: 0 0 12px 12px;
+  border-radius: 2px;
+  margin-top: 8px;
+  overflow: hidden;
 }
 
 .kpi-bar-fill {
   height: 100%;
+  border-radius: 2px;
   width: 65%;
-  border-radius: 0 0 12px 12px;
-  background: #d1fae5;
   animation: barGrow .8s cubic-bezier(.4, 0, .2, 1) forwards;
 }
 
 @keyframes barGrow {
-  from {
-    width: 0;
-  }
-
-  to {
-    width: 65%;
-  }
+  from { width: 0; }
+  to   { width: 65%; }
 }
 
-/* ── CO₂e — Mint Green ── */
-.kpi-co2e {
-  border-top: 4px solid #6ee7b7;
-}
+/* ── CO₂e — Teal ── */
+.kpi-co2e              { background: #e8faf2; border-color: #9ee9c8; }
+.kpi-co2e .kpi-label   { color: #0f6e56; }
+.kpi-co2e .kpi-icon    { background: #9ee9c8; color: #0f6e56; }
+.kpi-co2e .kpi-value   { color: #04342c; }
+.kpi-co2e .kpi-unit    { color: #1d9e75; }
 
-.kpi-co2 {
-  border-top: 4px solid #93c5fd;
-}
+/* ── CO₂ — Blue ── */
+.kpi-co2               { background: #e6f1fb; border-color: #85b7eb; }
+.kpi-co2 .kpi-label    { color: #185fa5; }
+.kpi-co2 .kpi-icon     { background: #b5d4f4; color: #185fa5; }
+.kpi-co2 .kpi-value    { color: #042c53; }
+.kpi-co2 .kpi-unit     { color: #378add; }
 
-.kpi-no2 {
-  border-top: 4px solid #fdba74;
-}
+/* ── NO₂ — Amber ── */
+.kpi-no2               { background: #faeeda; border-color: #fac775; }
+.kpi-no2 .kpi-label    { color: #854f0b; }
+.kpi-no2 .kpi-icon     { background: #fac775; color: #854f0b; }
+.kpi-no2 .kpi-value    { color: #412402; }
+.kpi-no2 .kpi-unit     { color: #ba7517; }
 
-.kpi-ch4 {
-  border-top: 4px solid #f9a8d4;
-}
+/* ── CH₄ — Pink ── */
+.kpi-ch4               { background: #fbeaf0; border-color: #ed93b1; }
+.kpi-ch4 .kpi-label    { color: #993556; }
+.kpi-ch4 .kpi-icon     { background: #f4c0d1; color: #993556; }
+.kpi-ch4 .kpi-value    { color: #4b1528; }
+.kpi-ch4 .kpi-unit     { color: #d4537e; }
 
-.kpi-fuel {
-  border-top: 4px solid #c4b5fd;
-}
+/* ── Fuel — Purple ── */
+.kpi-fuel              { background: #eeedfe; border-color: #afa9ec; }
+.kpi-fuel .kpi-label   { color: #534ab7; }
+.kpi-fuel .kpi-icon    { background: #cecbf6; color: #534ab7; }
+.kpi-fuel .kpi-value   { color: #26215c; }
+.kpi-fuel .kpi-unit    { color: #7f77dd; }
 
-.kpi-dist {
-  border-top: 4px solid #67e8f9;
-}
+/* ── Distance — Teal ── */
+.kpi-dist              { background: #e1f5ee; border-color: #5dcaa5; }
+.kpi-dist .kpi-label   { color: #0f6e56; }
+.kpi-dist .kpi-icon    { background: #9fe1cb; color: #0f6e56; }
+.kpi-dist .kpi-value   { color: #04342c; }
+.kpi-dist .kpi-unit    { color: #1d9e75; }
 
-.kpi-power {
-  border-top: 4px solid #fde68a;
-}
+/* ── Power — Amber ── */
+.kpi-power             { background: #faeeda; border-color: #ef9f27; }
+.kpi-power .kpi-label  { color: #854f0b; }
+.kpi-power .kpi-icon   { background: #fac775; color: #854f0b; }
+.kpi-power .kpi-value  { color: #412402; }
+.kpi-power .kpi-unit   { color: #ba7517; }
+
 
 /* ── Skeleton shimmer (on coloured bg) ── */
 .kpi-skeleton {
-  height: 22px;
-  border-radius: 6px;
-  width: 65%;
+  height: 19px;
+  border-radius: 5px;
+  width: 60%;
   background: linear-gradient(90deg,
-      rgba(255, 255, 255, 0.15) 25%,
-      rgba(255, 255, 255, 0.30) 50%,
-      rgba(255, 255, 255, 0.15) 75%);
+    rgba(0,0,0,0.06) 25%,
+    rgba(0,0,0,0.12) 50%,
+    rgba(0,0,0,0.06) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.4s infinite;
   margin-bottom: 4px;
 }
 
 @keyframes shimmer {
-  0% {
-    background-position: 200% 0;
-  }
-
-  100% {
-    background-position: -200% 0;
-  }
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
 }
+
 
 /* ═══════════════════════════════════════════════
    RESPONSIVE
 ═══════════════════════════════════════════════ */
 @media (max-width: 1200px) {
-  .kpi-row {
-    grid-template-columns: repeat(2, 1fr);
-  }
+  .kpi-row   { grid-template-columns: repeat(2, 1fr); }
+  .kpi-row-2 { grid-template-columns: repeat(2, 1fr); }
 }
 
-@media (max-width: 960px) {
-  .page-content {
-    padding: 16px 14px;
-  }
-
-  .kpi-row {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .kpi-row-2 {
-    grid-template-columns: repeat(2, 1fr);
-  }
+@media (max-width: 640px) {
+  .kpi-row   { grid-template-columns: repeat(2, 1fr); }
+  .kpi-row-2 { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 640px) {
