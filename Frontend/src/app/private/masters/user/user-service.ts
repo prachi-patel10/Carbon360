@@ -24,8 +24,8 @@ export class UserService {
   pageSize: number,
   searchText?: string,
   onlyActive?: boolean,
-  departmentIds?: string,   // ← ADD
-  roleIds?: string,          // ← ADD
+  departmentIds?: string,
+  roleIds?: string,
   sortColumn?: string,
   sortDirection?: string
 ) {
@@ -36,12 +36,12 @@ export class UserService {
     .set('pageNumber', pageNumber)
     .set('pageSize', pageSize);
 
-  if (searchText) params = params.set('searchText', searchText);
- if (onlyActive !== undefined) params = params.set('isActive', onlyActive);
-  if (departmentIds) params = params.set('departmentIds', departmentIds);
-  if (roleIds) params = params.set('roleIds', roleIds);
-  if (sortColumn) params = params.set('sortColumn', sortColumn);
-  if (sortDirection) params = params.set('sortDirection', sortDirection);
+  if (searchText?.trim())   params = params.set('searchText',    searchText.trim());
+  if (onlyActive !== undefined) params = params.set('isActive',  onlyActive);
+  if (departmentIds && departmentIds !== 'undefined')params = params.set('departmentIds', departmentIds);
+  if (roleIds && roleIds !== 'undefined')params = params.set('roleIds', roleIds);
+  if (sortColumn)           params = params.set('sortColumn',    sortColumn);
+  if (sortDirection)        params = params.set('sortDirection', sortDirection);
 
   return this.http.get<any>(`${this.apiUrl}/Search`, { headers, params });
 }

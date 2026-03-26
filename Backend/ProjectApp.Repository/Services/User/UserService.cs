@@ -176,11 +176,10 @@ namespace ProjectApp.Repository.Services.User
             return users.Select(u => MapToResponse(u)).ToList();
         }
 
-        // ================= SEARCH WITH PAGINATION (uses stored procedure) =================
+        // ================= SEARCH WITH PAGINATION=================
         public async Task<(List<UserResDTO> Users, int TotalRecords)>
             SearchUsersPaginatedAsync(SearchRequestDTO request)
         {
-            // Decode comma-separated encoded IDs → plain int CSV for the SP
             var deptIdsCsv = DecodeToCsv(request.DepartmentIds);
             var roleIdsCsv = DecodeToCsv(request.RoleIds);
 
@@ -188,13 +187,16 @@ namespace ProjectApp.Repository.Services.User
             var sortCol = allowedColumns.Contains(request.SortColumn) ? request.SortColumn : "FName";
             var sortDir = request.SortDirection?.ToUpper() == "DESC" ? "DESC" : "ASC";
 
+            var search = string.IsNullOrWhiteSpace(request.Search) ? null : request.Search.Trim();
+
             using var conn = _context.Database.GetDbConnection();
             await conn.OpenAsync();
 
             using var cmd = conn.CreateCommand();
             cmd.CommandText = "USP_CB_UserSearch";
             cmd.CommandType = System.Data.CommandType.StoredProcedure;
-            cmd.Parameters.Add(new SqlParameter("@Search", (object?)request.Search ?? DBNull.Value));
+
+            cmd.Parameters.Add(new SqlParameter("@Search", (object?)search ?? DBNull.Value));
             cmd.Parameters.Add(new SqlParameter("@IsActive", (object?)request.IsActive ?? DBNull.Value));
             cmd.Parameters.Add(new SqlParameter("@PageNumber", request.PageNumber));
             cmd.Parameters.Add(new SqlParameter("@PageSize", request.PageSize));
@@ -203,14 +205,13 @@ namespace ProjectApp.Repository.Services.User
             cmd.Parameters.Add(new SqlParameter("@DepartmentIds", (object?)deptIdsCsv ?? DBNull.Value));
             cmd.Parameters.Add(new SqlParameter("@RoleIds", (object?)roleIdsCsv ?? DBNull.Value));
 
-            // Temporary holder: raw userId (int) + role name from result set 2
             var roleRows = new List<(int UserId, string RoleName)>();
             var userResults = new List<UserResDTO>();
             int totalRecords = 0;
 
             using var reader = await cmd.ExecuteReaderAsync();
 
-            // ── Result set 1: paged users ────────────────────────────
+            //Result set 1: paged users
             while (await reader.ReadAsync())
             {
                 totalRecords = reader["TotalRecords"] != DBNull.Value
@@ -227,15 +228,18 @@ namespace ProjectApp.Repository.Services.User
                     LName = reader["LName"]?.ToString() ?? "",
                     UserName = reader["UserName"]?.ToString() ?? "",
                     Email = reader["Email"]?.ToString() ?? "",
-                    DepartmentId = rawDeptId.HasValue ? _idEncoder.Encode(rawDeptId.Value) : null,
+                    DepartmentId = rawDeptId.HasValue
+                                         ? _idEncoder.Encode(rawDeptId.Value)
+                                         : null,
                     DepartmentName = reader["DepartmentName"]?.ToString() ?? "N/A",
-                    IsActive = reader["IsActive"] != DBNull.Value && Convert.ToBoolean(reader["IsActive"]),
+                    IsActive = reader["IsActive"] != DBNull.Value
+                                         && Convert.ToBoolean(reader["IsActive"]),
                     EntryDate = reader["EntryDate"] != DBNull.Value
-                                        ? Convert.ToDateTime(reader["EntryDate"]) : null
+                                         ? Convert.ToDateTime(reader["EntryDate"])
+                                         : null
                 });
             }
-
-            // ── Result set 2: roles for those users ──────────────────
+            //Result set 2: roles for those users
             if (await reader.NextResultAsync())
             {
                 while (await reader.ReadAsync())
@@ -246,46 +250,43 @@ namespace ProjectApp.Repository.Services.User
                     ));
                 }
             }
-
             await conn.CloseAsync();
 
-            // ── Attach roles to each UserResDTO ───────────────────────
-            // userId in result set 1 was encoded; decode back to match raw int keys
+            //Attach roles to each UserResDTO 
             var rolesByRawId = roleRows
                 .GroupBy(r => r.UserId)
-                .ToDictionary(g => g.Key, g => g.Select(r => r.RoleName).ToList());
+                .ToDictionary(
+                    g => g.Key,
+                    g => g.Select(r => r.RoleName).ToList()
+                );
 
             foreach (var dto in userResults)
             {
                 int rawId = _idEncoder.Decode(dto.UserId);
                 dto.Roles = rolesByRawId.TryGetValue(rawId, out var roles)
-                    ? roles : new List<string>();
+                    ? roles
+                    : new List<string>();
             }
 
             return (userResults, totalRecords);
         }
 
-        // ── Decode comma-separated encoded IDs → plain int CSV ────────
-        // e.g. "xr65BW8m,aj6r4J0y"  →  "3,7"
         private string? DecodeToCsv(string? encodedIds)
         {
             if (string.IsNullOrWhiteSpace(encodedIds)) return null;
-            try
-            {
-                var decoded = encodedIds
-                    .Split(',', StringSplitOptions.RemoveEmptyEntries)
-                    .Select(id =>
-                    {
-                        try { return (int?)_idEncoder.Decode(id.Trim()); }
-                        catch { return null; }
-                    })
-                    .Where(id => id.HasValue && id.Value > 0)
-                    .Select(id => id!.Value.ToString())
-                    .ToList();
 
-                return decoded.Any() ? string.Join(",", decoded) : null;
-            }
-            catch { return null; }
+            var decoded = encodedIds
+                .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .Select(id =>
+                {
+                    try { return (int?)_idEncoder.Decode(id); }
+                    catch { return null; }
+                })
+                .Where(id => id.HasValue && id.Value > 0)
+                .Select(id => id!.Value.ToString())
+                .ToList();
+
+            return decoded.Any() ? string.Join(",", decoded) : null;
         }
 
         // ================= MAPPER =================
