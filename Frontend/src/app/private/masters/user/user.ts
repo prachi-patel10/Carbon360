@@ -252,38 +252,70 @@ onDocumentClick(e: MouseEvent) {
     this.loadUsers();
   }
   // ── Save / Update ─────────────────────────────────────────────
-  submitUser() {
-    if (this.userForm.invalid) { this.userForm.markAllAsTouched(); return; }
-    const payload = { ...this.userForm.value };
-    if (!payload.UserId) {
-      this.service.create(payload).subscribe({
-        next: () => { this.toastr.success('User created successfully'); this.loadUsers(); this.resetForm(); },
-        error: err => this.toastr.error(err?.error?.errors?.ConfirmPassword?.join(', ') || 'Create failed')
-      });
-    } else {
-      this.service.update(payload).subscribe({
-        next: () => { this.toastr.success('User updated successfully'); this.loadUsers(); this.resetForm(); },
-        error: () => this.toastr.error('Update failed')
-      });
-    }
-  }
+ submitUser() {
+  if (this.userForm.invalid) { this.userForm.markAllAsTouched(); return; }
+  
+  const formVal = this.userForm.value;
+  
+  // ✅ Map form field names to match C# DTO exactly
+  const payload = {
+    UserId:          formVal.UserId,
+    FName:           formVal.Fname,
+    LName:           formVal.Lname,
+    UserName:        formVal.UserName,
+    Email:           formVal.Email,
+    Password:        formVal.Password,
+    ConfirmPassword: formVal.ConfirmPassword,
+    DepartmentId:    formVal.DepartmentId,
+    RoleId:          formVal.RoleIds,  
+    IsActive:        formVal.IsActive
+  };
 
-  edit(user: any) {
-    this.editingUserId = user.userId;
-    this.userForm.patchValue({
-      UserId: user.userId,
-      Fname: user.fName,
-      Lname: user.lName,
-      UserName: user.userName,
-      Email: user.email,
-      DepartmentId: user.departmentId,
-      RoleIds: user.roles || [],
-      IsActive: user.isActive,
-      Password: '',
-      ConfirmPassword: ''
+  if (!payload.UserId) {
+    this.service.create(payload).subscribe({
+      next: () => { this.toastr.success('User created successfully'); this.loadUsers(); this.resetForm(); },
+      error: err => this.toastr.error(err?.error?.errors?.ConfirmPassword?.join(', ') || 'Create failed')
+    });
+  } else {
+    // For update, check your UpdateDTO field name too
+    const updatePayload = {
+      ...payload,
+      RoleIds: formVal.RoleIds,   // UpdateDTO uses "RoleIds"
+      UserId:  formVal.UserId
+    };
+    this.service.update(updatePayload).subscribe({
+      next: () => { this.toastr.success('User updated successfully'); this.loadUsers(); this.resetForm(); },
+      error: () => this.toastr.error('Update failed')
     });
   }
+}
+edit(user: any) {
+  this.editingUserId = user.userId;
 
+  // user.roles contains role NAMES (e.g. ["Admin","Corporate"])
+  // We need to map them back to encoded IDs for the form
+  const roleIds = (user.roles || [])
+    .map((roleName: string) => {
+      const found = this.rolesList().find(
+        r => String(r.roleName).toLowerCase().trim() === String(roleName).toLowerCase().trim()
+      );
+      return found ? String(found.roleId) : null;
+    })
+    .filter((id: string | null) => id !== null);
+
+  this.userForm.patchValue({
+    UserId:          user.userId,
+    Fname:           user.fName,
+    Lname:           user.lName,
+    UserName:        user.userName,
+    Email:           user.email,
+    DepartmentId:    user.departmentId,
+    RoleIds:         roleIds,         
+    IsActive:        user.isActive,
+    Password:        '',
+    ConfirmPassword: ''
+  });
+}
   resetForm() {
     this.editingUserId = null;
     this.userForm.reset({ IsActive: true, RoleIds: [] });

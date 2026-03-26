@@ -167,62 +167,68 @@ namespace ProjectApp.Repository.Services.Masters.Vehicle
 
         public async Task<VehicleSearchResponse> SearchAsync(VehicleSearchRequest request)
         {
-            // ── Decode comma-separated encoded IDs back to integers ──────
             string? vehicleTypeIds = DecodeIds(request.vehicle_type_id);
             string? fuelIds = DecodeIds(request.fuel_id);
             string? departmentIds = DecodeIds(request.department_id);
 
-            var parameters = new List<SqlParameter>
-    {
-        new SqlParameter("@Search",          request.Search          ?? (object)DBNull.Value),
-        new SqlParameter("@vehicle_type_id", vehicleTypeIds          ?? (object)DBNull.Value), // ← decoded
-        new SqlParameter("@fuel_id",         fuelIds                 ?? (object)DBNull.Value), // ← decoded
-        new SqlParameter("@department_id",   departmentIds           ?? (object)DBNull.Value), // ← decoded
-        new SqlParameter("@IsActive",        request.IsActive        ?? (object)DBNull.Value),
-        new SqlParameter("@PageNumber",      request.PageNumber),
-        new SqlParameter("@PageSize",        request.PageSize),
-        new SqlParameter("@SortColumn",      request.SortColumn      ?? (object)DBNull.Value),
-        new SqlParameter("@SortDirection",   request.SortDirection   ?? (object)DBNull.Value)
-    };
+            object DbValue(string? value) =>
+                string.IsNullOrWhiteSpace(value) ? DBNull.Value : value;
+
+            var parameters = new SqlParameter[]
+            {
+        new SqlParameter("@Search", DbValue(request.Search)),
+        new SqlParameter("@vehicle_type_id", DbValue(vehicleTypeIds)),
+        new SqlParameter("@fuel_id", DbValue(fuelIds)),
+        new SqlParameter("@department_id", DbValue(departmentIds)),
+        new SqlParameter("@IsActive", request.IsActive ?? (object)DBNull.Value),
+        new SqlParameter("@PageNumber", request.PageNumber <= 0 ? 1 : request.PageNumber),
+        new SqlParameter("@PageSize", request.PageSize <= 0 ? 10 : request.PageSize),
+        new SqlParameter("@SortColumn", DbValue(request.SortColumn ?? "vehicle_number")),
+        new SqlParameter("@SortDirection", DbValue(request.SortDirection ?? "ASC"))
+            };
 
             var result = await _spService.ExecuteSpAsync(
                 "USP_CB_VehicleMasterSearch",
-                parameters.ToArray()
+                parameters
             );
 
-            // ── Result set 1: vehicle rows ────────────────────────────────
-            var dataList = (result.ContainsKey("Data") && result["Data"] != null)
-                ? (result["Data"] as IEnumerable<object>)
+            var vehicles = new List<VehicleResponseDto>();
+
+            // ✅ RESULT SET 1 → DATA
+            if (result.TryGetValue("Data", out var dataObj) && dataObj != null)
+            {
+                var rows = (dataObj as IEnumerable<object>)
                     ?.Cast<Dictionary<string, object>>()
-                    .ToList()
-                  ?? new List<Dictionary<string, object>>()
-                : new List<Dictionary<string, object>>();
+                    .ToList();
 
-            var vehicles = dataList.Select(MapToResponseDto).ToList();
+                if (rows != null)
+                    vehicles = rows.Select(MapToResponseDto).ToList();
+            }
 
-            // ── Result set 2: pagination row ──────────────────────────────
-            var paginationList = (result.ContainsKey("Pagination") && result["Pagination"] != null)
-                ? (result["Pagination"] as IEnumerable<object>)
-                    ?.Cast<Dictionary<string, object>>()
-                    .ToList()
-                  ?? new List<Dictionary<string, object>>()
-                : new List<Dictionary<string, object>>();
+            // ✅ RESULT SET 2 → TOTALS (FIXED)
+            int totalRecords = 0;
+            int totalPages = 1;
+            int currentPage = request.PageNumber;
 
-            var pagination = paginationList.FirstOrDefault()
-                             ?? new Dictionary<string, object>();
+            if (result.TryGetValue("Pagination", out var paginationObj) && paginationObj != null)
+            {
+                var pagination = paginationObj as Dictionary<string, object>;
 
-            int totalRecords = pagination.ContainsKey("TotalRecords")
-                ? Convert.ToInt32(pagination["TotalRecords"]) : 0;
+                if (pagination != null)
+                {
+                    totalRecords = pagination.ContainsKey("TotalRecords")
+                        ? Convert.ToInt32(pagination["TotalRecords"])
+                        : 0;
 
-            int pageSize = request.PageSize > 0 ? request.PageSize : 10;
+                    totalPages = pagination.ContainsKey("TotalPages")
+                        ? Convert.ToInt32(pagination["TotalPages"])
+                        : 1;
 
-            int totalPages = pagination.ContainsKey("TotalPages")
-                ? Convert.ToInt32(pagination["TotalPages"])
-                : (totalRecords > 0 ? (int)Math.Ceiling(totalRecords * 1.0 / pageSize) : 0);
-
-            int currentPage = pagination.ContainsKey("CurrentPage")
-                ? Convert.ToInt32(pagination["CurrentPage"])
-                : request.PageNumber;
+                    currentPage = pagination.ContainsKey("CurrentPage")
+                        ? Convert.ToInt32(pagination["CurrentPage"])
+                        : request.PageNumber;
+                }
+            }
 
             return new VehicleSearchResponse
             {
@@ -232,26 +238,24 @@ namespace ProjectApp.Repository.Services.Masters.Vehicle
                 CurrentPage = currentPage
             };
         }
-
         // ── Decodes "YvnOD6Ao,0YJARnOR" → "3,7" ──────────────────────────
         private string? DecodeIds(string? encodedIds)
         {
             if (string.IsNullOrWhiteSpace(encodedIds))
                 return null;
-
-            try
+            var decodedList = new List<string>();
+            foreach (var id in encodedIds.Split(',', StringSplitOptions.RemoveEmptyEntries))
             {
-                var decoded = encodedIds
-                    .Split(',', StringSplitOptions.RemoveEmptyEntries)
-                    .Select(id => _idEncoder.Decode(id.Trim()).ToString())
-                    .ToList();
-
-                return decoded.Count > 0 ? string.Join(",", decoded) : null;
+                try
+                {
+                    decodedList.Add(_idEncoder.Decode(id.Trim()).ToString());
+                }
+                catch
+                {
+                    continue;
+                }
             }
-            catch
-            {
-                return null; // if any ID fails to decode, treat as no filter
-            }
+            return decodedList.Count > 0 ? string.Join(",", decodedList) : null;
         }
 
         private VehicleResponseDto MapToResponseDto(Dictionary<string, object> row)
@@ -280,8 +284,6 @@ namespace ProjectApp.Repository.Services.Masters.Vehicle
             return new VehicleResponseDto
             {
                 vehicle_id = _idEncoder.Encode(vehicleId),
-
-                // ← encode IDs so Angular filter can match them
                 vehicle_type_id = vehicleTypeId > 0 ? _idEncoder.Encode(vehicleTypeId) : null,
                 fuel_id = fuelId > 0 ? _idEncoder.Encode(fuelId) : null,
                 department_id = departmentId > 0 ? _idEncoder.Encode(departmentId) : null,

@@ -162,35 +162,52 @@ export class Vehicles implements OnInit {
   }
 
   // ── Load vehicles ─────────────────────────────────────────────
-  loadVehicles() {
-    const f      = this.vehicleFilter();
-    const active = this.activeFilter();
-    const isActiveFilter: boolean | null = active === undefined ? null : active;
+ loadVehicles() {
+  const f = this.vehicleFilter();
+  const active = this.activeFilter();
+  const isActiveFilter: boolean | null = active === undefined ? null : active;
 
-    this.vehicleService.searchVehicles(
-      this.searchText(),
-      isActiveFilter,
-      this.pageNumber(),
-      this.pageSize(),
-      this.sortColumn(),
-      this.sortDirection(),
-      f.vehicle_type_id.length ? f.vehicle_type_id.join(',') : undefined,
-      f.fuel_id.length         ? f.fuel_id.join(',')         : undefined,
-      f.department_id.length   ? f.department_id.join(',')   : undefined
-    ).subscribe({
-      next: (res: any) => {
-        this.vehicles.set(res.data || []);
-        this.totalRecords.set(res.totalRecords ?? res.data?.length ?? 0);
-        this.totalPages.set(res.totalPages ?? Math.ceil((res.totalRecords ?? 0) / this.pageSize()));
-        this.pageNumber.set(res.currentPage ?? this.pageNumber());
-      },
-      error: (err) => {
-        console.error('Vehicle load error', err);
-        this.vehicles.set([]); this.totalRecords.set(0); this.totalPages.set(1);
-      }
-    });
-  }
+  this.vehicleService.searchVehicles(
+    this.searchText(),
+    isActiveFilter,
+    this.pageNumber(),
+    this.pageSize(),
+    this.sortColumn(),
+    this.sortDirection(),
+    f.vehicle_type_id.length ? f.vehicle_type_id.join(',') : undefined,
+    f.fuel_id.length ? f.fuel_id.join(',') : undefined,
+    f.department_id.length ? f.department_id.join(',') : undefined
+  ).subscribe({
+    next: (res: any) => {
+      console.log('API RESPONSE:', res); 
+      const data = res?.data ?? [];
+      this.vehicles.set(data);
+      this.totalRecords.set(Number(res?.totalRecords ?? 0));
+      this.totalPages.set(Number(res?.totalPages ?? 1));
+      this.pageNumber.set(Number(res?.currentPage ?? 1));
+    },
+    error: (err) => {
+      console.error('Vehicle load error', err);
+      this.vehicles.set([]);
+      this.totalRecords.set(0);
+      this.totalPages.set(1);
+    }
+  });
+}
 
+private searchTimeout: any;
+
+onSearchInput(event: any) {
+  const value = event.target.value;
+
+  clearTimeout(this.searchTimeout);
+
+  this.searchTimeout = setTimeout(() => {
+    this.searchText.set(value);
+    this.pageNumber.set(1);
+    this.loadVehicles();
+  }, 400); // debounce
+}
   // ── Search ────────────────────────────────────────────────────
   search() { this.pageNumber.set(1); this.loadVehicles(); }
 
@@ -393,15 +410,15 @@ export class Vehicles implements OnInit {
 
   // ── Apply / Reset ─────────────────────────────────────────────
   applyVehicleFilter() {
-    // ← Commit selections into vehicleFilter signal THEN reload
     this.vehicleFilter.set({
       fuel_id:         [...this.selectedFuelIds],
-      vehicle_type_id: [...this.selectedVehicleTypeIds],
-      department_id:   this.vehicleFilter().department_id
+        vehicle_type_id: [...this.selectedVehicleTypeIds],
+        department_id: []
+    // department_id: this.vehicleFilter().department_id 
     });
     this.pageNumber.set(1);
-    this.closeVehicleFilter();                               // ← close modal first
-    this.loadVehicles();                                     // ← then reload with new filter
+    this.closeVehicleFilter();                               
+    this.loadVehicles();                                    
   }
 
   resetVehicleFilter() {
@@ -409,8 +426,8 @@ export class Vehicles implements OnInit {
     this.selectedVehicleTypeIds = [];
     this.vehicleFilter.set({ vehicle_type_id: [], fuel_id: [], department_id: [] });
     this.pageNumber.set(1);
-    this.closeVehicleFilter();                               // ← close modal
-    this.loadVehicles();                                     // ← reload with cleared filter
+    this.closeVehicleFilter();                             
+    this.loadVehicles();                                     
   }
 
   // ── Legacy helpers ────────────────────────────────────────────

@@ -5,10 +5,8 @@
     <form class="form-grid">
       <div class="form-group">
         <label>Vehicle Number</label>
-        <input type="text" name="vehicle_number"
-          [(ngModel)]="newVehicle().vehicle_number"
-          (ngModelChange)="onVehicleNumberChange($event)"
-          placeholder="Enter Vehicle Number" />
+        <input type="text" name="vehicle_number" [(ngModel)]="newVehicle().vehicle_number"
+          (ngModelChange)="onVehicleNumberChange($event)" placeholder="Enter Vehicle Number" />
         <small class="error-text" *ngIf="vehicleNumberError()">{{ vehicleNumberError() }}</small>
       </div>
 
@@ -47,8 +45,8 @@
 
       <div class="form-group">
         <label>Engine Capacity</label>
-        <input type="number" [(ngModel)]="newVehicle().engine_capacity"
-          name="engineCapacity" placeholder="Engine Capacity" />
+        <input type="number" [(ngModel)]="newVehicle().engine_capacity" name="engineCapacity"
+          placeholder="Engine Capacity" />
       </div>
 
       <div class="form-group">
@@ -65,8 +63,7 @@
         <div class="status-toggle">
           <span>Active</span>
           <label class="switch">
-            <input type="checkbox" [checked]="newVehicle().isActive"
-              (change)="onFormActiveChange($event)" />
+            <input type="checkbox" [checked]="newVehicle().isActive" (change)="onFormActiveChange($event)" />
             <span class="slider"></span>
           </label>
         </div>
@@ -86,18 +83,15 @@
       <div class="search-left">
         <div class="search-wrap">
           <i class="fas fa-search search-icon"></i>
-          <input type="text" class="search-input" placeholder="Quick Search"
-            [ngModel]="searchText()"
-            (ngModelChange)="searchText.set($event)"
-            (input)="search()" />
+          <input type="text" class="search-input" placeholder="Quick Search" [ngModel]="searchText()"
+            (ngModelChange)="searchText.set($event)" (input)="onSearchInput($event)" />
         </div>
       </div>
       <div class="search-right">
         <div class="status-toggle">
           <span>Active Only</span>
           <label class="switch">
-            <input type="checkbox" [checked]="activeFilter()"
-              (change)="onActiveFilterChange($event)" />
+            <input type="checkbox" [checked]="activeFilter()" (change)="onActiveFilterChange($event)" />
             <span class="slider"></span>
           </label>
         </div>
@@ -106,8 +100,7 @@
         <button class="filter-btn" (click)="openVehicleFilter()">
           <i class="fas fa-sliders-h"></i>
           <span>Filter</span>
-          <span class="filter-badge"
-            *ngIf="selectedFuelIds.length + selectedVehicleTypeIds.length > 0">
+          <span class="filter-badge" *ngIf="selectedFuelIds.length + selectedVehicleTypeIds.length > 0">
             {{ selectedFuelIds.length + selectedVehicleTypeIds.length }}
           </span>
         </button>
@@ -171,9 +164,13 @@
     <div class="pagination-info">
       <span>Total Records: <b>{{ totalRecords() }}</b></span>
       <div class="pagination-controls">
-        <button (click)="previousPage()" [disabled]="pageNumber() === 1">Previous</button>
+        <button (click)="previousPage()" [disabled]="pageNumber() <= 1">
+          Previous
+        </button>
         <span>Page {{ pageNumber() }} of {{ totalPages() }}</span>
-        <button (click)="nextPage()" [disabled]="pageNumber() === totalPages()">Next</button>
+        <button (click)="nextPage()" [disabled]="pageNumber() >= totalPages()">
+          Next
+        </button>
         <label for="pageSize">Page Size:</label>
         <select id="pageSize" [value]="pageSize()" (change)="onPageSizeChange($event)">
           <option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</option>
@@ -228,8 +225,7 @@
             </span>
           </div>
 
-          <div class="vf-trigger" [class.open]="fuelDropOpen"
-               (click)="fuelDropOpen = !fuelDropOpen">
+          <div class="vf-trigger" [class.open]="fuelDropOpen" (click)="fuelDropOpen = !fuelDropOpen">
             <span class="vf-trigger-text">
               <ng-container *ngIf="selectedFuelIds.length === 0">All Fuel Types</ng-container>
               <ng-container *ngIf="selectedFuelIds.length > 0">
@@ -252,18 +248,17 @@
                   [class.checked]="selectedFuelIds.length === fuelTypesList.length && fuelTypesList.length > 0"
                   [class.indeterminate]="selectedFuelIds.length > 0 && selectedFuelIds.length < fuelTypesList.length">
                   <i class="fas fa-check"
-                     *ngIf="selectedFuelIds.length === fuelTypesList.length && fuelTypesList.length > 0"></i>
+                    *ngIf="selectedFuelIds.length === fuelTypesList.length && fuelTypesList.length > 0"></i>
                   <i class="fas fa-minus"
-                     *ngIf="selectedFuelIds.length > 0 && selectedFuelIds.length < fuelTypesList.length"></i>
+                    *ngIf="selectedFuelIds.length > 0 && selectedFuelIds.length < fuelTypesList.length"></i>
                 </span>
                 <span class="vf-check-label">Select All</span>
               </div>
 
               <div class="vf-divider"></div>
 
-              <div class="vf-check-row" *ngFor="let fuel of fuelTypesList"
-                   (click)="toggleFuel(fuel.fuel_id)"
-                   [class.selected]="selectedFuelIds.includes(fuel.fuel_id)">
+              <div class="vf-check-row" *ngFor="let fuel of fuelTypesList" (click)="toggleFuel(fuel.fuel_id)"
+                [class.selected]="selectedFuelIds.includes(fuel.fuel_id)">
                 <span class="vf-checkbox" [class.checked]="selectedFuelIds.includes(fuel.fuel_id)">
                   <i class="fas fa-check" *ngIf="selectedFuelIds.includes(fuel.fuel_id)"></i>
                 </span>
@@ -287,8 +282,7 @@
             </span>
           </div>
 
-          <div class="vf-trigger" [class.open]="vtypeDropOpen"
-               (click)="vtypeDropOpen = !vtypeDropOpen">
+          <div class="vf-trigger" [class.open]="vtypeDropOpen" (click)="vtypeDropOpen = !vtypeDropOpen">
             <span class="vf-trigger-text">
               <ng-container *ngIf="selectedVehicleTypeIds.length === 0">All Vehicle Types</ng-container>
               <ng-container *ngIf="selectedVehicleTypeIds.length > 0">
@@ -311,9 +305,9 @@
                   [class.checked]="selectedVehicleTypeIds.length === vehicleTypesList.length && vehicleTypesList.length > 0"
                   [class.indeterminate]="selectedVehicleTypeIds.length > 0 && selectedVehicleTypeIds.length < vehicleTypesList.length">
                   <i class="fas fa-check"
-                     *ngIf="selectedVehicleTypeIds.length === vehicleTypesList.length && vehicleTypesList.length > 0"></i>
+                    *ngIf="selectedVehicleTypeIds.length === vehicleTypesList.length && vehicleTypesList.length > 0"></i>
                   <i class="fas fa-minus"
-                     *ngIf="selectedVehicleTypeIds.length > 0 && selectedVehicleTypeIds.length < vehicleTypesList.length"></i>
+                    *ngIf="selectedVehicleTypeIds.length > 0 && selectedVehicleTypeIds.length < vehicleTypesList.length"></i>
                 </span>
                 <span class="vf-check-label">Select All</span>
               </div>
@@ -321,8 +315,8 @@
               <div class="vf-divider"></div>
 
               <div class="vf-check-row" *ngFor="let vt of vehicleTypesList"
-                   (click)="toggleVehicleType(vt.vehicle_type_id)"
-                   [class.selected]="selectedVehicleTypeIds.includes(vt.vehicle_type_id)">
+                (click)="toggleVehicleType(vt.vehicle_type_id)"
+                [class.selected]="selectedVehicleTypeIds.includes(vt.vehicle_type_id)">
                 <span class="vf-checkbox" [class.checked]="selectedVehicleTypeIds.includes(vt.vehicle_type_id)">
                   <i class="fas fa-check" *ngIf="selectedVehicleTypeIds.includes(vt.vehicle_type_id)"></i>
                 </span>

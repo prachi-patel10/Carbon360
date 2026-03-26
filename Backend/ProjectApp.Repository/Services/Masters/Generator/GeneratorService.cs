@@ -140,13 +140,15 @@ namespace ProjectApp.Repository.Services.Masters.Generator
         new SqlParameter("@FilterColumn", request.FilterColumn ?? (object)DBNull.Value),
         new SqlParameter("@FilterValue", request.FilterValue ?? (object)DBNull.Value),
         new SqlParameter("@IsActive", request.IsActive ?? (object)DBNull.Value),
-        new SqlParameter("@FuelIds",
+       new SqlParameter("@FuelIds",
     string.IsNullOrWhiteSpace(request.FuelIds)
-        ? (object)DBNull.Value : request.FuelIds),
+        ? (object)DBNull.Value
+        : DecodeIds(request.FuelIds)),
 
 new SqlParameter("@SiteIds",
     string.IsNullOrWhiteSpace(request.SiteIds)
-        ? (object)DBNull.Value : request.SiteIds),
+        ? (object)DBNull.Value
+        : DecodeIds(request.SiteIds)),
         new SqlParameter("@PageNumber", request.PageNumber),
         new SqlParameter("@PageSize", request.PageSize),
         new SqlParameter("@SortColumn", request.SortColumn),
@@ -165,9 +167,12 @@ new SqlParameter("@SiteIds",
 
             var generators = dataList.Select(MapToResponseDto).ToList();
 
-            int totalRecords = dataList.Any()
-                ? Convert.ToInt32(dataList.First()["TotalRecords"])
-                : 0;
+            int totalRecords = 0;
+
+            if (dataList.Any() && dataList.First().ContainsKey("TotalRecords"))
+            {
+                totalRecords = Convert.ToInt32(dataList.First()["TotalRecords"]);
+            }
 
             return new PageResult
             {
@@ -176,6 +181,28 @@ new SqlParameter("@SiteIds",
                 TotalPages = (int)Math.Ceiling((double)totalRecords / request.PageSize),
                 CurrentPage = request.PageNumber
             };
+        }
+
+        private string? DecodeIds(string? encodedIds)
+        {
+            if (string.IsNullOrWhiteSpace(encodedIds))
+                return null;
+
+            var decodedList = new List<string>();
+
+            foreach (var id in encodedIds.Split(',', StringSplitOptions.RemoveEmptyEntries))
+            {
+                try
+                {
+                    decodedList.Add(_idEncoder.Decode(id.Trim()).ToString());
+                }
+                catch
+                {
+                    continue;
+                }
+            }
+
+            return decodedList.Count > 0 ? string.Join(",", decodedList) : null;
         }
 
         // ================= TOGGLE STATUS =================

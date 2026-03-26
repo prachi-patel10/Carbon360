@@ -14,18 +14,18 @@ export class Generatormaster implements OnInit {
   generatorForm!: FormGroup;
 
   generators = signal<any[]>([]);
-  fuels      = signal<{ fuelId: string; fuelName: string }[]>([]);
-  sites      = signal<{ siteId: string; siteName: string }[]>([]);
+  fuels = signal<{ fuelId: string; fuelName: string }[]>([]);
+  sites = signal<{ siteId: string; siteName: string }[]>([]);
   departments = signal<{ departmentId: string; departmentName: string }[]>([]);
 
-  searchText      = '';
+  searchText = '';
   isActiveFilter: boolean | null = true;
 
-  pageNumber      = 1;
-  pageSize        = 5;
+  pageNumber = 1;
+  pageSize = 5;
   pageSizeOptions = [5, 10, 20, 50];
-  totalRecords    = 0;
-  totalPages      = 1;
+  totalRecords = 0;
+  totalPages = 1;
 
   sortColumnName = 'generatorName';
   sortDir: 'asc' | 'desc' = 'asc';
@@ -38,8 +38,8 @@ export class Generatormaster implements OnInit {
   selectedFuelIds: string[] = [];
   selectedSiteIds: string[] = [];
 
-  fuelDropOpen  = false;
-  siteDropOpen  = false;
+  fuelDropOpen = false;
+  siteDropOpen = false;
 
   fuelSearch = '';
   siteSearch = '';
@@ -62,16 +62,16 @@ export class Generatormaster implements OnInit {
     return this.selectedFuelIds.length + this.selectedSiteIds.length;
   }
 
-  constructor(private fb: FormBuilder, private service: GeneratorService) {}
+  constructor(private fb: FormBuilder, private service: GeneratorService) { }
 
   ngOnInit() {
     this.generatorForm = this.fb.group({
-      generatorName:   ['', Validators.required],
+      generatorName: ['', Validators.required],
       ratedCapacityKW: ['', Validators.required],
-      fuelId:          ['', Validators.required],
-      siteId:          ['', Validators.required],
-      departmentId:    ['', Validators.required],
-      isActive:        [true]
+      fuelId: ['', Validators.required],
+      siteId: ['', Validators.required],
+      departmentId: ['', Validators.required],
+      isActive: [true]
     });
 
     this.loadDropdowns();
@@ -81,21 +81,21 @@ export class Generatormaster implements OnInit {
   loadDropdowns() {
     this.service.getFuels().subscribe((res: any[]) => {
       this.fuels.set((res || []).filter(f => f.isActive).map(f => ({
-        fuelId:   f.fuel_id,
+        fuelId: f.fuel_id,
         fuelName: f.fuel_name
       })));
     });
 
     this.service.getSites().subscribe(res => {
       this.sites.set((res || []).map(s => ({
-        siteId:   s.siteId,
+        siteId: s.siteId,
         siteName: s.siteName
       })));
     });
 
     this.service.getDepartments().subscribe(res => {
       this.departments.set((res || []).map(d => ({
-        departmentId:   d.id,
+        departmentId: d.id,
         departmentName: d.departmentName
       })));
     });
@@ -103,11 +103,11 @@ export class Generatormaster implements OnInit {
 
   loadGenerators() {
     const params: any = {
-      search:        this.searchText || '',
-      sortColumn:    this.sortColumnName,
+      search: this.searchText || '',
+      sortColumn: this.sortColumnName,
       sortDirection: this.sortDir.toUpperCase(),
-      pageNumber:    this.pageNumber,
-      pageSize:      this.pageSize
+      pageNumber: this.pageNumber,
+      pageSize: this.pageSize
     };
 
     if (this.isActiveFilter !== null)
@@ -123,7 +123,7 @@ export class Generatormaster implements OnInit {
     this.service.search(params).subscribe(res => {
       this.generators.set(res.data || []);
       this.totalRecords = res.totalRecords || 0;
-      this.totalPages   = Math.max(Math.ceil(this.totalRecords / this.pageSize), 1);
+      this.totalPages = Math.max(Math.ceil(this.totalRecords / this.pageSize), 1);
     });
   }
 
@@ -137,22 +137,22 @@ export class Generatormaster implements OnInit {
 
     const formValue = this.generatorForm.value;
     const payload = {
-      generatorId:     this.editingGeneratorId ?? null,
-      generatorName:   formValue.generatorName,
+      generatorId: this.editingGeneratorId ?? null,
+      generatorName: formValue.generatorName,
       ratedCapacityKW: Number(formValue.ratedCapacityKW),
-      fuelId:          formValue.fuelId,
-      siteId:          formValue.siteId,
-      departmentId:    formValue.departmentId
+      fuelId: formValue.fuelId,
+      siteId: formValue.siteId,
+      departmentId: formValue.departmentId
     };
 
     if (this.editingGeneratorId) {
       this.service.update(payload).subscribe({
-        next:  () => { this.showToast('success', 'Generator updated successfully'); this.resetForm(); this.loadGenerators(); },
+        next: () => { this.showToast('success', 'Generator updated successfully'); this.resetForm(); this.loadGenerators(); },
         error: () => this.showToast('error', 'Update failed')
       });
     } else {
       this.service.create(payload).subscribe({
-        next:  () => { this.showToast('success', 'Generator created successfully'); this.resetForm(); this.loadGenerators(); },
+        next: () => { this.showToast('success', 'Generator created successfully'); this.resetForm(); this.loadGenerators(); },
         error: () => this.showToast('error', 'Create failed')
       });
     }
@@ -161,12 +161,12 @@ export class Generatormaster implements OnInit {
   edit(gen: any) {
     this.editingGeneratorId = gen.generatorId;
     this.generatorForm.patchValue({
-      generatorName:   gen.generatorName,
+      generatorName: gen.generatorName,
       ratedCapacityKW: gen.ratedCapacityKW,
-      siteId:          gen.siteId?.toString() || '',
-      departmentId:    gen.departmentId?.toString() || '',
-      fuelId:          gen.fuelId?.toString() || '',
-      isActive:        gen.isActive
+      siteId: gen.siteId?.toString() || '',
+      departmentId: gen.departmentId?.toString() || '',
+      fuelId: gen.fuelId?.toString() || '',
+      isActive: gen.isActive
     });
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
@@ -216,17 +216,19 @@ export class Generatormaster implements OnInit {
   }
 
   // ── PAGINATION ─────────────────────────────────────────
-  prevPage()  { if (this.pageNumber > 1) { this.pageNumber--; this.loadGenerators(); } }
-  nextPage()  { if (this.pageNumber < this.totalPages) { this.pageNumber++; this.loadGenerators(); } }
+  prevPage() { if (this.pageNumber > 1) { this.pageNumber--; this.loadGenerators(); } }
+  nextPage() { if (this.pageNumber < this.totalPages) { this.pageNumber++; this.loadGenerators(); } }
 
   changePageSize(event: Event) {
-    this.pageSize   = Number((event.target as HTMLSelectElement).value);
+    this.pageSize = Number((event.target as HTMLSelectElement).value);
     this.pageNumber = 1;
     this.loadGenerators();
   }
 
   onToggleActive() {
-    this.isActiveFilter = this.isActiveFilter === true ? null : true;
+
+    this.isActiveFilter = this.isActiveFilter === true ? false : true;
+
     this.pageNumber = 1;
     this.loadGenerators();
   }
@@ -237,18 +239,18 @@ export class Generatormaster implements OnInit {
   }
 
   clearFilters() {
-    this.searchText      = '';
-    this.isActiveFilter  = true;
+    this.searchText = '';
+    this.isActiveFilter = true;
     this.selectedFuelIds = [];
     this.selectedSiteIds = [];
-    this.pageNumber      = 1;
+    this.pageNumber = 1;
     this.loadGenerators();
   }
 
   // ── FILTER MODAL ───────────────────────────────────────
   openFilterModal() {
-    this.fuelSearch  = '';
-    this.siteSearch  = '';
+    this.fuelSearch = '';
+    this.siteSearch = '';
     this.fuelDropOpen = false;
     this.siteDropOpen = false;
     this.filterModalOpen.set(true);
@@ -265,9 +267,9 @@ export class Generatormaster implements OnInit {
   resetFilterModal() {
     this.selectedFuelIds = [];
     this.selectedSiteIds = [];
-    this.fuelSearch      = '';
-    this.siteSearch      = '';
-    this.pageNumber      = 1;
+    this.fuelSearch = '';
+    this.siteSearch = '';
+    this.pageNumber = 1;
     // this.filterModalOpen.set(false);
     this.loadGenerators();
   }
@@ -276,7 +278,7 @@ export class Generatormaster implements OnInit {
   toggleFuel(id: string) {
     const i = this.selectedFuelIds.indexOf(id);
     if (i > -1) this.selectedFuelIds.splice(i, 1);
-    else        this.selectedFuelIds.push(id);
+    else this.selectedFuelIds.push(id);
     this.selectedFuelIds = [...this.selectedFuelIds];
   }
 
@@ -296,7 +298,7 @@ export class Generatormaster implements OnInit {
   toggleSite(id: string) {
     const i = this.selectedSiteIds.indexOf(id);
     if (i > -1) this.selectedSiteIds.splice(i, 1);
-    else        this.selectedSiteIds.push(id);
+    else this.selectedSiteIds.push(id);
     this.selectedSiteIds = [...this.selectedSiteIds];
   }
 

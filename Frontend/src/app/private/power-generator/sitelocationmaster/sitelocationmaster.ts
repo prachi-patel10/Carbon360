@@ -85,67 +85,67 @@ export class Sitelocationmaster implements OnInit {
 
   // ── SUBMIT ─────────────────────────────────────────────
   submit() {
-  // 1️⃣ Existing validations
-  if (this.form.invalid) {
-    this.form.markAllAsTouched();
-    this.showToast('Error', 'Please fill all required fields correctly', 'error');
-    return;
+    // 1️⃣ Existing validations
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      this.showToast('Error', 'Please fill all required fields correctly', 'error');
+      return;
+    }
+
+    const payload = { ...this.form.value };
+    const siteName = payload.siteName.trim();
+    const city = payload.city.trim();
+    const shortCode = payload.shortCode.trim().toUpperCase();
+
+    // 2️⃣ Duplicate check: Site Name + City
+    const duplicateSite = this.siteList().find(s =>
+      s.siteName.toLowerCase() === siteName.toLowerCase() &&
+      s.city.toLowerCase() === city.toLowerCase() &&
+      (!this.editingSiteId || s.siteId !== this.editingSiteId)
+    );
+
+    if (duplicateSite) {
+      this.showToast('Error', 'This Site Name + City already exists', 'error');
+      return;
+    }
+
+    // 3️⃣ Duplicate check: ShortCode
+    const duplicateShortCode = this.siteList().find(s =>
+      s.shortCode.toLowerCase() === shortCode.toLowerCase() &&
+      (!this.editingSiteId || s.siteId !== this.editingSiteId)
+    );
+
+    if (duplicateShortCode) {
+      this.showToast('Error', 'This ShortCode already exists', 'error');
+      return;
+    }
+
+    // 4️⃣ Prepare payload
+    payload.siteName = siteName;
+    payload.city = city;
+    payload.shortCode = shortCode;
+
+    // 5️⃣ Call API
+    if (this.editingSiteId) {
+      this.service.update(this.editingSiteId, payload).subscribe({
+        next: () => {
+          this.showToast('Success', 'Site updated successfully', 'success');
+          this.resetForm();
+          this.search();
+        },
+        error: () => this.showToast('Error', 'Update failed', 'error')
+      });
+    } else {
+      this.service.create(payload).subscribe({
+        next: () => {
+          this.showToast('Success', 'Site created successfully', 'success');
+          this.resetForm();
+          this.search();
+        },
+        error: () => this.showToast('Error', 'Creation failed', 'error')
+      });
+    }
   }
-
-  const payload      = { ...this.form.value };
-  const siteName     = payload.siteName.trim();
-  const city         = payload.city.trim();
-  const shortCode    = payload.shortCode.trim().toUpperCase();
-
-  // 2️⃣ Duplicate check: Site Name + City
-  const duplicateSite = this.siteList().find(s =>
-    s.siteName.toLowerCase() === siteName.toLowerCase() &&
-    s.city.toLowerCase() === city.toLowerCase() &&
-    (!this.editingSiteId || s.siteId !== this.editingSiteId)
-  );
-
-  if (duplicateSite) {
-    this.showToast('Error', 'This Site Name + City already exists', 'error');
-    return;
-  }
-
-  // 3️⃣ Duplicate check: ShortCode
-  const duplicateShortCode = this.siteList().find(s =>
-    s.shortCode.toLowerCase() === shortCode.toLowerCase() &&
-    (!this.editingSiteId || s.siteId !== this.editingSiteId)
-  );
-
-  if (duplicateShortCode) {
-    this.showToast('Error', 'This ShortCode already exists', 'error');
-    return;
-  }
-
-  // 4️⃣ Prepare payload
-  payload.siteName  = siteName;
-  payload.city      = city;
-  payload.shortCode = shortCode;
-
-  // 5️⃣ Call API
-  if (this.editingSiteId) {
-    this.service.update(this.editingSiteId, payload).subscribe({
-      next: () => {
-        this.showToast('Success', 'Site updated successfully', 'success');
-        this.resetForm();
-        this.search();
-      },
-      error: () => this.showToast('Error', 'Update failed', 'error')
-    });
-  } else {
-    this.service.create(payload).subscribe({
-      next: () => {
-        this.showToast('Success', 'Site created successfully', 'success');
-        this.resetForm();
-        this.search();
-      },
-      error: () => this.showToast('Error', 'Creation failed', 'error')
-    });
-  }
-}
 
   resetForm() {
     this.form.reset({ isActive: true });
@@ -272,7 +272,19 @@ export class Sitelocationmaster implements OnInit {
 
   clearFilters() { this.searchText = ''; this.isActiveFilter = true; this.selectedSiteNames = []; this.selectedCityNames = []; this.pageNumber = 1; this.search(); }
   applySearch() { this.pageNumber = 1; this.search(); }
-  onToggleActive() { this.isActiveFilter = this.isActiveFilter === true ? null : true; this.pageNumber = 1; this.search(); }
+  
+ onToggleActive() {
+  if (this.isActiveFilter === true) {
+    this.isActiveFilter = false;  
+  } else if (this.isActiveFilter === false) {
+    this.isActiveFilter = null;    
+  } else {
+    this.isActiveFilter = true;    
+  }
+
+  this.pageNumber = 1;
+  this.search();   
+}
   prevPage() { if (this.pageNumber > 1) { this.pageNumber--; this.search(); } }
   nextPage() { if (this.pageNumber < this.totalPages) { this.pageNumber++; this.search(); } }
   changePageSize(event: Event) { this.pageSize = Number((event.target as HTMLSelectElement).value); this.pageNumber = 1; this.search(); }

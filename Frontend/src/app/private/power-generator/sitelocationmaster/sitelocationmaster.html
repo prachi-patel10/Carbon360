@@ -84,7 +84,9 @@
         <div class="status-toggle">
           <span>Active Only</span>
           <label class="switch">
-            <input type="checkbox" [checked]="isActiveFilter === true" (change)="onToggleActive()" />
+            <input type="checkbox"
+       [checked]="isActiveFilter === true"
+       (change)="onToggleActive()" />
             <span class="slider"></span>
           </label>
         </div>
