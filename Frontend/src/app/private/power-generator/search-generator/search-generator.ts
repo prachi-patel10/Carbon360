@@ -43,7 +43,6 @@ export class SearchGenerator implements OnInit, AfterViewInit {
   entryStartDate = signal<string | null>(null);
   entryEndDate = signal<string | null>(null);
 
-  // ✅ Site name from site chart click
   chartSiteName: string | null = null;
 
   currentPage = signal<number>(1);
@@ -71,6 +70,10 @@ export class SearchGenerator implements OnInit, AfterViewInit {
   private _pendingEntryStart: string | null = null;
   private _pendingEntryEnd: string | null = null;
   private _viewReady = false;
+  private _isSettingPickerFromData = false;
+
+  // ✅ Prevents infinite loop — true only during chart navigation load
+  private _skipEntryDateUpdate = false;
 
   constructor(
     private service: SearchGeneratorService,
@@ -109,6 +112,7 @@ export class SearchGenerator implements OnInit, AfterViewInit {
       this._pendingOpEnd = null;
       this._pendingEntryStart = null;
       this._pendingEntryEnd = null;
+      this._skipEntryDateUpdate = false;
 
       if (this._viewReady) {
         this.opDatePicker?.reset();
@@ -117,40 +121,41 @@ export class SearchGenerator implements OnInit, AfterViewInit {
 
       if (params['source'] === 'chart') {
 
-        // ── Fuel type filter ────────────────────────────────────
+        // ── Fuel type filter ─────────────────────────────────
         if (params['fuelType']) {
-          const fuel = params['fuelType'].trim();
-          this.selectedFuels = [fuel];
+          this.selectedFuels = [params['fuelType'].trim()];
         }
 
-        // ── Generator filter ────────────────────────────────────
+        // ── Generator filter ─────────────────────────────────
         if (params['generatorName']) {
           this.selectedGenTypes = [params['generatorName'].trim()];
         }
 
-        // ── Site filter ─────────────────────────────────────────
+        // ── Site filter ──────────────────────────────────────
         if (params['siteNames']) {
           this.chartSiteName = params['siteNames'].trim();
         }
 
-        // ── IMPORTANT: never set searchText from chart params ───
-        // searchText must stay empty so loadEmissions() sends
-        // structured filters (genParam/fuelParam/siteParam) only
+        // ── Never set searchText from chart params ───────────
         this.searchText.set('');
 
-        // ── Operation Date ──────────────────────────────────────
+        // ── Operation Date ───────────────────────────────────
         const opStart = this.toDateOnly(params['startDate']);
         const opEnd = this.toDateOnly(params['endDate']);
         if (opStart) { this.operationStartDate.set(opStart); this._pendingOpStart = opStart; }
         if (opEnd) { this.operationEndDate.set(opEnd); this._pendingOpEnd = opEnd; }
 
-        // Entry / Reported Date 
-        const esDate = this.toDateOnly(params['entryStartDate']);
-        const eeDate = this.toDateOnly(params['entryEndDate']);
-        if (esDate) { this.entryStartDate.set(esDate); this._pendingEntryStart = esDate; }
-        if (eeDate) { this.entryEndDate.set(eeDate); this._pendingEntryEnd = eeDate; }
+        // ── Entry date picker will be set AFTER data loads ───
+        // We do NOT pre-fill entry date from chart params
+        // because we don't know the actual reported date yet.
+        // It gets calculated from real entryDate values in the
+        // API response inside loadEmissions() next callback.
+        this._skipEntryDateUpdate = false;
 
         this.applyPickersIfReady();
+      } else {
+        // ── Manual navigation — entry date signals drive picker
+        this._skipEntryDateUpdate = true;
       }
 
       this.loadEmissions();
@@ -214,7 +219,7 @@ export class SearchGenerator implements OnInit, AfterViewInit {
 
     const siteParam = this.chartSiteName ? this.chartSiteName.trim() : undefined;
 
-    // Do NOT send searchText as @Search when any chart filter is active
+    // Do NOT send searchText when any chart filter is active
     const hasChartFilter = !!(fuelParam || genParam || siteParam || this.selectedGenTypes.length > 0);
     const searchParam = hasChartFilter
       ? undefined
@@ -254,38 +259,50 @@ export class SearchGenerator implements OnInit, AfterViewInit {
         this.totalRecordsCount.set(total);
         this.totalPagesCount.set(Math.ceil(total / this.pageSize) || 1);
 
-        // ✅ After data loads, calculate actual entry date range from returned records
-        // and set the reported date picker to show the real range
+        // ✅ Always update entry date picker from real data
+        // We use a local flag captured BEFORE the async call
+        // so it reflects the state at the time the request was made
         if (mapped.length > 0) {
-          const entryDates = mapped
-            .map((r: any) => r.entryDate ? new Date(r.entryDate) : null)
-            .filter((d: Date | null) => d !== null && !isNaN(d.getTime())) as Date[];
+          const entryDates: Date[] = [];
+
+          for (const r of mapped) {
+            // ✅ Try both possible field names from API
+            const raw = r.entryDate ?? r.EntryDate ?? r.entry_date ?? null;
+            if (!raw) continue;
+            const d = new Date(raw);
+            if (!isNaN(d.getTime())) entryDates.push(d);
+          }
+
+          console.log('Entry dates found:', entryDates.length, entryDates);
 
           if (entryDates.length > 0) {
             const minEntry = new Date(Math.min(...entryDates.map(d => d.getTime())));
             const maxEntry = new Date(Math.max(...entryDates.map(d => d.getTime())));
 
-            // Set the signal values
-            const minStr = minEntry.toISOString().substring(0, 10);
-            const maxStr = maxEntry.toISOString().substring(0, 10);
-            this.entryStartDate.set(minStr);
-            this.entryEndDate.set(maxStr);
-
-            // Set the date picker UI to show the actual range
+            console.log('Setting entry picker:', minEntry, '→', maxEntry);
+       
+            // trigger applyFilters() → infinite loop
             setTimeout(() => {
-              this.setPickerRange(this.entryDatePicker, minEntry, maxEntry);
-            }, 0);
+              if (this.entryDatePicker) {
+                this._isSettingPickerFromData = true;     
+                this.entryDatePicker.setRange(minEntry, maxEntry);
+                this._isSettingPickerFromData = false;     
+                console.log('Picker setRange called successfully');
+              } else {
+                console.warn('entryDatePicker ref is undefined!');
+              }
+            }, 100);
           }
         }
 
-        // ── Show active filter label in search box ──────────────
+        // ── Show active filter label in search box ───────────
         const labelParts: string[] = [];
         if (this.selectedFuels.length > 0) labelParts.push(this.selectedFuels.join(', '));
         if (this.selectedGenTypes.length > 0) labelParts.push(this.selectedGenTypes.join(', '));
         if (this.chartSiteName) labelParts.push(this.chartSiteName);
         if (labelParts.length > 0) this.searchText.set(labelParts.join(' — '));
 
-        // ── Generator filter: ensure name exists in dropdown ────
+        // ── Generator filter: ensure name exists in dropdown ─
         if (this.selectedGenTypes.length > 0) {
           this.selectedGenTypes.forEach(name => {
             const exists = this.generatorTypes.some(g => g.gen_name === name);
@@ -293,7 +310,7 @@ export class SearchGenerator implements OnInit, AfterViewInit {
           });
         }
 
-        // ── Site chart: pre-populate generator dropdown ─────────
+        // ── Site chart: pre-populate generator dropdown ──────
         if (this.chartSiteName && mapped.length > 0) {
           const uniqueGenNames: string[] = [
             ...new Set<string>(
@@ -312,6 +329,7 @@ export class SearchGenerator implements OnInit, AfterViewInit {
       error: err => console.error('Error loading emissions', err)
     });
   }
+
   // ── Multi-Select: Fuel ─────────────────────────────────────────
 
   toggleFuelDropdown(): void { this.fuelDropdownOpen = !this.fuelDropdownOpen; }
@@ -343,6 +361,7 @@ export class SearchGenerator implements OnInit, AfterViewInit {
     else
       this.selectedGenTypes.push(name);
     this.chartSiteName = null;
+    this._skipEntryDateUpdate = true;
     this.applyFilters();
   }
 
@@ -350,12 +369,14 @@ export class SearchGenerator implements OnInit, AfterViewInit {
     this.selectedGenTypes = this.selectedGenTypes.length === this.generatorTypes.length
       ? [] : this.generatorTypes.map(g => g.gen_name);
     this.chartSiteName = null;
+    this._skipEntryDateUpdate = true;
     this.applyFilters();
   }
 
   clearGenTypes(): void {
     this.selectedGenTypes = [];
     this.chartSiteName = null;
+    this._skipEntryDateUpdate = true;
     this.applyFilters();
   }
 
@@ -373,6 +394,7 @@ export class SearchGenerator implements OnInit, AfterViewInit {
     this.chartSiteName = null;
     this.selectedFuels = [];
     this.selectedGenTypes = [];
+    this._skipEntryDateUpdate = true;
     this.applyFilters();
   }
 
@@ -385,12 +407,17 @@ export class SearchGenerator implements OnInit, AfterViewInit {
     this.operationEndDate.set(
       range.endDate ? range.endDate.toISOString().substring(0, 10) : null
     );
+    this._skipEntryDateUpdate = true;
     this.applyFilters();
   }
 
   // ── Date Range: Reported / Entry Date ─────────────────────────
 
   onEntryDateRangeSelected(range: { startDate: Date | null; endDate: Date | null }): void {
+    // ✅ Ignore picker events triggered by our own setRange() calls
+    // Only respond to genuine user interactions
+    if (this._isSettingPickerFromData) return;
+
     this.entryStartDate.set(
       range.startDate ? range.startDate.toISOString().substring(0, 10) : null
     );
@@ -411,6 +438,7 @@ export class SearchGenerator implements OnInit, AfterViewInit {
     this.entryStartDate.set(null); this.entryEndDate.set(null);
     this._pendingOpStart = null; this._pendingOpEnd = null;
     this._pendingEntryStart = null; this._pendingEntryEnd = null;
+    this._skipEntryDateUpdate = true;
     this.currentPage.set(1);
     this.opDatePicker?.reset();
     this.entryDatePicker?.reset();
