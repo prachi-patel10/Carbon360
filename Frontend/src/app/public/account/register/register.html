@@ -18,15 +18,19 @@
             <!-- Row 1: Name & Email -->
             <div class="row">
               <div class="col-md-6 mb-3">
-                <label class="form-label register-label">Full Name</label>
-                <input type="text" formControlName="Name" class="form-control register-input" />
-                <div *ngIf="userData.get('Name')?.touched && userData.get('Name')?.invalid" class="text-danger mt-1">
-                  Name is required
-                </div>
+                <label class="form-label register-label">Full Name<span class="req">*</span></label>
+                <input type="text" formControlName="Name" class="form-control register-input"
+        [ngClass]="{'is-invalid': userData.get('Name')?.touched && userData.get('Name')?.invalid}"
+        placeholder="Enter full name" />
+
+      <small class="text-danger"
+        *ngIf="userData.get('Name')?.touched && userData.get('Name')?.hasError('required')">
+        Name is required
+      </small>
               </div>
 
               <div class="col-md-6 mb-3">
-                <label class="form-label register-label">Email</label>
+                <label class="form-label register-label">Email<span class="req">*</span></label>
                 <input type="email" formControlName="Email" class="form-control register-input" />
                 <div *ngIf="userData.get('Email')?.touched && userData.get('Email')?.invalid" class="text-danger mt-1">
                   Valid email is required
@@ -37,7 +41,7 @@
             <!-- Row 2: Password & Confirm Password -->
             <div class="row">
               <div class="col-md-6 mb-3">
-                <label class="form-label register-label">Password</label>
+                <label class="form-label register-label">Password<span class="req">*</span></label>
                 <div class="position-relative">
                   <input [type]="showPassword ? 'text' : 'password'" formControlName="Password"
                     class="form-control register-input pe-5" />
@@ -56,7 +60,7 @@
               </div>
 
               <div class="col-md-6 mb-3">
-                <label class="form-label register-label">Confirm Password</label>
+                <label class="form-label register-label">Confirm Password<span class="req">*</span></label>
                 <div class="position-relative">
                   <input [type]="showConfirmPassword ? 'text' : 'password'" formControlName="ConfirmPassword"
                     class="form-control register-input pe-5" />
@@ -75,7 +79,7 @@
             <!-- Row 3: Department & Role -->
             <div class="row">
               <div class="col-md-6 mb-3">
-                <label class="form-label register-label">Department</label>
+                <label class="form-label register-label">Department<span class="req">*</span></label>
                 <select class="form-select register-input" formControlName="DepartmentId">
                   <option value="">Select Department</option>
                   <option *ngFor="let dept of departments" [value]="dept.id">{{ dept.departmentName }}</option>
@@ -87,7 +91,7 @@
               </div>
 
               <div class="col-md-6 mb-3">
-                <label class="form-label register-label">Roles</label>
+                <label class="form-label register-label">Roles<span class="req">*</span></label>
                 <select class="form-select register-input" formControlName="RoleIds" multiple size="3">
                   <option *ngFor="let role of roles" [value]="role.roleId">{{ role.roleName }}</option>
                 </select>

@@ -15,10 +15,17 @@ import { jwtDecode } from "jwt-decode";
 })
 export class Login {
 showPassword: boolean = false;
-  loginData: FormGroup = new FormGroup({
-     Email: new FormControl('', Validators.required),
-    Password: new FormControl('', Validators.required)
-  });
+loginData: FormGroup = new FormGroup({
+  Email: new FormControl('', [
+    Validators.required,
+     Validators.pattern(/^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/)
+  ]),
+  Password: new FormControl('', [
+    Validators.required,
+    Validators.minLength(3),
+    Validators.maxLength(20)
+  ])
+});
 
   constructor(
     private _router: Router,

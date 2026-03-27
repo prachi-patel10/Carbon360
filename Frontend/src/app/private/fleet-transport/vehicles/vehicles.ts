@@ -1,7 +1,7 @@
 import { Component, effect, HostListener, OnInit, signal, WritableSignal } from '@angular/core';
 import { VehicleService } from './vehicle-service';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import Swal from 'sweetalert2';
 
 export interface VehicleDto {
@@ -21,12 +21,12 @@ export interface VehicleDto {
 @Component({
   selector: 'app-vehicles',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule,ReactiveFormsModule],
   templateUrl: './vehicles.html',
   styleUrls: ['./vehicles.css'],
 })
 export class Vehicles implements OnInit {
-
+vehicleForm!: FormGroup;
   // ── Signals ──────────────────────────────────────────────────
   vehicles: WritableSignal<VehicleDto[]> = signal<VehicleDto[]>([]);
   vehicleTypes  = signal<{ vehicle_type_id: string; vehicle_type_name: string }[]>([]);
@@ -45,11 +45,12 @@ export class Vehicles implements OnInit {
   vehicleNumberError      = signal<string>('');
   vehicleFilterModalOpen: WritableSignal<boolean> = signal(false);
   isEditMode              = signal<boolean>(false);
+  editingVehicleId: string | null = null;
 
   // ── Dropdown loading states ───────────────────────────────────
-  loadingFuelTypes     = signal<boolean>(false);   // ← NEW
-  loadingVehicleTypes  = signal<boolean>(false);   // ← NEW
-  loadingDepartments   = signal<boolean>(false);   // ← NEW
+  loadingFuelTypes     = signal<boolean>(false);   
+  loadingVehicleTypes  = signal<boolean>(false);   
+  loadingDepartments   = signal<boolean>(false);   
 
   pageSizeOptions = [5, 10, 20, 50];
 
@@ -80,9 +81,25 @@ export class Vehicles implements OnInit {
     isActive: true
   });
 
-  constructor(private vehicleService: VehicleService) { }
+  constructor(private fb:FormBuilder, private vehicleService: VehicleService) { }
 
   ngOnInit() {
+     this.vehicleForm = this.fb.group({
+      vehicle_number:    ['', [
+        Validators.required,
+        Validators.pattern(/^[A-Z]{2}[0-9]{2}[A-Z]{1,2}[0-9]{4}$/)
+      ]],
+      vehicle_type_id:  ['', Validators.required],
+      fuel_id:          ['', Validators.required],
+      department_id:    ['', Validators.required],
+      engine_capacity:  ['', [
+        Validators.required,
+        Validators.min(1),
+        Validators.max(10000)
+      ]],
+      emission_standard: ['', Validators.required],
+      isActive:         [true]
+    });
     this.loadDropdowns();
     this.loadVehicles();
   }
@@ -252,23 +269,28 @@ onSearchInput(event: any) {
   }
 
   // ── Save / Edit ───────────────────────────────────────────────
-  saveVehicle() {
-    if (!this.validateVehicleNumber()) { this.showToast('Error', 'Invalid Vehicle Number format', 'error'); return; }
-    const raw = this.newVehicle();
-    if (!raw.vehicle_number?.trim())    { this.showToast('Error', 'Vehicle number is required!', 'error'); return; }
-    if (!raw.emission_standard?.trim()) { this.showToast('Error', 'Emission standard is required!', 'error'); return; }
-    if (!raw.vehicle_type_id)           { this.showToast('Error', 'Select vehicle type!', 'error'); return; }
-    if (!raw.fuel_id)                   { this.showToast('Error', 'Select fuel type!', 'error'); return; }
-    if (!raw.department_id)             { this.showToast('Error', 'Select department!', 'error'); return; }
-    if (!raw.engine_capacity && raw.engine_capacity !== 0) { this.showToast('Error', 'Engine capacity is required!', 'error'); return; }
+ saveVehicle() {
+    if (this.vehicleForm.invalid) {
+      this.vehicleForm.markAllAsTouched();
+      this.showToast('Validation Error', 'Please fill all required fields correctly', 'error');
+      return;
+    }
 
-    const payload = this.isEditMode()
-      ? { vehicle_id: raw.vehicle_id!, vehicle_number: raw.vehicle_number.trim(),
-          vehicle_type_id: raw.vehicle_type_id, fuel_id: raw.fuel_id, department_id: raw.department_id,
-          engine_capacity: raw.engine_capacity, emission_standard: raw.emission_standard?.trim(), isActive: raw.isActive ?? true }
-      : { vehicle_number: raw.vehicle_number.trim(), vehicle_type_id: raw.vehicle_type_id,
-          fuel_id: raw.fuel_id, department_id: raw.department_id, engine_capacity: raw.engine_capacity,
-          emission_standard: raw.emission_standard?.trim(), isActive: raw.isActive ?? true };
+    const raw = this.vehicleForm.value;
+
+    const payload: any = {
+      vehicle_number:    raw.vehicle_number.trim(),
+      vehicle_type_id:   raw.vehicle_type_id,
+      fuel_id:           raw.fuel_id,
+      department_id:     raw.department_id,
+      engine_capacity:   Number(raw.engine_capacity),
+      emission_standard: raw.emission_standard,
+      isActive:          raw.isActive ?? true
+    };
+
+    if (this.isEditMode() && this.editingVehicleId) {
+      payload.vehicle_id = this.editingVehicleId;
+    }
 
     const req$ = this.isEditMode()
       ? this.vehicleService.updateVehicle(payload)
@@ -276,30 +298,42 @@ onSearchInput(event: any) {
 
     req$.subscribe({
       next: () => {
-        this.showToast(this.isEditMode() ? 'Updated' : 'Created',
-          `Vehicle ${this.isEditMode() ? 'updated' : 'created'} successfully!`, 'success');
-        this.resetForm(); this.loadVehicles();
+        this.showToast(
+          this.isEditMode() ? 'Updated' : 'Created',
+          `Vehicle ${this.isEditMode() ? 'updated' : 'created'} successfully!`,
+          'success'
+        );
+        this.resetForm();
+        this.loadVehicles();
       },
-      error: err => { console.error(err); this.showToast('Error', 'Failed to save vehicle', 'error'); }
+      error: err => {
+        console.error(err);
+        this.showToast('Error', 'Failed to save vehicle', 'error');
+      }
     });
   }
 
   editVehicle(vehicle: VehicleDto) {
     this.isEditMode.set(true);
-    this.newVehicle.set({
-      ...vehicle,
-      vehicle_type_id: vehicle.vehicle_type_id?.toString() || null,
-      fuel_id:         vehicle.fuel_id?.toString()         || null,
-      department_id:   vehicle.department_id?.toString()   || null
+    this.editingVehicleId = vehicle.vehicle_id ?? null;
+    this.vehicleForm.patchValue({
+      vehicle_number:    vehicle.vehicle_number,
+      vehicle_type_id:   vehicle.vehicle_type_id?.toString() || '',
+      fuel_id:           vehicle.fuel_id?.toString() || '',
+      department_id:     vehicle.department_id?.toString() || '',
+      engine_capacity:   vehicle.engine_capacity,
+      emission_standard: vehicle.emission_standard,
+      isActive:          vehicle.isActive
     });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   resetForm() {
+    this.vehicleForm.reset({ isActive: true });
     this.isEditMode.set(false);
-    this.newVehicle.set({ vehicle_id: null, vehicle_number: '', vehicle_type_id: null,
-      fuel_id: null, department_id: null, engine_capacity: null, emission_standard: null, isActive: true });
+    this.editingVehicleId = null;
   }
-
+  
   // ── Delete ────────────────────────────────────────────────────
   deleteVehicle(vehicle: VehicleDto) {
     if (!vehicle.vehicle_id) return;
@@ -355,12 +389,10 @@ onSearchInput(event: any) {
     this.vehicleNumberError.set(''); return true;
   }
 
-  onVehicleNumberChange(value: string) {
-    const upper = (value || '').toUpperCase();
-    this.newVehicle.update(v => ({ ...v, vehicle_number: upper }));
-    this.validateVehicleNumber();
+   onVehicleNumberChange(event: Event) {
+    const upper = (event.target as HTMLInputElement).value.toUpperCase();
+    this.vehicleForm.get('vehicle_number')?.setValue(upper, { emitEvent: false });
   }
-
   // ── Toast ─────────────────────────────────────────────────────
   showToast(title: string, text: string, icon: 'success' | 'error' = 'success') {
     Swal.fire({ icon, title, text, toast: true, position: 'top-end', timer: 2000, showConfirmButton: false });

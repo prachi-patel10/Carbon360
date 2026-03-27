@@ -2,38 +2,58 @@
 
   <!-- ================= FORM ================= -->
   <div class="card">
-    <form class="form-grid" [formGroup]="cityForm" (ngSubmit)="submit()">
+  <form class="form-grid" [formGroup]="cityForm" (ngSubmit)="submit()">
 
-      <div class="form-group">
-        <label>City Name</label>
-        <input type="text" formControlName="cityName" placeholder="Enter City Name">
-      </div>
+    <!-- City Name -->
+    <div class="form-group">
+      <label>City Name <span class="req">*</span></label>
+      <input type="text" formControlName="cityName" placeholder="Enter City Name" />
 
-      <div class="form-group">
-        <label>State Name</label>
-        <input type="text" formControlName="stateName" placeholder="Enter State Name">
-      </div>
+      <small class="error-text"
+        *ngIf="cityForm.get('cityName')?.touched && cityForm.get('cityName')?.hasError('required')">
+        City Name is required
+      </small>
+    </div>
 
-      <div class="form-group">
-        <label>Short Code</label>
-        <input type="text" formControlName="shortCode" placeholder="Enter Short Code">
-      </div>
+    <!-- State Name -->
+    <div class="form-group">
+      <label>State Name <span class="req">*</span></label>
+      <input type="text" formControlName="stateName" placeholder="Enter State Name" />
 
-      <div class="form-actions">
-        <button class="save-btn" type="submit">
-          {{ !cityForm.value.cityId ? 'Save' : 'Update' }}
-        </button>
-        <button class="btn-reset" (click)="resetForm()">Reset</button>
+      <small class="error-text"
+        *ngIf="cityForm.get('stateName')?.touched && cityForm.get('stateName')?.hasError('required')">
+        State Name is required
+      </small>
+    </div>
 
-      </div>
+    <!-- Short Code -->
+    <div class="form-group">
+      <label>Short Code <span class="req">*</span></label>
+      <input type="text" formControlName="shortCode" placeholder="Short Code"
+        (input)="onShortCodeChange($event)" />
 
-    </form>
-  </div>
+      <small class="error-text"
+        *ngIf="cityForm.get('shortCode')?.touched && cityForm.get('shortCode')?.hasError('required')">
+        Short Code is required
+      </small>
+      <small class="error-text"
+        *ngIf="cityForm.get('shortCode')?.touched && cityForm.get('shortCode')?.hasError('pattern')">
+        Short Code must contain uppercase letters
+      </small>
+    </div>
+
+    <div class="form-actions">
+      <button class="save-btn" type="submit">
+        {{ !cityForm.value.cityId ? 'Save' : 'Update' }}
+      </button>
+      <button type="button" class="btn-reset" (click)="resetForm()">Reset</button>
+    </div>
+
+  </form>
+</div>
 
   <!-- ================= LIST CARD ================= -->
   <div class="card">
-
-    <!-- ✅ SEARCH MOVED HERE -->
     <form [formGroup]="searchForm">
 
       <div class="search-row">

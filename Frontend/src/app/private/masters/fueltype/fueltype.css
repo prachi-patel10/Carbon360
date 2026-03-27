@@ -191,6 +191,7 @@ tbody tr:hover td {
 .delete-btn:hover { background-color: #ffc9c9 !important; }
 
 
+.req { color: #e74c3c; margin-left: 2px; }
 
 
 /* Status Badge */

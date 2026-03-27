@@ -529,7 +529,7 @@ td.actions { display: flex; gap: 8px; align-items: center; }
   background: linear-gradient(135deg, #0a3d22, #0f5132);
   box-shadow: 0 4px 12px rgba(15,81,50,0.35);
 }
-
+.req { color: #e74c3c; margin-left: 2px; }
 /* ================= RESPONSIVE ================= */
 @media (max-width: 768px) {
   .card > .form-grid { grid-template-columns: 1fr 1fr; }

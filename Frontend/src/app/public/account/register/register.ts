@@ -33,16 +33,29 @@ export class Register {
   ) {
 
     this.userData = new FormGroup({
-      Name: new FormControl('', Validators.required),
-      Email: new FormControl('', [Validators.required, Validators.email]),
-      Password: new FormControl('', [Validators.required, Validators.minLength(6)]),
-      ConfirmPassword: new FormControl('', Validators.required),
-      DepartmentId: new FormControl('', Validators.required),
-      RoleIds: new FormControl([], Validators.required),
-      IsActive: new FormControl(true)
-    }, {
-      validators: this.passwordMatchValidator
-    });
+       Name: new FormControl('', [
+    Validators.required,
+    Validators.minLength(3),
+    Validators.maxLength(50),
+    Validators.pattern(/^[a-zA-Z\s]+$/)   // only letters & spaces
+  ]),
+  Email: new FormControl('', [
+    Validators.required,
+    Validators.pattern(/^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/)
+  ]),
+  Password: new FormControl('', [
+    Validators.required,
+    Validators.minLength(6),
+    Validators.maxLength(20),
+    // Validators.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/)  
+  ]),
+  ConfirmPassword: new FormControl('', Validators.required),
+  DepartmentId: new FormControl('', Validators.required),
+  RoleIds: new FormControl([], Validators.required),
+  IsActive: new FormControl(true)
+}, {
+  validators: this.passwordMatchValidator
+});
     this.getRoles();
     this.getDepartments();
   }
