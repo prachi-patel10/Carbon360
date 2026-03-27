@@ -1,79 +1,123 @@
 <div class="container">
 
   <!-- ================= CREATE / EDIT FORM ================= -->
-  <div class="card">
-    <form class="form-grid">
-      <div class="form-group">
-        <label>Vehicle Number</label>
-        <input type="text" name="vehicle_number" [(ngModel)]="newVehicle().vehicle_number"
-          (ngModelChange)="onVehicleNumberChange($event)" placeholder="Enter Vehicle Number" />
-        <small class="error-text" *ngIf="vehicleNumberError()">{{ vehicleNumberError() }}</small>
-      </div>
+<div class="card">
+  <form [formGroup]="vehicleForm" (ngSubmit)="saveVehicle()" class="form-grid">
 
-      <div class="form-group">
-        <label>Vehicle Type</label>
-        <select name="vehicle_type_id" [(ngModel)]="newVehicle().vehicle_type_id"
-          [style.color]="!newVehicle().vehicle_type_id ? '#999' : '#000'">
-          <option [ngValue]="null" disabled>Select Vehicle Type</option>
-          <option *ngFor="let vt of vehicleTypes()" [ngValue]="vt.vehicle_type_id" style="color:#000">
-            {{ vt.vehicle_type_name }}
-          </option>
-        </select>
-      </div>
+    <!-- Vehicle Number -->
+    <div class="form-group">
+      <label>Vehicle Number <span class="req">*</span></label>
+      <input type="text" formControlName="vehicle_number"
+        placeholder="Vehicle Number"
+        (input)="onVehicleNumberChange($event)" />
+      <small class="error-text"
+        *ngIf="vehicleForm.get('vehicle_number')?.touched && vehicleForm.get('vehicle_number')?.hasError('required')">
+        Vehicle Number is required
+      </small>
+      <small class="error-text"
+        *ngIf="vehicleForm.get('vehicle_number')?.touched && vehicleForm.get('vehicle_number')?.hasError('pattern')">
+        Invalid format. Use: DL12AB1234 or DL12A1234
+      </small>
+    </div>
 
-      <div class="form-group">
-        <label>Fuel</label>
-        <select name="fuel_id" [(ngModel)]="newVehicle().fuel_id"
-          [style.color]="!newVehicle().fuel_id ? '#999' : '#000'">
-          <option [ngValue]="null" disabled>Select Fuel</option>
-          <option *ngFor="let f of fuelTypes()" [ngValue]="f.fuel_id" style="color:#000">
-            {{ f.fuel_name }}
-          </option>
-        </select>
-      </div>
+    <!-- Vehicle Type -->
+    <div class="form-group">
+      <label>Vehicle Type <span class="req">*</span></label>
+      <select formControlName="vehicle_type_id"
+        [style.color]="!vehicleForm.get('vehicle_type_id')?.value ? '#999' : '#000'">
+        <option value="" disabled>Select Vehicle Type</option>
+        <option *ngFor="let vt of vehicleTypes()" [value]="vt.vehicle_type_id" style="color:#000">
+          {{ vt.vehicle_type_name }}
+        </option>
+      </select>
+      <small class="error-text"
+        *ngIf="vehicleForm.get('vehicle_type_id')?.touched && vehicleForm.get('vehicle_type_id')?.hasError('required')">
+        Please select a Vehicle Type
+      </small>
+    </div>
 
-      <div class="form-group">
-        <label>Department</label>
-        <select name="department_id" [(ngModel)]="newVehicle().department_id"
-          [style.color]="!newVehicle().department_id ? '#999' : '#000'">
-          <option [ngValue]="null" disabled>Select Department</option>
-          <option *ngFor="let d of departments()" [ngValue]="d.department_id" style="color:#000">
-            {{ d.department_name }}
-          </option>
-        </select>
-      </div>
+    <!-- Fuel -->
+    <div class="form-group">
+      <label>Fuel <span class="req">*</span></label>
+      <select formControlName="fuel_id"
+        [style.color]="!vehicleForm.get('fuel_id')?.value ? '#999' : '#000'">
+        <option value="" disabled>Select Fuel</option>
+        <option *ngFor="let f of fuelTypes()" [value]="f.fuel_id" style="color:#000">
+          {{ f.fuel_name }}
+        </option>
+      </select>
+      <small class="error-text"
+        *ngIf="vehicleForm.get('fuel_id')?.touched && vehicleForm.get('fuel_id')?.hasError('required')">
+        Please select a Fuel Type
+      </small>
+    </div>
 
-      <div class="form-group">
-        <label>Engine Capacity</label>
-        <input type="number" [(ngModel)]="newVehicle().engine_capacity" name="engineCapacity"
-          placeholder="Engine Capacity" />
-      </div>
+    <!-- Department -->
+    <div class="form-group">
+      <label>Department <span class="req">*</span></label>
+      <select formControlName="department_id"
+        [style.color]="!vehicleForm.get('department_id')?.value ? '#999' : '#000'">
+        <option value="" disabled>Select Department</option>
+        <option *ngFor="let d of departments()" [value]="d.department_id" style="color:#000">
+          {{ d.department_name }}
+        </option>
+      </select>
+      <small class="error-text"
+        *ngIf="vehicleForm.get('department_id')?.touched && vehicleForm.get('department_id')?.hasError('required')">
+        Please select a Department
+      </small>
+    </div>
 
-      <div class="form-group">
-        <label>Emission Standard</label>
-        <select name="emissionStandard" [(ngModel)]="newVehicle().emission_standard"
-          [style.color]="!newVehicle().emission_standard ? '#999' : '#000'">
-          <option [ngValue]="null" disabled>Select Emission Standard</option>
-          <option value="BS4" style="color:#000">BS4</option>
-          <option value="BS6" style="color:#000">BS6</option>
-        </select>
-      </div>
+    <!-- Engine Capacity -->
+    <div class="form-group">
+      <label>Engine Capacity<span class="req">*</span></label>
+      <input type="number" formControlName="engine_capacity" placeholder="Engine Capacity" />
+      <small class="error-text"
+        *ngIf="vehicleForm.get('engine_capacity')?.touched && vehicleForm.get('engine_capacity')?.hasError('required')">
+        Engine Capacity is required
+      </small>
+      <small class="error-text"
+        *ngIf="vehicleForm.get('engine_capacity')?.touched && vehicleForm.get('engine_capacity')?.hasError('min')">
+        Engine Capacity must be greater than 0
+      </small>
+      <small class="error-text"
+        *ngIf="vehicleForm.get('engine_capacity')?.touched && vehicleForm.get('engine_capacity')?.hasError('max')">
+        Engine Capacity must not exceed 10000 cc
+      </small>
+    </div>
 
-      <div class="form-actions">
-        <div class="status-toggle">
-          <span>Active</span>
-          <label class="switch">
-            <input type="checkbox" [checked]="newVehicle().isActive" (change)="onFormActiveChange($event)" />
-            <span class="slider"></span>
-          </label>
-        </div>
-        <button type="button" class="save-btn" (click)="saveVehicle()">
-          {{ isEditMode() ? 'Update' : 'Save' }}
-        </button>
-        <button type="button" class="btn-reset" (click)="resetForm()">Reset</button>
+    <!-- Emission Standard -->
+    <div class="form-group">
+      <label>Emission Standard <span class="req">*</span></label>
+      <select formControlName="emission_standard"
+        [style.color]="!vehicleForm.get('emission_standard')?.value ? '#999' : '#000'">
+        <option value="" disabled>Select Emission Standard</option>
+        <option value="BS4" style="color:#000">BS4</option>
+        <option value="BS6" style="color:#000">BS6</option>
+      </select>
+      <small class="error-text"
+        *ngIf="vehicleForm.get('emission_standard')?.touched && vehicleForm.get('emission_standard')?.hasError('required')">
+        Please select an Emission Standard
+      </small>
+    </div>
+
+    <!-- Actions -->
+    <div class="form-actions">
+      <div class="status-toggle">
+        <span>Active</span>
+        <label class="switch">
+          <input type="checkbox" formControlName="isActive" />
+          <span class="slider"></span>
+        </label>
       </div>
-    </form>
-  </div>
+      <button type="submit" class="save-btn">
+        {{ isEditMode() ? 'Update' : 'Save' }}
+      </button>
+      <button type="button" class="btn-reset" (click)="resetForm()">Reset</button>
+    </div>
+
+  </form>
+</div>
 
   <!-- ================= TABLE CARD ================= -->
   <div class="card">

@@ -24,16 +24,20 @@
 
           <form [formGroup]="loginData" (ngSubmit)="login()">
             <div class="mb-3">
-              <label class="form-label">Email</label>
+              <label class="form-label">Email<span class="req">*</span></label>
               <input type="text" class="form-control" formControlName="Email" placeholder="Enter Email" />
               <small class="text-danger"
                 *ngIf="loginData.get('Email')?.touched && loginData.get('Email')?.hasError('required')">
                 Email is required
               </small>
+               <small class="text-danger"
+      *ngIf="loginData.get('Email')?.touched && loginData.get('Email')?.hasError('pattern')">
+        Please enter a valid Gmail address (e.g. example@gmail.com)
+    </small>
             </div>
 
            <div class="mb-3 position-relative">
-  <label class="form-label">Password</label>
+  <label class="form-label">Password<span class="req">*</span></label>
 
   <input
     [type]="showPassword ? 'text' : 'password'"
@@ -51,6 +55,15 @@
     *ngIf="loginData.get('Password')?.touched && loginData.get('Password')?.hasError('required')">
     Password is required
   </small>
+    <small class="text-danger"
+      *ngIf="loginData.get('Password')?.touched && loginData.get('Password')?.hasError('minlength')">
+      Password must be at least 3 characters
+    </small>
+    <small class="text-danger"
+      *ngIf="loginData.get('Password')?.touched && loginData.get('Password')?.hasError('maxlength')">
+      Password must not exceed 20 characters
+    </small>
+  
 </div>
 
             <button type="submit" class="btn login-btn w-100" [disabled]="loginData.invalid">Login</button>
