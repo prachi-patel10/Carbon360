@@ -136,9 +136,7 @@ export class GeneratorCharts implements OnInit, AfterViewInit, OnChanges, OnDest
     this.loadSiteEmissionChart();
   }
 
-  // ════════════════════════════════════════════════════════════════
   //  NAVIGATION
-  // ════════════════════════════════════════════════════════════════
 
   private navigateToGeneratorSearch(params: {
     month?: number;
@@ -167,17 +165,17 @@ export class GeneratorCharts implements OnInit, AfterViewInit, OnChanges, OnDest
 
       queryParams['startDate'] = start;
       queryParams['endDate'] = end;
-      queryParams['entryStartDate'] = start;  
+      queryParams['entryStartDate'] = start;
       queryParams['entryEndDate'] = end;
 
     } else {
       queryParams['startDate'] = `${y}-01-01`;
       queryParams['endDate'] = `${y}-12-31`;
-      queryParams['entryStartDate'] = `${y}-01-01`;  
+      queryParams['entryStartDate'] = `${y}-01-01`;
       queryParams['entryEndDate'] = `${y}-12-31`;
     }
 
-    console.log('Navigating with params:', queryParams); 
+    console.log('Navigating with params:', queryParams);
 
     this.router.navigate(['/dashboard/searchGenerator'], { queryParams });
   }
@@ -205,13 +203,18 @@ export class GeneratorCharts implements OnInit, AfterViewInit, OnChanges, OnDest
   onRunHoursGridCellClick(monthIndex: number, generatorName: string): void {
     const p: { month?: number; generatorName?: string } = {};
     if (monthIndex >= 0) p.month = monthIndex + 1;
-    if (generatorName) p.generatorName = generatorName;
+    if (generatorName && generatorName !== 'Unknown Generator')
+      p.generatorName = generatorName.trim();
     this.navigateToGeneratorSearch(p);
   }
 
   // now accepts optional fuelType — was 1 arg, now 2
   onRunHoursGeneratorTotalClick(generatorName: string): void {
-    this.navigateToGeneratorSearch({ generatorName });
+    if (!generatorName || generatorName === 'Unknown Generator') {
+      this.navigateToGeneratorSearch({});
+      return;
+    }
+    this.navigateToGeneratorSearch({ generatorName: generatorName.trim() });
   }
 
   onRunHoursMonthTotalClick(monthIndex: number): void {
@@ -220,12 +223,12 @@ export class GeneratorCharts implements OnInit, AfterViewInit, OnChanges, OnDest
 
   // now accepts optional fuelType — was 1 arg, now 2
   onRunHoursLegendClick(generatorName: string, fuelType?: string): void {
-    this.navigateToGeneratorSearch({
-      generatorName,
-      fuelType: fuelType || undefined
-    });
+    const p: { generatorName?: string; fuelType?: string } = {};
+    if (generatorName && generatorName !== 'Unknown Generator')
+      p.generatorName = generatorName.trim();
+    if (fuelType) p.fuelType = fuelType.trim();
+    this.navigateToGeneratorSearch(p);
   }
-
   //  Site chart click ───────────────────────────────────────────
   onSiteGridRowClick(siteName: string): void {
     this.navigateToGeneratorSearch({ siteNames: siteName });
@@ -641,13 +644,41 @@ export class GeneratorCharts implements OnInit, AfterViewInit, OnChanges, OnDest
       data: {
         labels: sorted.map(d => d.siteName),
         datasets: [
-          { label: 'CO₂ (kg)', data: sorted.map(d => d.totalCO2), backgroundColor: '#1D9E75CC', borderColor: '#1D9E75', borderWidth: 1, borderRadius: 4, borderSkipped: false as const, stack: 'emission' },
-          { label: 'NO₂ (kg)', data: sorted.map(d => d.totalNO2), backgroundColor: '#EF9F27CC', borderColor: '#EF9F27', borderWidth: 1, borderRadius: 4, borderSkipped: false as const, stack: 'emission' },
-          { label: 'CH₄ (kg)', data: sorted.map(d => d.totalCH4), backgroundColor: '#D4537ECC', borderColor: '#D4537E', borderWidth: 1, borderRadius: 4, borderSkipped: false as const, stack: 'emission' }
+          {
+            label: 'CO₂ (kg)',
+            data: sorted.map(d => d.totalCO2),
+            backgroundColor: '#1D9E75CC',
+            borderColor: '#1D9E75',
+            borderWidth: 1,
+            borderRadius: 4,
+            borderSkipped: false as const,
+            stack: 'emission'
+          },
+          {
+            label: 'NO₂ (kg)',
+            data: sorted.map(d => d.totalNO2),
+            backgroundColor: '#EF9F27CC',
+            borderColor: '#EF9F27',
+            borderWidth: 1,
+            borderRadius: 4,
+            borderSkipped: false as const,
+            stack: 'emission'
+          },
+          {
+            label: 'CH₄ (kg)',
+            data: sorted.map(d => d.totalCH4),
+            backgroundColor: '#D4537ECC',
+            borderColor: '#D4537E',
+            borderWidth: 1,
+            borderRadius: 4,
+            borderSkipped: false as const,
+            stack: 'emission'
+          }
         ]
       },
       options: {
-        responsive: true, maintainAspectRatio: false,
+        responsive: true,
+        maintainAspectRatio: false,
         onClick: (_e: any, elements: any[]) => {
           if (!elements.length) return;
           const site = sorted[elements[0].index]?.siteName;
@@ -659,29 +690,65 @@ export class GeneratorCharts implements OnInit, AfterViewInit, OnChanges, OnDest
         plugins: {
           legend: { display: false },
           tooltip: {
-            mode: 'index', intersect: false,
-            backgroundColor: '#0f172a', titleColor: '#94a3b8', bodyColor: '#e2e8f0',
-            borderColor: '#d97706', borderWidth: 1, padding: 12,
+            mode: 'index',
+            intersect: false,
+            backgroundColor: '#0f172a',
+            titleColor: '#94a3b8',
+            bodyColor: '#e2e8f0',
+            borderColor: '#d97706',
+            borderWidth: 1,
+            padding: 12,
             callbacks: {
               title: (items: TooltipItem<'bar'>[]) => {
                 const total = sorted[items[0]?.dataIndex ?? 0]?.totalCO2e ?? 0;
-                return `${items[0]?.label}   —   CO2e: ${total.toLocaleString('en-IN')} kg`;
+                return `${items[0]?.label}   —   CO₂e: ${total.toLocaleString('en-IN', {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 5
+                })} kg`;
               },
               label: (ctx: TooltipItem<'bar'>) => {
                 const val = ctx.parsed.y as number;
-                return val === 0 ? '' : ` ${ctx.dataset.label}: ${val.toLocaleString('en-IN')} kg`;
+                if (val === 0) return '';
+                return ` ${ctx.dataset.label}: ${val.toLocaleString('en-IN', {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 5
+                })} kg`;
               }
             }
           }
         },
         scales: {
-          x: { stacked: true, grid: { display: false }, ticks: { color: '#64748b', font: { size: 11 }, maxRotation: 35, minRotation: 0 } },
-          y: { stacked: true, grid: { color: '#fff7ed' }, ticks: { color: '#64748b', font: { size: 11 }, callback: (v: any) => `${Number(v).toLocaleString()}` }, title: { display: true, text: 'Emissions (kg)', color: '#94a3b8', font: { size: 11 } } }
+          x: {
+            stacked: true,
+            grid: { display: false },
+            ticks: {
+              color: '#64748b',
+              font: { size: 11 },
+              maxRotation: 35,
+              minRotation: 0
+            }
+          },
+          y: {
+            stacked: true,
+            grid: { color: '#fff7ed' },
+            ticks: {
+              color: '#64748b',
+              font: { size: 11 },
+              callback: (v: any) => `${Number(v).toLocaleString('en-IN')}`
+            },
+            title: {
+              display: true,
+              text: 'Emissions (kg)',
+              color: '#94a3b8',
+              font: { size: 11 }
+            }
+          }
         },
         animation: { duration: 500, easing: 'easeInOutQuart' }
       }
     });
   }
+
 
   private loadFactorZonePlugin() {
     return {
