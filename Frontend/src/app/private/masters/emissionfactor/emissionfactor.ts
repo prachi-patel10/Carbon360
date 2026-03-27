@@ -45,15 +45,25 @@ fuels: any[] = [];
 
   initForm() {
     this.emissionForm = this.fb.group({
-      EmissionFactorId: [''],
-        FuelId: ['', Validators.required],
-      FuelType: ['', Validators.required],
-      CO2_Factor_KgPerL: [0],
-      NO2_Factor_KgPerL: [0],
-      CH4_Factor_KgPerL: [0],
-      IsActive: [true]
-    });
+  EmissionFactorId: [''],
+    FuelId: [null, Validators.required], 
+  CO2_Factor_KgPerL: [null, Validators.required],
+  NO2_Factor_KgPerL: [null, Validators.required],
+  CH4_Factor_KgPerL: [null, Validators.required],
+  IsActive: [true]
+});
   }
+
+  showToast(type: 'success' | 'error', message: string) {
+  Swal.fire({
+    toast: true,
+    position: 'top-end',
+    icon: type,
+    title: message,
+    showConfirmButton: false,
+    timer: 2000
+  });
+}
 
 loadList() {
   this.service.getList().subscribe({
@@ -74,20 +84,31 @@ loadList() {
 }
 
 submitEmission() {
-  const ef = this.emissionForm.value;
-  if (!ef.FuelId) return;
 
-  const obs = !ef.EmissionFactorId
+  if (this.emissionForm.invalid) {
+    this.emissionForm.markAllAsTouched();
+    this.showToast('error', 'Please fill all required fields');
+    return;
+  }
+  console.log('Selected FuelId:', this.emissionForm.value.FuelId);
+console.log('Type:', typeof this.emissionForm.value.FuelId);
+
+  const ef = this.emissionForm.value;
+  const isCreate = !ef.EmissionFactorId;
+
+  const obs = isCreate
     ? this.service.create(ef)
-    : this.service.update(ef);
+    : this.service.update(ef.EmissionFactorId, ef); // ✅ FIXED
 
   obs.subscribe({
     next: () => {
-      this.toastr.success('Saved successfully');
+      this.showToast('success', isCreate ? 'Created successfully' : 'Updated successfully');
       this.loadList();
       this.resetForm();
     },
-    error: () => this.toastr.error('Save failed')
+    error: () => {
+      this.showToast('error', isCreate ? 'Create failed' : 'Update failed');
+    }
   });
 }
 
@@ -134,18 +155,25 @@ resetForm() {
 loadFuels() {
   this.service.getFuels().subscribe({
     next: (res: any) => {
-      console.log('Fuel API Response:', res); // 👈 check this
 
-      // ✅ SAFE HANDLING
-      const fuelData = res?.data || res || [];
+      console.log('Fuel API:', res);
 
-      this.fuels = fuelData.map((f: any) => ({
-        fuelId: f.fuel_id || f.fuelId,
-        fuelName: f.fuel_name || f.fuelName
-      }));
+      // ✅ handle all possible structures
+      const fuelData =
+        res?.data?.data ||   // case: paged API
+        res?.data ||         // case: normal API
+        res ||               // fallback
+        [];
+
+     this.fuels = fuelData.map((f: any) => ({
+  fuelId: f.fuel_id,      // ✅ keep encrypted string
+  fuelName: f.fuel_name
+}));
+
+      console.log('Mapped fuels:', this.fuels);
     },
     error: () => {
-      this.toastr.error('Failed to load fuels');
+      this.showToast('error', 'Failed to load fuels');
     }
   });
 }

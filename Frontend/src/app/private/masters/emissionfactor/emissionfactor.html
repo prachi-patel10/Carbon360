@@ -1,77 +1,90 @@
 <div class="emission-page">
+  <div class="card">
+    <form [formGroup]="emissionForm" (ngSubmit)="submitEmission()" class="form-grid">
+      <!-- Fuel Dropdown -->
+      <div class="form-group">
+        <label>Fuel <span style="color: red">*</span></label>
 
-<div class="card">
-  <form [formGroup]="emissionForm" (ngSubmit)="submitEmission()" class="form-grid">
+        <select formControlName="FuelId">
+          <option value="" disabled>Select Fuel</option>
 
-    <!-- Fuel Dropdown -->
-   <div class="form-group">
-  <label>Fuel</label>
+          <option *ngFor="let f of fuels" [ngValue]="f.fuelId">
+  {{ f.fuelName }}
+</option>
+        </select>
 
-  <select formControlName="FuelId"
-          [style.color]="!emissionForm.get('FuelId')?.value ? '#999' : '#000'">
-
-    <!-- Placeholder -->
-    <option value="" disabled>
-      Select Fuel
-    </option>
-
-    <!-- Options -->
-    <option *ngFor="let f of fuels" 
-            [value]="f.fuelId"
-            style="color:#000;">
-      {{ f.fuelName }}
-    </option>
-
-  </select>
-</div>
-    <!-- CO2 -->
-    <div class="form-group">
-      <label>CO2 Factor (Kg/L)</label>
-      <input type="number"
-             formControlName="CO2_Factor_KgPerL"
-             placeholder="Enter CO2 Factor">
-    </div>
-
-    <!-- NO2 -->
-    <div class="form-group">
-      <label>NO2 Factor (Kg/Km)</label>
-      <input type="number"
-             formControlName="NO2_Factor_KgPerL"
-             placeholder="Enter NO2 Factor">
-    </div>
-
-    <!-- CH4 -->
-    <div class="form-group">
-      <label>CH4 Factor (Kg/Km)</label>
-      <input type="number"
-             formControlName="CH4_Factor_KgPerL"
-             placeholder="Enter CH4 Factor">
-    </div>
-
-    <!-- Status -->
-    <div class="form-actions">
-      <div class="status-toggle">
-        <span>Active</span>
-        <label class="switch">
-          <input type="checkbox" formControlName="IsActive">
-          <span class="slider"></span>
-        </label>
+       
+        <small *ngIf="emissionForm.get('FuelId')?.touched && emissionForm.get('FuelId')?.invalid"
+       style="color:red">
+  Fuel is required
+</small>
       </div>
-    </div>
+      <!-- CO2 -->
+      <div class="form-group">
+        <label>CO2 Factor (Kg/L) <span class="required">*</span></label>
+        <input type="number" formControlName="CO2_Factor_KgPerL" placeholder="Enter CO2 Factor" />
+        <small
+          class="error-text"
+          *ngIf="
+            emissionForm.get('CO2_Factor_KgPerL')?.touched &&
+            emissionForm.get('CO2_Factor_KgPerL')?.invalid
+          "
+        >
+          CO2 factor is required
+        </small>
+      </div>
 
-    <!-- Buttons -->
-    <div class="form-actions">
-      <button type="submit" class="save-btn">
-        {{ !emissionForm.value.EmissionFactorId ? 'Save' : 'Update' }}
-      </button>
+      <!-- NO2 -->
+      <div class="form-group">
+        <label>NO2 Factor (Kg/L) <span class="required">*</span></label>
+        <input type="number" formControlName="NO2_Factor_KgPerL" placeholder="Enter NO2 Factor" />
+        <small
+          class="error-text"
+          *ngIf="
+            emissionForm.get('NO2_Factor_KgPerL')?.touched &&
+            emissionForm.get('NO2_Factor_KgPerL')?.invalid
+          "
+        >
+          NO2 factor is required
+        </small>
+      </div>
 
-      <button type="button" class="reset-btn" (click)="resetForm()">
-        Reset
-      </button>
-    </div>
+      <!-- CH4 -->
+      <div class="form-group">
+        <label>CH4 Factor (Kg/L) <span class="required">*</span></label>
+        <input type="number" formControlName="CH4_Factor_KgPerL" placeholder="Enter CH4 Factor" />
+        <small
+          class="error-text"
+          *ngIf="
+            emissionForm.get('CH4_Factor_KgPerL')?.touched &&
+            emissionForm.get('CH4_Factor_KgPerL')?.invalid
+          "
+        >
+          CH4 factor is required
+        </small>
+      </div>
 
-  </form>
-</div>
+      <!-- Status -->
+      <div class="form-actions">
+        <div class="status-toggle">
+          <span>Active</span>
+          <label class="switch">
+            <input type="checkbox" formControlName="IsActive" />
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Buttons -->
+      <div class="form-actions">
+        <button type="submit" class="save-btn">
+          {{ !emissionForm.value.EmissionFactorId ? 'Save' : 'Update' }}
+        </button>
+
+        <button type="button" class="reset-btn" (click)="resetForm()">Reset</button>
+      </div>
+    </form>
+  </div>
 
   <!-- ================= SIMPLE LIST ================= -->
   <div class="card table-card">
@@ -95,7 +108,7 @@
           <td>{{ e.CH4_Factor_KgPerL }}</td>
           <td>
             <label class="toggle-switch">
-              <input type="checkbox" [checked]="e.IsActive" (change)="toggleActive(e)">
+              <input type="checkbox" [checked]="e.IsActive" (change)="toggleActive(e)" />
               <span class="toggle-slider"></span>
             </label>
           </td>
@@ -106,6 +119,5 @@
         </tr>
       </tbody>
     </table>
-
   </div>
 </div>

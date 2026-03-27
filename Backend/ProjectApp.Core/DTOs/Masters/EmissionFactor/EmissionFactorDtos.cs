@@ -8,7 +8,7 @@ namespace ProjectApp.Core.DTOs.Masters.EmissionFactor
 {
     public class EmissionFactorRequestDTO
     {
-        public int FuelId { get; set; }   // changed
+        public string FuelId { get; set; }   // changed
         public decimal CO2_Factor_KgPerL { get; set; }
         public decimal NO2_Factor_KgPerL { get; set; }
         public decimal CH4_Factor_KgPerL{ get; set; }
@@ -17,7 +17,7 @@ namespace ProjectApp.Core.DTOs.Masters.EmissionFactor
     public class EmissionFactorResponseDTO
     {
         public string Id { get; set; }   // encrypted
-        public int FuelId { get; set; }  // added
+        public string FuelId { get; set; }
         public string FuelName { get; set; }  // added
 
         public decimal CO2_Factor_KgPerL { get; set; }

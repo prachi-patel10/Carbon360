@@ -6,7 +6,9 @@
 
       <!-- Department Name -->
       <div class="form-group">
-        <label>Department Name</label>
+       <label>
+  Department Name <span class="required">*</span>
+</label>
         <input type="text" formControlName="DepartmentName" placeholder="Enter Department Name">
 
         <small class="error-text"
@@ -44,14 +46,12 @@
     <!-- Search Row -->
     <div class="search-row">
 
-      <div class="search-left">
-        <input type="text"
-               class="search-input"
-               placeholder="Quick Search"
-               formControlName="searchText"
-               [formGroup]="searchForm">
-      </div>
-
+     <div [formGroup]="searchForm">
+  <input type="text"
+         class="search-input"
+         placeholder="Quick Search"
+         formControlName="searchText">
+</div>
       <div class="search-right">
 
         <!-- Active Filter -->

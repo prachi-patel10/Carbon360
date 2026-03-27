@@ -21,15 +21,29 @@ export class EmissionFactorService {
   getList() {
     return this.http.get<any>(`${this.apiUrl}/List`);
   }
+create(data: any) {
 
-  create(data: any) {
-    return this.http.post(`${this.apiUrl}/Create`, data);
-  }
+  const payload = {
+     fuelId: data.FuelId,    // ✅ convert to number
+    co2_Factor_KgPerL: data.CO2_Factor_KgPerL,
+    no2_Factor_KgPerL: data.NO2_Factor_KgPerL,
+    ch4_Factor_KgPerL: data.CH4_Factor_KgPerL
+  };
 
-  update(data: any) {
-    return this.http.put(`${this.apiUrl}/${data.EmissionFactorId}`, data);
-  }
+  return this.http.post(`${this.apiUrl}/Create`, payload);
+}
 
+ update(id: string, data: any) {
+
+  const payload = {
+     fuelId: data.FuelId,    // ✅ convert
+    co2_Factor_KgPerL: data.CO2_Factor_KgPerL,
+    no2_Factor_KgPerL: data.NO2_Factor_KgPerL,
+    ch4_Factor_KgPerL: data.CH4_Factor_KgPerL
+  };
+
+  return this.http.put(`${this.apiUrl}/${id}`, payload);
+}
   delete(id: string) {
     return this.http.delete(`${this.apiUrl}/${id}`);
   }
