@@ -80,7 +80,7 @@
   cursor: pointer;
 }
 .btn-reset:hover { background: #f5f5f5; }
-
+.req { color: #e74c3c; margin-left: 2px; }
 /* ================= SWITCH TOGGLE ================= */
 .status-toggle {
   display: flex;

@@ -58,6 +58,7 @@ loginData: FormGroup = new FormGroup({
 
   const userData = {
     name: name,
+    firstName: res.data.firstName,
     roles: Array.isArray(roles) ? roles : [roles], // handle single role case
     currentRole: Array.isArray(roles) ? roles[0] : roles,
     token: token

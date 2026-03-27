@@ -5,47 +5,80 @@
     <form [formGroup]="userForm" (ngSubmit)="submitUser()" class="form-grid">
 
       <div class="form-group">
-        <label>First Name</label>
+        <label>First Name<span class="req">*</span></label>
         <input type="text" formControlName="Fname" placeholder="Enter First Name">
+         <small class="error-text"
+        *ngIf="userForm.get('Fname')?.touched && userForm.get('Fname')?.hasError('required')">
+        First Name is required
+      </small>
       </div>
 
       <div class="form-group">
-        <label>Last Name</label>
+        <label>Last Name<span class="req">*</span></label>
         <input type="text" formControlName="Lname" placeholder="Enter Last Name">
+         <small class="error-text"
+        *ngIf="userForm.get('Lname')?.touched && userForm.get('Lname')?.hasError('required')">
+        Last Name is required
+      </small>
       </div>
 
       <div class="form-group">
-        <label>Username</label>
+        <label>Username<span class="req">*</span></label>
         <input type="text" formControlName="UserName" placeholder="Enter Username">
+         <small class="error-text"
+        *ngIf="userForm.get('UserName')?.touched && userForm.get('UserName')?.hasError('required')">
+        UserName is required
+      </small>
       </div>
 
       <div class="form-group">
-        <label>Email</label>
+        <label>Email<span class="req">*</span></label>
         <input type="email" formControlName="Email" placeholder="Enter Email">
+         <small class="error-text"
+        *ngIf="userForm.get('Email')?.touched && userForm.get('Email')?.hasError('required')">
+        Please enter a valid email address 
+      </small>
       </div>
 
       <div class="form-group">
-        <label>Password</label>
+        <label>Password<span class="req">*</span></label>
         <input type="password" formControlName="Password" placeholder="Enter Password">
+         <small class="error-text"
+        *ngIf="userForm.get('Password')?.touched && userForm.get('Password')?.hasError('required')">
+        Password is required
+      </small>
+
       </div>
 
       <div class="form-group">
-        <label>Confirm Password</label>
+        <label>Confirm Password<span class="req">*</span></label>
         <input type="password" formControlName="ConfirmPassword" placeholder="Confirm Password">
+        <small class="error-text"
+        *ngIf="userForm.get('ConfirmPassword')?.touched && userForm.get('ConfirmPassword')?.hasError('required')">
+        Password is required
+      </small>
+ <small class="error-text"
+        *ngIf="userForm.get('ConfirmPassword')?.touched && userForm.hasError('mismatch')">
+        Passwords do not match
+      </small>
       </div>
 
       <div class="form-group">
-        <label>Department</label>
+        <label>Department<span class="req">*</span></label>
         <select formControlName="DepartmentId" [style.color]="!userForm.get('DepartmentId')?.value ? '#999' : '#000'">
           <option value="" disabled>Select Department</option>
           <option *ngFor="let d of departments()" [value]="d.DepartmentId" style="color:#000">
             {{ d.DepartmentName }}
           </option>
         </select>
+        <small class="error-text"
+        *ngIf="userForm.get('DepartmentId')?.touched && userForm.get('DepartmentId')?.hasError('required')">
+        Please select a Department
+      </small>
       </div>
 
       <div class="form-group">
-        <label>Roles</label>
+        <label>Roles<span class="req">*</span></label>
         <div class="dropdown-checkbox">
           <div class="dropdown-header" (click)="toggleRoleDropdown()">
             <span [ngClass]="{'placeholder-text': !userForm.value.RoleIds?.length}">
@@ -60,6 +93,10 @@
             </div>
           </div>
         </div>
+        <small class="error-text"
+        *ngIf="userForm.get('RoleIds')?.touched && userForm.get('RoleIds')?.hasError('required')">
+        Please select a Department
+      </small>
       </div>
 
       <div class="form-actions">
@@ -234,7 +271,6 @@
             <i class="fas fa-chevron-down vf-chevron"></i>
           </div>
 
-          <!-- ✅ stopPropagation on PANEL (not rows) prevents document click closing it -->
           <div class="vf-panel" [class.open]="deptDropOpen" (click)="$event.stopPropagation()">
             <div *ngIf="loadingDepartments()" class="vf-panel-loading">
               <i class="fas fa-spinner fa-spin"></i> Loading...

@@ -71,6 +71,7 @@ namespace pr.Repository.Services.Auth
             return new LoginResDTO
             {
                 UserName = user.UserName,
+                FirstName = user.Fname,
                 Roles = roles,
                 CurrentRole = roles.FirstOrDefault(),
                 Token = token
@@ -107,6 +108,7 @@ namespace pr.Repository.Services.Auth
             return new LoginResDTO
             {
                 UserName = user.UserName,
+                FirstName = user.Fname,
                 Roles = roles,
                 CurrentRole = dto.SelectedRole,
                 Token = newToken

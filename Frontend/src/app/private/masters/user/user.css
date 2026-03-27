@@ -85,7 +85,7 @@
   gap: 5px;
   font-size: 13px;
 }
-
+.req { color: #e74c3c; margin-left: 2px; }
 /* ================= FORM ACTIONS ================= */
 .form-actions {
   display: flex;
@@ -95,6 +95,12 @@
   flex-wrap: wrap;
 }
 
+.error-text {
+  color: #e74c3c;
+  font-size: 12px;
+  margin-top: 4px;
+  display: block;
+}
 .save-btn {
   padding: 8px 16px;
   border-radius: 5px;

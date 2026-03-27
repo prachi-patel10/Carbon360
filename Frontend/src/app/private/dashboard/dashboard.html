@@ -11,6 +11,17 @@
 
       @if (showProfileCard()) {
       <div class="admin-dropdown" (click)="$event.stopPropagation()">
+        <!-- //username -->
+          <div class="user-name-block">
+    <div class="user-avatar-large">{{ loggedInUser.charAt(0) }}</div>
+    <div class="user-info">
+      <span class="user-fullname">{{ firstName }}</span>
+      <span class="user-username">{{ loggedInUser }}</span>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+  <!-- username -->
         @if (roles && roles.length === 1) {
         <div class="user-role-block">
           <span class="role-label">Role</span>

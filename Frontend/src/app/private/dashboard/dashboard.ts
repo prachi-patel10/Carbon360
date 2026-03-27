@@ -37,6 +37,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   openedConfigMenu: string | null = null;
   openedSubMenu: string | null = null;
   openedMainMenu: string | null = null;
+  firstName: string = '';
 
   @ViewChild(VehicleCharts) vehicleChartsRef!: VehicleCharts;
   @ViewChild(GeneratorCharts) generatorChartsRef!: GeneratorCharts;
@@ -98,6 +99,8 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   ngOnInit(): void {
     const user = this.authService.getLoggedInUser();
     if (!user) { this.router.navigate(['/login']); return; }
+    // const user = JSON.parse(localStorage.getItem('user') || '{}');
+  this.firstName = user.firstName || user.name || 'User';
 
     this.loggedInUser = user.name;
     this.roles = user.roles ?? [];

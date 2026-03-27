@@ -5,7 +5,7 @@
     <form [formGroup]="generatorForm" (ngSubmit)="submit()" class="form-grid">
 
       <div class="form-group">
-        <label>Generator Name</label>
+        <label>Generator Name<span class="req">*</span></label>
         <input type="text" formControlName="generatorName" placeholder="Enter generator name" />
         <span class="error-text"
           *ngIf="generatorForm.get('generatorName')?.invalid && generatorForm.get('generatorName')?.touched">
@@ -14,7 +14,7 @@
       </div>
 
       <div class="form-group">
-        <label>Rated Capacity (kW)</label>
+        <label>Rated Capacity (kW)<span class="req">*</span></label>
         <input type="number" formControlName="ratedCapacityKW" placeholder="Enter capacity" />
         <span class="error-text"
           *ngIf="generatorForm.get('ratedCapacityKW')?.invalid && generatorForm.get('ratedCapacityKW')?.touched">
@@ -23,7 +23,7 @@
       </div>
 
       <div class="form-group">
-        <label>Site</label>
+        <label>Site<span class="req">*</span></label>
         <select formControlName="siteId"
                 [style.color]="!generatorForm.get('siteId')?.value ? '#999' : '#000'">
           <option value="" disabled>Select Site</option>
@@ -38,7 +38,7 @@
       </div>
 
       <div class="form-group">
-        <label>Department</label>
+        <label>Department<span class="req">*</span></label>
         <select formControlName="departmentId"
                 [style.color]="!generatorForm.get('departmentId')?.value ? '#999' : '#000'">
           <option value="" disabled>Select Department</option>
@@ -53,7 +53,7 @@
       </div>
 
       <div class="form-group">
-        <label>Fuel</label>
+        <label>Fuel<span class="req">*</span></label>
         <select formControlName="fuelId"
                 [style.color]="!generatorForm.get('fuelId')?.value ? '#999' : '#000'">
           <option value="" disabled>Select Fuel</option>
