@@ -31,7 +31,7 @@ export interface MonthlyEmissionChartResponse {
 
 export interface GeneratorRunHoursChartResponse {
   labels: string[]; data: number[]; colors: string[];
-  siteNames: string[]; fuelConsumed: number[]; powerOutput: number[];
+  siteNames: string[]; fuelConsumed: number[]; powerOutput: number[]; fuelTypes: string[];
 }
 
 export interface VehicleDistanceChartResponse {
@@ -76,6 +76,7 @@ export interface GeneratorRunHoursMonthlyPivotResponse {
   monthTotals:      number[];
   generatorTotals:  number[];
   grandTotal:       number;
+  fuelTypes:        string[];  
 }
 
 // ── City Wise Emissions (Vehicle) ────────────────────────────

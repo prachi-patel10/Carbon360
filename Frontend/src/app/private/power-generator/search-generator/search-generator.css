@@ -121,6 +121,7 @@ body {
     gap: 10px;
     flex-wrap: wrap;
     width: 100%;
+    margin-top: 10px;
 }
 
 .search-wrap {
@@ -385,7 +386,7 @@ body {
 /* Column widths — total = 860px */
 .gen-table th:nth-child(1) { width: 150px; } /*  Report     */
 .gen-table th:nth-child(2) { width: 200px; } /*Generator   */
-.gen-table th:nth-child(3) { width: 130px; } /* Reported Date    */
+.gen-table th:nth-child(3) { width: 150px; } /* Reported Date    */
 .gen-table th:nth-child(4) { width: 120px; } /*Start Date        */
 .gen-table th:nth-child(5) { width: 120px; } /* End Date     */
 .gen-table th:nth-child(6) { width: 140px;  } /*Load Factor       */

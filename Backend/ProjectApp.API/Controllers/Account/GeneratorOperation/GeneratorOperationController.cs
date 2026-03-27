@@ -160,7 +160,8 @@ namespace ProjectApp.API.Controllers.Account.GeneratorOperation
             int pageNumber = 1,
             int pageSize = 10,
             string sortColumn = "EntryDate",
-            string sortDirection = "DESC")
+            string sortDirection = "DESC",
+            string? siteNames = null)
         {
             var result = await _service.SearchAsync(
                 search,
@@ -174,7 +175,8 @@ namespace ProjectApp.API.Controllers.Account.GeneratorOperation
                 pageNumber,
                 pageSize,
                 sortColumn,
-                sortDirection
+                sortDirection,
+                siteNames
             );
 
             return Ok(new

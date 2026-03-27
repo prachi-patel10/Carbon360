@@ -99,13 +99,12 @@
           <tr>
             <th class="th-vtype">Generator</th>
             @for (month of runHoursMonthlyData()!.monthLabels; track month; let mi = $index) {
-              @if (runHoursMonthlyData()!.monthTotals[mi] > 0) {
-                <th class="th-month-col th-clickable"
-                    (click)="onRunHoursMonthTotalClick(mi)"
-                    title="View all records for {{ month }}">
-                  {{ month }}
-                </th>
-              }
+            @if (runHoursMonthlyData()!.monthTotals[mi] > 0) {
+            <th class="th-month-col th-clickable" (click)="onRunHoursMonthTotalClick(mi + 1)"
+              title="View all records for {{ month }}">
+              {{ month }}
+            </th>
+            }
             }
             <th class="th-total-col">Total (hrs)</th>
           </tr>
@@ -114,8 +113,8 @@
           @for (gen of runHoursMonthlyData()!.generatorNames; track gen; let gi = $index) {
           <tr class="data-row">
             <td class="td-vtype td-vtype-clickable"
-                (click)="onRunHoursGeneratorTotalClick(gen)"
-                title="View all records for {{ gen }}">
+              (click)="onRunHoursGeneratorTotalClick(gen, runHoursMonthlyData()!.fuelTypes[gi])"
+              title="View all records for {{ gen }}">
               <div class="vtype-name-cell">
                 <span class="vtype-color-bar" [style.background]="runHoursMonthlyData()!.colors[gi]"></span>
                 <span class="vtype-name-text">{{ gen }}</span>
@@ -123,25 +122,25 @@
               </div>
             </td>
             @for (month of runHoursMonthlyData()!.monthLabels; track month; let mi = $index) {
-              @if (runHoursMonthlyData()!.monthTotals[mi] > 0) {
-                <td class="td-cell"
-                    [class.has-data]="runHoursMonthlyData()!.runHoursMatrix[mi][gi] > 0"
-                    [class.td-cell-clickable]="runHoursMonthlyData()!.runHoursMatrix[mi][gi] > 0"
-                    (click)="runHoursMonthlyData()!.runHoursMatrix[mi][gi] > 0 && onRunHoursGridCellClick(mi, gen)">
-                  @if (runHoursMonthlyData()!.runHoursMatrix[mi][gi] > 0) {
-                    <span class="cell-val"
-                      [title]="gen + ' · ' + month + ' | ' + runHoursMonthlyData()!.runHoursMatrix[mi][gi].toFixed(1) + ' hrs | Fuel: ' + runHoursMonthlyData()!.fuelMatrix[mi][gi].toFixed(1) + ' L | Power: ' + runHoursMonthlyData()!.powerMatrix[mi][gi].toFixed(1) + ' kWh'">
-                      {{ formatNum(runHoursMonthlyData()!.runHoursMatrix[mi][gi]) }}
-                    </span>
-                  } @else {
-                    <span class="cell-empty">—</span>
-                  }
-                </td>
+            @if (runHoursMonthlyData()!.monthTotals[mi] > 0) {
+            <td class="td-cell" [class.has-data]="runHoursMonthlyData()!.runHoursMatrix[mi][gi] > 0"
+              [class.td-cell-clickable]="runHoursMonthlyData()!.runHoursMatrix[mi][gi] > 0" (click)="runHoursMonthlyData()!.runHoursMatrix[mi][gi] > 0 && 
+             onRunHoursGridCellClick(mi, gen, runHoursMonthlyData()!.fuelTypes[gi])">
+
+              @if (runHoursMonthlyData()!.runHoursMatrix[mi][gi] > 0) {
+              <span class="cell-val"
+                [title]="gen + ' · ' + month + ' | ' + runHoursMonthlyData()!.runHoursMatrix[mi][gi].toFixed(1) + ' hrs | Fuel: ' + runHoursMonthlyData()!.fuelMatrix[mi][gi].toFixed(1) + ' L | Power: ' + runHoursMonthlyData()!.powerMatrix[mi][gi].toFixed(1) + ' kWh'">
+                {{ formatNum(runHoursMonthlyData()!.runHoursMatrix[mi][gi]) }}
+              </span>
+              } @else {
+              <span class="cell-empty">—</span>
               }
+            </td>
+            }
             }
             <td class="td-row-total td-row-total-clickable"
-                (click)="onRunHoursGeneratorTotalClick(gen)"
-                title="View all records for {{ gen }}">
+              (click)="onRunHoursGeneratorTotalClick(gen, runHoursMonthlyData()!.fuelTypes[gi])"
+              title="View all records for {{ gen }}">
               {{ formatNum(runHoursMonthlyData()!.generatorTotals[gi]) }}
             </td>
           </tr>
@@ -151,13 +150,12 @@
           <tr class="total-row">
             <td class="td-vtype footer-label">Total (hrs)</td>
             @for (month of runHoursMonthlyData()!.monthLabels; track month; let mi = $index) {
-              @if (runHoursMonthlyData()!.monthTotals[mi] > 0) {
-                <td class="td-cell td-col-total td-col-total-clickable"
-                    (click)="onRunHoursMonthTotalClick(mi)"
-                    title="View all records for {{ month }}">
-                  {{ formatNum(runHoursMonthlyData()!.monthTotals[mi]) }}
-                </td>
-              }
+            @if (runHoursMonthlyData()!.monthTotals[mi] > 0) {
+            <td class="td-cell td-col-total td-col-total-clickable" (click)="onRunHoursMonthTotalClick(mi)"
+              title="View all records for {{ month }}">
+              {{ formatNum(runHoursMonthlyData()!.monthTotals[mi]) }}
+            </td>
+            }
             }
             <td class="td-row-total grand-total">
               {{ formatNum(runHoursMonthlyData()!.grandTotal) }}
