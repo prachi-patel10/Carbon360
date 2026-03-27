@@ -141,46 +141,46 @@ export class GeneratorCharts implements OnInit, AfterViewInit, OnChanges, OnDest
   // ════════════════════════════════════════════════════════════════
 
   private navigateToGeneratorSearch(params: {
-  month?: number;
-  fuelType?: string;
-  generatorName?: string;
-  siteNames?: string;
-  search?: string;
-}): void {
-  const queryParams: Record<string, any> = {
-    source: 'chart',
-    year:   this.year,
-  };
+    month?: number;
+    fuelType?: string;
+    generatorName?: string;
+    siteNames?: string;
+    search?: string;
+  }): void {
+    const queryParams: Record<string, any> = {
+      source: 'chart',
+      year: this.year,
+    };
 
-  if (params.fuelType)      queryParams['fuelType']      = params.fuelType.trim();
-  if (params.generatorName) queryParams['generatorName'] = params.generatorName.trim();
-  if (params.siteNames)     queryParams['siteNames']     = params.siteNames.trim();
-  if (params.search)        queryParams['search']        = params.search.trim();
+    if (params.fuelType) queryParams['fuelType'] = params.fuelType.trim();
+    if (params.generatorName) queryParams['generatorName'] = params.generatorName.trim();
+    if (params.siteNames) queryParams['siteNames'] = params.siteNames.trim();
+    if (params.search) queryParams['search'] = params.search.trim();
 
-  const y = this.year;
+    const y = this.year;
 
-  if (params.month) {
-    const m       = params.month;
-    const lastDay = new Date(y, m, 0).getDate();
-    const start   = `${y}-${String(m).padStart(2, '0')}-01`;
-    const end     = `${y}-${String(m).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
+    if (params.month) {
+      const m = params.month;
+      const lastDay = new Date(y, m, 0).getDate();
+      const start = `${y}-${String(m).padStart(2, '0')}-01`;
+      const end = `${y}-${String(m).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
 
-    //  Only send OperationDate range — do NOT send entryStartDate/entryEndDate
-    // Sending both filters simultaneously excludes records where
-    // OperationDate and EntryDate fall in different months
-    queryParams['startDate'] = start;
-    queryParams['endDate']   = end;
+      queryParams['startDate'] = start;
+      queryParams['endDate'] = end;
+      queryParams['entryStartDate'] = start;  
+      queryParams['entryEndDate'] = end;
 
-  } else {
-    // Full year — only OperationDate range, no entry date filter
-    queryParams['startDate'] = `${y}-01-01`;
-    queryParams['endDate']   = `${y}-12-31`;
+    } else {
+      queryParams['startDate'] = `${y}-01-01`;
+      queryParams['endDate'] = `${y}-12-31`;
+      queryParams['entryStartDate'] = `${y}-01-01`;  
+      queryParams['entryEndDate'] = `${y}-12-31`;
+    }
+
+    console.log('Navigating with params:', queryParams); 
+
+    this.router.navigate(['/dashboard/searchGenerator'], { queryParams });
   }
-
-  console.log('Navigating with params:', queryParams); // ← keep this temporarily
-
-  this.router.navigate(['/dashboard/searchGenerator'], { queryParams });
-}
   // ── Bar / Line chart clicks ────────────────────────────────────
 
   navigateByGeneratorMonth(chartElementIndex: number): void {

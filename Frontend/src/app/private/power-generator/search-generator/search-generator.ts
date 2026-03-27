@@ -254,12 +254,44 @@ export class SearchGenerator implements OnInit, AfterViewInit {
         this.totalRecordsCount.set(total);
         this.totalPagesCount.set(Math.ceil(total / this.pageSize) || 1);
 
+        // ✅ After data loads, calculate actual entry date range from returned records
+        // and set the reported date picker to show the real range
+        if (mapped.length > 0) {
+          const entryDates = mapped
+            .map((r: any) => r.entryDate ? new Date(r.entryDate) : null)
+            .filter((d: Date | null) => d !== null && !isNaN(d.getTime())) as Date[];
+
+          if (entryDates.length > 0) {
+            const minEntry = new Date(Math.min(...entryDates.map(d => d.getTime())));
+            const maxEntry = new Date(Math.max(...entryDates.map(d => d.getTime())));
+
+            // Set the signal values
+            const minStr = minEntry.toISOString().substring(0, 10);
+            const maxStr = maxEntry.toISOString().substring(0, 10);
+            this.entryStartDate.set(minStr);
+            this.entryEndDate.set(maxStr);
+
+            // Set the date picker UI to show the actual range
+            setTimeout(() => {
+              this.setPickerRange(this.entryDatePicker, minEntry, maxEntry);
+            }, 0);
+          }
+        }
+
         // ── Show active filter label in search box ──────────────
         const labelParts: string[] = [];
         if (this.selectedFuels.length > 0) labelParts.push(this.selectedFuels.join(', '));
         if (this.selectedGenTypes.length > 0) labelParts.push(this.selectedGenTypes.join(', '));
         if (this.chartSiteName) labelParts.push(this.chartSiteName);
         if (labelParts.length > 0) this.searchText.set(labelParts.join(' — '));
+
+        // ── Generator filter: ensure name exists in dropdown ────
+        if (this.selectedGenTypes.length > 0) {
+          this.selectedGenTypes.forEach(name => {
+            const exists = this.generatorTypes.some(g => g.gen_name === name);
+            if (!exists) this.generatorTypes.push({ gen_name: name });
+          });
+        }
 
         // ── Site chart: pre-populate generator dropdown ─────────
         if (this.chartSiteName && mapped.length > 0) {
@@ -272,14 +304,6 @@ export class SearchGenerator implements OnInit, AfterViewInit {
           ];
           this.selectedGenTypes = uniqueGenNames;
           uniqueGenNames.forEach(name => {
-            const exists = this.generatorTypes.some(g => g.gen_name === name);
-            if (!exists) this.generatorTypes.push({ gen_name: name });
-          });
-        }
-
-        // ── Generator filter: ensure name exists in dropdown ────
-        if (this.selectedGenTypes.length > 0) {
-          this.selectedGenTypes.forEach(name => {
             const exists = this.generatorTypes.some(g => g.gen_name === name);
             if (!exists) this.generatorTypes.push({ gen_name: name });
           });
