@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using ProjectApp.Repository.Interfaces.Charts;
+using ProjectApp.Repository.Services.Common;
 
 namespace ProjectApp.API.Controllers.Charts
 {
@@ -197,39 +198,55 @@ namespace ProjectApp.API.Controllers.Charts
             );
         }
 
-        //[HttpGet("ExportVehicleDistance")]
-        //public async Task<IActionResult> ExportVehicleDistance([FromQuery] int year)
-        //{
-        //    var fileBytes = await _service.ExportVehicleDistanceExcelAsync(year);
-        //    return File(
-        //        fileBytes,
-        //        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        //        $"VehicleDistance_{year}.xlsx"
-        //    );
-        //}
-
-        //[HttpGet("ExportVehicleTypeDistance")]
-        //public async Task<IActionResult> ExportVehicleTypeDistance([FromQuery] int year)
-        //{
-        //    var fileBytes = await _service.ExportVehicleTypeDistanceExcelAsync(year);
-
-        //    return File(
-        //        fileBytes,
-        //        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        //        $"VehicleTypeDistance_{year}.xlsx"
-        //    );
+        [HttpGet("ExportVehicleDistance")]
+        public async Task<IActionResult> ExportVehicleDistance([FromQuery] int year)
+        {
+            var fileBytes = await _service.ExportVehicleDistanceExcelAsync(year);
+            return File(
+                fileBytes,
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                $"VehicleDistance_{year}.xlsx"
+            );
         }
 
+        [HttpGet("ExportVehicleTypeDistance")]
+        public async Task<IActionResult> ExportVehicleTypeDistance([FromQuery] int year)
+        {
+            var fileBytes = await _service.ExportVehicleTypeDistanceExcelAsync(year);
 
-        //[HttpGet("ExportVehicleTypeDistancePieChart")]
-        //public async Task<IActionResult> ExportVehicleTypeDistancePieChart([FromQuery] int year)
-        //{
-        //    var fileBytes = await _service.ExportVehicleTypeDistanceExcelAsync(year);
-        //    return File(
-        //        fileBytes,
-        //        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        //        $"VehicleTypeDistance_{year}.xlsx"
-        //    );
-        //}
+            return File(
+                fileBytes,
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                $"VehicleTypeDistance_{year}.xlsx"
+            );
+        }
+
+        [HttpGet("ExportVehicleTypeDistancePieChart")]
+        public async Task<IActionResult> ExportVehicleTypeDistancePie([FromQuery] int year)
+        {
+            var fileBytes = await _service.ExportVehicleTypeDistancePieExcelAsync(year);
+
+            return File(
+            fileBytes,
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            $"VehicleTypeDistancePie_{year}.xlsx"
+            );
+        }
+
+        [HttpGet("ExportCityWiseEmissionChart")]
+        public async Task<IActionResult> ExportCityWiseEmissionChart([FromQuery] int year)
+        {
+            var fileBytes = await _service.ExportCityWiseEmissionExcelAsync(year);
+
+            if (fileBytes == null || fileBytes.Length == 0)
+                return NotFound("No data found for the given year.");
+
+            return File(
+                fileBytes,
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                $"CityWiseEmission_{year}.xlsx"
+            );
+        }
 
     }
+}

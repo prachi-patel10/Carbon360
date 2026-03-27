@@ -1,4 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using NPOI.SS.UserModel.Charts;
+using NPOI.SS.Util;
 using NPOI.XSSF.UserModel;
 using ProjectApp.Core.DTOs.Charts;
 using ProjectApp.Core.Models;
@@ -628,12 +630,12 @@ namespace ProjectApp.Repository.Services.Charts
                 { "LPG", "LPG" }
             };
 
-                    return await ExcelExportHelper.ExportExcelWithChartAsync<VehicleFuelExportDto>(
-                        rows,
-                        columns,
-                        "Fuel Report",
-                        $"Vehicle Fuel Report - {year}"
-                    );
+            return await ExcelExportHelper.ExportExcelWithChartAsync<VehicleFuelExportDto>(
+                rows,
+                columns,
+                "Fuel Report",
+                $"Vehicle Fuel Report - {year}"
+            );
         }
 
 
@@ -674,93 +676,167 @@ namespace ProjectApp.Repository.Services.Charts
             );
         }
 
-        //public async Task<byte[]> ExportVehicleDistanceExcelAsync(int year)
-        //{
-        //    var data = await GetVehicleTotalDistanceMonthlyAsync(year);
+        public async Task<byte[]> ExportVehicleDistanceExcelAsync(int year)
+        {
+            var data = await GetVehicleTotalDistanceMonthlyAsync(year);
 
-        //    var rows = Enumerable.Range(1, 12).Select(m =>
-        //    {
-        //        int idx = m - 1;
-        //        return new VehicleDistanceExportDto
-        //        {
-        //            Month = _monthNames[idx],
-        //            DistanceKM = (double)data.DistanceData[idx],
-        //            TripCount = data.TripData[idx],
-        //            FuelConsumed = (double)data.FuelData[idx]
-        //        };
-        //    }).ToList();
+            var rows = Enumerable.Range(1, 12).Select(m =>
+            {
+                int idx = m - 1;
+                return new VehicleDistanceExportDto
+                {
+                    Month = _monthNames[idx],
+                    DistanceKM = (double)data.DistanceData[idx],
+                    TripCount = data.TripData[idx],
+                    FuelConsumed = (double)data.FuelData[idx]
+                };
+            }).ToList();
 
-        //    // ✅ Use COMBO chart method (Bar + Line)
-        //    return await ExcelExportHelper.ExportExcelWithComboChartAsync(
-        //        rows,
-        //        "Distance Report",
-        //        $"Vehicle Distance Report - {year}"
-        //    );
-        //}
+            // ✅ Use COMBO chart method (Bar + Line)
+            return await ExcelExportHelper.ExportExcelWithComboChartAsync(
+                rows,
+                "Distance Report",
+                $"Vehicle Distance Report - {year}"
+            );
+        }
 
-        //public async Task<byte[]> ExportVehicleTypeDistanceExcelAsync(int year)
-        //{
-        //    var data = await GetVehicleTypeWiseDistanceAsync(year);
+        public async Task<byte[]> ExportVehicleTypeDistanceExcelAsync(int year)
+        {
+            var data = await GetVehicleTypeWiseDistanceAsync(year);
 
-        //    //var rows = new List<dynamic>();
-        //    var rows = new List<Dictionary<string, object>>(); 
+            //var rows = new List<dynamic>();
+            var rows = new List<Dictionary<string, object>>();
 
 
-        //    for (int mi = 0; mi < data.MonthLabels.Count; mi++)
-        //    {
-        //        var row = new Dictionary<string, object>();
-        //        row["Month"] = data.MonthLabels[mi];
+            for (int mi = 0; mi < data.MonthLabels.Count; mi++)
+            {
+                var row = new Dictionary<string, object>();
+                row["Month"] = data.MonthLabels[mi];
 
-        //        for (int ti = 0; ti < data.VehicleTypes.Count; ti++)
-        //        {
-        //            row[data.VehicleTypes[ti]] = data.DistanceMatrix[mi][ti];
-        //        }
+                for (int ti = 0; ti < data.VehicleTypes.Count; ti++)
+                {
+                    row[data.VehicleTypes[ti]] = data.DistanceMatrix[mi][ti];
+                }
 
-        //        row["Total"] = data.MonthTotals[mi];
+                row["Total"] = data.MonthTotals[mi];
 
-        //        rows.Add(row);
-        //    }
+                rows.Add(row);
+            }
 
-        //    return await ExcelExportHelper.ExportDynamicPivotExcelWithChartAsync(
-        //    rows,
-        //    "Vehicle Type Distance",
-        //    $"Vehicle Type Distance Report - {year}"
-        //);
-        //}
+            return await ExcelExportHelper.ExportDynamicPivotExcelWithChartAsync(
+            rows,
+            "Vehicle Type Distance",
+            $"Vehicle Type Distance Report - {year}"
+        );
+        }
 
-        //public async Task<byte[]> ExportVehicleTypeDistanceExcelPieChartAsync(int year)
-        //{
-        //    var pivot = await GetVehicleTypeWiseDistanceAsync(year);
+        public static async Task<byte[]> ExportExcelWithPieChartAsync<T>(
+    IEnumerable<T> data,
+    Dictionary<string, string> columnMappings,
+    string sheetName = "Sheet1",
+    string chartTitle = "Pie Chart")
+        {
+            if (!data.Any())
+                return Array.Empty<byte>();
 
-        //    var rows = pivot.VehicleTypes.Select((vt, ti) => new VehicleTypeDistanceExportDto
-        //    {
-        //        VehicleType = vt,
-        //        TotalDistanceKM = (double)pivot.TypeTotals[ti]
-        //    }).ToList();
+            var workbook = new XSSFWorkbook();
+            var sheet = workbook.CreateSheet(sheetName);
 
-        //    // ✅ Now using REAL Pie Chart
-        //    return await ExcelExportHelper.ExportExcelWithPieChartAsync(
-        //        rows,
-        //        "Vehicle Type Distance",
-        //        $"Vehicle Type Distance Share - {year}"
-        //    );
-        //}
-        //public async Task<byte[]> ExportVehicleTypeDistanceExcelPieChartAsync(int year)
-        //{
-        //    var pivot = await GetVehicleTypeWiseDistanceAsync(year);
+            // 1️⃣ HEADERS
+            var headerRow = sheet.CreateRow(0);
+            int col = 0;
+            foreach (var header in columnMappings.Keys)
+                headerRow.CreateCell(col++).SetCellValue(header);
 
-        //    // AGGREGATE BY VEHICLE TYPE
-        //    var aggregated = pivot.VehicleTypes.Select((vt, ti) => new VehicleTypeDistanceExportDto
-        //    {
-        //        VehicleType = vt,
-        //        TotalDistanceKM = (double)pivot.TypeTotals[ti]  // already total per type
-        //    }).ToList();
+            // 2️⃣ DATA
+            int rowIdx = 1;
+            foreach (var item in data)
+            {
+                var row = sheet.CreateRow(rowIdx++);
+                col = 0;
 
-        //    return await ExcelExportHelper.ExportExcelWithPieChartAsync(
-        //        aggregated,
-        //        "Vehicle Type Distance",
-        //        $"Vehicle Type Distance Share - {year}"
-        //    );
-        //}
+                foreach (var propName in columnMappings.Values)
+                {
+                    var prop = typeof(T).GetProperty(propName);
+                    var val = prop?.GetValue(item);
+
+                    var cell = row.CreateCell(col++);
+
+                    if (val is double d)
+                        cell.SetCellValue(d);
+                    else if (val is int i)
+                        cell.SetCellValue(i);
+                    else if (val is decimal dec)
+                        cell.SetCellValue((double)dec);
+                    else
+                        cell.SetCellValue(val?.ToString());
+                }
+            }
+
+            // 3️⃣ PIE CHART
+            var drawing = sheet.CreateDrawingPatriarch();
+            var anchor = drawing.CreateAnchor(0, 0, 0, 0, col + 1, 1, col + 10, 20);
+
+            var chart = (XSSFChart)drawing.CreateChart(anchor);
+            chart.SetTitle(chartTitle);
+            chart.GetOrCreateLegend().Position = LegendPosition.Right;
+
+            var dataFactory = chart.ChartDataFactory;
+            var pieData = dataFactory.CreatePieChartData<string, double>();
+
+            int rowCount = data.Count();
+
+            var categoryRange = DataSources.FromStringCellRange(sheet,
+                new CellRangeAddress(1, rowCount, 0, 0)); // Labels
+
+            var valueRange = DataSources.FromNumericCellRange(sheet,
+                new CellRangeAddress(1, rowCount, 1, 1)); // Values
+
+            pieData.AddSeries(categoryRange, valueRange);
+
+            chart.Plot(pieData);
+
+            // ✅ AUTO SIZE
+            for (int i = 0; i < columnMappings.Count; i++)
+                sheet.AutoSizeColumn(i);
+
+            using var stream = new MemoryStream();
+            workbook.Write(stream);
+            return stream.ToArray();
+        }
+
+        public async Task<byte[]> ExportVehicleTypeDistancePieExcelAsync(int year)
+        {
+            var data = await GetVehicleTypeWiseDistanceAsync(year);
+
+            return await ExcelExportHelper.ExportVehicleTypePieChartAsync(
+            data.VehicleTypes, // labels
+                    data.TypeTotals, // values
+                    "Vehicle Type Report",
+            $"Vehicle Type Distance Distribution - {year}"
+            );
+        }
+
+
+        public async Task<byte[]> ExportCityWiseEmissionExcelAsync(int year)
+        {
+            var data = await GetVehicleCityWiseEmissionsAsync(year);
+            if (data == null || !data.Any())
+                return Array.Empty<byte>();
+
+            var cities = data.Select(x => x.CityName).ToList();
+            var co2Values = data.Select(x => x.TotalCO2).ToList();  // ✅ TotalCO2
+            var no2Values = data.Select(x => x.TotalNO2).ToList();  // ✅ TotalNO2
+            var ch4Values = data.Select(x => x.TotalCH4).ToList();  // ✅ TotalCH4
+
+            return await ExcelExportHelper.ExportCityWiseEmissionStackedBarChartAsync(
+                cities: cities,
+                co2Values: co2Values,
+                no2Values: no2Values,
+                ch4Values: ch4Values,
+                sheetName: "City Emission Report",
+                chartTitle: $"City Wise Emission Profile - {year}"
+            );
+        }
     }
 }

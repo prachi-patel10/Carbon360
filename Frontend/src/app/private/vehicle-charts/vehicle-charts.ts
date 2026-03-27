@@ -735,4 +735,53 @@ export class VehicleCharts implements OnInit, AfterViewInit, OnChanges, OnDestro
     }
   });
 }
+
+    exportchartvehicletotaldistancemonthwise() {
+  this.svc.ExportVehicleDistance(this.year).subscribe({
+    next: (blob) => {
+      saveAs(blob, `VehicleDistanceAndTrip_${this.year}.xlsx`);
+    },
+    error: (err) => {
+      console.error('Export failed', err);
+    }
+  });
+}
+
+
+  exportvehicletypecharttotaldistancemonthwisePivottable() {
+  this.svc.ExportVehicleTypeDistance(this.year).subscribe({
+    next: (blob) => {
+      saveAs(blob, `VehicleDistanceAndTrip_${this.year}.xlsx`);
+    },
+    error: (err) => {
+      console.error('Export failed', err);
+    }
+  });
+}
+
+
+exportvehicletypedistancePieChart() {
+  this.svc.ExportVehicleTypeDistancePieChart(this.year).subscribe({
+    next: (blob) => {
+      saveAs(blob, `VehicleTypeDistancePieChart_${this.year}.xlsx`);
+    },
+    error: (err) => {
+      console.error('Export failed', err);
+    }
+  });
+}
+
+
+exportcitywiseemissionchartlast() {
+  this.svc.ExportCityWiseEmissionChart(this.year).subscribe({
+    next: (blob) => {
+      saveAs(blob, `CitywiseEmissionChart_${this.year}.xlsx`);
+    },
+    error: (err) => {
+      console.error('Export failed', err);
+    }
+  });
+}
+
+
 }

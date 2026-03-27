@@ -40,10 +40,12 @@ namespace ProjectApp.Repository.Interfaces.Charts
 
         Task<byte[]> ExportVehicleEmissionExcelAsync(int year);
 
-        //Task<byte[]> ExportVehicleDistanceExcelAsync(int year);
+        Task<byte[]> ExportVehicleDistanceExcelAsync(int year);
 
-        //Task<byte[]> ExportVehicleTypeDistanceExcelAsync(int year);
+        Task<byte[]> ExportVehicleTypeDistanceExcelAsync(int year);
 
-        //Task<byte[]> ExportVehicleTypeDistanceExcelPieChartAsync(int year);
+        Task<byte[]> ExportVehicleTypeDistancePieExcelAsync(int year);
+
+        Task<byte[]> ExportCityWiseEmissionExcelAsync(int year);
     }
 }

@@ -31,7 +31,7 @@ export interface MonthlyEmissionChartResponse {
 
 export interface GeneratorRunHoursChartResponse {
   labels: string[]; data: number[]; colors: string[];
-  siteNames: string[]; fuelConsumed: number[]; powerOutput: number[]; fuelTypes: string[];
+  siteNames: string[]; fuelConsumed: number[]; powerOutput: number[];
 }
 
 export interface VehicleDistanceChartResponse {
@@ -76,7 +76,6 @@ export interface GeneratorRunHoursMonthlyPivotResponse {
   monthTotals:      number[];
   generatorTotals:  number[];
   grandTotal:       number;
-  fuelTypes:        string[];  
 }
 
 // ── City Wise Emissions (Vehicle) ────────────────────────────
@@ -231,5 +230,41 @@ exportVehicleEmissionChart(year:number){
     }
   );
 }
+
+ExportVehicleDistance(year:number){
+   return this.http.get(
+    `${this.base}/Chart/ExportVehicleDistance?year=${year}`,  // ✅ CORRECT
+    {
+      responseType: 'blob'
+    }
+  );
 }
 
+ExportVehicleTypeDistance(year:number){
+   return this.http.get(
+    `${this.base}/Chart/ExportVehicleTypeDistance?year=${year}`,  // ✅ CORRECT
+    {
+      responseType: 'blob'
+    }
+  );
+}
+
+ExportVehicleTypeDistancePieChart(year:number){
+   return this.http.get(
+    `${this.base}/Chart/ExportVehicleTypeDistancePieChart?year=${year}`,  // ✅ CORRECT
+    {
+      responseType: 'blob'
+    }
+  );
+}
+
+ExportCityWiseEmissionChart(year:number){
+   return this.http.get(
+    `${this.base}/Chart/ExportCityWiseEmissionChart?year=${year}`,  // ✅ CORRECT
+    {
+      responseType: 'blob'
+    }
+  );
+}
+
+}

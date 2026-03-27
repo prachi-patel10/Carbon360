@@ -1,4 +1,5 @@
 ﻿using ClosedXML.Excel;
+//using DocumentFormat.OpenXml.Drawing.Charts;
 using NPOI.OpenXmlFormats.Dml.Chart;
 using NPOI.SS.UserModel;
 using NPOI.SS.UserModel.Charts;
@@ -496,318 +497,473 @@ namespace ProjectApp.Repository.Services.Common
             return stream.ToArray();
         }
 
-        //---COMBO CHART -----// 
-        //-------- NPOI SUPPORT NAHII KARTA ----//
-    //    public static async Task<byte[]> ExportExcelWithComboChartAsync(
-    //IEnumerable<VehicleDistanceExportDto> data,
-    //string sheetName = "Distance Report",
-    //string chartTitle = "Vehicle Distance Report")
-    //    {
-    //        if (data == null || !data.Any())
-    //            return Array.Empty<byte>();
+        public static async Task<byte[]> ExportExcelWithComboChartAsync(
+     IEnumerable<VehicleDistanceExportDto> data,
+     string sheetName = "Distance Report",
+     string chartTitle = "Vehicle Distance Report")
+        {
+            if (data == null || !data.Any())
+                return Array.Empty<byte>();
 
-    //        var workbook = new XSSFWorkbook();
-    //        var sheet = workbook.CreateSheet(sheetName);
+            var workbook = new XSSFWorkbook();
+            var sheet = workbook.CreateSheet(sheetName);
 
-    //        // =========================
-    //        // ✅ HEADERS
-    //        // =========================
-    //        var header = sheet.CreateRow(0);
-    //        header.CreateCell(0).SetCellValue("Month");
-    //        header.CreateCell(1).SetCellValue("Distance (km)");
-    //        header.CreateCell(2).SetCellValue("Trip Count");
-    //        header.CreateCell(3).SetCellValue("Fuel Consumed");
+            // =========================
+            // HEADERS
+            // =========================
+            var header = sheet.CreateRow(0);
+            header.CreateCell(0).SetCellValue("Month");
+            header.CreateCell(1).SetCellValue("Distance (km)");
+            header.CreateCell(2).SetCellValue("Trip Count");
+            header.CreateCell(3).SetCellValue("Fuel Consumed");
 
-    //        // =========================
-    //        // ✅ DATA
-    //        // =========================
-    //        int rowIndex = 1;
-    //        foreach (var d in data)
-    //        {
-    //            var row = sheet.CreateRow(rowIndex++);
-    //            row.CreateCell(0).SetCellValue(d.Month);
-    //            row.CreateCell(1).SetCellValue((double)d.DistanceKM);
-    //            row.CreateCell(2).SetCellValue(d.TripCount);
-    //            row.CreateCell(3).SetCellValue(d.FuelConsumed);
-    //        }
+            // =========================
+            // DATA
+            // =========================
+            int rowIndex = 1;
+            foreach (var d in data)
+            {
+                var row = sheet.CreateRow(rowIndex++);
+                row.CreateCell(0).SetCellValue(d.Month);
+                row.CreateCell(1).SetCellValue((double)d.DistanceKM);
+                row.CreateCell(2).SetCellValue(d.TripCount);
+                row.CreateCell(3).SetCellValue(d.FuelConsumed);
+            }
 
-    //        int rowCount = data.Count();
+            int rowCount = data.Count();
 
-    //        // =========================
-    //        // 📊 CREATE CHART
-    //        // =========================
-    //        var drawing = sheet.CreateDrawingPatriarch();
-    //        var anchor = drawing.CreateAnchor(0, 0, 0, 0, 4, 1, 16, 20);
-    //        var chart = (XSSFChart)drawing.CreateChart(anchor);
+            var drawing = sheet.CreateDrawingPatriarch();
 
-    //        chart.SetTitle(chartTitle);
-    //        chart.GetOrCreateLegend().Position = LegendPosition.Bottom;
+            var xRange = new CellRangeAddress(1, rowCount, 0, 0);
+            var distanceRange = new CellRangeAddress(1, rowCount, 1, 1);
+            var tripRange = new CellRangeAddress(1, rowCount, 2, 2);
 
-    //        // =========================
-    //        // ✅ AXES
-    //        // =========================
-    //        var bottomAxis = chart.CreateCategoryAxis(AxisPosition.Bottom);
-    //        var leftAxis = chart.CreateValueAxis(AxisPosition.Left);
-    //        var rightAxis = chart.CreateValueAxis(AxisPosition.Right);
+            // =========================================================
+            // ✅ CHART 1: DISTANCE (COLUMN CHART)
+            // =========================================================
+            var anchor1 = drawing.CreateAnchor(0, 0, 0, 0, 5, 1, 18, 12); // better spacing
+            var chart1 = (XSSFChart)drawing.CreateChart(anchor1);
 
-    //        rightAxis.Crosses = AxisCrosses.Max;
-    //        rightAxis.IsVisible = true;
+            chart1.SetTitle("Distance (km)");
+            chart1.GetOrCreateLegend().Position = LegendPosition.Bottom;
 
-    //        // =========================
-    //        // 🔹 DATA RANGES
-    //        // =========================
-    //        var xRange = new CellRangeAddress(1, rowCount, 0, 0);
-    //        var distanceRange = new CellRangeAddress(1, rowCount, 1, 1);
-    //        var tripRange = new CellRangeAddress(1, rowCount, 2, 2);
+            var bottomAxis1 = chart1.ChartAxisFactory.CreateCategoryAxis(AxisPosition.Bottom);
+            var leftAxis1 = chart1.ChartAxisFactory.CreateValueAxis(AxisPosition.Left);
 
-    //        var dataFactory = chart.ChartDataFactory;
+            var columnData = chart1.ChartDataFactory.CreateBarChartData<string, double>();
 
-    //        // =========================
-    //        // 📊 BAR CHART (Distance)
-    //        // =========================
-    //        var barData = dataFactory.CreateBarChartData<string, double>();
+            var series1 = columnData.AddSeries(
+                DataSources.FromStringCellRange(sheet, xRange),
+                DataSources.FromNumericCellRange(sheet, distanceRange)
+            );
 
-    //        var barSeries = barData.AddSeries(
-    //            DataSources.FromStringCellRange(sheet, xRange),
-    //            DataSources.FromNumericCellRange(sheet, distanceRange)
-    //        );
-    //        barSeries.SetTitle("Distance (km)");
+            series1.SetTitle("Distance (km)");
 
-    //        chart.Plot(barData, bottomAxis, leftAxis);
+            chart1.Plot(columnData, bottomAxis1, leftAxis1);
 
-    //        // =========================
-    //        // 📈 LINE CHART (Trip Count)
-    //        // =========================
-    //        var lineData = dataFactory.CreateLineChartData<string, double>();
+            // ✅ FIX: Force COLUMN direction (NPOI way)
+            var ctChart1 = chart1.GetCTChart();
 
-    //        var lineSeries = lineData.AddSeries(
-    //            DataSources.FromStringCellRange(sheet, xRange),
-    //            DataSources.FromNumericCellRange(sheet, tripRange)
-    //        );
-    //        lineSeries.SetTitle("Trip Count");
+            if (ctChart1.plotArea.barChart != null && ctChart1.plotArea.barChart.Count > 0)
+            {
+                var barChart = ctChart1.plotArea.barChart[0];
 
-    //        //chart.Plot(lineData, bottomAxis, rightAxis);
+                barChart.barDir = new NPOI.OpenXmlFormats.Dml.Chart.CT_BarDir
+                {
+                    val = NPOI.OpenXmlFormats.Dml.Chart.ST_BarDir.col
+                };
 
-    //        chart.Plot(barData, bottomAxis, leftAxis);
-    //        chart.Plot(lineData, bottomAxis, rightAxis);
-    //        //chart.Plot(barData, bottomAxis, leftAxis);
-    //        //chart.Plot(lineData, bottomAxis, rightAxis);
-    //        // ✅ AUTO SIZE
-    //        // =========================
-    //        for (int i = 0; i < 4; i++)
-    //            sheet.AutoSizeColumn(i);
+                barChart.grouping = new NPOI.OpenXmlFormats.Dml.Chart.CT_BarGrouping
+                {
+                    val = NPOI.OpenXmlFormats.Dml.Chart.ST_BarGrouping.clustered
+                };
+            }
 
-    //        // =========================
-    //        // 💾 SAVE
-    //        // =========================
-    //        using var stream = new MemoryStream();
-    //        workbook.Write(stream);
+            // =========================================================
+            // ✅ CHART 2: TRIP COUNT (LINE CHART)
+            // =========================================================
+            var anchor2 = drawing.CreateAnchor(0, 0, 0, 0, 5, 14, 18, 26); // pushed down → no overlap
+            var chart2 = (XSSFChart)drawing.CreateChart(anchor2);
 
-    //        return await Task.FromResult(stream.ToArray());
-    //    }
+            chart2.SetTitle("Trip Count");
+            chart2.GetOrCreateLegend().Position = LegendPosition.Bottom;
 
-    //    public static async Task<byte[]> ExportDynamicPivotExcelWithChartAsync(
-    //List<Dictionary<string, object>> rows,
-    //string sheetName,
-    //string title)
-    //    {
-    //        if (rows == null || !rows.Any())
-    //            return Array.Empty<byte>();
+            var bottomAxis2 = chart2.ChartAxisFactory.CreateCategoryAxis(AxisPosition.Bottom);
+            var leftAxis2 = chart2.ChartAxisFactory.CreateValueAxis(AxisPosition.Left);
+
+            var lineData = chart2.ChartDataFactory.CreateLineChartData<string, double>();
+
+            var series2 = lineData.AddSeries(
+                DataSources.FromStringCellRange(sheet, xRange),
+                DataSources.FromNumericCellRange(sheet, tripRange)
+            );
+
+            series2.SetTitle("Trip Count");
+
+            chart2.Plot(lineData, bottomAxis2, leftAxis2);
+
+            // ✅ Optional: add markers (UI-like look)
+            var ctChart2 = chart2.GetCTChart();
+            if (ctChart2.plotArea.lineChart?.Count > 0)
+            {
+                foreach (var ser in ctChart2.plotArea.lineChart[0].ser)
+                {
+                    ser.marker = new NPOI.OpenXmlFormats.Dml.Chart.CT_Marker();
+                    ser.marker.symbol = new NPOI.OpenXmlFormats.Dml.Chart.CT_MarkerStyle
+                    {
+                        val = NPOI.OpenXmlFormats.Dml.Chart.ST_MarkerStyle.circle
+                    };
+                    ser.marker.size = new NPOI.OpenXmlFormats.Dml.Chart.CT_MarkerSize { val = 6 };
+                }
+            }
+
+            // =========================
+            // AUTO SIZE
+            // =========================
+            for (int i = 0; i < 4; i++)
+                sheet.AutoSizeColumn(i);
+
+            // =========================
+            // SAVE
+            // =========================
+            using var stream = new MemoryStream();
+            workbook.Write(stream);
+
+            return await Task.FromResult(stream.ToArray());
+        }
+
+        public static async Task<byte[]> ExportDynamicPivotExcelWithChartAsync(
+    List<Dictionary<string, object>> rows,
+    string sheetName,
+    string title)
+        {
+            if (rows == null || !rows.Any())
+                return Array.Empty<byte>();
 
 
-    //        var workbook = new XSSFWorkbook();
-    //        var sheet = workbook.CreateSheet(sheetName);
+            var workbook = new XSSFWorkbook();
+            var sheet = workbook.CreateSheet(sheetName);
 
-    //        // -----------------------
-    //        // TITLE
-    //        // -----------------------
-    //        var titleRow = sheet.CreateRow(0);
-    //        titleRow.CreateCell(0).SetCellValue(title);
+            // -----------------------
+            // TITLE
+            // -----------------------
+            var titleRow = sheet.CreateRow(0);
+            titleRow.CreateCell(0).SetCellValue(title);
 
-    //        // -----------------------
-    //        // HEADER
-    //        // -----------------------
-    //        var headerRow = sheet.CreateRow(2);
-    //        int colCount = rows.First().Keys.Count;
+            // -----------------------
+            // HEADER
+            // -----------------------
+            var headerRow = sheet.CreateRow(2);
+            int colCount = rows.First().Keys.Count;
 
-    //        int colIndex = 0;
-    //        foreach (var key in rows.First().Keys)
-    //        {
-    //            headerRow.CreateCell(colIndex++).SetCellValue(key);
-    //        }
+            int colIndex = 0;
+            foreach (var key in rows.First().Keys)
+            {
+                headerRow.CreateCell(colIndex++).SetCellValue(key);
+            }
 
-    //        // ==========================
-    //        // DATA
-    //        // ==========================
-    //        int rowIndex = 3;
+            // ==========================
+            // DATA
+            // ==========================
+            int rowIndex = 3;
 
-    //        foreach (var row in rows)
-    //        {
-    //            var excelRow = sheet.CreateRow(rowIndex++);
-    //            colIndex = 0;
+            foreach (var row in rows)
+            {
+                var excelRow = sheet.CreateRow(rowIndex++);
+                colIndex = 0;
 
-    //            foreach (var val in row.Values)
-    //            {
-    //                if (double.TryParse(val?.ToString(), out double num))
-    //                    excelRow.CreateCell(colIndex++).SetCellValue(num);
-    //                else
-    //                    excelRow.CreateCell(colIndex++).SetCellValue(val?.ToString());
-    //            }
-    //        }
+                foreach (var val in row.Values)
+                {
+                    if (double.TryParse(val?.ToString(), out double num))
+                        excelRow.CreateCell(colIndex++).SetCellValue(num);
+                    else
+                        excelRow.CreateCell(colIndex++).SetCellValue(val?.ToString());
+                }
+            }
 
-    //        // ==========================
-    //        // STYLES (UI LOOK)
-    //        // ==========================
-    //        var headerStyle = workbook.CreateCellStyle();
-    //        headerStyle.FillForegroundColor = IndexedColors.DarkGreen.Index;
-    //        headerStyle.FillPattern = FillPattern.SolidForeground;
+            // ==========================
+            // STYLES (UI LOOK)
+            // ==========================
+            var headerStyle = workbook.CreateCellStyle();
+            headerStyle.FillForegroundColor = IndexedColors.DarkGreen.Index;
+            headerStyle.FillPattern = FillPattern.SolidForeground;
 
-    //        var headerFont = workbook.CreateFont();
-    //        headerFont.Color = IndexedColors.White.Index;
-    //        headerFont.IsBold = true;
-    //        headerStyle.SetFont(headerFont);
+            var headerFont = workbook.CreateFont();
+            headerFont.Color = IndexedColors.White.Index;
+            headerFont.IsBold = true;
+            headerStyle.SetFont(headerFont);
 
-    //        var totalStyle = workbook.CreateCellStyle();
-    //        totalStyle.FillForegroundColor = IndexedColors.LightGreen.Index;
-    //        totalStyle.FillPattern = FillPattern.SolidForeground;
+            var totalStyle = workbook.CreateCellStyle();
+            totalStyle.FillForegroundColor = IndexedColors.LightGreen.Index;
+            totalStyle.FillPattern = FillPattern.SolidForeground;
 
-    //        var boldFont = workbook.CreateFont();
-    //        boldFont.IsBold = true;
-    //        totalStyle.SetFont(boldFont);
+            var boldFont = workbook.CreateFont();
+            boldFont.IsBold = true;
+            totalStyle.SetFont(boldFont);
 
-    //        // ==========================
-    //        // APPLY HEADER STYLE
-    //        // ==========================
-    //        for (int i = 0; i < colCount; i++)
-    //        {
-    //            headerRow.GetCell(i).CellStyle = headerStyle;
-    //        }
+            // ==========================
+            // APPLY HEADER STYLE
+            // ==========================
+            for (int i = 0; i < colCount; i++)
+            {
+                headerRow.GetCell(i).CellStyle = headerStyle;
+            }
 
-    //        // ==========================
-    //        // TOTAL ROW
-    //        // ==========================
-    //        var totalRow = sheet.CreateRow(rowIndex);
+            // ==========================
+            // TOTAL ROW
+            // ==========================
+            var totalRow = sheet.CreateRow(rowIndex);
 
-    //        totalRow.CreateCell(0).SetCellValue("Total");
+            totalRow.CreateCell(0).SetCellValue("Total");
 
-    //        for (int c = 1; c < colCount; c++)
-    //        {
-    //            double sum = 0;
-    //            for (int r = 3; r < rowIndex; r++)
-    //            {
-    //                var cell = sheet.GetRow(r).GetCell(c);
-    //                if (cell != null && cell.CellType == CellType.Numeric)
-    //                {
-    //                    sum += cell.NumericCellValue;
-    //                }
-    //            }
-    //            totalRow.CreateCell(c).SetCellValue(sum);
-    //        }
+            for (int c = 1; c < colCount; c++)
+            {
+                double sum = 0;
+                for (int r = 3; r < rowIndex; r++)
+                {
+                    var cell = sheet.GetRow(r).GetCell(c);
+                    if (cell != null && cell.CellType == CellType.Numeric)
+                    {
+                        sum += cell.NumericCellValue;
+                    }
+                }
+                totalRow.CreateCell(c).SetCellValue(sum);
+            }
 
-    //        // style total row
-    //        for (int i = 0; i < colCount; i++)
-    //        {
-    //            totalRow.GetCell(i).CellStyle = totalStyle;
-    //        }
+            // style total row
+            for (int i = 0; i < colCount; i++)
+            {
+                totalRow.GetCell(i).CellStyle = totalStyle;
+            }
 
-    //        rowIndex++; // move past total row
+            rowIndex++; // move past total row
 
-    //        // ==========================
-    //        // AUTO SIZE COLUMNS
-    //        // ==========================
-    //        for (int i = 0; i < colCount; i++)
-    //            sheet.AutoSizeColumn(i);
+            // ==========================
+            // AUTO SIZE COLUMNS
+            // ==========================
+            for (int i = 0; i < colCount; i++)
+                sheet.AutoSizeColumn(i);
 
-    //        // ==========================
-    //        // WRITE TO STREAM
-    //        // ==========================
-    //        using var stream = new MemoryStream();
-    //        workbook.Write(stream);
+            // ==========================
+            // WRITE TO STREAM
+            // ==========================
+            using var stream = new MemoryStream();
+            workbook.Write(stream);
 
-    //        return await Task.FromResult(stream.ToArray());
-    //    }
+            return await Task.FromResult(stream.ToArray());
+        }
 
-    //    public static async Task<byte[]> ExportExcelWithPieChartAsync(
-    //IEnumerable<VehicleTypeDistanceExportDto> data,
-    //string sheetName = "Vehicle Type Distance",
-    //string chartTitle = "Vehicle Type Distance Share")
-    //    {
-    //        if (data == null || !data.Any())
-    //            return Array.Empty<byte>();
+        public static async Task<byte[]> ExportVehicleTypePieChartAsync(
+List<string> labels,
+List<decimal> values,
+string sheetName = "Sheet1",
+string chartTitle = "Pie Chart Report")
+        {
+            if (labels == null || values == null || !labels.Any() || !values.Any())
+                return Array.Empty<byte>();
 
-    //        var workbook = new XSSFWorkbook();
-    //        var sheet = workbook.CreateSheet(sheetName);
+            var workbook = new XSSFWorkbook();
+            var sheet = workbook.CreateSheet(sheetName);
 
-    //        // 1️⃣ HEADERS
-    //        var headerRow = sheet.CreateRow(0);
-    //        headerRow.CreateCell(0).SetCellValue("Vehicle Type");
-    //        headerRow.CreateCell(1).SetCellValue("Total Distance (km)");
+            // =========================
+            // :one: HEADERS
+            // =========================
+            var headerRow = sheet.CreateRow(0);
+            headerRow.CreateCell(0).SetCellValue("Category");
+            headerRow.CreateCell(1).SetCellValue("Value");
 
-    //        // 2️⃣ DATA
-    //        int rowIndex = 1;
-    //        foreach (var item in data)
-    //        {
-    //            var row = sheet.CreateRow(rowIndex++);
-    //            row.CreateCell(0).SetCellValue(item.VehicleType);
-    //            row.CreateCell(1).SetCellValue((double)item.TotalDistanceKM);
-    //        }
+            // =========================
+            // :two: DATA
+            // =========================
+            int rowIndex = 1;
 
-    //        int rowCount = data.Count(); // number of data rows
+            for (int i = 0; i < labels.Count; i++)
+            {
+                var row = sheet.CreateRow(rowIndex++);
+                row.CreateCell(0).SetCellValue(labels[i]);
+                row.CreateCell(1).SetCellValue((double)values[i]);
+            }
 
-    //        // 3️⃣ AUTO SIZE
-    //        sheet.AutoSizeColumn(0);
-    //        sheet.AutoSizeColumn(1);
+            int rowCount = labels.Count;
 
-    //        // 4️⃣ CHART CREATE
-    //        var drawing = sheet.CreateDrawingPatriarch();
-    //        var anchor = drawing.CreateAnchor(0, 0, 0, 0, 3, 1, 13, 20);
-    //        var chart = drawing.CreateChart(anchor) as XSSFChart;
+            // =========================
+            // :three: CHART
+            // =========================
+            var drawing = sheet.CreateDrawingPatriarch();
 
-    //        chart.SetTitle(chartTitle);
-    //        chart.GetOrCreateLegend().Position = LegendPosition.Right;
+            var anchor = drawing.CreateAnchor(0, 0, 0, 0, 3, 1, 12, 20);
+            var chart = (XSSFChart)drawing.CreateChart(anchor);
 
-    //        // 5️⃣ PIE CHART WITH CACHE
-    //        var pieChart = chart.GetCTChart().AddNewPlotArea().AddNewPieChart();
-    //        pieChart.AddNewVaryColors().val = 1;
+            chart.SetTitle(chartTitle);
+            chart.GetOrCreateLegend().Position = LegendPosition.Right;
 
-    //        var ser = pieChart.AddNewSer();
-    //        ser.AddNewIdx().val = 0;
-    //        ser.AddNewOrder().val = 0;
+            var categories = DataSources.FromStringCellRange(
+            sheet,
+            new CellRangeAddress(1, rowCount, 0, 0)
+            );
 
-    //        // CATEGORY (LABELS)
-    //        var cat = ser.AddNewCat().AddNewStrRef();
-    //        cat.f = $"'{sheetName}'!$A$2:$A${rowCount + 1}";
+            var dataValues = DataSources.FromNumericCellRange(
+            sheet,
+            new CellRangeAddress(1, rowCount, 1, 1)
+            );
 
-    //        var catCache = cat.AddNewStrCache();
-    //        catCache.ptCount = new CT_UnsignedInt { val = (uint)rowCount };
+            var pieData = chart.ChartDataFactory.CreatePieChartData<string, double>();
 
-    //        for (int i = 0; i < rowCount; i++)
-    //        {
-    //            var pt = catCache.AddNewPt();
-    //            pt.idx = (uint)i;
-    //            pt.v = data.ElementAt(i).VehicleType;
-    //        }
+            var series = pieData.AddSeries(categories, dataValues);
+            series.SetTitle(chartTitle);
 
-    //        // VALUES
-    //        var val = ser.AddNewVal().AddNewNumRef();
-    //        val.f = $"'{sheetName}'!$B$2:$B${rowCount + 1}";
+            chart.Plot(pieData);
 
-    //        var valCache = val.AddNewNumCache();
-    //        valCache.formatCode = "General"; // ensures Excel reads numbers properly
-    //        valCache.ptCount = new CT_UnsignedInt { val = (uint)rowCount };
+            // =========================
+            // :fire: LABELS (VALUE + %)
+            // =========================
+            var ctChart = chart.GetCTChart();
 
-    //        for (int i = 0; i < rowCount; i++)
-    //        {
-    //            var pt = valCache.AddNewPt();
-    //            pt.idx = (uint)i;
-    //            pt.v = ((double)data.ElementAt(i).TotalDistanceKM).ToString("0");
-    //        }
+            if (ctChart.plotArea.pieChart != null && ctChart.plotArea.pieChart.Count > 0)
+            {
+                var pieChart = ctChart.plotArea.pieChart[0];
 
-    //        // 6️⃣ WRITE FILE
-    //        using var stream = new MemoryStream();
-    //        workbook.Write(stream);
+                pieChart.dLbls = new CT_DLbls();
+                pieChart.dLbls.showVal = new CT_Boolean { val = 1 };
+                pieChart.dLbls.showPercent = new CT_Boolean { val = 1 };
+            }
 
-    //        return await Task.FromResult(stream.ToArray());
-    //    }
+            // =========================
+            // AUTO SIZE
+            // =========================
+            sheet.AutoSizeColumn(0);
+            sheet.AutoSizeColumn(1);
+
+            using var stream = new MemoryStream();
+            workbook.Write(stream);
+
+            return stream.ToArray();
+        }
+
+        public static async Task<byte[]> ExportCityWiseEmissionStackedBarChartAsync(
+    List<string> cities,
+    List<decimal> co2Values,
+    List<decimal> no2Values,
+    List<decimal> ch4Values,
+    string sheetName = "City Emission Report",
+    string chartTitle = "City Wise Emission Profile")
+        {
+            if (cities == null || !cities.Any())
+                return Array.Empty<byte>();
+
+            var workbook = new XSSFWorkbook();
+            var sheet = workbook.CreateSheet(sheetName);
+
+            // =========================
+            // 1️⃣ HEADERS
+            // =========================
+            var headerRow = sheet.CreateRow(0);
+            headerRow.CreateCell(0).SetCellValue("City");
+            headerRow.CreateCell(1).SetCellValue("CO2 (kg)");
+            headerRow.CreateCell(2).SetCellValue("NO2 (kg)");
+            headerRow.CreateCell(3).SetCellValue("CH4 (kg)");
+
+            // =========================
+            // 2️⃣ DATA ROWS
+            // =========================
+            int rowIndex = 1;
+            for (int i = 0; i < cities.Count; i++)
+            {
+                var row = sheet.CreateRow(rowIndex++);
+                row.CreateCell(0).SetCellValue(cities[i]);
+                row.CreateCell(1).SetCellValue((double)co2Values[i]);
+                row.CreateCell(2).SetCellValue((double)no2Values[i]);
+                row.CreateCell(3).SetCellValue((double)ch4Values[i]);
+            }
+
+            int rowCount = cities.Count;
+
+            // =========================
+            // 3️⃣ STACKED BAR CHART
+            // =========================
+            var drawing = sheet.CreateDrawingPatriarch();
+            var anchor = drawing.CreateAnchor(0, 0, 0, 0, 5, 1, 16, 22);
+            var chart = (XSSFChart)drawing.CreateChart(anchor);
+
+            chart.SetTitle(chartTitle);
+            chart.GetOrCreateLegend().Position = LegendPosition.Bottom;
+
+            var dataFactory = chart.ChartDataFactory;
+            var axisFactory = chart.ChartAxisFactory;
+
+            // Axes
+            var bottomAxis = axisFactory.CreateCategoryAxis(AxisPosition.Bottom);
+            var leftAxis = axisFactory.CreateValueAxis(AxisPosition.Left);
+            leftAxis.Crosses = AxisCrosses.AutoZero;
+
+            // Bar Chart Data
+            var barData = dataFactory.CreateBarChartData<string, double>();
+
+            // Category (X-axis) = City names
+            var categoryRange = DataSources.FromStringCellRange(
+                sheet, new CellRangeAddress(1, rowCount, 0, 0));
+
+            // CO2 Series
+            var co2Range = DataSources.FromNumericCellRange(
+                sheet, new CellRangeAddress(1, rowCount, 1, 1));
+            var co2Series = barData.AddSeries(categoryRange, co2Range);
+            co2Series.SetTitle("CO2 (kg)");
+
+            // NO2 Series
+            var no2Range = DataSources.FromNumericCellRange(
+                sheet, new CellRangeAddress(1, rowCount, 2, 2));
+            var no2Series = barData.AddSeries(categoryRange, no2Range);
+            no2Series.SetTitle("NO2 (kg)");
+
+            // CH4 Series
+            var ch4Range = DataSources.FromNumericCellRange(
+                sheet, new CellRangeAddress(1, rowCount, 3, 3));
+            var ch4Series = barData.AddSeries(categoryRange, ch4Range);
+            ch4Series.SetTitle("CH4 (kg)");
+
+            chart.Plot(barData, bottomAxis, leftAxis);
+
+            // =========================
+            // 4️⃣ STACKED BAR — XML LEVEL
+            // =========================
+            var ctChart = chart.GetCTChart();
+
+            if (ctChart.plotArea.barChart != null && ctChart.plotArea.barChart.Count > 0)
+            {
+                var barChart = ctChart.plotArea.barChart[0];
+
+                // Bar direction = Column (vertical bars)
+                barChart.barDir = new CT_BarDir { val = ST_BarDir.col };
+
+                // Stacked type
+                barChart.grouping = new CT_BarGrouping { val = ST_BarGrouping.stacked };
+
+                // 100% stacked use karni ho to: percentStacked
+                // barChart.grouping = new CT_BarGrouping { val = ST_BarGrouping.percentStacked };
+
+                // Overlap = 100 for fully stacked
+                barChart.overlap = new CT_Overlap { val = 100 };
+
+                // Data Labels
+                barChart.dLbls = new CT_DLbls
+                {
+                    showVal = new CT_Boolean { val = 0 },
+                    showPercent = new CT_Boolean { val = 0 },
+                    showLegendKey = new CT_Boolean { val = 0 },
+                    showSerName = new CT_Boolean { val = 0 },
+                    showCatName = new CT_Boolean { val = 0 }
+                };
+            }
+
+            // =========================
+            // 5️⃣ AUTO SIZE COLUMNS
+            // =========================
+            for (int i = 0; i <= 3; i++)
+                sheet.AutoSizeColumn(i);
+
+            using var stream = new MemoryStream();
+            workbook.Write(stream);
+            return stream.ToArray();
+        }
     }
 }
