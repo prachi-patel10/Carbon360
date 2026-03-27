@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using NPOI.XSSF.UserModel;
 using ProjectApp.Core.DTOs.Charts;
 using ProjectApp.Core.Models;
 using ProjectApp.Repository.Interfaces.Charts;
@@ -672,5 +673,94 @@ namespace ProjectApp.Repository.Services.Charts
                 $"Vehicle Emission Report - {year}"
             );
         }
+
+        //public async Task<byte[]> ExportVehicleDistanceExcelAsync(int year)
+        //{
+        //    var data = await GetVehicleTotalDistanceMonthlyAsync(year);
+
+        //    var rows = Enumerable.Range(1, 12).Select(m =>
+        //    {
+        //        int idx = m - 1;
+        //        return new VehicleDistanceExportDto
+        //        {
+        //            Month = _monthNames[idx],
+        //            DistanceKM = (double)data.DistanceData[idx],
+        //            TripCount = data.TripData[idx],
+        //            FuelConsumed = (double)data.FuelData[idx]
+        //        };
+        //    }).ToList();
+
+        //    // ✅ Use COMBO chart method (Bar + Line)
+        //    return await ExcelExportHelper.ExportExcelWithComboChartAsync(
+        //        rows,
+        //        "Distance Report",
+        //        $"Vehicle Distance Report - {year}"
+        //    );
+        //}
+
+        //public async Task<byte[]> ExportVehicleTypeDistanceExcelAsync(int year)
+        //{
+        //    var data = await GetVehicleTypeWiseDistanceAsync(year);
+
+        //    //var rows = new List<dynamic>();
+        //    var rows = new List<Dictionary<string, object>>(); 
+
+
+        //    for (int mi = 0; mi < data.MonthLabels.Count; mi++)
+        //    {
+        //        var row = new Dictionary<string, object>();
+        //        row["Month"] = data.MonthLabels[mi];
+
+        //        for (int ti = 0; ti < data.VehicleTypes.Count; ti++)
+        //        {
+        //            row[data.VehicleTypes[ti]] = data.DistanceMatrix[mi][ti];
+        //        }
+
+        //        row["Total"] = data.MonthTotals[mi];
+
+        //        rows.Add(row);
+        //    }
+
+        //    return await ExcelExportHelper.ExportDynamicPivotExcelWithChartAsync(
+        //    rows,
+        //    "Vehicle Type Distance",
+        //    $"Vehicle Type Distance Report - {year}"
+        //);
+        //}
+
+        //public async Task<byte[]> ExportVehicleTypeDistanceExcelPieChartAsync(int year)
+        //{
+        //    var pivot = await GetVehicleTypeWiseDistanceAsync(year);
+
+        //    var rows = pivot.VehicleTypes.Select((vt, ti) => new VehicleTypeDistanceExportDto
+        //    {
+        //        VehicleType = vt,
+        //        TotalDistanceKM = (double)pivot.TypeTotals[ti]
+        //    }).ToList();
+
+        //    // ✅ Now using REAL Pie Chart
+        //    return await ExcelExportHelper.ExportExcelWithPieChartAsync(
+        //        rows,
+        //        "Vehicle Type Distance",
+        //        $"Vehicle Type Distance Share - {year}"
+        //    );
+        //}
+        //public async Task<byte[]> ExportVehicleTypeDistanceExcelPieChartAsync(int year)
+        //{
+        //    var pivot = await GetVehicleTypeWiseDistanceAsync(year);
+
+        //    // AGGREGATE BY VEHICLE TYPE
+        //    var aggregated = pivot.VehicleTypes.Select((vt, ti) => new VehicleTypeDistanceExportDto
+        //    {
+        //        VehicleType = vt,
+        //        TotalDistanceKM = (double)pivot.TypeTotals[ti]  // already total per type
+        //    }).ToList();
+
+        //    return await ExcelExportHelper.ExportExcelWithPieChartAsync(
+        //        aggregated,
+        //        "Vehicle Type Distance",
+        //        $"Vehicle Type Distance Share - {year}"
+        //    );
+        //}
     }
 }

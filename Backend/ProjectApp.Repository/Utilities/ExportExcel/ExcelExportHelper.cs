@@ -1,4 +1,5 @@
 ﻿using ClosedXML.Excel;
+using NPOI.OpenXmlFormats.Dml.Chart;
 using NPOI.SS.UserModel;
 using NPOI.SS.UserModel.Charts;
 using NPOI.SS.Util;
@@ -494,5 +495,319 @@ namespace ProjectApp.Repository.Services.Common
             workbook.Write(stream);
             return stream.ToArray();
         }
+
+        //---COMBO CHART -----// 
+        //-------- NPOI SUPPORT NAHII KARTA ----//
+    //    public static async Task<byte[]> ExportExcelWithComboChartAsync(
+    //IEnumerable<VehicleDistanceExportDto> data,
+    //string sheetName = "Distance Report",
+    //string chartTitle = "Vehicle Distance Report")
+    //    {
+    //        if (data == null || !data.Any())
+    //            return Array.Empty<byte>();
+
+    //        var workbook = new XSSFWorkbook();
+    //        var sheet = workbook.CreateSheet(sheetName);
+
+    //        // =========================
+    //        // ✅ HEADERS
+    //        // =========================
+    //        var header = sheet.CreateRow(0);
+    //        header.CreateCell(0).SetCellValue("Month");
+    //        header.CreateCell(1).SetCellValue("Distance (km)");
+    //        header.CreateCell(2).SetCellValue("Trip Count");
+    //        header.CreateCell(3).SetCellValue("Fuel Consumed");
+
+    //        // =========================
+    //        // ✅ DATA
+    //        // =========================
+    //        int rowIndex = 1;
+    //        foreach (var d in data)
+    //        {
+    //            var row = sheet.CreateRow(rowIndex++);
+    //            row.CreateCell(0).SetCellValue(d.Month);
+    //            row.CreateCell(1).SetCellValue((double)d.DistanceKM);
+    //            row.CreateCell(2).SetCellValue(d.TripCount);
+    //            row.CreateCell(3).SetCellValue(d.FuelConsumed);
+    //        }
+
+    //        int rowCount = data.Count();
+
+    //        // =========================
+    //        // 📊 CREATE CHART
+    //        // =========================
+    //        var drawing = sheet.CreateDrawingPatriarch();
+    //        var anchor = drawing.CreateAnchor(0, 0, 0, 0, 4, 1, 16, 20);
+    //        var chart = (XSSFChart)drawing.CreateChart(anchor);
+
+    //        chart.SetTitle(chartTitle);
+    //        chart.GetOrCreateLegend().Position = LegendPosition.Bottom;
+
+    //        // =========================
+    //        // ✅ AXES
+    //        // =========================
+    //        var bottomAxis = chart.CreateCategoryAxis(AxisPosition.Bottom);
+    //        var leftAxis = chart.CreateValueAxis(AxisPosition.Left);
+    //        var rightAxis = chart.CreateValueAxis(AxisPosition.Right);
+
+    //        rightAxis.Crosses = AxisCrosses.Max;
+    //        rightAxis.IsVisible = true;
+
+    //        // =========================
+    //        // 🔹 DATA RANGES
+    //        // =========================
+    //        var xRange = new CellRangeAddress(1, rowCount, 0, 0);
+    //        var distanceRange = new CellRangeAddress(1, rowCount, 1, 1);
+    //        var tripRange = new CellRangeAddress(1, rowCount, 2, 2);
+
+    //        var dataFactory = chart.ChartDataFactory;
+
+    //        // =========================
+    //        // 📊 BAR CHART (Distance)
+    //        // =========================
+    //        var barData = dataFactory.CreateBarChartData<string, double>();
+
+    //        var barSeries = barData.AddSeries(
+    //            DataSources.FromStringCellRange(sheet, xRange),
+    //            DataSources.FromNumericCellRange(sheet, distanceRange)
+    //        );
+    //        barSeries.SetTitle("Distance (km)");
+
+    //        chart.Plot(barData, bottomAxis, leftAxis);
+
+    //        // =========================
+    //        // 📈 LINE CHART (Trip Count)
+    //        // =========================
+    //        var lineData = dataFactory.CreateLineChartData<string, double>();
+
+    //        var lineSeries = lineData.AddSeries(
+    //            DataSources.FromStringCellRange(sheet, xRange),
+    //            DataSources.FromNumericCellRange(sheet, tripRange)
+    //        );
+    //        lineSeries.SetTitle("Trip Count");
+
+    //        //chart.Plot(lineData, bottomAxis, rightAxis);
+
+    //        chart.Plot(barData, bottomAxis, leftAxis);
+    //        chart.Plot(lineData, bottomAxis, rightAxis);
+    //        //chart.Plot(barData, bottomAxis, leftAxis);
+    //        //chart.Plot(lineData, bottomAxis, rightAxis);
+    //        // ✅ AUTO SIZE
+    //        // =========================
+    //        for (int i = 0; i < 4; i++)
+    //            sheet.AutoSizeColumn(i);
+
+    //        // =========================
+    //        // 💾 SAVE
+    //        // =========================
+    //        using var stream = new MemoryStream();
+    //        workbook.Write(stream);
+
+    //        return await Task.FromResult(stream.ToArray());
+    //    }
+
+    //    public static async Task<byte[]> ExportDynamicPivotExcelWithChartAsync(
+    //List<Dictionary<string, object>> rows,
+    //string sheetName,
+    //string title)
+    //    {
+    //        if (rows == null || !rows.Any())
+    //            return Array.Empty<byte>();
+
+
+    //        var workbook = new XSSFWorkbook();
+    //        var sheet = workbook.CreateSheet(sheetName);
+
+    //        // -----------------------
+    //        // TITLE
+    //        // -----------------------
+    //        var titleRow = sheet.CreateRow(0);
+    //        titleRow.CreateCell(0).SetCellValue(title);
+
+    //        // -----------------------
+    //        // HEADER
+    //        // -----------------------
+    //        var headerRow = sheet.CreateRow(2);
+    //        int colCount = rows.First().Keys.Count;
+
+    //        int colIndex = 0;
+    //        foreach (var key in rows.First().Keys)
+    //        {
+    //            headerRow.CreateCell(colIndex++).SetCellValue(key);
+    //        }
+
+    //        // ==========================
+    //        // DATA
+    //        // ==========================
+    //        int rowIndex = 3;
+
+    //        foreach (var row in rows)
+    //        {
+    //            var excelRow = sheet.CreateRow(rowIndex++);
+    //            colIndex = 0;
+
+    //            foreach (var val in row.Values)
+    //            {
+    //                if (double.TryParse(val?.ToString(), out double num))
+    //                    excelRow.CreateCell(colIndex++).SetCellValue(num);
+    //                else
+    //                    excelRow.CreateCell(colIndex++).SetCellValue(val?.ToString());
+    //            }
+    //        }
+
+    //        // ==========================
+    //        // STYLES (UI LOOK)
+    //        // ==========================
+    //        var headerStyle = workbook.CreateCellStyle();
+    //        headerStyle.FillForegroundColor = IndexedColors.DarkGreen.Index;
+    //        headerStyle.FillPattern = FillPattern.SolidForeground;
+
+    //        var headerFont = workbook.CreateFont();
+    //        headerFont.Color = IndexedColors.White.Index;
+    //        headerFont.IsBold = true;
+    //        headerStyle.SetFont(headerFont);
+
+    //        var totalStyle = workbook.CreateCellStyle();
+    //        totalStyle.FillForegroundColor = IndexedColors.LightGreen.Index;
+    //        totalStyle.FillPattern = FillPattern.SolidForeground;
+
+    //        var boldFont = workbook.CreateFont();
+    //        boldFont.IsBold = true;
+    //        totalStyle.SetFont(boldFont);
+
+    //        // ==========================
+    //        // APPLY HEADER STYLE
+    //        // ==========================
+    //        for (int i = 0; i < colCount; i++)
+    //        {
+    //            headerRow.GetCell(i).CellStyle = headerStyle;
+    //        }
+
+    //        // ==========================
+    //        // TOTAL ROW
+    //        // ==========================
+    //        var totalRow = sheet.CreateRow(rowIndex);
+
+    //        totalRow.CreateCell(0).SetCellValue("Total");
+
+    //        for (int c = 1; c < colCount; c++)
+    //        {
+    //            double sum = 0;
+    //            for (int r = 3; r < rowIndex; r++)
+    //            {
+    //                var cell = sheet.GetRow(r).GetCell(c);
+    //                if (cell != null && cell.CellType == CellType.Numeric)
+    //                {
+    //                    sum += cell.NumericCellValue;
+    //                }
+    //            }
+    //            totalRow.CreateCell(c).SetCellValue(sum);
+    //        }
+
+    //        // style total row
+    //        for (int i = 0; i < colCount; i++)
+    //        {
+    //            totalRow.GetCell(i).CellStyle = totalStyle;
+    //        }
+
+    //        rowIndex++; // move past total row
+
+    //        // ==========================
+    //        // AUTO SIZE COLUMNS
+    //        // ==========================
+    //        for (int i = 0; i < colCount; i++)
+    //            sheet.AutoSizeColumn(i);
+
+    //        // ==========================
+    //        // WRITE TO STREAM
+    //        // ==========================
+    //        using var stream = new MemoryStream();
+    //        workbook.Write(stream);
+
+    //        return await Task.FromResult(stream.ToArray());
+    //    }
+
+    //    public static async Task<byte[]> ExportExcelWithPieChartAsync(
+    //IEnumerable<VehicleTypeDistanceExportDto> data,
+    //string sheetName = "Vehicle Type Distance",
+    //string chartTitle = "Vehicle Type Distance Share")
+    //    {
+    //        if (data == null || !data.Any())
+    //            return Array.Empty<byte>();
+
+    //        var workbook = new XSSFWorkbook();
+    //        var sheet = workbook.CreateSheet(sheetName);
+
+    //        // 1️⃣ HEADERS
+    //        var headerRow = sheet.CreateRow(0);
+    //        headerRow.CreateCell(0).SetCellValue("Vehicle Type");
+    //        headerRow.CreateCell(1).SetCellValue("Total Distance (km)");
+
+    //        // 2️⃣ DATA
+    //        int rowIndex = 1;
+    //        foreach (var item in data)
+    //        {
+    //            var row = sheet.CreateRow(rowIndex++);
+    //            row.CreateCell(0).SetCellValue(item.VehicleType);
+    //            row.CreateCell(1).SetCellValue((double)item.TotalDistanceKM);
+    //        }
+
+    //        int rowCount = data.Count(); // number of data rows
+
+    //        // 3️⃣ AUTO SIZE
+    //        sheet.AutoSizeColumn(0);
+    //        sheet.AutoSizeColumn(1);
+
+    //        // 4️⃣ CHART CREATE
+    //        var drawing = sheet.CreateDrawingPatriarch();
+    //        var anchor = drawing.CreateAnchor(0, 0, 0, 0, 3, 1, 13, 20);
+    //        var chart = drawing.CreateChart(anchor) as XSSFChart;
+
+    //        chart.SetTitle(chartTitle);
+    //        chart.GetOrCreateLegend().Position = LegendPosition.Right;
+
+    //        // 5️⃣ PIE CHART WITH CACHE
+    //        var pieChart = chart.GetCTChart().AddNewPlotArea().AddNewPieChart();
+    //        pieChart.AddNewVaryColors().val = 1;
+
+    //        var ser = pieChart.AddNewSer();
+    //        ser.AddNewIdx().val = 0;
+    //        ser.AddNewOrder().val = 0;
+
+    //        // CATEGORY (LABELS)
+    //        var cat = ser.AddNewCat().AddNewStrRef();
+    //        cat.f = $"'{sheetName}'!$A$2:$A${rowCount + 1}";
+
+    //        var catCache = cat.AddNewStrCache();
+    //        catCache.ptCount = new CT_UnsignedInt { val = (uint)rowCount };
+
+    //        for (int i = 0; i < rowCount; i++)
+    //        {
+    //            var pt = catCache.AddNewPt();
+    //            pt.idx = (uint)i;
+    //            pt.v = data.ElementAt(i).VehicleType;
+    //        }
+
+    //        // VALUES
+    //        var val = ser.AddNewVal().AddNewNumRef();
+    //        val.f = $"'{sheetName}'!$B$2:$B${rowCount + 1}";
+
+    //        var valCache = val.AddNewNumCache();
+    //        valCache.formatCode = "General"; // ensures Excel reads numbers properly
+    //        valCache.ptCount = new CT_UnsignedInt { val = (uint)rowCount };
+
+    //        for (int i = 0; i < rowCount; i++)
+    //        {
+    //            var pt = valCache.AddNewPt();
+    //            pt.idx = (uint)i;
+    //            pt.v = ((double)data.ElementAt(i).TotalDistanceKM).ToString("0");
+    //        }
+
+    //        // 6️⃣ WRITE FILE
+    //        using var stream = new MemoryStream();
+    //        workbook.Write(stream);
+
+    //        return await Task.FromResult(stream.ToArray());
+    //    }
     }
 }

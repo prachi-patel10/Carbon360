@@ -197,5 +197,40 @@ namespace ProjectApp.API.Controllers.Charts
             );
         }
 
+        //[HttpGet("ExportVehicleDistance")]
+        //public async Task<IActionResult> ExportVehicleDistance([FromQuery] int year)
+        //{
+        //    var fileBytes = await _service.ExportVehicleDistanceExcelAsync(year);
+        //    return File(
+        //        fileBytes,
+        //        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        //        $"VehicleDistance_{year}.xlsx"
+        //    );
+        //}
+
+        //[HttpGet("ExportVehicleTypeDistance")]
+        //public async Task<IActionResult> ExportVehicleTypeDistance([FromQuery] int year)
+        //{
+        //    var fileBytes = await _service.ExportVehicleTypeDistanceExcelAsync(year);
+
+        //    return File(
+        //        fileBytes,
+        //        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        //        $"VehicleTypeDistance_{year}.xlsx"
+        //    );
+        }
+
+
+        //[HttpGet("ExportVehicleTypeDistancePieChart")]
+        //public async Task<IActionResult> ExportVehicleTypeDistancePieChart([FromQuery] int year)
+        //{
+        //    var fileBytes = await _service.ExportVehicleTypeDistanceExcelAsync(year);
+        //    return File(
+        //        fileBytes,
+        //        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        //        $"VehicleTypeDistance_{year}.xlsx"
+        //    );
+        //}
+
     }
 }
