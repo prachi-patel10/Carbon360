@@ -233,4 +233,3 @@ namespace ProjectApp.API.Controllers.Charts
         //}
 
     }
-}
