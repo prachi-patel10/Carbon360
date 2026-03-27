@@ -41,18 +41,22 @@ namespace ProjectApp.Repository.Services.Masters.EmissionFactor
             while (await reader.ReadAsync())
             {
                 int id = Convert.ToInt32(reader["EmissionFactorId"]);
+                int fuelId = Convert.ToInt32(reader["FuelId"]);
 
                 list.Add(new EmissionFactorResponseDTO
                 {
                     Id = _encoder.Encode(id),
-                    FuelId = Convert.ToInt32(reader["FuelId"]),
+                    FuelId = _encoder.Encode(fuelId), // ✅ FIXED
                     FuelName = reader["fuel_name"]?.ToString(),
+
                     CO2_Factor_KgPerL = Convert.ToDecimal(reader["CO2_Factor_KgPerL"]),
                     NO2_Factor_KgPerL = Convert.ToDecimal(reader["NO2_Factor_KgPerL"]),
                     CH4_Factor_KgPerL = Convert.ToDecimal(reader["CH4_Factor_KgPerL"]),
+
                     IsActive = Convert.ToBoolean(reader["IsActive"])
                 });
-            }
+            
+        }
 
             return new ApiResponse<List<EmissionFactorResponseDTO>>
             {
@@ -66,7 +70,7 @@ namespace ProjectApp.Repository.Services.Masters.EmissionFactor
         public async Task<ApiResponse<EmissionFactorResponseDTO>> GetByIdAsync(string encryptedId)
             {
             int id = _encoder.Decode(encryptedId);
-
+     
             using var con = GetConnection();
             using var cmd = new SqlCommand("USP_CB_EmissionFactor_GetById", con);
             cmd.CommandType = CommandType.StoredProcedure;
@@ -74,13 +78,14 @@ namespace ProjectApp.Repository.Services.Masters.EmissionFactor
 
             await con.OpenAsync();
             using var reader = await cmd.ExecuteReaderAsync();
+            int fuelId = Convert.ToInt32(reader["FuelId"]);
 
             if (await reader.ReadAsync())
             {
                 var dto = new EmissionFactorResponseDTO
                 {
                     Id = encryptedId,
-                    FuelId = Convert.ToInt32(reader["FuelId"]),
+                    FuelId = _encoder.Encode(fuelId),
                     FuelName = reader["fuel_name"]?.ToString(),
                     CO2_Factor_KgPerL = Convert.ToDecimal(reader["CO2_Factor_KgPerL"]),
                     NO2_Factor_KgPerL = Convert.ToDecimal(reader["NO2_Factor_KgPerL"]),
@@ -106,16 +111,18 @@ namespace ProjectApp.Repository.Services.Masters.EmissionFactor
             };
         }
 
-            public async Task<ApiResponse<string>> CreateAsync(EmissionFactorRequestDTO dto, int userId)
-            {
+        public async Task<ApiResponse<string>> CreateAsync(EmissionFactorRequestDTO dto, int userId)
+        {
+            int fuelId = _encoder.Decode(dto.FuelId); // ✅ decode here
+
             using var con = GetConnection();
             using var cmd = new SqlCommand("USP_CB_EmissionFactor_Insert", con);
             cmd.CommandType = CommandType.StoredProcedure;
 
-            cmd.Parameters.AddWithValue("@FuelId", dto.FuelId);
+            cmd.Parameters.AddWithValue("@FuelId", fuelId); // ✅ pass int to DB
             cmd.Parameters.AddWithValue("@CO2_Factor_KgPerL", dto.CO2_Factor_KgPerL);
-            cmd.Parameters.AddWithValue("@NO2_Factor_KgPerL", dto.NO2_Factor_KgPerL);  // updated
-            cmd.Parameters.AddWithValue("@CH4_Factor_KgPerL", dto.CH4_Factor_KgPerL);  // updated
+            cmd.Parameters.AddWithValue("@NO2_Factor_KgPerL", dto.NO2_Factor_KgPerL);
+            cmd.Parameters.AddWithValue("@CH4_Factor_KgPerL", dto.CH4_Factor_KgPerL);
             cmd.Parameters.AddWithValue("@EntryBy", userId);
 
             await con.OpenAsync();
@@ -130,16 +137,16 @@ namespace ProjectApp.Repository.Services.Masters.EmissionFactor
             };
         }
 
-            public async Task<ApiResponse<string>> UpdateAsync(string encryptedId, EmissionFactorRequestDTO dto, int userId)
+        public async Task<ApiResponse<string>> UpdateAsync(string encryptedId, EmissionFactorRequestDTO dto, int userId)
             {
             int id = _encoder.Decode(encryptedId);
-
+            int fuelId = _encoder.Decode(dto.FuelId);
             using var con = GetConnection();
             using var cmd = new SqlCommand("USP_CB_EmissionFactor_Update", con);
             cmd.CommandType = CommandType.StoredProcedure;
 
             cmd.Parameters.AddWithValue("@EmissionFactorId", id);
-            cmd.Parameters.AddWithValue("@FuelId", dto.FuelId);
+            cmd.Parameters.AddWithValue("@FuelId", fuelId);
             cmd.Parameters.AddWithValue("@CO2_Factor_KgPerL", dto.CO2_Factor_KgPerL);
             cmd.Parameters.AddWithValue("@NO2_Factor_KgPerL", dto.NO2_Factor_KgPerL);  // updated
             cmd.Parameters.AddWithValue("@CH4_Factor_KgPerL", dto.CH4_Factor_KgPerL);  // updated

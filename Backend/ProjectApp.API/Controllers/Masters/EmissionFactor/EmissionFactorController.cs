@@ -32,7 +32,7 @@ namespace ProjectApp.API.Controllers
         }
 
         [HttpPost("Create")]
-        public async Task<IActionResult> Create(EmissionFactorRequestDTO dto)
+        public async Task<IActionResult> Create([FromBody] EmissionFactorRequestDTO dto)
         {
             var result = await _service.CreateAsync(dto, 1);
             return StatusCode(result.StatusCode, result);

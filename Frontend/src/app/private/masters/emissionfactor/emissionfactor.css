@@ -71,6 +71,16 @@
   border: none;
 }
 
+.required {
+  color: red;
+  margin-left: 4px;
+}
+
+.error-text {
+  color: red;
+  font-size: 12px;
+}
+
 /* ================= TOGGLE ================= */
 .status-toggle {
   display: flex;
@@ -82,6 +92,7 @@
   font-weight: 500;
   font-size: 14px;
 }
+
 
 .switch {
   position: relative;

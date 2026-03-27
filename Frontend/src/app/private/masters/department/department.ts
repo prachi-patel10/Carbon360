@@ -30,7 +30,7 @@ sortDirection: 'asc' | 'desc' = 'asc';
   totalPages = signal(1);
   currentPage = signal(1);
   requestedRecords = signal(5);
- onlyActive = signal<boolean | undefined>(true);
+onlyActive = signal<boolean>(true);
   searchText = signal('');
   refreshTrigger = signal(0);
   departmentFilterModalOpen = signal(false);
@@ -46,15 +46,15 @@ pageSizeOptions = [5, 10, 15,20];
 
 
    // In effect
-effect(() => {
-  const page = this.currentPage();
-  const size = this.requestedRecords();
-  const search = this.searchText();
-  const active = this.onlyActive();
-  this.refreshTrigger();
+// effect(() => {
+//   const page = this.currentPage();
+//   const size = this.requestedRecords();
+//   const search = this.searchText();
+//   const active = this.onlyActive();
+//   this.refreshTrigger();
 
-  this.loadDepartments(page, size, search, active);  // ← active is boolean | undefined
-});
+//   this.loadDepartments(page, size, search, active);  // ← active is boolean | undefined
+// });
   }
 
   openDepartmentFilter() {
@@ -134,7 +134,13 @@ ResetDepartmentFilter() {
 }
 
   ngOnInit(): void {
-    this.initForms();
+     this.initForms();
+  this.loadDepartments(
+    this.currentPage(),
+    this.requestedRecords(),
+    this.searchText(),
+    this.onlyActive()
+  );
   }
 
   // ================== FORMS ==================
@@ -150,10 +156,18 @@ ResetDepartmentFilter() {
       searchText: [''],
     });
 
-    this.searchForm.get('searchText')?.valueChanges.subscribe(val => {
-      this.searchText.set(val || '');
-      this.currentPage.set(1);
-    });
+   this.searchForm.get('searchText')?.valueChanges.subscribe(val => {
+  this.searchText.set(val || '');
+  this.currentPage.set(1);
+
+  // ✅ DIRECT CALL (REQUIRED)
+  this.loadDepartments(
+    this.currentPage(),
+    this.requestedRecords(),
+    this.searchText(),
+    this.onlyActive()
+  );
+});
   }
 
   // ================== LOAD DATA ==================
@@ -179,6 +193,7 @@ ResetDepartmentFilter() {
           this.departments.set(mappedData);
           this.totalRecords.set(result.totalRecords);
           this.totalPages.set(result.totalPages);
+          console.log('Search value:', search);
         },
         error: () => this.toastr.error('Failed to load departments'),
       });
@@ -206,11 +221,17 @@ ResetDepartmentFilter() {
       this.currentPage.set(1);
     }
   }
-
-  onActiveFilterChange(event: any) {
+onActiveFilterChange(event: any) {
   const checked = event.target.checked;
-  this.onlyActive.set(checked ? true : false);
+  this.onlyActive.set(checked);
   this.currentPage.set(1);
+
+  this.loadDepartments(
+    this.currentPage(),
+    this.requestedRecords(),
+    this.searchText(),
+    this.onlyActive()
+  );
 }
 
   clearSearch() {
@@ -221,47 +242,71 @@ ResetDepartmentFilter() {
 
 
 
-  submitdept() {
+ submitdept() {
 
-    if (this.departmentForm.invalid) return;
-
-    const dept = this.departmentForm.value;
-
-    const isCreate = !dept.DepartmentId;
-
-    const obs = isCreate
-      ? this.service.create(dept)
-      : this.service.update(dept);
-
-    obs.subscribe({
-      next: (res: any) => {
-
-        this.toastr.success('Department saved successfully');
-
-        if (isCreate) {
-          // Reload only for create (optional)
-          this.refreshTrigger.update(v => v + 1);
-        } else {
-          
-          this.departments.update(list =>
-            list.map(d =>
-              d.DepartmentId === dept.DepartmentId
-                ? {
-                  ...d,
-                  DepartmentName: dept.DepartmentName,
-                  IsActive: dept.IsActive   
-                }
-                : d
-            )
-          );
-        }
-
-        this.resetForm();
-      },
-      error: () => this.toastr.error('Save failed'),
-    });
+  if (this.departmentForm.invalid) {
+    this.departmentForm.markAllAsTouched();
+    this.showToast('error', 'Please fill all required fields');
+    return;
   }
 
+  const dept = this.departmentForm.value;
+  const isCreate = !dept.DepartmentId;
+
+  const obs = isCreate
+    ? this.service.create(dept)
+    : this.service.update(dept);
+
+  obs.subscribe({
+    next: () => {
+
+      this.showToast(
+        'success',
+        isCreate
+          ? 'Department created successfully'
+          : 'Department updated successfully'
+      );
+
+      if (isCreate) {
+        this.refreshTrigger.update(v => v + 1);
+      } else {
+        this.departments.update(list =>
+          list.map(d =>
+            d.DepartmentId === dept.DepartmentId
+              ? {
+                  ...d,
+                  DepartmentName: dept.DepartmentName,
+                  IsActive: dept.IsActive
+                }
+              : d
+          )
+        );
+      }
+
+      this.resetForm();
+    },
+
+    error: () => {
+      this.showToast(
+        'error',
+        isCreate
+          ? 'Create failed'
+          : 'Update failed'
+      );
+    }
+  });
+}
+
+showToast(type: 'success' | 'error' | 'warning', message: string) {
+  Swal.fire({
+    toast: true,
+    position: 'top-end',
+    icon: type,
+    title: message,
+    showConfirmButton: false,
+    timer: 2000
+  });
+}
   //EDIT
   edit(dept: Department) {
     this.departmentForm.patchValue(dept);

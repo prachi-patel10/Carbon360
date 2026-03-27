@@ -281,18 +281,19 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
         // ================= SEARCH =================
 
         public async Task<GeneratorOperationPagedResponseDTO> SearchAsync(
-     string search,
-      List<string>? fuelType,
+    string? search,
+    List<string>? fuelType,
     List<string>? generatorName,
-     DateTime? startDate,
-     DateTime? endDate,
-      DateTime? entryStartDate,
+    DateTime? startDate,
+    DateTime? endDate,
+    DateTime? entryStartDate,
     DateTime? entryEndDate,
-     int? statusId,
-     int pageNumber,
-     int pageSize,
-      string sortColumn = "EntryDate",      
-    string sortDirection = "DESC")
+    int? statusId,
+    int pageNumber,
+    int pageSize,
+    string sortColumn = "EntryDate",
+    string sortDirection = "DESC",
+    string? siteNames = null)          // ✅ ADD THIS
         {
             var result = new GeneratorOperationPagedResponseDTO();
 
@@ -300,31 +301,39 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
             await using var command = connection.CreateCommand();
 
             string? fuelTypeCsv = (fuelType != null && fuelType.Count > 0)
-      ? string.Join(",", fuelType)
-      : null;
+                ? string.Join(",", fuelType)
+                : null;
 
             string? generatorNameCsv = (generatorName != null && generatorName.Count > 0)
                 ? string.Join(",", generatorName)
                 : null;
 
+            // ✅ Convert DateTime? to plain 'YYYY-MM-DD' string
+            //    SP takes NVARCHAR(30) — never pass DateTime object directly
+            //    as it serializes with time component and causes silent cast fail.
+            string? startDateStr = startDate?.ToString("yyyy-MM-dd");
+            string? endDateStr = endDate?.ToString("yyyy-MM-dd");
+            string? entryStartDateStr = entryStartDate?.ToString("yyyy-MM-dd");
+            string? entryEndDateStr = entryEndDate?.ToString("yyyy-MM-dd");
+
             command.CommandText = "USP_CB_SearchGeneratorOperation";
             command.CommandType = CommandType.StoredProcedure;
 
-            command.Parameters.Add(new SqlParameter("@Search", (object)search ?? DBNull.Value));
+            command.Parameters.Add(new SqlParameter("@Search", (object?)search ?? DBNull.Value));
             command.Parameters.Add(new SqlParameter("@GeneratorNames", (object?)generatorNameCsv ?? DBNull.Value));
             command.Parameters.Add(new SqlParameter("@FuelTypes", (object?)fuelTypeCsv ?? DBNull.Value));
-            command.Parameters.Add(new SqlParameter("@StartDate", (object)startDate ?? DBNull.Value));
-            command.Parameters.Add(new SqlParameter("@EndDate", (object)endDate ?? DBNull.Value));
-            command.Parameters.Add(new SqlParameter("@EntryStartDate", (object)entryStartDate ?? DBNull.Value));
-            command.Parameters.Add(new SqlParameter("@EntryEndDate", (object)entryEndDate ?? DBNull.Value));
-            command.Parameters.Add(new SqlParameter("@StatusId", (object)statusId ?? DBNull.Value));
+            command.Parameters.Add(new SqlParameter("@StartDate", (object?)startDateStr ?? DBNull.Value)); // ✅ string not DateTime
+            command.Parameters.Add(new SqlParameter("@EndDate", (object?)endDateStr ?? DBNull.Value)); // ✅ string not DateTime
+            command.Parameters.Add(new SqlParameter("@EntryStartDate", (object?)entryStartDateStr ?? DBNull.Value)); // ✅ string not DateTime
+            command.Parameters.Add(new SqlParameter("@EntryEndDate", (object?)entryEndDateStr ?? DBNull.Value)); // ✅ string not DateTime
+            command.Parameters.Add(new SqlParameter("@StatusId", (object?)statusId ?? DBNull.Value));
             command.Parameters.Add(new SqlParameter("@UserId", GetCurrentUserId()));
             command.Parameters.Add(new SqlParameter("@UserRole", _userContext.Role ?? "Reporter"));
             command.Parameters.Add(new SqlParameter("@PageNumber", pageNumber));
             command.Parameters.Add(new SqlParameter("@PageSize", pageSize));
-            command.Parameters.Add(new SqlParameter("@SortColumn", sortColumn ?? "EntryDate"));   
-            command.Parameters.Add(new SqlParameter("@SortDirection", sortDirection ?? "DESC"));        
-
+            command.Parameters.Add(new SqlParameter("@SortColumn", sortColumn ?? "EntryDate"));
+            command.Parameters.Add(new SqlParameter("@SortDirection", sortDirection ?? "DESC"));
+            command.Parameters.Add(new SqlParameter("@SiteNames", (object?)siteNames ?? DBNull.Value)); // ✅ ADD THIS
 
             var totalParam = new SqlParameter("@TotalRecords", SqlDbType.Int)
             {
@@ -348,11 +357,11 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
                     GeneratorName = reader["GeneratorName"]?.ToString(),
                     FuelType = reader["FuelType"]?.ToString(),
                     SiteId = reader.IsDBNull(reader.GetOrdinal("SiteId"))
-                        ? null
-                        : _idEncoder.Encode(reader.GetInt32(reader.GetOrdinal("SiteId"))),
+                                            ? null
+                                            : _idEncoder.Encode(reader.GetInt32(reader.GetOrdinal("SiteId"))),
                     SiteName = reader.IsDBNull(reader.GetOrdinal("SiteName"))
-                        ? null
-                        : reader.GetString(reader.GetOrdinal("SiteName")),
+                                            ? null
+                                            : reader.GetString(reader.GetOrdinal("SiteName")),
                     OperationDate = DateOnly.FromDateTime(reader.GetDateTime(reader.GetOrdinal("OperationDate"))),
                     StartTime = reader.GetDateTime(reader.GetOrdinal("StartTime")),
                     EndTime = reader.GetDateTime(reader.GetOrdinal("EndTime")),
@@ -373,7 +382,6 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
                 });
             }
 
-            // Close reader BEFORE reading output parameter
             await reader.CloseAsync();
 
             result.Records = records;

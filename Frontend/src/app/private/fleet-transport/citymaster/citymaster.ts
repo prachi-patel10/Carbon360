@@ -11,6 +11,7 @@ interface City {
   cityName: string;
   stateName: string;
   shortCode?: string;
+  
   isActive: boolean;
 }
 
@@ -134,32 +135,40 @@ isCitySelected(city: string): boolean {
 isShortCodeSelected(city:string):boolean{
   return this.filter().shortCodes.includes(city);
 }
-
-
-
-  
-
   // ================= FORM =================
 
-  initForms() {
+ initForms() {
+  this.cityForm = this.fb.group({
+    cityId: [''],
+    cityName: ['', [
+      Validators.required,
+      Validators.minLength(2),
+      Validators.maxLength(50),
+      Validators.pattern(/^[a-zA-Z\s]+$/)   // letters and spaces only
+    ]],
+    stateName: ['', [
+      Validators.required,
+      Validators.minLength(2),
+      Validators.maxLength(50),
+      Validators.pattern(/^[a-zA-Z\s]+$/)   // letters and spaces only
+    ]],
+    shortCode: ['', [
+      Validators.required,
+      Validators.minLength(2),
+      Validators.maxLength(10),
+      Validators.pattern(/^[A-Z0-9]+$/)     // uppercase letters and numbers only
+    ]]
+  });
 
-    this.cityForm = this.fb.group({
-      cityId: [''],
-      cityName: ['', Validators.required],
-      stateName: ['', Validators.required],
-      shortCode: ['',Validators.required]
-    });
+  this.searchForm = this.fb.group({
+    searchText: ['']
+  });
 
-    this.searchForm = this.fb.group({
-      searchText: ['']
-    });
-
-    this.searchForm.get('searchText')?.valueChanges.subscribe(val => {
-      this.searchText.set(val || '');
-      this.currentPage.set(1);
-    });
-  }
-
+  this.searchForm.get('searchText')?.valueChanges.subscribe(val => {
+    this.searchText.set(val || '');
+    this.currentPage.set(1);
+  });
+}
 loadCities(page: number, size: number, search: string, active?: boolean) {
 
   this.service.getPaged(
@@ -303,32 +312,41 @@ loadAllFilterData() {
 
   // ================= CREATE / UPDATE =================
 
-  submit() {
-
-    if (this.cityForm.invalid) return;
-
-    const data = this.cityForm.value;
-    const isCreate = !data.cityId;
-
-    const obs = isCreate
-      ? this.service.create(data)
-      : this.service.update(data);
-
-    obs.subscribe({
-      next: () => {
-
-        this.toastr.success(
-          isCreate ? 'City created successfully'
-                   : 'City updated successfully'
-        );
-
-        this.refreshTrigger.update(v=>v+1);
-        this.resetForm();
-      },
-      error:()=>this.toastr.error('Save failed')
-    });
+submit() {
+  if (this.cityForm.invalid) {
+    this.cityForm.markAllAsTouched();
+    this.showToast('Validation Error', 'Please fill all required fields correctly', 'error');
+    return;
   }
 
+  const data = {
+    ...this.cityForm.value,
+    cityName:  this.cityForm.value.cityName?.trim(),
+    stateName: this.cityForm.value.stateName?.trim(),
+    shortCode: this.cityForm.value.shortCode?.trim().toUpperCase()
+  };
+
+  const isCreate = !data.cityId;
+  const obs = isCreate ? this.service.create(data) : this.service.update(data);
+
+  obs.subscribe({
+    next: () => {
+      this.showToast(
+        isCreate ? 'Created' : 'Updated',
+        isCreate ? 'City created successfully!' : 'City updated successfully!',
+        'success'
+      );
+      this.refreshTrigger.update(v => v + 1);
+      this.resetForm();
+    },
+    error: () => this.showToast('Error', 'Save failed', 'error')
+  });
+}
+
+onShortCodeChange(event: Event) {
+  const upper = (event.target as HTMLInputElement).value.toUpperCase();
+  this.cityForm.get('shortCode')?.setValue(upper, { emitEvent: false });
+}
   // ================= EDIT =================
 
   edit(c:City){
@@ -338,29 +356,50 @@ loadAllFilterData() {
   // ================= DELETE =================
 
   deleteUI(c:City){
-
-    Swal.fire({
-      title:'Are you sure?',
-      icon:'warning',
-      showCancelButton:true
-    }).then(result=>{
-      if(result.isConfirmed){
-
-        this.service.delete(c.cityId).subscribe(()=>{
-          this.refreshTrigger.update(v=>v+1);
-          Swal.fire('Deleted!','','success');
-        });
-      }
-    });
+ Swal.fire({
+    title: 'Are you sure?',
+    text: 'This will delete the record!',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Delete'
+  }).then(result => {
+    if (result.isConfirmed) {
+      this.service.delete(c.cityId).subscribe({
+        next: () => {
+          this.showToast('Deleted', 'City deleted successfully!', 'success');
+          this.refreshTrigger.update(v => v + 1);
+        },
+        error: () => this.showToast('Error', 'Delete failed', 'error')
+      });
+    }
+  });
   }
 
+
+showToast(title: string, text: string, icon: 'success' | 'error' = 'success') {
+  Swal.fire({ icon, title, text, toast: true, position: 'top-end', timer: 2000, showConfirmButton: false });
+}
   // ================= TOGGLE =================
 
   toggleActive(c:City){
 
-    this.service.toggleActive(c.cityId).subscribe(()=>{
-      this.refreshTrigger.update(v=>v+1);
-    });
+   Swal.fire({
+    title: 'Change Status?',
+    text: `Set city as ${c.isActive ? 'Inactive' : 'Active'}?`,
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonText: 'Yes'
+  }).then(result => {
+    if (result.isConfirmed) {
+      this.service.toggleActive(c.cityId).subscribe({
+        next: () => {
+          this.showToast('Status Updated', `City is now ${c.isActive ? 'Inactive' : 'Active'}!`, 'success');
+          this.refreshTrigger.update(v => v + 1);
+        },
+        error: () => this.showToast('Error', 'Failed to update status', 'error')
+      });
+    }
+  });
   }
 
   // ================= PAGINATION =================
