@@ -192,12 +192,16 @@ export class SearchGenerator implements OnInit, AfterViewInit {
 
   // ── Data Loading ───────────────────────────────────────────────
 
-  loadFuelTypes(): void {
-    this.fuelService.getAll().subscribe(res => {
-      this.fuelTypes = Array.isArray(res) ? res : res.data || [];
-    });
-  }
+ loadFuelTypes(): void {
+  this.fuelService.getAll().subscribe(res => {
+    const data = Array.isArray(res) ? res : res.data || [];
 
+    this.fuelTypes = data.filter((f: any) =>
+      (f.isActive === true || f.isActive === 1) &&
+      (f.isapplicable === true || f.isapplicable === 1)
+    );
+  });
+}
   loadGeneratorTypes(): void {
     this.service.getGenerators().subscribe(res => {
       const data = Array.isArray(res) ? res : res.data || [];

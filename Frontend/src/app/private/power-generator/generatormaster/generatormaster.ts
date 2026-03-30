@@ -80,10 +80,14 @@ export class Generatormaster implements OnInit {
 
   loadDropdowns() {
     this.service.getFuels().subscribe((res: any[]) => {
-      this.fuels.set((res || []).filter(f => f.isActive).map(f => ({
-        fuelId: f.fuel_id,
-        fuelName: f.fuel_name
-      })));
+    this.fuels.set(
+  (res || [])
+    .filter(f => f.isActive && (f.isapplicable === true || f.isapplicable === 1))
+    .map(f => ({
+      fuelId: f.fuel_id,
+      fuelName: f.fuel_name
+    }))
+);
     });
 
     this.service.getSites().subscribe(res => {
