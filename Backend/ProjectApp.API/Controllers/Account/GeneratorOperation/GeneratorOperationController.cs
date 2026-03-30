@@ -188,6 +188,7 @@ namespace ProjectApp.API.Controllers.Account.GeneratorOperation
                 pageSize
             });
         }
+
         // GET /api/generator
         [HttpGet("allgenerator")]
         public async Task<IActionResult> Getallgenerator()

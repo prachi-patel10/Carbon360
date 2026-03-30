@@ -50,6 +50,8 @@ export class SearchGenerator implements OnInit, AfterViewInit {
   totalRecordsCount = signal<number>(0);
   totalPagesCount = signal<number>(1);
 
+  
+
   private readonly columnMap: Record<string, string> = {
     generatorName: 'GeneratorName',
     reportId: 'ReportId',
@@ -212,127 +214,129 @@ export class SearchGenerator implements OnInit, AfterViewInit {
   }
 
   loadEmissions(): void {
-    const fuelParam = this.selectedFuels.length > 0
-      ? this.selectedFuels.map(f => f.trim()).join(',')
-      : undefined;
+  const fuelParam = this.selectedFuels.length > 0
+    ? this.selectedFuels.map(f => f.trim()).join(',')
+    : undefined;
 
-    // Never send generatorNames when chartSiteName is active
-    const genParam = (this.selectedGenTypes.length > 0 && !this.chartSiteName)
-      ? this.selectedGenTypes.map(g => g.trim()).join(',')
-      : undefined;
+  // Never send generatorNames when chartSiteName is active
+  const genParam = (this.selectedGenTypes.length > 0 && !this.chartSiteName)
+    ? this.selectedGenTypes.map(g => g.trim()).join(',')
+    : undefined;
 
-    const siteParam = this.chartSiteName ? this.chartSiteName.trim() : undefined;
+  const siteParam = this.chartSiteName ? this.chartSiteName.trim() : undefined;
 
-    // Do NOT send searchText when any chart filter is active
-    const hasChartFilter = !!(fuelParam || genParam || siteParam || this.selectedGenTypes.length > 0);
-    const searchParam = hasChartFilter
-      ? undefined
-      : (this.searchText()?.trim() || undefined);
+  // ✅ Only siteParam suppresses free-text search
+  // fuelType/genType filters should NOT suppress search text
+  const hasChartFilter = !!(siteParam);
 
-    const opStart = this.operationStartDate() || undefined;
-    const opEnd = this.operationEndDate() || undefined;
-    const entryStart = this.entryStartDate() || undefined;
-    const entryEnd = this.entryEndDate() || undefined;
+  const searchParam = hasChartFilter
+    ? undefined
+    : (this.searchText()?.trim() || undefined);
 
-    console.log('loadEmissions() params →', {
-      siteParam, genParam, fuelParam, searchParam,
-      opStart, opEnd, entryStart, entryEnd
-    });
+  const opStart = this.operationStartDate() || undefined;
+  const opEnd = this.operationEndDate() || undefined;
+  const entryStart = this.entryStartDate() || undefined;
+  const entryEnd = this.entryEndDate() || undefined;
 
-    this.service.searchEmissions(
-      this.currentPage(), this.pageSize,
-      searchParam, fuelParam, genParam,
-      opStart, opEnd,
-      entryStart, entryEnd,
-      this.sortColumn, this.sortDirection,
-      siteParam
-    ).subscribe({
-      next: (res: any) => {
-        const records = res.data ?? [];
-        const total = res.totalRecords ?? 0;
+  console.log('loadEmissions() params →', {
+    siteParam, genParam, fuelParam, searchParam,
+    opStart, opEnd, entryStart, entryEnd
+  });
 
-        const mapped = records.map((e: any) => ({
-          ...e,
-          generatorName: e.generatorName ?? 'Unknown Generator',
-          fuelType: e.fuelType ?? 'Unknown',
-          status: e.statusName ?? (e.statusId === 1 ? 'Completed' : 'Pending'),
-          totalEmission: e.totalEmission ?? 0,
-        }));
+  this.service.searchEmissions(
+    this.currentPage(), this.pageSize,
+    searchParam, fuelParam, genParam,
+    opStart, opEnd,
+    entryStart, entryEnd,
+    this.sortColumn, this.sortDirection,
+    siteParam
+  ).subscribe({
+    next: (res: any) => {
+      const records = res.data ?? [];
+      const total = res.totalRecords ?? 0;
 
-        this.filteredData.set(mapped);
-        this.totalRecordsCount.set(total);
-        this.totalPagesCount.set(Math.ceil(total / this.pageSize) || 1);
+      const mapped = records.map((e: any) => ({
+        ...e,
+        generatorName: e.generatorName ?? 'Unknown Generator',
+        fuelType: e.fuelType ?? 'Unknown',
+        status: e.statusName ?? (e.statusId === 1 ? 'Completed' : 'Pending'),
+        totalEmission: e.totalEmission ?? 0,
+      }));
 
-        // ✅ Always update entry date picker from real data
-        // We use a local flag captured BEFORE the async call
-        // so it reflects the state at the time the request was made
-        if (mapped.length > 0) {
-          const entryDates: Date[] = [];
+      this.filteredData.set(mapped);
+      this.totalRecordsCount.set(total);
+      this.totalPagesCount.set(Math.ceil(total / this.pageSize) || 1);
 
-          for (const r of mapped) {
-            // ✅ Try both possible field names from API
-            const raw = r.entryDate ?? r.EntryDate ?? r.entry_date ?? null;
-            if (!raw) continue;
-            const d = new Date(raw);
-            if (!isNaN(d.getTime())) entryDates.push(d);
-          }
+      // ✅ Always update entry date picker from real data
+      if (mapped.length > 0) {
+        const entryDates: Date[] = [];
 
-          console.log('Entry dates found:', entryDates.length, entryDates);
-
-          if (entryDates.length > 0) {
-            const minEntry = new Date(Math.min(...entryDates.map(d => d.getTime())));
-            const maxEntry = new Date(Math.max(...entryDates.map(d => d.getTime())));
-
-            console.log('Setting entry picker:', minEntry, '→', maxEntry);
-       
-            // trigger applyFilters() → infinite loop
-            setTimeout(() => {
-              if (this.entryDatePicker) {
-                this._isSettingPickerFromData = true;     
-                this.entryDatePicker.setRange(minEntry, maxEntry);
-                this._isSettingPickerFromData = false;     
-                console.log('Picker setRange called successfully');
-              } else {
-                console.warn('entryDatePicker ref is undefined!');
-              }
-            }, 100);
-          }
+        for (const r of mapped) {
+          const raw = r.entryDate ?? r.EntryDate ?? r.entry_date ?? null;
+          if (!raw) continue;
+          const d = new Date(raw);
+          if (!isNaN(d.getTime())) entryDates.push(d);
         }
 
-        // ── Show active filter label in search box ───────────
+        console.log('Entry dates found:', entryDates.length, entryDates);
+
+        if (entryDates.length > 0) {
+          const minEntry = new Date(Math.min(...entryDates.map(d => d.getTime())));
+          const maxEntry = new Date(Math.max(...entryDates.map(d => d.getTime())));
+
+          console.log('Setting entry picker:', minEntry, '→', maxEntry);
+
+          setTimeout(() => {
+            if (this.entryDatePicker) {
+              this._isSettingPickerFromData = true;
+              this.entryDatePicker.setRange(minEntry, maxEntry);
+              this._isSettingPickerFromData = false;
+              console.log('Picker setRange called successfully');
+            } else {
+              console.warn('entryDatePicker ref is undefined!');
+            }
+          }, 100);
+        }
+      }
+
+      // ── Show active filter label in search box ───────────
+      // ✅ Only set label when chart filters are active (siteParam)
+      // Do NOT overwrite user-typed search text
+      if (siteParam) {
         const labelParts: string[] = [];
         if (this.selectedFuels.length > 0) labelParts.push(this.selectedFuels.join(', '));
         if (this.selectedGenTypes.length > 0) labelParts.push(this.selectedGenTypes.join(', '));
         if (this.chartSiteName) labelParts.push(this.chartSiteName);
         if (labelParts.length > 0) this.searchText.set(labelParts.join(' — '));
+      }
 
-        // ── Generator filter: ensure name exists in dropdown ─
-        if (this.selectedGenTypes.length > 0) {
-          this.selectedGenTypes.forEach(name => {
-            const exists = this.generatorTypes.some(g => g.gen_name === name);
-            if (!exists) this.generatorTypes.push({ gen_name: name });
-          });
-        }
+      // ── Generator filter: ensure name exists in dropdown ─
+      if (this.selectedGenTypes.length > 0) {
+        this.selectedGenTypes.forEach(name => {
+          const exists = this.generatorTypes.some(g => g.gen_name === name);
+          if (!exists) this.generatorTypes.push({ gen_name: name });
+        });
+      }
 
-        // ── Site chart: pre-populate generator dropdown ──────
-        if (this.chartSiteName && mapped.length > 0) {
-          const uniqueGenNames: string[] = [
-            ...new Set<string>(
-              mapped
-                .map((r: any) => r.generatorName as string)
-                .filter((n: string) => !!n && n !== 'Unknown Generator')
-            )
-          ];
-          this.selectedGenTypes = uniqueGenNames;
-          uniqueGenNames.forEach(name => {
-            const exists = this.generatorTypes.some(g => g.gen_name === name);
-            if (!exists) this.generatorTypes.push({ gen_name: name });
-          });
-        }
-      },
-      error: err => console.error('Error loading emissions', err)
-    });
-  }
+      // ── Site chart: pre-populate generator dropdown ──────
+      if (this.chartSiteName && mapped.length > 0) {
+        const uniqueGenNames: string[] = [
+          ...new Set<string>(
+            mapped
+              .map((r: any) => r.generatorName as string)
+              .filter((n: string) => !!n && n !== 'Unknown Generator')
+          )
+        ];
+        this.selectedGenTypes = uniqueGenNames;
+        uniqueGenNames.forEach(name => {
+          const exists = this.generatorTypes.some(g => g.gen_name === name);
+          if (!exists) this.generatorTypes.push({ gen_name: name });
+        });
+      }
+    },
+    error: err => console.error('Error loading emissions', err)
+  });
+}
 
   // ── Multi-Select: Fuel ─────────────────────────────────────────
 
@@ -396,8 +400,8 @@ export class SearchGenerator implements OnInit, AfterViewInit {
   onSearch(event: any): void {
     this.searchText.set(event.target.value);
     this.chartSiteName = null;
-    this.selectedFuels = [];
-    this.selectedGenTypes = [];
+   // this.selectedFuels = [];
+    // this.selectedGenTypes = [];
     this._skipEntryDateUpdate = true;
     this.applyFilters();
   }
