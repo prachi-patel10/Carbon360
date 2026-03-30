@@ -35,7 +35,7 @@ export class MasterUserComponent implements OnInit {
   ) { }
 
   userForm!: FormGroup;
-
+isInitialLoad = true;
   // ── Signals ───────────────────────────────────────────────────
   users = signal<any[]>([]);
   rolesList = signal<any[]>([]);
@@ -153,7 +153,7 @@ onDocumentClick(e: MouseEvent) {
   }
 
 
-  loadUsers() {
+ loadUsers() {
   const filter = this.userFilter();
 
   const deptIds = filter.department_id.length > 0
@@ -175,13 +175,29 @@ onDocumentClick(e: MouseEvent) {
     this.sortDirection
   ).subscribe({
     next: (res: any) => {
-      const data: User[] = res.data.data ?? [];
+      let data: User[] = res.data.data ?? [];
+
       this.totalRecords.set(res.data.totalRecords ?? 0);
       this.totalPages.set(res.data.totalPages ?? 1);
-      this.users.set(data.map((u: User) => ({
-        ...u,
-        RoleNames: u.roles?.join(', ') ?? ''
-      })));
+
+      // ✅ Apply latest-first ONLY on first load
+      if (this.isInitialLoad) {
+        data = data.sort((a, b) => {
+          if (a.entryDate && b.entryDate) {
+            return new Date(b.entryDate).getTime() - new Date(a.entryDate).getTime();
+          }
+          return Number(b.userId) - Number(a.userId);
+        });
+
+        this.isInitialLoad = false; // 🔥 Important
+      }
+
+      this.users.set(
+        data.map((u: User) => ({
+          ...u,
+          RoleNames: u.roles?.join(', ') ?? ''
+        }))
+      );
     },
     error: (err: any) => {
       console.error(err);
@@ -189,7 +205,6 @@ onDocumentClick(e: MouseEvent) {
     }
   });
 }
-
   // ── Filter modal ──────────────────────────────────────────────
   openUserFilter() {
     this.selectedDepartmentIds = [...this.userFilter().department_id];

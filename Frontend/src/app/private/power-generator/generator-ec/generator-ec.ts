@@ -518,6 +518,11 @@ export class GeneratorOperationComponent implements OnInit {
       console.log('Power Generator History:', this.tripHistory);
       console.log('Workflow Actions:', this.workflowActions);
       this.edit(op);
+      this.lockFormIfNeeded();
+      // ✅ FORCE READ-ONLY FOR SEARCH PAGE
+if (this.pageSource === 'search') {
+  this.operationForm.disable();
+}
       if (this.isResubmitMode) {
   this.disableResubmitFields();
 }
@@ -788,30 +793,45 @@ getTimeAgo(dateStr: string): string {
   return date.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
 }
 lockFormIfNeeded() {
- // Corporate always readonly
-    if (this.userRole === 'corporate') {
-      this.operationForm.disable();
-      return;
-    }
- 
-    if (this.userRole === 'reporter') {
-      // Submitted
-      if (this.currentStatusId === 1) {
-        this.operationForm.disable();
-      }
-      // Approved
-      else if (this.currentStatusId === 2) {
-        this.operationForm.disable();
-      }
-      // Rejected → allow edit but lock key fields
-      else if (this.currentStatusId === 3) {
-        this.operationForm.enable();
-        this.operationForm.get('SiteId')?.disable();
-        this.operationForm.get('GeneratorId')?.disable();
-      }
-    }
-}
 
+  // 🔴 1. SEARCH PAGE → always readonly
+  if (this.pageSource === 'search') {
+    this.operationForm.disable();
+    return;
+  }
+
+  // 🔴 2. REVIEW MODE (Corporate Approve/Reject)
+  if (this.isReviewMode) {
+    this.operationForm.disable();   // ✅ THIS FIXES YOUR ISSUE
+    return;
+  }
+
+  // 🔴 3. VIEW MODE
+  if (this.isViewMode) {
+    this.operationForm.disable();
+    return;
+  }
+
+  // 🟡 Corporate fallback
+  if (this.userRole === 'corporate') {
+    this.operationForm.disable();
+    return;
+  }
+
+  // 🟢 Reporter logic
+  if (this.userRole === 'reporter') {
+
+    if (this.currentStatusId === 1 || this.currentStatusId === 2) {
+      this.operationForm.disable();
+    }
+
+    else if (this.currentStatusId === 3) {
+      this.operationForm.enable();
+      this.operationForm.get('SiteId')?.disable();
+      this.operationForm.get('GeneratorId')?.disable();
+    }
+  }
+}
 disableResubmitFields() {
   this.operationForm.get('SiteId')?.disable();
   this.operationForm.get('GeneratorId')?.disable();

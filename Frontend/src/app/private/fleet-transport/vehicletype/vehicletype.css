@@ -29,6 +29,8 @@
 .form-group {
   display: flex;
   flex-direction: column;
+  justify-content: flex-start;
+  height: 72px; /* 👈 FIXED HEIGHT (not min-height) */
 }
 
 .form-group label {
@@ -42,6 +44,7 @@
 
 .form-group input,
 .form-group select {
+    height: 36px; /* fixed input height */
   padding: 8px 12px;
   border-radius: 6px;
   border: 1px solid #ccc;
@@ -55,7 +58,14 @@
 .form-group input::placeholder { color: #999; }
 
 .input-error  { border-color: #e74c3c !important; }
-.error-text   { color: #e74c3c; font-size: 12px; margin-top: 4px; }
+.error-text {
+  color: #e74c3c;
+  font-size: 12px;
+  margin-top: 4px;
+  min-height: 14px;  
+    height: 14px;      /* 👈 fixed */
+ /* 👈 reserve space */
+}
 
 /* ===================================================
    FORM ACTIONS
