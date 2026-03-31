@@ -619,7 +619,38 @@ ul.deep-submenu>li:hover {
   margin-bottom: 16px;
   box-shadow: 0 4px 20px rgba(15, 81, 50, 0.25);
 }
+.banner-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.gov-sync-btn {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 14px;
+  border-radius: 30px;
+  background: rgba(255, 255, 255, 0.18);
+  border: 1.5px solid rgba(255, 255, 255, 0.35);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
 
+.gov-sync-btn:hover {
+  background: rgba(255, 255, 255, 0.28);
+  transform: translateY(-1px);
+}
+
+.gov-sync-btn svg {
+  width: 14px;
+  height: 14px;
+}
 .banner-left {
   display: flex;
   align-items: center;
