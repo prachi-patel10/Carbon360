@@ -21,10 +21,14 @@ namespace ProjectApp.Repository.Utilities.Auth
         {
             //new Claim("UserId", user.UserId.ToString()),
             //new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
-            new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),  
+          /*  new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),  
             new Claim("UserId", user.UserId.ToString()),
             new Claim(ClaimTypes.Name, user.UserName ?? string.Empty),
-            new Claim(ClaimTypes.Email, user.Email ?? string.Empty)
+            new Claim(ClaimTypes.Email, user.Email ?? string.Empty)*/
+
+                  new Claim("uid", user.UserId.ToString()),
+                new Claim("name", user.UserName ?? string.Empty),
+                new Claim("email", user.Email ?? string.Empty)
         };
 
             if (roles != null && roles.Count > 0)
@@ -40,12 +44,14 @@ namespace ProjectApp.Repository.Utilities.Auth
                 Encoding.UTF8.GetBytes(_configuration["JwtSettings:Key"]));
 
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+            var expiryMinutes = _configuration.GetValue<int>("JwtSettings:ExpiryMinutes");
+
 
             var token = new JwtSecurityToken(
                 issuer: _configuration["JwtSettings:Issuer"],
                 audience: _configuration["JwtSettings:Audience"],
                 claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(60),
+                expires: DateTime.UtcNow.AddMinutes(expiryMinutes),
                 signingCredentials: creds
             );
 
