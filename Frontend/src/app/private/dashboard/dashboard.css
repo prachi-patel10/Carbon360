@@ -58,7 +58,7 @@
 .page-title {
   flex: 1;
   text-align: center;
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.9);
 }
@@ -1086,4 +1086,88 @@ ul.deep-submenu>li:hover {
   .kpi-row-2 {
     grid-template-columns: 1fr;
   }
+}
+
+/* LEFT SECTION */
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+/* MENU BUTTON (TOPBAR) */
+.menu-btn-top {
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  cursor: pointer;
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: 0.2s;
+}
+
+.menu-btn-top:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+
+/* PAGE TITLE LEFT */
+.page-title-left {
+  font-size: 14px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.85);
+  margin-left: 6px;
+  white-space: nowrap;
+}
+.menu-btn-top.morph {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+.menu-btn-top svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Hamburger lines */
+.line {
+  fill: none;
+  stroke: white;
+  stroke-width: 2.6;
+  stroke-linecap: round;
+  transition: all 0.3s ease;
+}
+
+/* Arrow hidden initially */
+.menu-arrow  {
+  fill: none;
+  stroke: white;
+  stroke-width: 2.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0;
+  transform: scale(0.8);
+  transition: all 0.3s ease;
+}
+
+/* 🔥 ACTIVE STATE */
+.menu-btn-top.morph.active .line {
+  opacity: 0;
+}
+
+.menu-btn-top.morph.active .menu-arrow {
+  opacity: 1;
+  transform: scale(1);
 }

@@ -1,10 +1,27 @@
 <!-- ================= TOPBAR ================= -->
 <header class="topbar">
+    <div class="topbar-left">
+
   <div class="brand" (click)="goToDashboard()" style="cursor: pointer">
     <h1>CARBON<span>360</span></h1>
     <p>Track • Analyze • Improve</p>
   </div>
+   <!-- MENU BUTTON -->
+<button class="menu-btn-top morph" (click)="toggleSidebar()" [class.active]="sidebarOpen">
+  <svg viewBox="0 0 24 24" width="22" height="22">
+    
+    <!-- Hamburger -->
+    <path class="line top" d="M4 6H20"></path>
+    <path class="line middle" d="M4 12H20"></path>
+    <path class="line bottom" d="M4 18H20"></path>
+
+    <!-- Arrow -->
+    <path class="menu-arrow" d="M14 6 L8 12 L14 18"></path>
+
+  </svg>
+</button>
   <div class="page-title">{{ pageTitle }}</div>
+  </div>
   <div class="right">
     <div class="admin-wrapper">
       <div class="admin-avatar" (click)="toggleProfile($event)">{{ loggedInUser.charAt(0) }}</div>
@@ -59,14 +76,6 @@
 
   <!-- ================= SIDEBAR ================= -->
   <aside class="sidebar" [class.closed]="!sidebarOpen">
-    <button class="menu-btn" (click)="toggleSidebar()">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-        stroke-linecap="round">
-        <line x1="3" y1="6" x2="21" y2="6" />
-        <line x1="3" y1="12" x2="21" y2="12" />
-        <line x1="3" y1="18" x2="21" y2="18" />
-      </svg>
-    </button>
 
     <ul class="menu">
       <!-- ============ DASHBOARD HOME ============ -->
