@@ -58,9 +58,10 @@
 .page-title {
   flex: 1;
   text-align: center;
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.9);
+  align-items: center;
 }
 
 .right {
@@ -1116,13 +1117,7 @@ ul.deep-submenu>li:hover {
 
 
 /* PAGE TITLE LEFT */
-.page-title-left {
-  font-size: 14px;
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.85);
-  margin-left: 6px;
-  white-space: nowrap;
-}
+
 .menu-btn-top.morph {
   width: 40px;
   height: 40px;

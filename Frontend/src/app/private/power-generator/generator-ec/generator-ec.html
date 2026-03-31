@@ -429,8 +429,6 @@
     </div>
 
     <!-- ================= WORKFLOW ACTIONS ================= -->
-    <!-- ================= ACTION BUTTONS ================= -->
-    <!-- Replace your existing two button blocks with this single unified block -->
 
     <div class="review-actions">
       <!-- ✅ REPORTER: Add new record (mode = 'add') — always show regardless of pageSource -->
@@ -617,7 +615,7 @@
         = {{ totalCH4 | number: '1.6-6' }} kg
       </div>
 
-      <div class="formula full-width">
+      <div class="formula-total full-width">
         Total Emission CO₂ Eq = CO₂ + (CH₄ × GWP) + (NO₂ × GWP) <br />
         = {{ totalCO2 | number: '1.3-3' }} +({{ totalCH4 | number: '1.6-6' }} ×
         {{ operation.gwP_CH4 }}) +({{ totalNO2 | number: '1.6-6' }} × {{ operation.gwP_NO2 }})

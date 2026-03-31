@@ -344,6 +344,19 @@
 
 }
 
+.formula-total
+{
+background:#FDF8EC !important ;
+  padding: 16px;
+  border-radius: 12px;
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+  line-height: 1.8;
+ border: 1px solid #7A5200 !important;
+  border-left: 4px solid #D4A017 !important;
+}
+
+
 .card-title {
   font-size: 24px;
   font-weight: 700;
