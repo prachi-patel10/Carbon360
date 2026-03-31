@@ -327,13 +327,21 @@
 }
 
 .formula {
-  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+  background: linear-gradient(135deg, #F7FDF9 0%, #F7FDF9 100%);
   padding: 16px;
   border-radius: 12px;
   font-family: 'Courier New', monospace;
   font-size: 14px;
   line-height: 1.8;
+ border: 1px solid #0d4a28;
   border-left: 4px solid #0f5132;
+  /* #0D4A28
+#7A5200
+#555555
+#FDF8EC 
+#D4A017
+ #dcfce7*/
+
 }
 
 .card-title {
