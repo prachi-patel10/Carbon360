@@ -17,7 +17,10 @@
             <th (click)="sort('vehicleNumber')" class="sortable">
               Vehicle No. <span class="sort-icon">{{ getSortIcon('vehicleNumber') }}</span>
             </th>
-            
+            <th (click)="sort('totalEmission')" class="sortable">
+              Total Emission (kg CO₂e)
+              <span class="sort-icon">{{ getSortIcon('totalEmission') }}</span>
+            </th>
             <th (click)="sort('fromCity')" class="sortable">
               Route <span class="sort-icon">{{ getSortIcon('fromCity') }}</span>
             </th>
@@ -30,10 +33,7 @@
             <th (click)="sort('runHours')" class="sortable">
               Run Hours <span class="sort-icon">{{ getSortIcon('runHours') }}</span>
             </th>
-            <th (click)="sort('totalEmission')" class="sortable">
-              Total Emission (kg CO₂e)
-              <span class="sort-icon">{{ getSortIcon('totalEmission') }}</span>
-            </th>
+            
             <th class="text-center">Action</th>
           </tr>
         </thead>
@@ -41,7 +41,7 @@
           <tr *ngFor="let e of trips()">
             <td class="fw-bold text-primary">{{ e.reportId }}</td>
             <td>{{ e.vehicleNumber }}</td>
-            
+              <td class="emission-value">{{ e.totalEmission }}</td>
             <td>{{ e.fromCity }} - {{ e.toCity }}</td>
 
             <!-- <td>{{ e.tripStartDateTime | date:'short' }}</td>
@@ -52,7 +52,7 @@
 
             <td>{{ e.runHours }}</td>
 
-            <td class="emission-value">{{ e.totalEmission }}</td>
+          
 
             <td class="action-btn">
               <button class="btn-edit" (click)="editTrip(e.tripId)">

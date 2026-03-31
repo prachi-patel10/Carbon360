@@ -192,8 +192,11 @@
               <th (click)="sort('vehicleNumber')" class="sortable">
                 Vehicle No. <span class="sort-icon">{{ getSortIcon('vehicleNumber') }}</span>
               </th>
+               <th (click)="sort('totalEmission')" class="sortable">
+                Total Emission (kg CO₂e) <span class="sort-icon">{{ getSortIcon('totalEmission') }}</span>
+              </th>
               <th (click)="sort('vehicleType')" class="sortable">
-                Type <span class="sort-icon">{{ getSortIcon('vehicleType') }}</span>
+               Vehicle Type <span class="sort-icon">{{ getSortIcon('vehicleType') }}</span>
               </th>
               <th (click)="sort('fuelType')" class="sortable">
                 Fuel Type<span class="sort-icon">{{ getSortIcon('fuelType') }}</span>
@@ -214,9 +217,7 @@
               <th (click)="sort('fuelConsumedLtr')" class="sortable">
                 Fuel(L) <span class="sort-icon">{{ getSortIcon('fuelConsumedLtr') }}</span>
               </th>
-              <th (click)="sort('totalEmission')" class="sortable">
-                Total Emission (kg CO₂e) <span class="sort-icon">{{ getSortIcon('totalEmission') }}</span>
-              </th>
+             
               <th>Action</th>
               <th>Download</th>
 
@@ -229,6 +230,10 @@
                 {{ e.reportId }}
               </td>
               <td>{{ e.vehicleNumber }}</td>
+              <td class="emission-value">
+                {{ e.totalEmission }}
+                <!-- <span class="emission-tooltip">{{ getEmissionLabel(e.totalEmission) }}</span> -->
+              </td>
               <td>{{ e.vehicleType }}</td>
               <td>{{ e.fuelType }}</td>
               <td>{{ e.entryDate | date:'dd-MMM-yyyy' }}</td>
@@ -237,10 +242,7 @@
               <td>{{ e.distanceKm }}</td>
               <td>{{ e.fuelConsumedLtr }}</td>
 
-              <td class="emission-value">
-                {{ e.totalEmission }}
-                <!-- <span class="emission-tooltip">{{ getEmissionLabel(e.totalEmission) }}</span> -->
-              </td>
+              
               <td>
                 <button class="btn btn-sm btn-open" (click)="openTrip(e.tripId)">
                   <i class="fas fa-eye"></i>

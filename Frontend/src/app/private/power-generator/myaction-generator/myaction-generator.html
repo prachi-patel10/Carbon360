@@ -9,7 +9,10 @@
           <th (click)="sortBy('generatorName')" class="sortable">
             Generator <span class="sort-icon">{{ getSortIcon('generatorName') }}</span>
           </th>
-            
+             <th (click)="sortBy('totalEmission')" class="sortable emission-header">
+            Total Emission (kg CO₂e)
+            <span class="sort-icon">{{ getSortIcon('totalEmission') }}</span>
+          </th>
           <th (click)="sortBy('entryDate')" class="sortable">
             Reported Date <span class="sort-icon">{{ getSortIcon('entryDate') }}</span>
           </th>
@@ -25,10 +28,7 @@
           <th (click)="sortBy('fuelConsumedLiters')" class="sortable">
             Fuel (L) <span class="sort-icon">{{ getSortIcon('fuelConsumedLiters') }}</span>
           </th>
-          <th (click)="sortBy('totalEmission')" class="sortable emission-header">
-            Total Emission (kg CO₂e)
-            <span class="sort-icon">{{ getSortIcon('totalEmission') }}</span>
-          </th>
+         
           <th class="text-center">Action</th>
         </tr>
       </thead>
@@ -36,13 +36,14 @@
       <tbody>
         <tr *ngFor="let item of data()">
            <td class="fw-bold text-primary">{{ item.reportId }}</td>
-          <td>{{ item.generatorName }}</td>       
+          <td>{{ item.generatorName }}</td>    
+          <td class="emission-value">{{ item.totalEmission }}</td>   
           <td>{{ item.entryDate | date: 'dd-MMM-yyyy' : 'UTC' }}</td>
           <td>{{ item.fuelType }}</td>
           <td>{{ item.runHours }}</td>
           <td>{{ item.loadFactor }}</td>
           <td>{{ item.fuelConsumedLiters }}</td>
-          <td class="emission-value">{{ item.totalEmission }}</td>
+        
 
           <td class="action-buttons">
             <!-- CORPORATE REVIEW -->

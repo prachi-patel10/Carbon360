@@ -154,7 +154,9 @@
               <th (click)="sortBy('generatorName')" class="sortable">
                 Generator <span class="sort-icon">{{ getSortIcon('generatorName') }}</span>
               </th>
-              
+               <th (click)="sortBy('totalEmission')" class="sortable">
+                Total Emission (kg CO₂e) <span class="sort-icon">{{ getSortIcon('totalEmission') }}</span>
+              </th>
               <th (click)="sortBy('entryDate')" class="sortable">
                 Reported Date <span class="sort-icon">{{ getSortIcon('entryDate') }}</span>
               </th>
@@ -170,9 +172,7 @@
               <th (click)="sortBy('fuelConsumedLiters')" class="sortable">
                 Fuel (L) <span class="sort-icon">{{ getSortIcon('fuelConsumedLiters') }}</span>
               </th>
-              <th (click)="sortBy('totalEmission')" class="sortable">
-                Total Emission (kg CO₂e) <span class="sort-icon">{{ getSortIcon('totalEmission') }}</span>
-              </th>
+             
               <th>Action</th>
               <th>Download</th>
             </tr>
@@ -180,13 +180,14 @@
           <tbody>
             <tr *ngFor="let e of paginatedData()">
               <td class="fw-bold text-primary">{{ e.reportId }}</td>
-              <td>{{ e.generatorName }}</td>             
+              <td>{{ e.generatorName }}</td>      
+              <td class="emission-value">{{ e.totalEmission }}</td>       
               <td>{{ e.entryDate | date:'dd-MMM-yyyy' }}</td>
               <td>{{ e.startTime | date:'dd-MMM-yyyy' }}</td>
               <td>{{ e.endTime | date:'dd-MMM-yyyy' }}</td>
               <td>{{ e.loadFactor }}</td>
               <td>{{ e.fuelConsumedLiters }}</td>
-              <td class="emission-value">{{ e.totalEmission }}</td>
+
               <td>
                 <button class="btn-open" (click)="goToDetail(e.operationId)">
                   <i class="fas fa-eye"></i>
