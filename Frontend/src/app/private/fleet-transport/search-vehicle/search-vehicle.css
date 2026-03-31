@@ -483,13 +483,13 @@ body {
 .vehicle-table th:nth-child(1)  { width: 150px; } /* reportedid */
 .vehicle-table th:nth-child(2)  { width: 120px;  } /* Vehicle No */
 .vehicle-table th:nth-child(3)  { width: 220px;  } /* Total Emission */
-.vehicle-table th:nth-child(4)  { width: 150px; } /*VType  */
+.vehicle-table th:nth-child(4)  { width: 140px; } /*VType  */
 .vehicle-table th:nth-child(5)  { width: 130px; } /*Fuel Type */
 .vehicle-table th:nth-child(6)  { width: 150px; } /*  Reported Date */
 .vehicle-table th:nth-child(7)  { width: 110px; } /*Start Date */
 .vehicle-table th:nth-child(8)  { width: 125px;  } /* End Date */
 .vehicle-table th:nth-child(9)  { width: 125px; } /* Distance  */
-.vehicle-table th:nth-child(10) { width: 200px;  } /* Fuel L*/
+.vehicle-table th:nth-child(10) { width: 100px;  } /* Fuel L*/
 .vehicle-table th:nth-child(11) { width: 80px;  } /* Action*/
 .vehicle-table th:nth-child(12) { width: 100px;  } /* Download */
 
@@ -524,8 +524,8 @@ body {
 
 .vehicle-table tbody tr:hover td { background-color: #f0fdf4 !important; }
 
-.emission-value { font-weight: 700; text-align: center; }
-
+.emission-value { font-weight: 700; color:#c2410c; text-align: center; }
+.report-color{font-weight: 700;  }
 td.emission-low       { color: #15803d; font-weight: 700; }
 td.emission-moderate  { color: #a16207; font-weight: 700; }
 td.emission-high      { color: #c2410c; font-weight: 700; }

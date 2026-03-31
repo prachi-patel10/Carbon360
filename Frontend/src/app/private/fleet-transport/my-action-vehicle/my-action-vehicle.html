@@ -39,7 +39,7 @@
         </thead>
         <tbody>
           <tr *ngFor="let e of trips()">
-            <td class="fw-bold text-primary">{{ e.reportId }}</td>
+            <td class="report-color">{{ e.reportId }}</td>
             <td>{{ e.vehicleNumber }}</td>
               <td class="emission-value">{{ e.totalEmission }}</td>
             <td>{{ e.fromCity }} - {{ e.toCity }}</td>

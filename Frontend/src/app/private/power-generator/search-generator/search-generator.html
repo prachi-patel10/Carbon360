@@ -179,7 +179,7 @@
           </thead>
           <tbody>
             <tr *ngFor="let e of paginatedData()">
-              <td class="fw-bold text-primary">{{ e.reportId }}</td>
+              <td class="report-color">{{ e.reportId }}</td>
               <td>{{ e.generatorName }}</td>      
               <td class="emission-value">{{ e.totalEmission }}</td>       
               <td>{{ e.entryDate | date:'dd-MMM-yyyy' }}</td>

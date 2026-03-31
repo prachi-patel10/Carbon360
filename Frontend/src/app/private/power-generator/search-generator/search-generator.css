@@ -34,7 +34,7 @@ body {
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
     background: #fff;
     width: 100%;
-    overflow: hidden;
+    overflow: visible;
 }
 
 /* ================= FILTER FORM ================= */
@@ -82,7 +82,7 @@ body {
     padding: 6px 14px;
     white-space: nowrap;
 }
-.export-btn:hover { background: #146c43; }
+.export-btn:hover { background: #0f5132; }
 .export-btn i { font-size: 13px; }
 
 /* Filter fields grid — auto-fit so they never cause overflow */
@@ -369,8 +369,6 @@ body {
     scrollbar-width: thin;
     scrollbar-color: #b8e4cc #f0f2f5;
     display: block;
-    /* border-radius: 10px;
-    overflow: hidden; */
 }
 
 .table-responsive::-webkit-scrollbar { height: 5px; }
@@ -382,35 +380,18 @@ body {
     width: 100%;
     min-width: 860px;        /* triggers scroll below this; never squishes */
     border-collapse: collapse;
-    border-spacing: 0;
-     border-radius: 10px;
-     overflow: hidden;
     table-layout: fixed;     /* columns respect explicit widths */
 }
-/* Top-left and top-right header corners */
-.gen-table thead tr:first-child th:first-child {
-    border-top-left-radius: 10px;
-}
-.gen-table thead tr:first-child th:last-child {
-    border-top-right-radius: 10px;
-}
 
-/* Bottom-left and bottom-right last row corners */
-.gen-table tbody tr:last-child td:first-child {
-    border-bottom-left-radius: 10px;
-}
-.gen-table tbody tr:last-child td:last-child {
-    border-bottom-right-radius: 10px;
-}
 /* Column widths — total = 860px */
 .gen-table th:nth-child(1) { width: 150px; } /*  Report     */
 .gen-table th:nth-child(2) { width: 200px; } /*Generator   */
-.gen-table th:nth-child(3) { width: 200px; } /*Emission     */
-.gen-table th:nth-child(4) { width: 150px; } /* Reported Date       */
-.gen-table th:nth-child(5) { width: 120px; } /* Start Date      */
-.gen-table th:nth-child(6) { width: 140px;  } /*  End Date      */
-.gen-table th:nth-child(7) { width: 150px; } /* Load Factor      */
-.gen-table th:nth-child(8) { width: 100px;  } /*     Fuel L        */
+.gen-table th:nth-child(3) { width: 220px; } /* Reported Date    */
+.gen-table th:nth-child(4) { width: 140px; } /*Start Date        */
+.gen-table th:nth-child(5) { width: 120px; } /* End Date     */
+.gen-table th:nth-child(6) { width: 140px;  } /*Load Factor       */
+.gen-table th:nth-child(7) { width: 150px; } /*  Fuel L     */
+.gen-table th:nth-child(8) { width: 150px;  } /*  Emission          */
 .gen-table th:nth-child(9) { width: 90px;  } /* Action       */
 .gen-table th:nth-child(10) { width: 110px;  } /* Download       */
 
@@ -447,8 +428,10 @@ body {
 
 .gen-table tbody tr:hover td { background-color: #f0fdf4 !important; }
 
-.emission-value { font-weight: 700; text-align: center; }
-
+.emission-value { font-weight: 600; 
+  color:#c2410c  !important; 
+  text-align: center;}
+.report-color{font-weight: 700;  }
 .no-records {
     text-align: center;
     padding: 24px;

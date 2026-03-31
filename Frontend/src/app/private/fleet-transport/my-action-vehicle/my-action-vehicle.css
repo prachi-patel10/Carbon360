@@ -46,10 +46,10 @@
 }
 
 /* Column widths */
-.generator-table th:nth-child(1) { width: 190px; } /*Reportid     */
-.generator-table th:nth-child(2) { width: 140px; } /* Vehicle No       */
+.generator-table th:nth-child(1) { width: 160px; } /*Reportid     */
+.generator-table th:nth-child(2) { width: 120px; } /* Vehicle No       */
 .generator-table th:nth-child(3) { width: 220px; } /* Total Emission*/
-.generator-table th:nth-child(4) { width: 150px;  } /* Route     */
+.generator-table th:nth-child(4) { width: 180px;  } /* Route     */
 .generator-table th:nth-child(5) { width: 150px;  } /* Reported Date     */
 .generator-table th:nth-child(6) { width: 120px; } /* Fuel Type*/
 .generator-table th:nth-child(7) { width: 120px;  } /* Run Hours      */
@@ -90,7 +90,10 @@
 
 .generator-table tbody tr:hover td { background: #f0fdf4; }
 
-.emission-value { font-weight: 700; text-align: center; }
+.emission-value { font-weight: 600; 
+  color:#c2410c  !important; 
+  text-align: center;}
+.report-color{font-weight: 700;  }
 .no-data { padding: 20px; color: #777; text-align: center; }
 
 /* ================= ACTION ================= */
