@@ -93,7 +93,7 @@
 .emission-value { font-weight: 600; 
   color:#c2410c  !important; 
   text-align: center;}
-.report-color{font-weight: 700;  }
+.report-color{font-weight: 700;  color: #0f5132 !important;  }
 .no-data { padding: 20px; color: #777; text-align: center; }
 
 /* ================= ACTION ================= */

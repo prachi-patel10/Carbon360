@@ -384,8 +384,8 @@ body {
 }
 
 /* Column widths — total = 860px */
-.gen-table th:nth-child(1) { width: 150px; } /*  Report     */
-.gen-table th:nth-child(2) { width: 200px; } /*Generator   */
+.gen-table th:nth-child(1) { width: 170px; } /*  Report     */
+.gen-table th:nth-child(2) { width: 220px; } /*Generator   */
 .gen-table th:nth-child(3) { width: 220px; } /* Reported Date    */
 .gen-table th:nth-child(4) { width: 140px; } /*Start Date        */
 .gen-table th:nth-child(5) { width: 120px; } /* End Date     */
@@ -431,7 +431,7 @@ body {
 .emission-value { font-weight: 600; 
   color:#c2410c  !important; 
   text-align: center;}
-.report-color{font-weight: 700;  }
+.report-color{font-weight: 700;   color: #0f5132 !important; }
 .no-records {
     text-align: center;
     padding: 24px;

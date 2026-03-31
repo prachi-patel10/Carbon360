@@ -525,7 +525,7 @@ body {
 .vehicle-table tbody tr:hover td { background-color: #f0fdf4 !important; }
 
 .emission-value { font-weight: 700; color:#c2410c; text-align: center; }
-.report-color{font-weight: 700;  }
+.report-color{font-weight: 700; color: #0f5132; }
 td.emission-low       { color: #15803d; font-weight: 700; }
 td.emission-moderate  { color: #a16207; font-weight: 700; }
 td.emission-high      { color: #c2410c; font-weight: 700; }
