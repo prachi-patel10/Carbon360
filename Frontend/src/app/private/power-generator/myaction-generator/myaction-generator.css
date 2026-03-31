@@ -44,7 +44,7 @@
 .generator-table th:nth-child(5) { width: 120px;  } /* Fuel Type    */
 .generator-table th:nth-child(6) { width: 150px; } /*Run Hours     */
 .generator-table th:nth-child(7) { width: 150px;  } /*Load Factor       */
-.generator-table th:nth-child(8) { width: 220px; } /*  Fuel L  */
+.generator-table th:nth-child(8) { width: 120px; } /*  Fuel L  */
 .generator-table th:nth-child(9) { width: 80px;  } /* Action        */
 
 /* ================= HEADER ================= */
@@ -90,7 +90,7 @@
 .no-data { padding: 20px; color: #777; text-align: center; }
 
 /* ================= ACTION COLUMN ================= */
-.action-buttons { text-align: center; }
+/* .action-buttons { text-align: center; }
 
 .action-btn {
   background: transparent;
@@ -105,7 +105,22 @@
 
 .action-btn:hover:not(:disabled) { background: #e8f5e9; }
 .action-btn:disabled { cursor: not-allowed; color: #ccc; }
-.action-icon { font-size: 1.1rem; cursor: pointer; }
+.action-icon { font-size: 1.1rem; cursor: pointer; } */
+.action-btn { text-align: center; }
+
+.btn-edit {
+  background: #e8f5e9;
+  border: none;
+  color: #1b5e20;
+  padding: 5px 9px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: background 0.2s;
+  line-height: 1;
+}
+
+.btn-edit:hover { background: #c8e6c9; }
 
 /* ================= PAGINATION FOOTER ================= */
 .table-footer {
