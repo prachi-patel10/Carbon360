@@ -323,21 +323,39 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
   // ── Load split summaries (vehicle + generator separately) ────────────────────
   loadSummaries(): void {
-    this.isSummaryLoading.set(true);
+  this.isSummaryLoading.set(true);
 
-    forkJoin({
-      vehicle: this.svc.getVehicleSummary(this.selectedYear()),
-      generator: this.svc.getGeneratorSummary(this.selectedYear()),
-    })
-      .pipe(takeUntil(this.destroy$), finalize(() => this.isSummaryLoading.set(false)))
-      .subscribe({
-        next: ({ vehicle, generator }) => {
-          if (vehicle.status) this.vehicleSummary.set(vehicle.data);
-          if (generator.status) this.generatorSummary.set(generator.data);
-        },
-        error: () => { }
-      });
-  }
+  // Reset to zero immediately when year changes
+  this.vehicleSummary.set(null);
+  this.generatorSummary.set(null);
+
+  forkJoin({
+    vehicle:   this.svc.getVehicleSummary(this.selectedYear()),
+    generator: this.svc.getGeneratorSummary(this.selectedYear()),
+  })
+    .pipe(takeUntil(this.destroy$), finalize(() => this.isSummaryLoading.set(false)))
+    .subscribe({
+      next: ({ vehicle, generator }) => {
+        this.vehicleSummary.set(vehicle.status && vehicle.data ? vehicle.data : {
+          totalCO2e: 0, totalCO2: 0, totalNO2: 0, totalCH4: 0,
+          totalFuelConsumed: 0, totalDistanceKM: 0, totalPowerOutputKWH: 0
+        });
+        this.generatorSummary.set(generator.status && generator.data ? generator.data : {
+          totalCO2e: 0, totalCO2: 0, totalNO2: 0, totalCH4: 0,
+          totalFuelConsumed: 0, totalDistanceKM: 0, totalPowerOutputKWH: 0
+        });
+      },
+      error: () => {
+        // On error also reset to zero
+        const zero = {
+          totalCO2e: 0, totalCO2: 0, totalNO2: 0, totalCH4: 0,
+          totalFuelConsumed: 0, totalDistanceKM: 0, totalPowerOutputKWH: 0
+        };
+        this.vehicleSummary.set(zero);
+        this.generatorSummary.set(zero);
+      }
+    });
+}
 
   // ── Grid click handlers — navigate to search with query params ────────────────
 
