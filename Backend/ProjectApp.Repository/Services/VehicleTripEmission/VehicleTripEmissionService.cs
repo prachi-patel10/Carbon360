@@ -1040,7 +1040,7 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
             foreach (var h in history)
             {
                 var actionDate = h.ContainsKey("ActionDate") && h["ActionDate"] != null
-                    ? Convert.ToDateTime(h["ActionDate"]).ToString("dd MMM yyyy, HH:mm tt")
+                    ? Convert.ToDateTime(h["ActionDate"]).ToString("dd MMM yyyy, HH:mm ")
                     : "-";
 
                 var actionName = GetValue(h, "ActionName");
@@ -1101,8 +1101,8 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
             headerHtml = headerHtml.Replace("</head>", $"{cssTag}</head>");
             footerHtml = footerHtml.Replace("</head>", $"{cssTag}</head>");
 
-            string entryDateStr = GetDate("EntryDate")?.ToString("dd-MMM-yyyy HH:mm tt")
-                      ?? DateTime.Now.ToString("dd-MMM-yyyy HH:mm tt");
+            string entryDateStr = GetDate("EntryDate")?.ToString("dd-MMM-yyyy HH:mm ")
+                      ?? DateTime.Now.ToString("dd-MMM-yyyy HH:mm ");
 
 
             headerHtml = headerHtml.Replace("{{ReportTitle}}", "Fleet &amp; Transport Emission Report");

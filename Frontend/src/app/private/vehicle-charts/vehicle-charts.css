@@ -184,3 +184,17 @@
 }
 @media (max-width: 768px)  { .vtype-table { font-size: 11px; } .th-vtype, .td-vtype { min-width: 120px; } .th-month-col, .td-cell { min-width: 60px; } }
 @media (max-width: 480px)  { .module-kpi-grid { grid-template-columns: 1fr; } .pie-side-canvas-wrap { width: 200px; height: 200px; } }
+
+
+/* Export button container — pushed to far right */
+.export-btn-container {
+    margin-left: auto;
+}
+
+.export-btn-container .btn {
+    font-size: 13px;
+    padding: 6px 14px;
+    white-space: nowrap;
+}
+.export-btn:hover { background: #0f5132; }
+.export-btn i { font-size: 13px; }
