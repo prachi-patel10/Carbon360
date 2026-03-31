@@ -1,12 +1,7 @@
 <!-- ================= TOPBAR ================= -->
 <header class="topbar">
     <div class="topbar-left">
-
-  <div class="brand" (click)="goToDashboard()" style="cursor: pointer">
-    <h1>CARBON<span>360</span></h1>
-    <p>Track • Analyze • Improve</p>
-  </div>
-   <!-- MENU BUTTON -->
+  <!-- MENU BUTTON -->
 <button class="menu-btn-top morph" (click)="toggleSidebar()" [class.active]="sidebarOpen">
   <svg viewBox="0 0 24 24" width="22" height="22">
     
@@ -20,6 +15,11 @@
 
   </svg>
 </button>
+  <div class="brand" (click)="goToDashboard()" style="cursor: pointer">
+    <h1>CARBON<span>360</span></h1>
+    <p>Track • Analyze • Improve</p>
+  </div>
+ 
   <div class="page-title">{{ pageTitle }}</div>
   </div>
   <div class="right">
