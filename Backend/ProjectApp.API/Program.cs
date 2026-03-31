@@ -41,8 +41,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         ValidAudience = builder.Configuration["JwtSettings:Audience"],
 
         ClockSkew = TimeSpan.Zero,
-          RoleClaimType = "role",
-        NameClaimType = "name"
+        
     };
 });
 
