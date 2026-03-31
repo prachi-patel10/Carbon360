@@ -380,4 +380,9 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       queryParams: { year: this.selectedYear(), ...payload }
     });
   }
+
+  //GOV LINK
+  openGovSync(): void {
+  this.router.navigate(['govSync'], { relativeTo: this.route });
+}
 }

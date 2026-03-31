@@ -5,21 +5,27 @@ import { environment } from '../../enviorments/environment';
 
 // ── Raw row — VehicleMonthly / GeneratorMonthly APIs ─────────
 export interface FuelMonthlyRawRow {
-  fuelType: string; source: string;
-  monthNumber: number; monthName: string;
+  fuelType: string;
+  source: string;
+  vehicleTypeName: string;
+  monthNumber: number;
+  monthName: string;
   totalFuelConsumed: number;
 }
 
 export interface FuelStackDataset {
-  label: string;       // this is the generator/source label
-  fuelType: string;    // the fuel type
+  label: string;
+  fuelType: string;
   source: string;
   color: string;
   data: number[];
+  vehicleTypeName: string;
+  vehicleTypeNames: string[];
 }
 
 export interface FuelCombinedChartResponse {
-  labels: string[]; datasets: FuelStackDataset[];
+  labels: string[];
+  datasets: FuelStackDataset[];
 }
 
 export interface EmissionLineDataset {
@@ -31,7 +37,7 @@ export interface MonthlyEmissionChartResponse {
 
 export interface GeneratorRunHoursChartResponse {
   labels: string[]; data: number[]; colors: string[];
-  siteNames: string[]; fuelConsumed: number[]; powerOutput: number[]; fuelTypes: string[]; 
+  siteNames: string[]; fuelConsumed: number[]; powerOutput: number[]; fuelTypes: string[];
 }
 
 export interface VehicleDistanceChartResponse {
@@ -54,57 +60,56 @@ export interface GeneratorLoadFactorChartResponse {
 
 // ── Vehicle Type Wise Distance (pivot) ───────────────────────
 export interface VehicleTypeDistancePivotResponse {
-  monthLabels:    string[];
-  vehicleTypes:   string[];
-  colors:         string[];
+  monthLabels: string[];
+  vehicleTypes: string[];
+  colors: string[];
   distanceMatrix: number[][];
-  tripsMatrix:    number[][];
-  fuelMatrix:     number[][];
-  monthTotals:    number[];
-  typeTotals:     number[];
-  grandTotal:     number;
+  tripsMatrix: number[][];
+  fuelMatrix: number[][];
+  monthTotals: number[];
+  typeTotals: number[];
+  grandTotal: number;
 }
 
 // ── Generator Run Hours Monthly Pivot ────────────────────────
 export interface GeneratorRunHoursMonthlyPivotResponse {
-  monthLabels:      string[];
-  generatorNames:   string[];
-  colors:           string[];
-  runHoursMatrix:   number[][];
-  fuelMatrix:       number[][];
-  powerMatrix:      number[][];
-  monthTotals:      number[];
-  generatorTotals:  number[];
-  grandTotal:       number;
+  monthLabels: string[];
+  generatorNames: string[];
+  colors: string[];
+  runHoursMatrix: number[][];
+  fuelMatrix: number[][];
+  powerMatrix: number[][];
+  monthTotals: number[];
+  generatorTotals: number[];
+  grandTotal: number;
 }
 
 // ── City Wise Emissions (Vehicle) ────────────────────────────
 export interface CityEmissionResponse {
-  cityName:    string;
-  totalCO2:    number;
-  totalNO2:    number;
-  totalCH4:    number;
-  totalCO2e:   number;
+  cityName: string;
+  totalCO2: number;
+  totalNO2: number;
+  totalCH4: number;
+  totalCO2e: number;
 }
 
 // ── Site Wise Emissions (Generator) ─────────────────────────
 export interface SiteEmissionResponse {
-  siteName:    string;
-  totalCO2:    number;
-  totalNO2:    number;
-  totalCH4:    number;
-  totalCO2e:   number;
+  siteName: string;
+  totalCO2: number;
+  totalNO2: number;
+  totalCH4: number;
+  totalCO2e: number;
 }
 
 // ── Dashboard Summary (combined) ─────────────────────────────
 export interface DashboardSummaryResponse {
-  totalCO2e:         number;
-  totalCO2:          number;
-  totalNO2:          number;
-  totalCH4:          number;
+  totalCO2e: number;
+  totalCO2: number;
+  totalNO2: number;
+  totalCH4: number;
   totalFuelConsumed: number;
-  totalDistanceKM:   number;
-  /** Only populated for generator summary */
+  totalDistanceKM: number;
   totalPowerOutputKWH?: number;
 }
 
@@ -116,27 +121,68 @@ const FUEL_COLORS: Record<string, string> = {
   LPG: '#D4537E', HSD: '#534AB7', Biomass: '#D85A30',
 };
 const DEFAULT_COLOR = '#888888';
-const MONTH_LABELS  = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const MONTH_LABELS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 function transformFuelRows(rows: FuelMonthlyRawRow[], source: 'Vehicle' | 'Generator'): FuelCombinedChartResponse {
   const fuelTypes = [...new Set(rows.map(r => r.fuelType))];
+
   const datasets: FuelStackDataset[] = fuelTypes.map(ft => {
     const baseColor = FUEL_COLORS[ft] ?? DEFAULT_COLOR;
     const data = new Array<number>(12).fill(0);
-    rows.filter(r => r.fuelType === ft).forEach(r => { data[r.monthNumber - 1] += Number(r.totalFuelConsumed); });
-    return { label: ft, fuelType: ft, source, color: baseColor, data };
+    const rowsForFuel = rows.filter(r => r.fuelType === ft);
+
+    rowsForFuel.forEach(r => {
+      data[r.monthNumber - 1] += Number(r.totalFuelConsumed);
+    });
+
+    // ── FIX: handle both 'vehicleTypeName' and 'vehicleType' field names ──
+    const vehicleTypeNames = [
+      ...new Set(
+        rowsForFuel
+          .map(r => (r.vehicleTypeName ?? (r as any).vehicleType ?? ''))
+          .filter(v => v.trim() !== '')
+      )
+    ];
+
+    const vehicleTypeName = vehicleTypeNames[0] ?? '';
+
+    return {
+      label: ft,
+      fuelType: ft,
+      source,
+      color: baseColor,
+      data,
+      vehicleTypeName,
+      vehicleTypeNames,
+    };
   });
+
   return { labels: MONTH_LABELS, datasets };
 }
+
 
 @Injectable({ providedIn: 'root' })
 export class DashboardService {
   private base = environment.apiBaseUrl;
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
+
+  // getVehicleFuelMonthly(year: number): Observable<ApiResponse<FuelCombinedChartResponse>> {
+  //   return this.http.get<ApiResponse<FuelMonthlyRawRow[]>>(`${this.base}/Chart/VehicleMonthly?year=${year}`)
+  //     .pipe(map(res => ({ status: res.status, data: transformFuelRows(res.data ?? [], 'Vehicle') })));
+  // }
 
   getVehicleFuelMonthly(year: number): Observable<ApiResponse<FuelCombinedChartResponse>> {
-    return this.http.get<ApiResponse<FuelMonthlyRawRow[]>>(`${this.base}/Chart/VehicleMonthly?year=${year}`)
-      .pipe(map(res => ({ status: res.status, data: transformFuelRows(res.data ?? [], 'Vehicle') })));
+    return this.http.get<ApiResponse<FuelMonthlyRawRow[]>>(
+      `${this.base}/Chart/VehicleMonthly?year=${year}`
+    ).pipe(map(res => {
+      console.log('RAW VehicleMonthly sample row:', JSON.stringify(res.data?.[0]));
+      const transformed = transformFuelRows(res.data ?? [], 'Vehicle');
+      console.log('transformed datasets:', transformed.datasets.map(d => ({
+        fuelType: d.fuelType,
+        vehicleTypeNames: d.vehicleTypeNames
+      })));
+      return { status: res.status, data: transformed };
+    }));
   }
 
   getGeneratorFuelMonthly(year: number): Observable<ApiResponse<FuelCombinedChartResponse>> {
@@ -192,21 +238,18 @@ export class DashboardService {
     );
   }
 
-  // ── Combined (both) summary — kept for backwards-compat ──────────────────────
   getDashboardSummary(year: number): Observable<ApiResponse<DashboardSummaryResponse>> {
     return this.http.get<ApiResponse<DashboardSummaryResponse>>(
       `${this.base}/Chart/DashboardSummary?year=${year}`
     );
   }
 
-  // ── Vehicle-only summary ──────────────────────────────────────────────────────
   getVehicleSummary(year: number): Observable<ApiResponse<DashboardSummaryResponse>> {
     return this.http.get<ApiResponse<DashboardSummaryResponse>>(
       `${this.base}/Chart/VehicleSummary?year=${year}`
     );
   }
 
-  // ── Generator-only summary ────────────────────────────────────────────────────
   getGeneratorSummary(year: number): Observable<ApiResponse<DashboardSummaryResponse>> {
     return this.http.get<ApiResponse<DashboardSummaryResponse>>(
       `${this.base}/Chart/GeneratorSummary?year=${year}`
@@ -214,57 +257,26 @@ export class DashboardService {
   }
 
   exportVehicleFuelExcel(year: number) {
-  return this.http.get(
-    `${this.base}/Chart/ExportVehicleFuel?year=${year}`,  // ✅ CORRECT
-    {
-      responseType: 'blob'
-    }
-  );
-}
+    return this.http.get(`${this.base}/Chart/ExportVehicleFuel?year=${year}`, { responseType: 'blob' });
+  }
 
-exportVehicleEmissionChart(year:number){
-   return this.http.get(
-    `${this.base}/Chart/ExportVehicleEmission?year=${year}`,  // ✅ CORRECT
-    {
-      responseType: 'blob'
-    }
-  );
-}
+  exportVehicleEmissionChart(year: number) {
+    return this.http.get(`${this.base}/Chart/ExportVehicleEmission?year=${year}`, { responseType: 'blob' });
+  }
 
-ExportVehicleDistance(year:number){
-   return this.http.get(
-    `${this.base}/Chart/ExportVehicleDistance?year=${year}`,  // ✅ CORRECT
-    {
-      responseType: 'blob'
-    }
-  );
-}
+  ExportVehicleDistance(year: number) {
+    return this.http.get(`${this.base}/Chart/ExportVehicleDistance?year=${year}`, { responseType: 'blob' });
+  }
 
-ExportVehicleTypeDistance(year:number){
-   return this.http.get(
-    `${this.base}/Chart/ExportVehicleTypeDistance?year=${year}`,  // ✅ CORRECT
-    {
-      responseType: 'blob'
-    }
-  );
-}
+  ExportVehicleTypeDistance(year: number) {
+    return this.http.get(`${this.base}/Chart/ExportVehicleTypeDistance?year=${year}`, { responseType: 'blob' });
+  }
 
-ExportVehicleTypeDistancePieChart(year:number){
-   return this.http.get(
-    `${this.base}/Chart/ExportVehicleTypeDistancePieChart?year=${year}`,  // ✅ CORRECT
-    {
-      responseType: 'blob'
-    }
-  );
-}
+  ExportVehicleTypeDistancePieChart(year: number) {
+    return this.http.get(`${this.base}/Chart/ExportVehicleTypeDistancePieChart?year=${year}`, { responseType: 'blob' });
+  }
 
-ExportCityWiseEmissionChart(year:number){
-   return this.http.get(
-    `${this.base}/Chart/ExportCityWiseEmissionChart?year=${year}`,  // ✅ CORRECT
-    {
-      responseType: 'blob'
-    }
-  );
-}
-
+  ExportCityWiseEmissionChart(year: number) {
+    return this.http.get(`${this.base}/Chart/ExportCityWiseEmissionChart?year=${year}`, { responseType: 'blob' });
+  }
 }
