@@ -21,14 +21,12 @@ namespace ProjectApp.Repository.Utilities.Auth
         {
             //new Claim("UserId", user.UserId.ToString()),
             //new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
-          /*  new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),  
+           new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),  
             new Claim("UserId", user.UserId.ToString()),
             new Claim(ClaimTypes.Name, user.UserName ?? string.Empty),
-            new Claim(ClaimTypes.Email, user.Email ?? string.Empty)*/
+            new Claim(ClaimTypes.Email, user.Email ?? string.Empty)
 
-                  new Claim("uid", user.UserId.ToString()),
-                new Claim("name", user.UserName ?? string.Empty),
-                new Claim("email", user.Email ?? string.Empty)
+                
         };
 
             if (roles != null && roles.Count > 0)
