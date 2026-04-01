@@ -123,6 +123,17 @@ namespace ProjectApp.Repository.Services.Charts
             };
         }
 
+        private static readonly Dictionary<string, string> _categoryColors = new()
+{
+    { "LDV", "#378ADD" },
+    { "MDV", "#1D9E75" },   
+    { "HDV", "#D85A30" },
+    { "LCV", "#EF9F27" },
+    { "HCV", "#EF9F27" },
+    { "Two Wheeler",   "#D4537E" },
+    { "Three Wheeler", "#534AB7" },
+};
+
         // ─────────────────────────────────────────────────────────────────
         // FUEL CONSUMPTION
         // ─────────────────────────────────────────────────────────────────
@@ -526,19 +537,6 @@ namespace ProjectApp.Repository.Services.Charts
             return result.FirstOrDefault() ?? new GeneratorSummaryDto();
         }
 
-        /// <summary>
-        /// SP : USP_CB_DashboardEmissionSummary
-        /// Combined vehicle + generator KPI summary (single row result).
-        /// Columns: TotalCO2e, TotalCO2, TotalCH4, TotalNO2, TotalFuelConsumed, TotalDistanceKM
-        /// Note: expose via a dedicated controller endpoint if needed.
-        /// </summary>
-        public async Task<DashboardSummaryDto> GetDashboardSummaryAsync(int year)
-        {
-            var result = await _context.Set<DashboardSummaryDto>()
-                .FromSqlInterpolated($"EXEC USP_CB_DashboardEmissionSummary {year}")
-                .ToListAsync();
-            return result.FirstOrDefault() ?? new DashboardSummaryDto();
-        }
 
         public async Task<byte[]> ExportVehicleFuelExcelAsync(int year)
         {
@@ -570,57 +568,6 @@ namespace ProjectApp.Repository.Services.Charts
                 };
             }).ToList();
 
-            //var rows = data
-            //.GroupBy(x => x.MonthNumber)
-            //.Select(g => new VehicleFuelExportDto
-            //{
-            //    Month = g.First().MonthName,
-
-            //    Diesel = g.Where(x => x.FuelType == "Diesel")
-            //              .Sum(x => x.TotalFuelConsumed),
-
-            //    Petrol = g.Where(x => x.FuelType == "Petrol")
-            //              .Sum(x => x.TotalFuelConsumed),
-
-            //    CNG = g.Where(x => x.FuelType == "CNG")
-            //           .Sum(x => x.TotalFuelConsumed),
-
-            //    LPG = g.Where(x => x.FuelType == "LPG")
-            //           .Sum(x => x.TotalFuelConsumed)
-            //})
-            //.ToList();
-
-            //var rows = data.Select(x => new VehicleFuelExportDto
-            //{
-            //    Month = x.MonthName,
-            //    Diesel = x.FuelType == "Diesel" ? x.TotalFuelConsumed : 0,
-            //    Petrol = x.FuelType == "Petrol" ? x.TotalFuelConsumed : 0,
-            //    CNG = x.FuelType == "CNG" ? x.TotalFuelConsumed : 0,
-            //    LPG = x.FuelType == "LPG" ? x.TotalFuelConsumed : 0
-            //}).ToList();
-
-            //var rows = Enumerable.Range(1, 12).Select(m => new VehicleFuelExportDto
-            //{
-            //    Month = _monthNames[m - 1],
-
-            //    Diesel = data
-            //        .Where(x => x.MonthNumber == m && x.FuelType == "Diesel")
-            //        .Sum(x => x.TotalFuelConsumed),
-
-            //    Petrol = data
-            //        .Where(x => x.MonthNumber == m && x.FuelType == "Petrol")
-            //        .Sum(x => x.TotalFuelConsumed),
-
-            //    CNG = data
-            //        .Where(x => x.MonthNumber == m && x.FuelType == "CNG")
-            //        .Sum(x => x.TotalFuelConsumed),
-
-            //    LPG = data
-            //        .Where(x => x.MonthNumber == m && x.FuelType == "LPG")
-            //        .Sum(x => x.TotalFuelConsumed)
-            //}).ToList();
-
-            // ✅ IMPORTANT FIX
             var columns = new Dictionary<string, string>
             {
                 { "Month", "Month" },
@@ -838,5 +785,49 @@ namespace ProjectApp.Repository.Services.Charts
                 chartTitle: $"City Wise Emission Profile - {year}"
             );
         }
+
+        public async Task<VehicleCategoryChartResponseDto> GetVehicleCategoryWiseEmissionAsync(int year)
+        {
+            var rows = await _context.Set<VehicleCategoryEmissionRawDto>()
+                .FromSqlInterpolated($"EXEC USP_CB_VehicleCategoryWiseEmission {year}")
+                .ToListAsync();
+
+            var labels = rows.Select(r => r.CategoryName).ToList();
+            var distanceData = rows.Select(r => r.TotalDistanceKm).ToList();
+            var emissionData = rows.Select(r => r.TotalEmission).ToList();
+
+            // Assign colors by index — same pattern as vehicleType / generator charts
+            var colors = labels
+                .Select((_, i) => _pieColors[i % _pieColors.Length])
+                .ToList();
+
+            return new VehicleCategoryChartResponseDto
+            {
+                Labels = labels,
+                DistanceData = distanceData,
+                EmissionData = emissionData,
+                Colors = colors
+            };
+        }
+
+        public async Task<byte[]> ExportVehicleCategoryEmissionExcelAsync(int year)
+        {
+            var data = await GetVehicleCategoryWiseEmissionAsync(year);
+            if (!data.Labels.Any()) return Array.Empty<byte>();
+
+            var rows = data.Labels.Select((cat, i) => new Dictionary<string, object>
+            {
+                ["Vehicle Category"] = cat,
+                ["Distance (km)"] = data.DistanceData[i],
+                ["Emission (kg)"] = data.EmissionData[i]
+            }).ToList();
+
+            return await ExcelExportHelper.ExportDynamicPivotExcelWithChartAsync(
+                rows,
+                "Category Emission",
+                $"Vehicle Category Emission - {year}"
+            );
+        }
+
     }
 }

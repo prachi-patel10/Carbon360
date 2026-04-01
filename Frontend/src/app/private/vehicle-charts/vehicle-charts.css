@@ -198,3 +198,111 @@
 }
 .export-btn:hover { background: #0f5132; }
 .export-btn i { font-size: 13px; }
+
+
+/* ══════════════════════════════════════════════════════════════
+   CATEGORY WISE CHART  — canvas + rich legend
+══════════════════════════════════════════════════════════════ */
+
+/* Taller canvas for better readability at side-by-side width */
+.canvas-wrap-category {
+  height: 300px;
+}
+.canvas-wrap-category canvas {
+  width:  100% !important;
+  height: 100% !important;
+}
+
+/* Drill-down hint strip */
+.drilldown-hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 6px 0 2px;
+  font-size: 11px;
+  color: #94a3b8;
+  font-style: italic;
+}
+.drilldown-hint i { color: #c2410c; font-size: 11px; }
+
+/* Legend container */
+.category-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid #f1f5f9;
+}
+
+
+.category-emission-bg {
+  background: linear-gradient(135deg, #7c2d12, #c2410c);
+}
+
+/* One row per category */
+.cat-legend-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.cat-legend-row:hover {
+  background: #f0fdf4;
+}
+.cat-legend-row:hover .cat-drill-icon {
+  opacity: 1;
+  transform: translateX(2px);
+}
+
+/* Color bar swatch */
+.cat-swatch-bar {
+  width: 12px;
+  height: 28px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+/* Category name */
+.cat-legend-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: #1e293b;
+  min-width: 100px;
+}
+
+/* Badges */
+.cat-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.cat-badge i { font-size: 10px; }
+
+.cat-badge-dist {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+}
+.cat-badge-emis {
+  background: #fff7ed;
+  color: #c2410c;
+  border: 1px solid #fed7aa;
+}
+
+/* Drill-down chevron */
+.cat-drill-icon {
+  margin-left: auto;
+  font-size: 11px;
+  color: #94a3b8;
+  opacity: 0;
+  transition: opacity 0.15s, transform 0.15s;
+}

@@ -697,3 +697,53 @@ td.emission-value:hover .emission-tooltip { visibility: visible; opacity: 1; }
         max-height: 200px;
     }
 }
+
+
+/* ── City filter badge — add to search-vehicle.css ─────────────
+   Appears inline in the filter header when drilled from
+   the City Wise Emission chart. No extra row needed.
+   ──────────────────────────────────────────────────────────── */
+
+.city-filter-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px 3px 8px;
+  background: #f0fdf4;
+  border: 1px solid #86efac;
+  border-radius: 20px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #166534;
+  white-space: nowrap;
+  margin-left: 8px;   /* space after "Filters" label */
+}
+
+.city-filter-badge .fas {
+  font-size: 11px;
+  color: #16a34a;
+}
+
+.city-badge-clear {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  margin-left: 4px;
+  padding: 0;
+  background: #dcfce7;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  color: #15803d;
+  font-size: 9px;
+  line-height: 1;
+  transition: background 0.15s, color 0.15s;
+  flex-shrink: 0;
+}
+
+.city-badge-clear:hover {
+  background: #ef4444;
+  color: #fff;
+}

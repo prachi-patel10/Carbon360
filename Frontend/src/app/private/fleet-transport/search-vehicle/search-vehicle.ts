@@ -63,6 +63,8 @@ export class SearchVehicle implements OnInit {
   currentPage = signal<number>(1);
   totalPages = signal<number>(1);
 
+  // City comes only from chart drill-down — no UI column for it,
+  // so we show it as a small dismissible badge in the filter header.
   selectedCity = signal<string | null>(null);
 
   private pendingChartParams: Record<string, any> | null = null;
@@ -108,10 +110,8 @@ export class SearchVehicle implements OnInit {
     this.loadTrips(1);
   }
 
-
   private applyChartParams(params: Record<string, any>): void {
 
-    // ── Fuel Type ─────────────────────────────────────────────
     if (params['fuelType']) {
       const raw = (params['fuelType'] as string).trim();
       const matched = this.fuelTypes.find(
@@ -120,13 +120,9 @@ export class SearchVehicle implements OnInit {
       this.selectedFuels = [matched ? matched.fuel_name : raw];
     }
 
-    // ── Vehicle Type (single or comma-separated) ──────────────
     if (params['vehicleType']) {
       const rawList = (params['vehicleType'] as string)
-        .split(',')
-        .map((v: string) => v.trim())
-        .filter((v: string) => v.length > 0);
-
+        .split(',').map((v: string) => v.trim()).filter((v: string) => v.length > 0);
       this.selectedVehicles = rawList.map((raw: string) => {
         const matched = this.vehicleTypes.find(
           (v: any) =>
@@ -139,23 +135,27 @@ export class SearchVehicle implements OnInit {
       });
     }
 
-    // ── City (used for filtering only — not shown as chip) ────
     if (params['city']) {
       this.selectedCity.set(params['city']);
     }
 
-    // ── Quick Search ──────────────────────────────────────────
     if (params['search']) {
       this.searchText.set(params['search']);
     }
 
-    // ── Operation Date Range ──────────────────────────────────
     if (params['opStart']) this.operationStartDate.set(params['opStart']);
     if (params['opEnd']) this.operationEndDate.set(params['opEnd']);
 
-    // ── Reported / Entry Date Range ───────────────────────────
+    // ← BUG 1 FIX: these were missing entirely
     if (params['reportedStart']) this.entryStartDate.set(params['reportedStart']);
     if (params['reportedEnd']) this.entryEndDate.set(params['reportedEnd']);
+  }
+
+  // ── Dismiss city badge ────────────────────────────────────────
+  clearCity(): void {
+    this.selectedCity.set(null);
+    this.currentPage.set(1);
+    this.loadTrips(1);
   }
 
   // ═══════════════════════════════════════════════════════════════
@@ -220,42 +220,42 @@ export class SearchVehicle implements OnInit {
     this.pageSize,
     this.sortColumn,
     this.sortDirection,
-    this.searchText() || undefined,
+    this.searchText()    || undefined,
     this.selectedFuels.length    > 0 ? this.selectedFuels    : undefined,
     this.selectedVehicles.length > 0 ? this.selectedVehicles : undefined,
-    this.selectedCity()  || undefined,   // ADD
-    this.opStartForApi(),
-    this.opEndForApi(),
-    this.entryStartForApi(),
-    this.entryEndForApi()
+    this.selectedCity()  || undefined,   // city
+    this.opStartForApi()  || undefined,  // startDate (operation)
+    this.opEndForApi()    || undefined,  // endDate   (operation)
+    this.entryStartForApi() || undefined, // ← entryStartDate — must be here
+    this.entryEndForApi()   || undefined  // ← entryEndDate   — must be here
   ).subscribe({
-    next: (res: any) => {
-      const mapped: VehicleEmissionDisplay[] = (res.data || []).map((e: any) => ({
-        tripId:            e.tripId,
-        reportId:          e.reportId,
-        vehicleNumber:     e.vehicleNumber     ?? '',
-        vehicleType:       e.vehicleType       ?? '',
-        fuelType:          e.fuelType          ?? '',
-        entryDate:         e.entryDate,
-        distanceKm:        e.distanceKm        ?? 0,
-        fuelConsumedLtr:   e.fuelConsumedLtr   ?? 0,
-        statusId:          e.statusId,
-        tripStartDateTime: e.tripStartDateTime,
-        tripEndDateTime:   e.tripEndDateTime,
-        totalCO2:          e.totalCO2          ?? 0,
-        totalNO2:          e.totalNO2          ?? 0,
-        totalCH4:          e.totalCH4          ?? 0,
-        totalEmission:     e.totalEmission     ?? 0
-      }));
+      next: (res: any) => {
+        const mapped: VehicleEmissionDisplay[] = (res.data || []).map((e: any) => ({
+          tripId: e.tripId,
+          reportId: e.reportId,
+          vehicleNumber: e.vehicleNumber ?? '',
+          vehicleType: e.vehicleType ?? '',
+          fuelType: e.fuelType ?? '',
+          entryDate: e.entryDate,
+          distanceKm: e.distanceKm ?? 0,
+          fuelConsumedLtr: e.fuelConsumedLtr ?? 0,
+          statusId: e.statusId,
+          tripStartDateTime: e.tripStartDateTime,
+          tripEndDateTime: e.tripEndDateTime,
+          totalCO2: e.totalCO2 ?? 0,
+          totalNO2: e.totalNO2 ?? 0,
+          totalCH4: e.totalCH4 ?? 0,
+          totalEmission: e.totalEmission ?? 0
+        }));
 
-      this.emissions.set(mapped);
-      this.totalRecordsCount.set(res.totalRecords ?? mapped.length);
-      this.totalPages.set(Math.ceil((res.totalRecords ?? mapped.length) / this.pageSize));
-      this.currentPage.set(page);
-    },
-    error: (err) => console.error('Error loading trips', err)
-  });
-}
+        this.emissions.set(mapped);
+        this.totalRecordsCount.set(res.totalRecords ?? mapped.length);
+        this.totalPages.set(Math.ceil((res.totalRecords ?? mapped.length) / this.pageSize));
+        this.currentPage.set(page);
+      },
+      error: (err) => console.error('Error loading trips', err)
+    });
+  }
 
   isLoading(tripId: string): boolean { return !!this.loadingTrips[tripId]; }
 
@@ -432,7 +432,7 @@ export class SearchVehicle implements OnInit {
   }
 
   // ═══════════════════════════════════════════════════════════════
-  //  EXPORT EXCEL
+  //  EXPORT EXCEL — includes all active filters including city
   // ═══════════════════════════════════════════════════════════════
 
   exportExcel() {
@@ -440,6 +440,7 @@ export class SearchVehicle implements OnInit {
       this.searchText() || undefined,
       this.selectedFuels.length > 0 ? this.selectedFuels : undefined,
       this.selectedVehicles.length > 0 ? this.selectedVehicles : undefined,
+      this.selectedCity() || undefined,
       this.opStartForApi(),
       this.opEndForApi(),
       this.entryStartForApi(),

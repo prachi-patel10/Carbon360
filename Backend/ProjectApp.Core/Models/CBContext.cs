@@ -33,6 +33,8 @@ public partial class CBContext : DbContext
     public virtual DbSet<CB_VehicleTripEmission> CB_VehicleTripEmissions { get; set; }
     public virtual DbSet<CB_VehicleTypeCategory> CB_VehicleTypeCategories { get; set; }
 
+    public DbSet<VehicleCategoryEmissionRawDto> VehicleCategoryEmissionRaw { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<CB_Department>(entity =>
@@ -339,6 +341,7 @@ public partial class CBContext : DbContext
 
        
         modelBuilder.Entity<GeneratorRunHoursChartResponseDto>().HasNoKey().ToView(null);
+        modelBuilder.Entity<VehicleCategoryEmissionRawDto>().HasNoKey().ToView(null);
     }
 
     partial void OnModelCreatingPartial(ModelBuilder modelBuilder);

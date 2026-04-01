@@ -84,13 +84,13 @@ export interface GeneratorRunHoursMonthlyPivotResponse {
   grandTotal: number;
 }
 
-// ── City Wise Emissions (Vehicle) ────────────────────────────
-export interface CityEmissionResponse {
-  cityName: string;
-  totalCO2: number;
-  totalNO2: number;
-  totalCH4: number;
-  totalCO2e: number;
+// ── Vehicle Category Wise — NEW flat DTO ──────────────────────
+// X-axis = vehicle categories, Y1 = distance, Y2 = emission
+export interface VehicleCategoryChartResponse {
+  labels:       string[];
+  distanceData: number[];
+  emissionData: number[];
+  colors:       string[];
 }
 
 // ── Site Wise Emissions (Generator) ─────────────────────────
@@ -121,9 +121,13 @@ const FUEL_COLORS: Record<string, string> = {
   LPG: '#D4537E', HSD: '#534AB7', Biomass: '#D85A30',
 };
 const DEFAULT_COLOR = '#888888';
-const MONTH_LABELS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const MONTH_LABELS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-function transformFuelRows(rows: FuelMonthlyRawRow[], source: 'Vehicle' | 'Generator'): FuelCombinedChartResponse {
+function transformFuelRows(
+  rows: FuelMonthlyRawRow[],
+  source: 'Vehicle' | 'Generator'
+): FuelCombinedChartResponse {
   const fuelTypes = [...new Set(rows.map(r => r.fuelType))];
 
   const datasets: FuelStackDataset[] = fuelTypes.map(ft => {
@@ -131,11 +135,8 @@ function transformFuelRows(rows: FuelMonthlyRawRow[], source: 'Vehicle' | 'Gener
     const data = new Array<number>(12).fill(0);
     const rowsForFuel = rows.filter(r => r.fuelType === ft);
 
-    rowsForFuel.forEach(r => {
-      data[r.monthNumber - 1] += Number(r.totalFuelConsumed);
-    });
+    rowsForFuel.forEach(r => { data[r.monthNumber - 1] += Number(r.totalFuelConsumed); });
 
-    // ── FIX: handle both 'vehicleTypeName' and 'vehicleType' field names ──
     const vehicleTypeNames = [
       ...new Set(
         rowsForFuel
@@ -144,16 +145,9 @@ function transformFuelRows(rows: FuelMonthlyRawRow[], source: 'Vehicle' | 'Gener
       )
     ];
 
-    const vehicleTypeName = vehicleTypeNames[0] ?? '';
-
     return {
-      label: ft,
-      fuelType: ft,
-      source,
-      color: baseColor,
-      data,
-      vehicleTypeName,
-      vehicleTypeNames,
+      label: ft, fuelType: ft, source, color: baseColor,
+      data, vehicleTypeName: vehicleTypeNames[0] ?? '', vehicleTypeNames,
     };
   });
 
@@ -166,52 +160,56 @@ export class DashboardService {
   private base = environment.apiBaseUrl;
   constructor(private http: HttpClient) { }
 
-  // getVehicleFuelMonthly(year: number): Observable<ApiResponse<FuelCombinedChartResponse>> {
-  //   return this.http.get<ApiResponse<FuelMonthlyRawRow[]>>(`${this.base}/Chart/VehicleMonthly?year=${year}`)
-  //     .pipe(map(res => ({ status: res.status, data: transformFuelRows(res.data ?? [], 'Vehicle') })));
-  // }
-
   getVehicleFuelMonthly(year: number): Observable<ApiResponse<FuelCombinedChartResponse>> {
     return this.http.get<ApiResponse<FuelMonthlyRawRow[]>>(
       `${this.base}/Chart/VehicleMonthly?year=${year}`
     ).pipe(map(res => {
       console.log('RAW VehicleMonthly sample row:', JSON.stringify(res.data?.[0]));
       const transformed = transformFuelRows(res.data ?? [], 'Vehicle');
-      console.log('transformed datasets:', transformed.datasets.map(d => ({
-        fuelType: d.fuelType,
-        vehicleTypeNames: d.vehicleTypeNames
-      })));
       return { status: res.status, data: transformed };
     }));
   }
 
   getGeneratorFuelMonthly(year: number): Observable<ApiResponse<FuelCombinedChartResponse>> {
-    return this.http.get<ApiResponse<FuelMonthlyRawRow[]>>(`${this.base}/Chart/GeneratorMonthly?year=${year}`)
-      .pipe(map(res => ({ status: res.status, data: transformFuelRows(res.data ?? [], 'Generator') })));
+    return this.http.get<ApiResponse<FuelMonthlyRawRow[]>>(
+      `${this.base}/Chart/GeneratorMonthly?year=${year}`
+    ).pipe(map(res => ({ status: res.status, data: transformFuelRows(res.data ?? [], 'Generator') })));
   }
 
   getCombinedFuelChart(year: number): Observable<ApiResponse<FuelCombinedChartResponse>> {
-    return this.http.get<ApiResponse<FuelCombinedChartResponse>>(`${this.base}/Chart/CombinedFuelChart?year=${year}`);
+    return this.http.get<ApiResponse<FuelCombinedChartResponse>>(
+      `${this.base}/Chart/CombinedFuelChart?year=${year}`
+    );
   }
 
   getVehicleEmissionChart(year: number): Observable<ApiResponse<MonthlyEmissionChartResponse>> {
-    return this.http.get<ApiResponse<MonthlyEmissionChartResponse>>(`${this.base}/Chart/VehicleEmissionChart?year=${year}`);
+    return this.http.get<ApiResponse<MonthlyEmissionChartResponse>>(
+      `${this.base}/Chart/VehicleEmissionChart?year=${year}`
+    );
   }
 
   getGeneratorEmissionChart(year: number): Observable<ApiResponse<MonthlyEmissionChartResponse>> {
-    return this.http.get<ApiResponse<MonthlyEmissionChartResponse>>(`${this.base}/Chart/GeneratorEmissionChart?year=${year}`);
+    return this.http.get<ApiResponse<MonthlyEmissionChartResponse>>(
+      `${this.base}/Chart/GeneratorEmissionChart?year=${year}`
+    );
   }
 
   getGeneratorRunHours(year: number): Observable<ApiResponse<GeneratorRunHoursChartResponse>> {
-    return this.http.get<ApiResponse<GeneratorRunHoursChartResponse>>(`${this.base}/Chart/GeneratorRunHours?year=${year}`);
+    return this.http.get<ApiResponse<GeneratorRunHoursChartResponse>>(
+      `${this.base}/Chart/GeneratorRunHours?year=${year}`
+    );
   }
 
   getVehicleDistanceMonthly(year: number): Observable<ApiResponse<VehicleDistanceChartResponse>> {
-    return this.http.get<ApiResponse<VehicleDistanceChartResponse>>(`${this.base}/Chart/VehicleDistanceMonthly?year=${year}`);
+    return this.http.get<ApiResponse<VehicleDistanceChartResponse>>(
+      `${this.base}/Chart/VehicleDistanceMonthly?year=${year}`
+    );
   }
 
   getGeneratorLoadFactor(year: number): Observable<ApiResponse<GeneratorLoadFactorChartResponse>> {
-    return this.http.get<ApiResponse<GeneratorLoadFactorChartResponse>>(`${this.base}/Chart/GeneratorLoadFactor?year=${year}`);
+    return this.http.get<ApiResponse<GeneratorLoadFactorChartResponse>>(
+      `${this.base}/Chart/GeneratorLoadFactor?year=${year}`
+    );
   }
 
   getVehicleTypeWiseDistance(year: number): Observable<ApiResponse<VehicleTypeDistancePivotResponse>> {
@@ -223,12 +221,6 @@ export class DashboardService {
   getGeneratorRunHoursMonthly(year: number): Observable<ApiResponse<GeneratorRunHoursMonthlyPivotResponse>> {
     return this.http.get<ApiResponse<GeneratorRunHoursMonthlyPivotResponse>>(
       `${this.base}/Chart/GeneratorRunHoursMonthly?year=${year}`
-    );
-  }
-
-  getVehicleCityEmissions(year: number): Observable<ApiResponse<CityEmissionResponse[]>> {
-    return this.http.get<ApiResponse<CityEmissionResponse[]>>(
-      `${this.base}/Chart/VehicleCityEmissions?year=${year}`
     );
   }
 
@@ -256,26 +248,36 @@ export class DashboardService {
     );
   }
 
+  // ── Vehicle Category Wise ────────────────────────────────────
+  getVehicleCategoryEmission(year: number): Observable<ApiResponse<VehicleCategoryChartResponse>> {
+    return this.http.get<ApiResponse<VehicleCategoryChartResponse>>(
+      `${this.base}/Chart/VehicleCategoryEmission?year=${year}`
+    );
+  }
+
+  ExportVehicleCategoryEmission(year: number): Observable<Blob> {
+    return this.http.get(
+      `${this.base}/Chart/ExportVehicleCategoryEmission?year=${year}`,
+      { responseType: 'blob' }
+    );
+  }
+
+  // ── Excel exports ─────────────────────────────────────────────
   exportVehicleFuelExcel(year: number) {
     return this.http.get(`${this.base}/Chart/ExportVehicleFuel?year=${year}`, { responseType: 'blob' });
   }
-
   exportVehicleEmissionChart(year: number) {
     return this.http.get(`${this.base}/Chart/ExportVehicleEmission?year=${year}`, { responseType: 'blob' });
   }
-
   ExportVehicleDistance(year: number) {
     return this.http.get(`${this.base}/Chart/ExportVehicleDistance?year=${year}`, { responseType: 'blob' });
   }
-
   ExportVehicleTypeDistance(year: number) {
     return this.http.get(`${this.base}/Chart/ExportVehicleTypeDistance?year=${year}`, { responseType: 'blob' });
   }
-
   ExportVehicleTypeDistancePieChart(year: number) {
     return this.http.get(`${this.base}/Chart/ExportVehicleTypeDistancePieChart?year=${year}`, { responseType: 'blob' });
   }
-
   ExportCityWiseEmissionChart(year: number) {
     return this.http.get(`${this.base}/Chart/ExportCityWiseEmissionChart?year=${year}`, { responseType: 'blob' });
   }

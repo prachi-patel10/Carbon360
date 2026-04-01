@@ -165,16 +165,6 @@ namespace ProjectApp.API.Controllers.Charts
             return Ok(new { status = true, data });
         }
 
-        // SP: USP_CB_DashboardEmissionSummary
-        // Returns: DashboardSummaryDto  (single row — combined vehicle + generator)
-        // Shows:   Top-level KPI cards — combined CO2e, CO2, CH4, NO2, fuel, distance
-        [HttpGet("DashboardSummary")]
-        public async Task<IActionResult> DashboardSummary([FromQuery] int year)
-        {
-            var data = await _service.GetDashboardSummaryAsync(year);
-            return Ok(new { status = true, data });
-        }
-
         [HttpGet("ExportVehicleFuel")]
         public async Task<IActionResult> ExportVehicleFuel([FromQuery] int year)
         {
@@ -248,5 +238,26 @@ namespace ProjectApp.API.Controllers.Charts
             );
         }
 
+        // ── Category endpoints (unchanged from before) ──
+        [HttpGet("VehicleCategoryEmission")]
+        public async Task<IActionResult> VehicleCategoryEmission([FromQuery] int year)
+        {
+            var data = await _service.GetVehicleCategoryWiseEmissionAsync(year);
+            return Ok(new { status = true, data });
+        }
+
+        [HttpGet("ExportVehicleCategoryEmission")]
+        public async Task<IActionResult> ExportVehicleCategoryEmission([FromQuery] int year)
+        {
+            var fileBytes = await _service.ExportVehicleCategoryEmissionExcelAsync(year);
+            if (fileBytes == null || fileBytes.Length == 0)
+                return NotFound("No data found for the given year.");
+
+            return File(
+                fileBytes,
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                $"VehicleCategoryEmission_{year}.xlsx"
+            );
+        }
     }
 }

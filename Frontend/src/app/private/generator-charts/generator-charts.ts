@@ -775,7 +775,7 @@ export class GeneratorCharts implements OnInit, AfterViewInit, OnChanges, OnDest
             borderWidth: 1,
             borderRadius: 4,
             borderSkipped: false as const,
-            stack: 'emission'
+            //stack: 'emission'
           },
           {
             label: 'NO₂ (kg)',
@@ -785,7 +785,7 @@ export class GeneratorCharts implements OnInit, AfterViewInit, OnChanges, OnDest
             borderWidth: 1,
             borderRadius: 4,
             borderSkipped: false as const,
-            stack: 'emission'
+            //stack: 'emission'
           },
           {
             label: 'CH₄ (kg)',
@@ -795,7 +795,7 @@ export class GeneratorCharts implements OnInit, AfterViewInit, OnChanges, OnDest
             borderWidth: 1,
             borderRadius: 4,
             borderSkipped: false as const,
-            stack: 'emission'
+            //stack: 'emission'
           }
         ]
       },
@@ -842,7 +842,7 @@ export class GeneratorCharts implements OnInit, AfterViewInit, OnChanges, OnDest
         },
         scales: {
           x: {
-            stacked: true,
+            //stacked: true,
             grid: { display: false },
             ticks: {
               color: '#64748b',
@@ -852,7 +852,7 @@ export class GeneratorCharts implements OnInit, AfterViewInit, OnChanges, OnDest
             }
           },
           y: {
-            stacked: true,
+            //stacked: true,
             grid: { color: '#fff7ed' },
             min: 0,
             ticks: {
