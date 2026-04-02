@@ -34,5 +34,17 @@ namespace ProjectApp.Repository.Interfaces.Charts
         // ── Vehicle category wise ────────────────────────────
         Task<VehicleCategoryChartResponseDto> GetVehicleCategoryWiseEmissionAsync(int year);
         Task<byte[]> ExportVehicleCategoryEmissionExcelAsync(int year);
+
+        //--------Export Generator ----------------
+
+        Task<byte[]> ExportCityWiseEmissionExcelGeneratorAsync(int year);
+
+        Task<byte[]> ExportGeneratorEmissionExcelLineChartAsync(int year);
+
+        Task<byte[]> ExportGeneratorRunHoursMonthlyExcelAsync(int year);
+
+        Task<byte[]> ExportGeneratorRunHoursPieChartAsync(int year);
+        Task<byte[]> ExportSiteEmissionChartAsync(int year);
+
     }
 }

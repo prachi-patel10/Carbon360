@@ -829,5 +829,206 @@ namespace ProjectApp.Repository.Services.Charts
             );
         }
 
+        //public async Task<byte[]> ExportCityWiseEmissionExcelAsync(int year)
+        //{
+        //    var data = await GetVehicleCityWiseEmissionsAsync(year);
+        //    if (data == null || !data.Any())
+        //        return Array.Empty<byte>();
+
+        //    var cities = data.Select(x => x.CityName).ToList();
+        //    var co2Values = data.Select(x => x.TotalCO2).ToList();  // ✅ TotalCO2
+        //    var no2Values = data.Select(x => x.TotalNO2).ToList();  // ✅ TotalNO2
+        //    var ch4Values = data.Select(x => x.TotalCH4).ToList();  // ✅ TotalCH4
+
+        //    return await ExcelExportHelper.ExportCityWiseEmissionStackedBarChartAsync(
+        //        cities: cities,
+        //        co2Values: co2Values,
+        //        no2Values: no2Values,
+        //        ch4Values: ch4Values,
+        //        sheetName: "City Emission Report",
+        //        chartTitle: $"City Wise Emission Profile - {year}"
+        //    );
+        //}
+
+        public async Task<byte[]> ExportCityWiseEmissionExcelGeneratorAsync(int year)
+        {
+            // Generator SP call karo (already exist karta hai)
+            var data = await GetGeneratorFuelMonthlyConsumptionAsync(year);
+
+            var rows = Enumerable.Range(1, 12).Select(m =>
+            {
+                var monthData = data.Where(x => x.MonthNumber == m).ToList();
+
+                return new GeneratorFuelExportDto
+                {
+                    Month = _monthNames[m - 1],
+                    Diesel = monthData.Where(x => x.FuelType == "Diesel").Sum(x => x.TotalFuelConsumed),
+                    Petrol = monthData.Where(x => x.FuelType == "Petrol").Sum(x => x.TotalFuelConsumed),
+                    CNG = monthData.Where(x => x.FuelType == "CNG").Sum(x => x.TotalFuelConsumed),
+                    LPG = monthData.Where(x => x.FuelType == "LPG").Sum(x => x.TotalFuelConsumed),
+                };
+            }).ToList();
+
+            var columns = new Dictionary<string, string>
+    {
+        { "Month",  "Month"  },
+        { "Diesel", "Diesel" },
+        { "Petrol", "Petrol" },
+        { "CNG",    "CNG"    },
+        { "LPG",    "LPG"    }
+    };
+
+            return await ExcelExportHelper.ExportExcelWithClusteredBarChartAsync<GeneratorFuelExportDto>(
+                rows,
+                columns,
+                "Generator Fuel Report",
+                $"Generator Fuel Report - {year}"
+            );
+        }
+
+        public async Task<byte[]> ExportGeneratorEmissionExcelLineChartAsync(int year)
+        {
+            var raw = await _context.Set<MonthlyEmissionRawDto>()
+                .FromSqlInterpolated($"EXEC USP_CB_GeneratorEmissionMonthlyChart {year}")
+                .ToListAsync();
+
+            var rows = Enumerable.Range(1, 12).Select(m =>
+            {
+                var row = raw.FirstOrDefault(r => r.MonthNumber == m);
+                return new VehicleEmissionExportDto  // same DTO reuse kar sakte ho
+                {
+                    Month = _monthNames[m - 1],
+                    TotalCO2e = (double)(row?.TotalEmission ?? 0m),
+                    TotalCO2 = (double)(row?.TotalCO2 ?? 0m),
+                    TotalNO2 = (double)(row?.TotalNO2 ?? 0m),
+                    TotalCH4 = (double)(row?.TotalCH4 ?? 0m),
+                };
+            }).ToList();
+
+            var columns = new Dictionary<string, string>
+    {
+        { "Month",           "Month"     },
+        { "Total CO2e (kg)", "TotalCO2e" },
+        { "CO2 (kg)",        "TotalCO2"  },
+        { "NO2 (kg)",        "TotalNO2"  },
+        { "CH4 (kg)",        "TotalCH4"  },
+    };
+
+            // ✅ Same line chart method jo Vehicle emission mein use hua
+            return await ExcelExportHelper.ExportExcelWithLineChartAsync<VehicleEmissionExportDto>(
+                rows,
+                columns,
+                "Generator Emission Report",
+                $"Generator Emission Report - {year}"
+            );
+        }
+
+        public async Task<byte[]> ExportGeneratorRunHoursMonthlyExcelAsync(int year)
+        {
+            var data = await GetGeneratorRunHoursMonthlyAsync(year);
+
+            // ✅ UI jaisa structure:
+            // Rows    = Generators (+ Total row at bottom)
+            // Columns = Month + Jan + Feb + ... + Dec + Total (Hrs)
+
+            var rows = new List<Dictionary<string, object>>();
+
+            for (int gi = 0; gi < data.GeneratorNames.Count; gi++)
+            {
+                var row = new Dictionary<string, object>();
+                row["Generator"] = data.GeneratorNames[gi];
+
+                decimal generatorTotal = 0;
+                for (int mi = 0; mi < data.MonthLabels.Count; mi++)
+                {
+                    var val = data.RunHoursMatrix[mi][gi];
+                    // ✅ UI mein 0 ki jagah "—" dikhta hai
+                    row[data.MonthLabels[mi]] = val == 0 ? "—" : (object)val;
+                    generatorTotal += val;
+                }
+
+                row["Total (Hrs)"] = generatorTotal;
+                rows.Add(row);
+            }
+
+            // ✅ Total row at bottom — UI jaisa
+            var totalRow = new Dictionary<string, object>();
+            totalRow["Generator"] = "Total (hrs)";
+
+            for (int mi = 0; mi < data.MonthLabels.Count; mi++)
+            {
+                totalRow[data.MonthLabels[mi]] = data.MonthTotals[mi] == 0
+                    ? "—"
+                    : (object)data.MonthTotals[mi];
+            }
+
+            totalRow["Total (Hrs)"] = data.GrandTotal;
+            rows.Add(totalRow);
+
+            return await ExcelExportHelper.ExportGeneratorRunHoursPivotAsync(
+                rows,
+                data.MonthLabels,
+                "Generator Run Hours",
+                $"Generator Run Hours Report - {year}"
+            );
+        }
+
+        public async Task<byte[]> ExportGeneratorRunHoursPieChartAsync(int year)
+        {
+            var rows = await _context.Set<GeneratorRunHoursRawDto>()
+                .FromSqlInterpolated($"EXEC USP_CB_GeneratorRunHoursByBase {year}")
+                .ToListAsync();
+
+            var labels = rows.Select(x => x.GeneratorName).ToList();
+            var values = rows.Select(x => x.TotalRunHours).ToList();
+
+            return await ExcelExportHelper.ExportGeneratorDonutChartAsync(
+                labels,
+                values,
+                "Generator Report",
+                "Generator Run Hours Distribution"
+            );
+        }
+
+        //public async Task<byte[]> ExportSiteEmissionChartAsync(int year)
+        //{
+        //    var rows = await _context.Set<SiteEmissionForGeneratorChartDto>()
+        //        .FromSqlInterpolated($"EXEC USP_GetSiteEmissionData {year}")
+        //        .ToListAsync();
+
+        //    var sites = rows.Select(x => x.SiteName).ToList();
+        //    var co2e = rows.Select(x => (double)x.CO2e).ToList();
+        //    var co2 = rows.Select(x => (double)x.CO2).ToList();
+        //    var no2 = rows.Select(x => (double)x.NO2).ToList();
+        //    var ch4 = rows.Select(x => (double)x.CH4).ToList();
+
+        //    return await Task.FromResult(
+        //        ExcelExportHelper.ExportExactUIChart(
+        //            sites,
+        //            co2e,
+        //            co2,
+        //            no2,
+        //            ch4
+        //        )
+        //    );
+        //}
+        public async Task<byte[]> ExportSiteEmissionChartAsync(int year)
+        {
+            // ✅ Direct list aa rahi hai
+            var rows = await GetGeneratorSiteWiseEmissionsAsync(year)
+                       ?? new List<SiteEmissionDto>();
+
+            // ✅ Mapping
+            var sites = rows.Select(x => x.SiteName).ToList();
+            var co2e = rows.Select(x => (double)x.TotalCO2e).ToList();
+            var co2 = rows.Select(x => (double)x.TotalCO2).ToList();
+            var no2 = rows.Select(x => (double)x.TotalNO2).ToList();
+            var ch4 = rows.Select(x => (double)x.TotalCH4).ToList();
+
+            // ✅ Excel Chart
+            return ExcelExportHelper.ExportExactUIChart(
+                sites, co2e, co2, no2, ch4
+            );
+        }
     }
 }

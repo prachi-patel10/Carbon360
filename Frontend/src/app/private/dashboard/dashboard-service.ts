@@ -302,4 +302,9 @@ export class DashboardService {
   ExportGeneratorRunHoursDistribution(year: number) {
     return this.http.get(`${this.base}/Chart/ExportGeneratorPie?year=${year}`, { responseType: 'blob' });
   }
+
+  //5th chart
+  ExportGeneratorSiteWiseEmissionProfile(year: number) {
+    return this.http.get(`${this.base}/Chart/export-site-emission-chart?year=${year}`, { responseType: 'blob' });
+  }
 }

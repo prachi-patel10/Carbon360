@@ -395,7 +395,7 @@ namespace ProjectApp.Repository.Services.Common
 
             // 3️⃣ CHART
             var drawing = sheet.CreateDrawingPatriarch();
-            var anchor = drawing.CreateAnchor(0, 0, 0, 0, col + 1, 1, col + 14, 22);
+            var anchor = drawing.CreateAnchor(0, 0, 0, 0, col + 1, 1, col + 14, 24);
             var chart = (XSSFChart)drawing.CreateChart(anchor);
 
             chart.SetTitle(chartTitle);
@@ -453,7 +453,8 @@ namespace ProjectApp.Repository.Services.Common
                     {
                         val = NPOI.OpenXmlFormats.Dml.Chart.ST_Orientation.minMax
                     },
-                    min = new NPOI.OpenXmlFormats.Dml.Chart.CT_Double { val = minAxis }, // ✅ 500
+                    min = new NPOI.OpenXmlFormats.Dml.Chart.CT_Double { val = 0 },
+                    //min = new NPOI.OpenXmlFormats.Dml.Chart.CT_Double { val = minAxis }, // ✅ 500
                     max = new NPOI.OpenXmlFormats.Dml.Chart.CT_Double { val = axisMax }
                 };
 
@@ -847,8 +848,422 @@ string chartTitle = "Pie Chart Report")
     List<decimal> ch4Values,
     string sheetName = "City Emission Report",
     string chartTitle = "City Wise Emission Profile")
+{
+    if (cities == null || !cities.Any())
+        return Array.Empty<byte>();
+
+    var workbook = new XSSFWorkbook();
+    var sheet = workbook.CreateSheet(sheetName);
+
+    // =========================
+    // 1️⃣ HEADERS — Bold Style
+    // =========================
+    var headerStyle = workbook.CreateCellStyle();
+    var headerFont = workbook.CreateFont();
+    headerFont.IsBold = true;
+    headerStyle.SetFont(headerFont);
+
+    var headerRow = sheet.CreateRow(0);
+
+    var h0 = headerRow.CreateCell(0);
+    h0.SetCellValue("City");
+    h0.CellStyle = headerStyle;
+
+    var h1 = headerRow.CreateCell(1);
+    h1.SetCellValue("CO2 (kg)");
+    h1.CellStyle = headerStyle;
+
+    var h2 = headerRow.CreateCell(2);
+    h2.SetCellValue("NO2 (kg)");
+    h2.CellStyle = headerStyle;
+
+    var h3 = headerRow.CreateCell(3);
+    h3.SetCellValue("CH4 (kg)");
+    h3.CellStyle = headerStyle;
+
+    // =========================
+    // 2️⃣ DATA ROWS
+    // =========================
+    int rowIndex = 1;
+    for (int i = 0; i < cities.Count; i++)
+    {
+        var row = sheet.CreateRow(rowIndex++);
+        row.CreateCell(0).SetCellValue(cities[i]);
+        row.CreateCell(1).SetCellValue((double)co2Values[i]);
+        row.CreateCell(2).SetCellValue((double)no2Values[i]);
+        row.CreateCell(3).SetCellValue((double)ch4Values[i]);
+    }
+
+    int rowCount = cities.Count;
+
+    // =========================
+    // 3️⃣ STACKED BAR CHART
+    // =========================
+    var drawing = sheet.CreateDrawingPatriarch();
+    var anchor = drawing.CreateAnchor(0, 0, 0, 0, 5, 1, 18, 24);
+    var chart = (XSSFChart)drawing.CreateChart(anchor);
+
+    chart.SetTitle(chartTitle);
+    chart.GetOrCreateLegend().Position = LegendPosition.Bottom;
+
+    var dataFactory = chart.ChartDataFactory;
+    var axisFactory = chart.ChartAxisFactory;
+
+    // Axes
+    var bottomAxis = axisFactory.CreateCategoryAxis(AxisPosition.Bottom);
+    var leftAxis = axisFactory.CreateValueAxis(AxisPosition.Left);
+    leftAxis.Crosses = AxisCrosses.AutoZero;
+
+    // Bar Chart Data
+    var barData = dataFactory.CreateBarChartData<string, double>();
+
+    // Category (X-axis) = City names
+    var categoryRange = DataSources.FromStringCellRange(
+        sheet, new CellRangeAddress(1, rowCount, 0, 0));
+
+    // CO2 Series
+    var co2Range = DataSources.FromNumericCellRange(
+        sheet, new CellRangeAddress(1, rowCount, 1, 1));
+    var co2Series = barData.AddSeries(categoryRange, co2Range);
+    co2Series.SetTitle("CO2 (kg)");
+
+    // NO2 Series
+    var no2Range = DataSources.FromNumericCellRange(
+        sheet, new CellRangeAddress(1, rowCount, 2, 2));
+    var no2Series = barData.AddSeries(categoryRange, no2Range);
+    no2Series.SetTitle("NO2 (kg)");
+
+    // CH4 Series
+    var ch4Range = DataSources.FromNumericCellRange(
+        sheet, new CellRangeAddress(1, rowCount, 3, 3));
+    var ch4Series = barData.AddSeries(categoryRange, ch4Range);
+    ch4Series.SetTitle("CH4 (kg)");
+
+    chart.Plot(barData, bottomAxis, leftAxis);
+
+    // =========================
+    // 4️⃣ STACKED BAR — XML LEVEL
+    // =========================
+    var ctChart = chart.GetCTChart();
+
+    if (ctChart.plotArea.barChart != null && ctChart.plotArea.barChart.Count > 0)
+    {
+        var barChart = ctChart.plotArea.barChart[0];
+
+        barChart.barDir = new CT_BarDir { val = ST_BarDir.col };
+        barChart.grouping = new CT_BarGrouping { val = ST_BarGrouping.stacked };
+        barChart.overlap = new CT_Overlap { val = 100 };
+
+        barChart.dLbls = new CT_DLbls
         {
-            if (cities == null || !cities.Any())
+            showVal = new CT_Boolean { val = 0 },
+            showPercent = new CT_Boolean { val = 0 },
+            showLegendKey = new CT_Boolean { val = 0 },
+            showSerName = new CT_Boolean { val = 0 },
+            showCatName = new CT_Boolean { val = 0 }
+        };
+    }
+
+    // ✅ FIX 1: Bottom gap hatao — valAx ko 0 se start karo
+    var valAxList = ctChart.plotArea.valAx;
+    if (valAxList != null && valAxList.Count > 0)
+    {
+        var valAx = valAxList[0];
+
+        valAx.scaling = new CT_Scaling
+        {
+            orientation = new CT_Orientation { val = ST_Orientation.minMax },
+            min = new CT_Double { val = 0 }
+        };
+
+        valAx.crossBetween = new CT_CrossBetween { val = ST_CrossBetween.between };
+    }
+
+    // ✅ FIX 2: Column widths — wider
+    sheet.SetColumnWidth(0, 5000);  // City
+    sheet.SetColumnWidth(1, 4500);  // CO2 (kg)
+    sheet.SetColumnWidth(2, 4500);  // NO2 (kg)
+    sheet.SetColumnWidth(3, 4500);  // CH4 (kg)
+
+    using var stream = new MemoryStream();
+    workbook.Write(stream);
+    return stream.ToArray();
+}
+        public static async Task<byte[]> ExportExcelWithClusteredBarChartAsync<T>(
+    IEnumerable<T> data,
+    Dictionary<string, string> columnMappings,
+    string sheetName = "Sheet1",
+    string chartTitle = "Report Chart")
+{
+    if (!data.Any())
+        return Array.Empty<byte>();
+
+    var workbook = new XSSFWorkbook();
+    var sheet = workbook.CreateSheet(sheetName);
+
+    // 1️⃣ HEADERS
+    var headerRow = sheet.CreateRow(0);
+    int col = 0;
+    foreach (var header in columnMappings.Keys)
+        headerRow.CreateCell(col++).SetCellValue(header);
+
+    // 2️⃣ DATA
+    int rowIdx = 1;
+    foreach (var item in data)
+    {
+        var row = sheet.CreateRow(rowIdx++);
+        col = 0;
+        foreach (var propName in columnMappings.Values)
+        {
+            var prop = typeof(T).GetProperty(propName);
+            var val  = prop?.GetValue(item);
+            var cell = row.CreateCell(col++);
+
+            if (val is double d)         cell.SetCellValue(d);
+            else if (val is int i)       cell.SetCellValue(i);
+            else if (val is decimal dec) cell.SetCellValue((double)dec);
+            else                         cell.SetCellValue(val?.ToString());
+        }
+    }
+
+    // 3️⃣ CHART
+    var drawing = sheet.CreateDrawingPatriarch();
+
+    // ✅ Fixed anchor — data columns ke baad space de ke chart banao
+    var anchor = drawing.CreateAnchor(0, 0, 0, 0, col + 2, 1, col + 16, 25);
+
+    var chart = (XSSFChart)drawing.CreateChart(anchor);
+    chart.SetTitle(chartTitle);
+    chart.GetOrCreateLegend().Position = LegendPosition.Bottom;
+
+    var bottomAxis = chart.CreateCategoryAxis(AxisPosition.Bottom);
+    var leftAxis   = chart.CreateValueAxis(AxisPosition.Left);
+
+    // Y-axis max
+    var numericProps = columnMappings.Values.Skip(1).ToList();
+    var allValues = data
+        .SelectMany(x => numericProps.Select(p =>
+        {
+            var prop = typeof(T).GetProperty(p);
+            return Convert.ToDouble(prop?.GetValue(x) ?? 0);
+        }))
+        .Where(v => v > 0)
+        .DefaultIfEmpty(0)
+        .ToList();
+
+    double maxValue = allValues.Any() ? allValues.Max() : 100;
+
+    var dataFactory = chart.ChartDataFactory;
+    var chartData   = dataFactory.CreateBarChartData<string, double>();
+
+    int rowCount   = data.Count();
+    var xAxisRange = new CellRangeAddress(1, rowCount, 0, 0);
+
+    int seriesCol = 1;
+    foreach (var header in columnMappings.Keys.Skip(1))
+    {
+        var yRange = new CellRangeAddress(1, rowCount, seriesCol, seriesCol);
+        chartData.AddSeries(
+            DataSources.FromStringCellRange(sheet, xAxisRange),
+            DataSources.FromNumericCellRange(sheet, yRange)
+        ).SetTitle(header);
+        seriesCol++;
+    }
+
+    chart.Plot(chartData, bottomAxis, leftAxis);
+
+    var ctChart  = chart.GetCTChart();
+    double axisMax = Math.Ceiling(maxValue / 100) * 100;
+
+    // Y-axis scale fix
+    foreach (var valAx in ctChart.plotArea.valAx)
+    {
+        valAx.scaling = new CT_Scaling
+        {
+            orientation = new CT_Orientation { val = ST_Orientation.minMax },
+            min = new CT_Double { val = 0 },
+            max = new CT_Double { val = axisMax }
+        };
+        valAx.crossesAt = null;
+        valAx.crosses   = new CT_Crosses { val = ST_Crosses.autoZero };
+
+        // ✅ THE REAL FIX:
+        // crossBetween = "between" → Y-axis bars ke BEECH cross karta hai
+        // Iska matlab Jan ka bar properly left side pe space ke saath render hoga
+        // "midPt" (default) → axis pehli category KE UPAR se guzarti hai = Jan cut
+        valAx.crossBetween = new CT_CrossBetween
+        {
+            val = ST_CrossBetween.between
+        };
+    }
+
+    // X-axis basic fix
+    foreach (var catAx in ctChart.plotArea.catAx)
+    {
+        catAx.crossesAt  = null;
+        catAx.crosses    = new CT_Crosses    { val = ST_Crosses.autoZero  };
+        catAx.axPos      = new CT_AxPos      { val = ST_AxPos.b           };
+        catAx.tickLblPos = new CT_TickLblPos { val = ST_TickLblPos.nextTo };
+    }
+
+    // Clustered bar
+    if (ctChart.plotArea.barChart != null && ctChart.plotArea.barChart.Count > 0)
+    {
+        var barChart = ctChart.plotArea.barChart[0];
+        barChart.barDir   = new CT_BarDir     { val = ST_BarDir.col            };
+        barChart.grouping = new CT_BarGrouping { val = ST_BarGrouping.clustered };
+        barChart.overlap  = new CT_Overlap    { val = 0   };
+        barChart.gapWidth = new CT_GapAmount  { val = 150 };
+    }
+
+            for (int i = 0; i < columnMappings.Count; i++)
+                sheet.AutoSizeColumn(i);
+
+            for (int i = 0; i < columnMappings.Count; i++)
+            {
+                int currentWidth = sheet.GetColumnWidth(i);
+                sheet.SetColumnWidth(i, currentWidth + 1500);
+            }
+
+            for (int i = 0; i <= rowIdx; i++)
+            {
+                var row = sheet.GetRow(i);
+                if (row != null)
+                    row.HeightInPoints = 16;
+            }
+
+            using var stream = new MemoryStream();
+            workbook.Write(stream);
+            return stream.ToArray();
+        }
+
+        public static async Task<byte[]> ExportGeneratorRunHoursPivotAsync(
+    List<Dictionary<string, object>> rows,
+    List<string> monthLabels,
+    string sheetName,
+    string title)
+        {
+            if (rows == null || !rows.Any())
+                return Array.Empty<byte>();
+
+            var workbook = new XSSFWorkbook();
+            var sheet = workbook.CreateSheet(sheetName);
+
+            // ── STYLES ────────────────────────────────────────────────────────
+            // HEADER STYLE (Natural light gray)
+            var headerStyle = workbook.CreateCellStyle();
+            headerStyle.FillForegroundColor = IndexedColors.Grey25Percent.Index;
+            headerStyle.FillPattern = FillPattern.SolidForeground;
+            var headerFont = workbook.CreateFont();
+            headerFont.Color = IndexedColors.Black.Index;
+            headerFont.IsBold = true;
+            headerStyle.SetFont(headerFont);
+            headerStyle.Alignment = HorizontalAlignment.Center;
+
+            // TOTAL COLUMN STYLE (soft subtle gray)
+            var totalColStyle = workbook.CreateCellStyle();
+            totalColStyle.FillForegroundColor = IndexedColors.Grey50Percent.Index;
+            totalColStyle.FillPattern = FillPattern.SolidForeground;
+            var totalColFont = workbook.CreateFont();
+            totalColFont.IsBold = true;
+            totalColFont.Color = IndexedColors.Black.Index;
+            totalColStyle.SetFont(totalColFont);
+            totalColStyle.Alignment = HorizontalAlignment.Right;
+
+            // TOTAL ROW STYLE (slightly highlighted but clean)
+            var totalRowStyle = workbook.CreateCellStyle();
+            totalRowStyle.FillForegroundColor = IndexedColors.Grey25Percent.Index;
+            totalRowStyle.FillPattern = FillPattern.SolidForeground;
+            var totalRowFont = workbook.CreateFont();
+            totalRowFont.IsBold = true;
+            totalRowFont.Color = IndexedColors.Black.Index;
+            totalRowStyle.SetFont(totalRowFont);
+            totalRowStyle.Alignment = HorizontalAlignment.Right;
+
+            // DATA CELL STYLE (clean white)
+            var dataStyle = workbook.CreateCellStyle();
+            dataStyle.Alignment = HorizontalAlignment.Center;
+
+            // GENERATOR NAME STYLE
+            var genNameStyle = workbook.CreateCellStyle();
+            genNameStyle.Alignment = HorizontalAlignment.Left;
+
+            // ── TITLE ROW ─────────────────────────────────────────────────────
+            var titleRow = sheet.CreateRow(0);
+            titleRow.CreateCell(0).SetCellValue(title);
+
+            // ── HEADER ROW ────────────────────────────────────────────────────
+            var headerRow = sheet.CreateRow(2);
+            var allColumns = rows.First().Keys.ToList(); // Generator + months + Total
+            int colCount = allColumns.Count;
+
+            for (int c = 0; c < colCount; c++)
+            {
+                var cell = headerRow.CreateCell(c);
+                cell.SetCellValue(allColumns[c].ToUpper()); // UI mein uppercase headers
+                cell.CellStyle = headerStyle;
+            }
+
+            // ── DATA ROWS ─────────────────────────────────────────────────────
+            int rowIndex = 3;
+            int totalRowIdx = rows.Count - 1; // last row = Total row
+
+            for (int ri = 0; ri < rows.Count; ri++)
+            {
+                var excelRow = sheet.CreateRow(rowIndex++);
+                var rowData = rows[ri];
+                bool isTotalRow = ri == totalRowIdx;
+
+                int ci = 0;
+                foreach (var kvp in rowData)
+                {
+                    var cell = excelRow.CreateCell(ci);
+
+                    if (kvp.Value is string s)
+                    {
+                        cell.SetCellValue(s);
+                    }
+                    else if (kvp.Value is decimal d)
+                    {
+                        cell.SetCellValue((double)d);
+                    }
+                    else
+                    {
+                        cell.SetCellValue(kvp.Value?.ToString() ?? "—");
+                    }
+
+                    // ✅ Style apply
+                    if (isTotalRow)
+                        cell.CellStyle = totalRowStyle;
+                    else if (ci == colCount - 1) // last column = Total (Hrs)
+                        cell.CellStyle = totalColStyle;
+                    else if (ci == 0)
+                        cell.CellStyle = genNameStyle;
+                    else
+                        cell.CellStyle = dataStyle;
+
+                    ci++;
+                }
+            }
+
+            sheet.SetColumnWidth(0, 7000);
+            for (int i = 1; i < colCount - 1; i++)
+                sheet.SetColumnWidth(i, 2800);
+            sheet.SetColumnWidth(colCount - 1, 4500);
+
+            using var stream = new MemoryStream();
+            workbook.Write(stream);
+            return await Task.FromResult(stream.ToArray());
+        }
+
+
+        public static async Task<byte[]> ExportGeneratorDonutChartAsync(
+    List<string> labels,
+    List<decimal> values,
+    string sheetName = "Sheet1",
+    string chartTitle = "Generator Run Hours Distribution")
+        {
+            if (labels == null || values == null || !labels.Any() || !values.Any())
                 return Array.Empty<byte>();
 
             var workbook = new XSSFWorkbook();
@@ -858,112 +1273,226 @@ string chartTitle = "Pie Chart Report")
             // 1️⃣ HEADERS
             // =========================
             var headerRow = sheet.CreateRow(0);
-            headerRow.CreateCell(0).SetCellValue("City");
-            headerRow.CreateCell(1).SetCellValue("CO2 (kg)");
-            headerRow.CreateCell(2).SetCellValue("NO2 (kg)");
-            headerRow.CreateCell(3).SetCellValue("CH4 (kg)");
+            headerRow.CreateCell(0).SetCellValue("Category");
+            headerRow.CreateCell(1).SetCellValue("Value");
 
             // =========================
-            // 2️⃣ DATA ROWS
+            // 2️⃣ DATA + %
             // =========================
-            int rowIndex = 1;
-            for (int i = 0; i < cities.Count; i++)
+            double total = (double)values.Sum();
+
+            for (int i = 0; i < labels.Count; i++)
             {
-                var row = sheet.CreateRow(rowIndex++);
-                row.CreateCell(0).SetCellValue(cities[i]);
-                row.CreateCell(1).SetCellValue((double)co2Values[i]);
-                row.CreateCell(2).SetCellValue((double)no2Values[i]);
-                row.CreateCell(3).SetCellValue((double)ch4Values[i]);
+                double val = (double)values[i];
+                double percent = total == 0 ? 0 : (val / total) * 100;
+
+                var row = sheet.CreateRow(i + 1);
+                row.CreateCell(0).SetCellValue($"{labels[i]} ({percent:0}%)");
+                row.CreateCell(1).SetCellValue(val);
             }
 
-            int rowCount = cities.Count;
+            int lastRowIndex = labels.Count;
 
             // =========================
-            // 3️⃣ STACKED BAR CHART
+            // 3️⃣ CHART
             // =========================
             var drawing = sheet.CreateDrawingPatriarch();
-            var anchor = drawing.CreateAnchor(0, 0, 0, 0, 5, 1, 16, 22);
+            var anchor = drawing.CreateAnchor(0, 0, 0, 0, 3, 1, 15, 25);
+
             var chart = (XSSFChart)drawing.CreateChart(anchor);
-
             chart.SetTitle(chartTitle);
-            chart.GetOrCreateLegend().Position = LegendPosition.Bottom;
 
-            var dataFactory = chart.ChartDataFactory;
-            var axisFactory = chart.ChartAxisFactory;
+            var legend = chart.GetOrCreateLegend();
+            legend.Position = LegendPosition.Right;
 
-            // Axes
-            var bottomAxis = axisFactory.CreateCategoryAxis(AxisPosition.Bottom);
-            var leftAxis = axisFactory.CreateValueAxis(AxisPosition.Left);
-            leftAxis.Crosses = AxisCrosses.AutoZero;
+            var categories = DataSources.FromStringCellRange(sheet, new CellRangeAddress(1, lastRowIndex, 0, 0));
+            var dataValues = DataSources.FromNumericCellRange(sheet, new CellRangeAddress(1, lastRowIndex, 1, 1));
 
-            // Bar Chart Data
-            var barData = dataFactory.CreateBarChartData<string, double>();
+            var pieData = chart.ChartDataFactory.CreatePieChartData<string, double>();
+            var series = pieData.AddSeries(categories, dataValues);
+            series.SetTitle(chartTitle);
 
-            // Category (X-axis) = City names
-            var categoryRange = DataSources.FromStringCellRange(
-                sheet, new CellRangeAddress(1, rowCount, 0, 0));
-
-            // CO2 Series
-            var co2Range = DataSources.FromNumericCellRange(
-                sheet, new CellRangeAddress(1, rowCount, 1, 1));
-            var co2Series = barData.AddSeries(categoryRange, co2Range);
-            co2Series.SetTitle("CO2 (kg)");
-
-            // NO2 Series
-            var no2Range = DataSources.FromNumericCellRange(
-                sheet, new CellRangeAddress(1, rowCount, 2, 2));
-            var no2Series = barData.AddSeries(categoryRange, no2Range);
-            no2Series.SetTitle("NO2 (kg)");
-
-            // CH4 Series
-            var ch4Range = DataSources.FromNumericCellRange(
-                sheet, new CellRangeAddress(1, rowCount, 3, 3));
-            var ch4Series = barData.AddSeries(categoryRange, ch4Range);
-            ch4Series.SetTitle("CH4 (kg)");
-
-            chart.Plot(barData, bottomAxis, leftAxis);
+            chart.Plot(pieData);
 
             // =========================
-            // 4️⃣ STACKED BAR — XML LEVEL
+            // 4️⃣ LEGEND FONT SIZE FIX (SAFE)
             // =========================
-            var ctChart = chart.GetCTChart();
-
-            if (ctChart.plotArea.barChart != null && ctChart.plotArea.barChart.Count > 0)
+            try
             {
-                var barChart = ctChart.plotArea.barChart[0];
+                var ctChart = chart.GetCTChart();
 
-                // Bar direction = Column (vertical bars)
-                barChart.barDir = new CT_BarDir { val = ST_BarDir.col };
-
-                // Stacked type
-                barChart.grouping = new CT_BarGrouping { val = ST_BarGrouping.stacked };
-
-                // 100% stacked use karni ho to: percentStacked
-                // barChart.grouping = new CT_BarGrouping { val = ST_BarGrouping.percentStacked };
-
-                // Overlap = 100 for fully stacked
-                barChart.overlap = new CT_Overlap { val = 100 };
-
-                // Data Labels
-                barChart.dLbls = new CT_DLbls
+                if (ctChart.legend != null)
                 {
-                    showVal = new CT_Boolean { val = 0 },
-                    showPercent = new CT_Boolean { val = 0 },
-                    showLegendKey = new CT_Boolean { val = 0 },
-                    showSerName = new CT_Boolean { val = 0 },
-                    showCatName = new CT_Boolean { val = 0 }
-                };
+                    if (ctChart.legend.txPr == null)
+                        ctChart.legend.txPr = new NPOI.OpenXmlFormats.Dml.Chart.CT_TextBody();
+
+                    var txPr = ctChart.legend.txPr;
+
+                    if (txPr.bodyPr == null)
+                        txPr.bodyPr = new NPOI.OpenXmlFormats.Dml.CT_TextBodyProperties();
+
+                    if (txPr.lstStyle == null)
+                        txPr.lstStyle = new NPOI.OpenXmlFormats.Dml.CT_TextListStyle();
+
+                    // Clear existing paragraphs (important fix)
+                    txPr.p = new List<NPOI.OpenXmlFormats.Dml.CT_TextParagraph>();
+
+                    var p = new NPOI.OpenXmlFormats.Dml.CT_TextParagraph();
+                    var pPr = new NPOI.OpenXmlFormats.Dml.CT_TextParagraphProperties();
+                    var defRPr = new NPOI.OpenXmlFormats.Dml.CT_TextCharacterProperties();
+
+                    defRPr.sz = 1400; // 🔥 14pt
+
+                    pPr.defRPr = defRPr;
+                    p.pPr = pPr;
+
+                    txPr.p.Add(p);
+                }
+            }
+            catch
+            {
+                // Ignore - kuch versions me ye supported nahi hota
+            }
+            var ctPlotArea = chart.GetCTChart().plotArea;
+
+            if (ctPlotArea.pieChart != null && ctPlotArea.pieChart.Count > 0)
+            {
+                var pieChart = ctPlotArea.pieChart[0];
+
+                pieChart.dLbls = new CT_DLbls();
+                pieChart.dLbls.showVal = new CT_Boolean { val = 0 };
+                pieChart.dLbls.showPercent = new CT_Boolean { val = 0 };
+                pieChart.dLbls.showCatName = new CT_Boolean { val = 0 };
+                pieChart.dLbls.showSerName = new CT_Boolean { val = 0 };
+                pieChart.dLbls.showLegendKey = new CT_Boolean { val = 0 };
             }
 
-            // =========================
-            // 5️⃣ AUTO SIZE COLUMNS
-            // =========================
-            for (int i = 0; i <= 3; i++)
-                sheet.AutoSizeColumn(i);
+            sheet.SetColumnWidth(0, 50 * 256); // Category wide
+            sheet.SetColumnWidth(1, 20 * 256); // Value wide
 
             using var stream = new MemoryStream();
             workbook.Write(stream);
             return stream.ToArray();
+        }
+        public static byte[] ExportExactUIChart(
+    List<string> sites,
+    List<double> co2e,
+    List<double> co2,
+    List<double> no2,
+    List<double> ch4)
+        {
+            var wb = new XSSFWorkbook();
+            var sheet = wb.CreateSheet("Report");
+
+            // =========================
+            // DATA
+            // =========================
+            var header = sheet.CreateRow(0);
+            header.CreateCell(0).SetCellValue("Site");
+            header.CreateCell(1).SetCellValue("CO2e");
+            header.CreateCell(2).SetCellValue("CO2");
+            header.CreateCell(3).SetCellValue("NO2");
+            header.CreateCell(4).SetCellValue("CH4");
+
+            for (int i = 0; i < sites.Count; i++)
+            {
+                var r = sheet.CreateRow(i + 1);
+                r.CreateCell(0).SetCellValue(sites[i]);
+                r.CreateCell(1).SetCellValue(co2e[i]);
+                r.CreateCell(2).SetCellValue(co2[i]);
+                r.CreateCell(3).SetCellValue(no2[i]);
+                r.CreateCell(4).SetCellValue(ch4[i]);
+            }
+
+            int rowCount = sites.Count;
+
+            // =========================
+            // CREATE CHART
+            // =========================
+            var drawing = sheet.CreateDrawingPatriarch();
+            var anchor = drawing.CreateAnchor(0, 0, 0, 0, 6, 1, 20, 25);
+            var chart = (XSSFChart)drawing.CreateChart(anchor);
+            chart.SetTitle("Site Wise Emission Profile");
+            chart.GetOrCreateLegend().Position = LegendPosition.Bottom;
+
+            // PRIMARY axes (left) — CO2e ke liye
+            var bottomAxis = chart.CreateCategoryAxis(AxisPosition.Bottom);
+            var leftAxis = chart.CreateValueAxis(AxisPosition.Left);
+
+            // SECONDARY axis (right) — CO2, NO2, CH4 ke liye
+            var rightAxis = chart.CreateValueAxis(AxisPosition.Right);
+
+            var x = DataSources.FromStringCellRange(sheet, new CellRangeAddress(1, rowCount, 0, 0));
+
+            // =========================
+            // SERIES 1: CO2e — PRIMARY (left) axis
+            // =========================
+            var barData1 = chart.ChartDataFactory.CreateBarChartData<string, double>();
+            barData1.AddSeries(x,
+                DataSources.FromNumericCellRange(sheet, new CellRangeAddress(1, rowCount, 1, 1)))
+                .SetTitle("CO2e (kg)");
+            chart.Plot(barData1, bottomAxis, leftAxis);
+
+            // =========================
+            // SERIES 2: CO2, NO2, CH4 — SECONDARY (right) axis
+            // =========================
+            var barData2 = chart.ChartDataFactory.CreateBarChartData<string, double>();
+            barData2.AddSeries(x,
+                DataSources.FromNumericCellRange(sheet, new CellRangeAddress(1, rowCount, 2, 2)))
+                .SetTitle("CO2 (kg)");
+            barData2.AddSeries(x,
+                DataSources.FromNumericCellRange(sheet, new CellRangeAddress(1, rowCount, 3, 3)))
+                .SetTitle("NO2 (kg)");
+            barData2.AddSeries(x,
+                DataSources.FromNumericCellRange(sheet, new CellRangeAddress(1, rowCount, 4, 4)))
+                .SetTitle("CH4 (kg)");
+            chart.Plot(barData2, bottomAxis, rightAxis);
+
+            // =========================
+            // BAR CHART SETTINGS — BOTH CHARTS
+            // =========================
+            var ctChart = chart.GetCTChart();
+
+            foreach (var barChart in ctChart.plotArea.barChart)
+            {
+                barChart.barDir = new CT_BarDir { val = ST_BarDir.col };
+                barChart.grouping = new CT_BarGrouping { val = ST_BarGrouping.stacked };
+                barChart.overlap = new CT_Overlap { val = 100 };
+                barChart.gapWidth = new CT_GapAmount { val = 500 };
+            }
+
+            // =========================
+            // FIX: DUAL AXIS CROSS LINKING
+            // =========================
+            var plotArea = ctChart.plotArea;
+
+            // ✅ uint use karo — ulong nahi
+            uint leftAxisId = plotArea.valAx[0].axId.val;
+            uint rightAxisId = plotArea.valAx[1].axId.val;
+
+            // Left axis — right axis ko cross kare
+            plotArea.valAx[0].crossAx.val = rightAxisId;
+
+            // Right axis — left axis ko cross kare
+            plotArea.valAx[1].crossAx.val = leftAxisId;
+
+            // Category axis fix
+            plotArea.catAx[0].crosses = new CT_Crosses { val = ST_Crosses.autoZero };
+
+            // crossBetween fix — bars Y-axis se door
+            plotArea.valAx[0].crossBetween = new CT_CrossBetween { val = ST_CrossBetween.between };
+            plotArea.valAx[1].crossBetween = new CT_CrossBetween { val = ST_CrossBetween.between };
+
+            // ✅ Right axis visible rakho — 1 = false (NPOI mein CT_Boolean 1/0 use karta hai)
+            plotArea.valAx[1].delete = new CT_Boolean { val = 1 };
+            plotArea.valAx[1].delete = null; // sabse safe — delete tag hi mat daalo
+
+            // =========================
+            // SAVE TO MEMORY STREAM
+            // =========================
+            using var ms = new MemoryStream();
+            wb.Write(ms);
+            return ms.ToArray();
         }
     }
 }

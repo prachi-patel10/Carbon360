@@ -18,6 +18,7 @@ import {
   SiteEmissionResponse
 } from '../dashboard/dashboard-service';
 import { SearchGeneratorService } from '../power-generator/search-generator/search-generator-service';
+import { saveAs } from 'file-saver';
 
 Chart.register(...registerables);
 
@@ -917,4 +918,46 @@ export class GeneratorCharts implements OnInit, AfterViewInit, OnChanges, OnDest
   formatNum(value: number): string {
     return Math.round(value).toLocaleString('en-IN');
   }
+
+  //NEW METHOD ADD
+  //1st chart
+  exportfueltypewiseMonthlyConsumptionFirstChart() {
+      this.svc.ExportGeneratorFuelTypeWiseMonthlyConsumptionFirstChart(this.year).subscribe({
+        next: blob => { saveAs(blob, `GeneratorFuelWiseMonthlyConsumption_${this.year}.xlsx`); },
+        error: err => { console.error('Export failed', err); }
+      });
+    }
+
+    //2nd chart
+    exportMonthlyEmissionTrendSecondChart() {
+      this.svc.ExportGeneratorMonthlyEmissionTrend(this.year).subscribe({
+        next: blob => { saveAs(blob, `GeneratorMonthlyEmissionTrend_${this.year}.xlsx`); },
+        error: err => { console.error('Export failed', err); }
+      });
+    }
+
+    //3rd chart
+    ExportGeneratorRunHoursMonthWisePivotTbl() {
+      this.svc.ExportGeneratorRunHoursMonthWisePivotTbl(this.year).subscribe({
+        next: blob => { saveAs(blob, `GeneratorRunHoursMonthWisePivotTbl_${this.year}.xlsx`); },
+        error: err => { console.error('Export failed', err); }
+      });
+    }
+
+
+    //4th chart
+    exportGeneratorRunHoursDistributionChart() {
+      this.svc.ExportGeneratorRunHoursDistribution(this.year).subscribe({
+        next: blob => { saveAs(blob, `GeneratorRunHoursDistribution_${this.year}.xlsx`); },
+        error: err => { console.error('Export failed', err); }
+      });
+    }
+
+    //5th chart
+    exportGeneratorSiteWiseEmissionProfile() {
+      this.svc.ExportGeneratorSiteWiseEmissionProfile(this.year).subscribe({
+        next: blob => { saveAs(blob, `GeneratorSiteWiseEmissionProfile_${this.year}.xlsx`); },
+        error: err => { console.error('Export failed', err); }
+      });
+    }
 }

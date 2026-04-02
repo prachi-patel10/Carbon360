@@ -259,5 +259,61 @@ namespace ProjectApp.API.Controllers.Charts
                 $"VehicleCategoryEmission_{year}.xlsx"
             );
         }
+
+        [HttpGet("ExportGeneratorFuel")]
+        public async Task<IActionResult> ExportGeneratorFuel([FromQuery] int year)
+        {
+            var fileBytes = await _service.ExportCityWiseEmissionExcelGeneratorAsync(year);
+
+            return File(
+                fileBytes,
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                $"GeneratorFuel_{year}.xlsx"
+            );
+        }
+
+        [HttpGet("ExportGeneratorEmissionLineChart")]
+        public async Task<IActionResult> ExportGeneratorEmission([FromQuery] int year)
+        {
+            var fileBytes = await _service.ExportGeneratorEmissionExcelLineChartAsync(year);
+
+            return File(
+                fileBytes,
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                $"GeneratorEmission_{year}.xlsx"
+            );
+        }
+
+        [HttpGet("ExportGeneratorPie")]
+        public async Task<IActionResult> ExportGeneratorPie(int year)
+        {
+            var file = await _service.ExportGeneratorRunHoursPieChartAsync(year);
+
+            return File(file,
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                "GeneratorPieChart.xlsx");
+        }
+
+
+        [HttpGet("ExportGeneratorRunHoursMonthWisePivotTbl")]
+        public async Task<IActionResult> ExportGeneratorRunHoursMonthWisePivotTbl(int year)
+        {
+            var file = await _service.ExportGeneratorRunHoursMonthlyExcelAsync(year);
+
+            return File(file,
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                "GeneratorRunHoursMonthWise.xlsx");
+        }
+
+        [HttpGet("export-site-emission-chart")]
+        public async Task<IActionResult> ExportSiteEmissionChart(int year)
+        {
+            var file = await _service.ExportSiteEmissionChartAsync(year);
+
+            return File(file,
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                "SiteEmissionChart.xlsx");
+        }
+
     }
 }
