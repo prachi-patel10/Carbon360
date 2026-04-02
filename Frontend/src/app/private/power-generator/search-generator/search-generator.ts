@@ -50,7 +50,7 @@ export class SearchGenerator implements OnInit, AfterViewInit {
   totalRecordsCount = signal<number>(0);
   totalPagesCount = signal<number>(1);
 
-  
+
 
   private readonly columnMap: Record<string, string> = {
     generatorName: 'GeneratorName',
@@ -69,13 +69,7 @@ export class SearchGenerator implements OnInit, AfterViewInit {
 
   private _pendingOpStart: string | null = null;
   private _pendingOpEnd: string | null = null;
-  private _pendingEntryStart: string | null = null;
-  private _pendingEntryEnd: string | null = null;
   private _viewReady = false;
-  private _isSettingPickerFromData = false;
-
-  // ✅ Prevents infinite loop — true only during chart navigation load
-  private _skipEntryDateUpdate = false;
 
   constructor(
     private service: SearchGeneratorService,
@@ -112,9 +106,6 @@ export class SearchGenerator implements OnInit, AfterViewInit {
       this.currentPage.set(1);
       this._pendingOpStart = null;
       this._pendingOpEnd = null;
-      this._pendingEntryStart = null;
-      this._pendingEntryEnd = null;
-      this._skipEntryDateUpdate = false;
 
       if (this._viewReady) {
         this.opDatePicker?.reset();
@@ -147,19 +138,8 @@ export class SearchGenerator implements OnInit, AfterViewInit {
         if (opStart) { this.operationStartDate.set(opStart); this._pendingOpStart = opStart; }
         if (opEnd) { this.operationEndDate.set(opEnd); this._pendingOpEnd = opEnd; }
 
-        // ── Entry date picker will be set AFTER data loads ───
-        // We do NOT pre-fill entry date from chart params
-        // because we don't know the actual reported date yet.
-        // It gets calculated from real entryDate values in the
-        // API response inside loadEmissions() next callback.
-        this._skipEntryDateUpdate = false;
-
         this.applyPickersIfReady();
-      } else {
-        // ── Manual navigation — entry date signals drive picker
-        this._skipEntryDateUpdate = true;
       }
-
       this.loadEmissions();
     });
   }
@@ -178,12 +158,6 @@ export class SearchGenerator implements OnInit, AfterViewInit {
           new Date(this._pendingOpStart),
           new Date(this._pendingOpEnd)
         );
-      if (this._pendingEntryStart && this._pendingEntryEnd)
-        this.setPickerRange(
-          this.entryDatePicker,
-          new Date(this._pendingEntryStart),
-          new Date(this._pendingEntryEnd)
-        );
     }, 0);
   }
 
@@ -194,16 +168,16 @@ export class SearchGenerator implements OnInit, AfterViewInit {
 
   // ── Data Loading ───────────────────────────────────────────────
 
- loadFuelTypes(): void {
-  this.fuelService.getAll().subscribe(res => {
-    const data = Array.isArray(res) ? res : res.data || [];
+  loadFuelTypes(): void {
+    this.fuelService.getAll().subscribe(res => {
+      const data = Array.isArray(res) ? res : res.data || [];
 
-    this.fuelTypes = data.filter((f: any) =>
-      (f.isActive === true || f.isActive === 1) &&
-      (f.isapplicable === true || f.isapplicable === 1)
-    );
-  });
-}
+      this.fuelTypes = data.filter((f: any) =>
+        (f.isActive === true || f.isActive === 1) &&
+        (f.isapplicable === true || f.isapplicable === 1)
+      );
+    });
+  }
   loadGeneratorTypes(): void {
     this.service.getGenerators().subscribe(res => {
       const data = Array.isArray(res) ? res : res.data || [];
@@ -214,129 +188,86 @@ export class SearchGenerator implements OnInit, AfterViewInit {
   }
 
   loadEmissions(): void {
-  const fuelParam = this.selectedFuels.length > 0
-    ? this.selectedFuels.map(f => f.trim()).join(',')
-    : undefined;
+    const fuelParam = this.selectedFuels.length > 0
+      ? this.selectedFuels.map(f => f.trim()).join(',')
+      : undefined;
 
-  // Never send generatorNames when chartSiteName is active
-  const genParam = (this.selectedGenTypes.length > 0 && !this.chartSiteName)
-    ? this.selectedGenTypes.map(g => g.trim()).join(',')
-    : undefined;
+    // Never send generatorNames when chartSiteName is active
+    const genParam = (this.selectedGenTypes.length > 0 && !this.chartSiteName)
+      ? this.selectedGenTypes.map(g => g.trim()).join(',')
+      : undefined;
 
-  const siteParam = this.chartSiteName ? this.chartSiteName.trim() : undefined;
+    const siteParam = this.chartSiteName ? this.chartSiteName.trim() : undefined;
 
-  // ✅ Only siteParam suppresses free-text search
-  // fuelType/genType filters should NOT suppress search text
-  const hasChartFilter = !!(siteParam);
+    // ✅ Only siteParam suppresses free-text search
+    // fuelType/genType filters should NOT suppress search text
+    const hasChartFilter = !!(siteParam);
 
-  const searchParam = hasChartFilter
-    ? undefined
-    : (this.searchText()?.trim() || undefined);
+    const searchParam = hasChartFilter
+      ? undefined
+      : (this.searchText()?.trim() || undefined);
 
-  const opStart = this.operationStartDate() || undefined;
-  const opEnd = this.operationEndDate() || undefined;
-  const entryStart = this.entryStartDate() || undefined;
-  const entryEnd = this.entryEndDate() || undefined;
+    const opStart = this.operationStartDate() || undefined;
+    const opEnd = this.operationEndDate() || undefined;
+    const entryStart = this.entryStartDate() || undefined;
+    const entryEnd = this.entryEndDate() || undefined;
 
-  console.log('loadEmissions() params →', {
-    siteParam, genParam, fuelParam, searchParam,
-    opStart, opEnd, entryStart, entryEnd
-  });
+    console.log('loadEmissions() params →', {
+      siteParam, genParam, fuelParam, searchParam,
+      opStart, opEnd, entryStart, entryEnd
+    });
 
-  this.service.searchEmissions(
-    this.currentPage(), this.pageSize,
-    searchParam, fuelParam, genParam,
-    opStart, opEnd,
-    entryStart, entryEnd,
-    this.sortColumn, this.sortDirection,
-    siteParam
-  ).subscribe({
-    next: (res: any) => {
-      const records = res.data ?? [];
-      const total = res.totalRecords ?? 0;
+    this.service.searchEmissions(
+      this.currentPage(), this.pageSize,
+      searchParam, fuelParam, genParam,
+      opStart, opEnd,
+      entryStart, entryEnd,
+      this.sortColumn, this.sortDirection,
+      siteParam
+    ).subscribe({
+      next: (res: any) => {
+        const records = res.data ?? [];
+        const total = res.totalRecords ?? 0;
 
-      const mapped = records.map((e: any) => ({
-        ...e,
-        generatorName: e.generatorName ?? 'Unknown Generator',
-        fuelType: e.fuelType ?? 'Unknown',
-        status: e.statusName ?? (e.statusId === 1 ? 'Completed' : 'Pending'),
-        totalEmission: e.totalEmission ?? 0,
-      }));
+        const mapped = records.map((e: any) => ({
+          ...e,
+          generatorName: e.generatorName ?? 'Unknown Generator',
+          fuelType: e.fuelType ?? 'Unknown',
+          status: e.statusName ?? (e.statusId === 1 ? 'Completed' : 'Pending'),
+          totalEmission: e.totalEmission ?? 0,
+        }));
 
-      this.filteredData.set(mapped);
-      this.totalRecordsCount.set(total);
-      this.totalPagesCount.set(Math.ceil(total / this.pageSize) || 1);
+        this.filteredData.set(mapped);
+        this.totalRecordsCount.set(total);
+        this.totalPagesCount.set(Math.ceil(total / this.pageSize) || 1);
 
-      // ✅ Always update entry date picker from real data
-      if (mapped.length > 0) {
-        const entryDates: Date[] = [];
-
-        for (const r of mapped) {
-          const raw = r.entryDate ?? r.EntryDate ?? r.entry_date ?? null;
-          if (!raw) continue;
-          const d = new Date(raw);
-          if (!isNaN(d.getTime())) entryDates.push(d);
+        // ── Generator filter: ensure name exists in dropdown ─
+        if (this.selectedGenTypes.length > 0) {
+          this.selectedGenTypes.forEach(name => {
+            const exists = this.generatorTypes.some(g => g.gen_name === name);
+            if (!exists) this.generatorTypes.push({ gen_name: name });
+          });
         }
 
-        console.log('Entry dates found:', entryDates.length, entryDates);
-
-        if (entryDates.length > 0) {
-          const minEntry = new Date(Math.min(...entryDates.map(d => d.getTime())));
-          const maxEntry = new Date(Math.max(...entryDates.map(d => d.getTime())));
-
-          console.log('Setting entry picker:', minEntry, '→', maxEntry);
-
-          setTimeout(() => {
-            if (this.entryDatePicker) {
-              this._isSettingPickerFromData = true;
-              this.entryDatePicker.setRange(minEntry, maxEntry);
-              this._isSettingPickerFromData = false;
-              console.log('Picker setRange called successfully');
-            } else {
-              console.warn('entryDatePicker ref is undefined!');
-            }
-          }, 100);
+        // ── Site chart: pre-populate generator dropdown ──────
+        if (this.chartSiteName && mapped.length > 0) {
+          const uniqueGenNames: string[] = [
+            ...new Set<string>(
+              mapped
+                .map((r: any) => r.generatorName as string)
+                .filter((n: string) => !!n && n !== 'Unknown Generator')
+            )
+          ];
+          this.selectedGenTypes = uniqueGenNames;
+          uniqueGenNames.forEach(name => {
+            const exists = this.generatorTypes.some(g => g.gen_name === name);
+            if (!exists) this.generatorTypes.push({ gen_name: name });
+          });
         }
-      }
-
-      // ── Show active filter label in search box ───────────
-      // ✅ Only set label when chart filters are active (siteParam)
-      // Do NOT overwrite user-typed search text
-      if (siteParam) {
-        const labelParts: string[] = [];
-        if (this.selectedFuels.length > 0) labelParts.push(this.selectedFuels.join(', '));
-        if (this.selectedGenTypes.length > 0) labelParts.push(this.selectedGenTypes.join(', '));
-        if (this.chartSiteName) labelParts.push(this.chartSiteName);
-        if (labelParts.length > 0) this.searchText.set(labelParts.join(' — '));
-      }
-
-      // ── Generator filter: ensure name exists in dropdown ─
-      if (this.selectedGenTypes.length > 0) {
-        this.selectedGenTypes.forEach(name => {
-          const exists = this.generatorTypes.some(g => g.gen_name === name);
-          if (!exists) this.generatorTypes.push({ gen_name: name });
-        });
-      }
-
-      // ── Site chart: pre-populate generator dropdown ──────
-      if (this.chartSiteName && mapped.length > 0) {
-        const uniqueGenNames: string[] = [
-          ...new Set<string>(
-            mapped
-              .map((r: any) => r.generatorName as string)
-              .filter((n: string) => !!n && n !== 'Unknown Generator')
-          )
-        ];
-        this.selectedGenTypes = uniqueGenNames;
-        uniqueGenNames.forEach(name => {
-          const exists = this.generatorTypes.some(g => g.gen_name === name);
-          if (!exists) this.generatorTypes.push({ gen_name: name });
-        });
-      }
-    },
-    error: err => console.error('Error loading emissions', err)
-  });
-}
+      },
+      error: err => console.error('Error loading emissions', err)
+    });
+  }
 
   // ── Multi-Select: Fuel ─────────────────────────────────────────
 
@@ -369,7 +300,6 @@ export class SearchGenerator implements OnInit, AfterViewInit {
     else
       this.selectedGenTypes.push(name);
     this.chartSiteName = null;
-    this._skipEntryDateUpdate = true;
     this.applyFilters();
   }
 
@@ -377,14 +307,12 @@ export class SearchGenerator implements OnInit, AfterViewInit {
     this.selectedGenTypes = this.selectedGenTypes.length === this.generatorTypes.length
       ? [] : this.generatorTypes.map(g => g.gen_name);
     this.chartSiteName = null;
-    this._skipEntryDateUpdate = true;
     this.applyFilters();
   }
 
   clearGenTypes(): void {
     this.selectedGenTypes = [];
     this.chartSiteName = null;
-    this._skipEntryDateUpdate = true;
     this.applyFilters();
   }
 
@@ -400,9 +328,8 @@ export class SearchGenerator implements OnInit, AfterViewInit {
   onSearch(event: any): void {
     this.searchText.set(event.target.value);
     this.chartSiteName = null;
-   // this.selectedFuels = [];
+    // this.selectedFuels = [];
     // this.selectedGenTypes = [];
-    this._skipEntryDateUpdate = true;
     this.applyFilters();
   }
 
@@ -415,16 +342,12 @@ export class SearchGenerator implements OnInit, AfterViewInit {
     this.operationEndDate.set(
       range.endDate ? range.endDate.toISOString().substring(0, 10) : null
     );
-    this._skipEntryDateUpdate = true;
     this.applyFilters();
   }
 
   // ── Date Range: Reported / Entry Date ─────────────────────────
 
   onEntryDateRangeSelected(range: { startDate: Date | null; endDate: Date | null }): void {
-    // ✅ Ignore picker events triggered by our own setRange() calls
-    // Only respond to genuine user interactions
-    if (this._isSettingPickerFromData) return;
 
     this.entryStartDate.set(
       range.startDate ? range.startDate.toISOString().substring(0, 10) : null
@@ -445,8 +368,6 @@ export class SearchGenerator implements OnInit, AfterViewInit {
     this.operationStartDate.set(null); this.operationEndDate.set(null);
     this.entryStartDate.set(null); this.entryEndDate.set(null);
     this._pendingOpStart = null; this._pendingOpEnd = null;
-    this._pendingEntryStart = null; this._pendingEntryEnd = null;
-    this._skipEntryDateUpdate = true;
     this.currentPage.set(1);
     this.opDatePicker?.reset();
     this.entryDatePicker?.reset();

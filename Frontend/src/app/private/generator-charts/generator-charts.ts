@@ -141,7 +141,7 @@ export class GeneratorCharts implements OnInit, AfterViewInit, OnChanges, OnDest
   // ═══════════════════════════════════════════════════════════════
   private getMonthLabels(): string[] {
     return ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-            'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   }
 
   // ═══════════════════════════════════════════════════════════════
@@ -173,13 +173,9 @@ export class GeneratorCharts implements OnInit, AfterViewInit, OnChanges, OnDest
       const end = `${y}-${String(m).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
       queryParams['startDate'] = start;
       queryParams['endDate'] = end;
-      queryParams['entryStartDate'] = start;
-      queryParams['entryEndDate'] = end;
     } else {
       queryParams['startDate'] = `${y}-01-01`;
       queryParams['endDate'] = `${y}-12-31`;
-      queryParams['entryStartDate'] = `${y}-01-01`;
-      queryParams['entryEndDate'] = `${y}-12-31`;
     }
 
     this.router.navigate(['/dashboard/searchGenerator'], { queryParams });
@@ -768,6 +764,15 @@ export class GeneratorCharts implements OnInit, AfterViewInit, OnChanges, OnDest
         labels: hasData ? sorted.map(d => d.siteName) : [],
         datasets: [
           {
+            label: 'CO₂e (kg)',
+            data: hasData ? sorted.map(d => d.totalCO2e) : [],
+            backgroundColor: '#6366F1CC',
+            borderColor: '#6366F1',
+            borderWidth: 1,
+            borderRadius: 4,
+            borderSkipped: false as const,
+          },
+          {
             label: 'CO₂ (kg)',
             data: hasData ? sorted.map(d => d.totalCO2) : [],
             backgroundColor: '#1D9E75CC',
@@ -775,7 +780,6 @@ export class GeneratorCharts implements OnInit, AfterViewInit, OnChanges, OnDest
             borderWidth: 1,
             borderRadius: 4,
             borderSkipped: false as const,
-            //stack: 'emission'
           },
           {
             label: 'NO₂ (kg)',
@@ -842,7 +846,6 @@ export class GeneratorCharts implements OnInit, AfterViewInit, OnChanges, OnDest
         },
         scales: {
           x: {
-            //stacked: true,
             grid: { display: false },
             ticks: {
               color: '#64748b',
@@ -852,7 +855,7 @@ export class GeneratorCharts implements OnInit, AfterViewInit, OnChanges, OnDest
             }
           },
           y: {
-            //stacked: true,
+            position: 'left' as const,
             grid: { color: '#fff7ed' },
             min: 0,
             ticks: {
@@ -862,9 +865,25 @@ export class GeneratorCharts implements OnInit, AfterViewInit, OnChanges, OnDest
             },
             title: {
               display: true,
-              text: 'Emissions (kg)',
+              text: 'CO₂e (kg)',
               color: '#94a3b8',
               font: { size: 11 }
+            }
+          },
+          y1: {
+            position: 'right' as const,
+            grid: { drawOnChartArea: false },
+            min: 0,
+            ticks: {
+              color: '#94a3b8',
+              font: { size: 10 },
+              callback: (v: any) => `${Number(v).toFixed(5)}`
+            },
+            title: {
+              display: true,
+              text: 'CO₂ / NO₂ / CH₄ (kg)',
+              color: '#94a3b8',
+              font: { size: 10 }
             }
           }
         },

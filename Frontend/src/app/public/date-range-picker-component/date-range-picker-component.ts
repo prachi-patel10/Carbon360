@@ -139,13 +139,8 @@ export class DateRangePickerComponent {
   this.selectedEnd = end;
   this.fromValue = start.toISOString().split('T')[0];
   this.toValue = end.toISOString().split('T')[0];
-
-  // keep Inputs in sync
   this.startDate = start.toISOString();
   this.endDate = end.toISOString();
-
-  // emit so parent knows values changed
-  this.rangeSelected.emit({ startDate: start, endDate: end });
 }
 
 }

@@ -175,7 +175,6 @@
         <div class="chart-icon-wrap runhours-bg"><i class="fas fa-chart-pie"></i></div>
         <div>
           <h3>Generator Run Hours Distribution</h3>
-          <p>Hover a segment for details · click to drill into records</p>
         </div>
       </div>
     </div>
@@ -225,6 +224,10 @@
       <canvas #generatorSiteEmissionCanvas></canvas>
     </div>
     <div class="fuel-legend" [class.hidden]="!showSiteEmissionCanvas()">
+      <div class="legend-item">
+        <span class="legend-swatch" style="background:#6366F1"></span>
+        <span class="legend-label">CO₂e (kg)</span>
+      </div>
       <div class="legend-item">
         <span class="legend-swatch" style="background:#1D9E75"></span>
         <span class="legend-label">CO₂ (kg)</span>
