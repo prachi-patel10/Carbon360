@@ -281,4 +281,25 @@ export class DashboardService {
   ExportCityWiseEmissionChart(year: number) {
     return this.http.get(`${this.base}/Chart/ExportCityWiseEmissionChart?year=${year}`, { responseType: 'blob' });
   }
+
+    //SERVICE FOR GENERATOR MODULE
+  //1st chart
+  ExportGeneratorFuelTypeWiseMonthlyConsumptionFirstChart(year: number) {
+    return this.http.get(`${this.base}/Chart/ExportGeneratorFuel?year=${year}`, { responseType: 'blob' });
+  }
+
+  //2nd chart
+  ExportGeneratorMonthlyEmissionTrend(year: number) {
+    return this.http.get(`${this.base}/Chart/ExportGeneratorEmissionLineChart?year=${year}`, { responseType: 'blob' });
+  }
+
+  //3rd chart
+  ExportGeneratorRunHoursMonthWisePivotTbl(year: number) {
+    return this.http.get(`${this.base}/Chart/ExportGeneratorRunHoursMonthWisePivotTbl?year=${year}`, { responseType: 'blob' });
+  }
+
+  //4rd chart
+  ExportGeneratorRunHoursDistribution(year: number) {
+    return this.http.get(`${this.base}/Chart/ExportGeneratorPie?year=${year}`, { responseType: 'blob' });
+  }
 }
