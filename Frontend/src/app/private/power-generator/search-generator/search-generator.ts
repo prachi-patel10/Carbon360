@@ -3,6 +3,7 @@ import {
 } from '@angular/core';
 import { GeneratorOperation, SearchGeneratorService } from './search-generator-service';
 import { FueltypeService } from '../../masters/fueltype/fueltype-service';
+import { SiteLocationMasterService } from '../sitelocationmaster/site-location-master-service';
 import { Router, ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -31,6 +32,10 @@ export class SearchGenerator implements OnInit, AfterViewInit {
   fuelTypes: any[] = [];
   selectedFuels: string[] = [];
   fuelDropdownOpen = false;
+
+  Sitename: any[] = [];
+  selectedSite: string[] = [];
+  SiteDropdownOpen = false;
 
   generatorTypes: any[] = [];
   selectedGenTypes: string[] = [];
@@ -74,6 +79,7 @@ export class SearchGenerator implements OnInit, AfterViewInit {
   constructor(
     private service: SearchGeneratorService,
     private fuelService: FueltypeService,
+    private SiteService: SiteLocationMasterService,
     private router: Router,
     private route: ActivatedRoute,
   ) { }
@@ -90,6 +96,7 @@ export class SearchGenerator implements OnInit, AfterViewInit {
 
   ngOnInit(): void {
     this.loadFuelTypes();
+    this.loadSiteName();
     this.loadGeneratorTypes();
 
     this.route.queryParams.subscribe(params => {
@@ -178,6 +185,18 @@ export class SearchGenerator implements OnInit, AfterViewInit {
       );
     });
   }
+
+  loadSiteName(): void {
+    this.SiteService.getAll().subscribe(res => {
+      const data = Array.isArray(res) ? res : res.data || [];
+
+      this.Sitename = data.filter((f: any) =>
+        (f.isActive === true || f.isActive === 1) 
+      );
+    });
+  }
+
+
   loadGeneratorTypes(): void {
     this.service.getGenerators().subscribe(res => {
       const data = Array.isArray(res) ? res : res.data || [];
@@ -272,7 +291,9 @@ export class SearchGenerator implements OnInit, AfterViewInit {
   // ── Multi-Select: Fuel ─────────────────────────────────────────
 
   toggleFuelDropdown(): void { this.fuelDropdownOpen = !this.fuelDropdownOpen; }
+  toggleSiteDropDown():void {this.SiteDropdownOpen = !this.SiteDropdownOpen;}
   isFuelSelected(name: string): boolean { return this.selectedFuels.includes(name); }
+  isSiteSelected(name:string): boolean { return this.selectedSite.includes(name);}
 
   toggleFuel(name: string): void {
     const i = this.selectedFuels.indexOf(name);
@@ -280,13 +301,27 @@ export class SearchGenerator implements OnInit, AfterViewInit {
     this.applyFilters();
   }
 
+  toggleSite(name: string): void {
+    const i = this.selectedSite.indexOf(name);
+    i > -1 ? this.selectedSite.splice(i, 1) : this.selectedSite.push(name);
+    this.applyFilters();
+  }
+
+
   toggleSelectAll(): void {
     this.selectedFuels = this.selectedFuels.length === this.fuelTypes.length
       ? [] : this.fuelTypes.map((f: any) => f.fuel_name);
     this.applyFilters();
   }
 
+  toggleSelectAllSite(): void {
+    this.selectedSite = this.selectedSite.length === this.selectedSite.length
+      ? [] : this.Sitename.map((f: any) => f.Sitename);
+    this.applyFilters();
+  }
+
   clearFuels(): void { this.selectedFuels = []; this.applyFilters(); }
+  clearSite(): void {this.selectedSite = []; this.applyFilters();}
 
   // ── Multi-Select: Generator ────────────────────────────────────
 
@@ -320,6 +355,7 @@ export class SearchGenerator implements OnInit, AfterViewInit {
   onDocumentClick(e: MouseEvent): void {
     const t = e.target as HTMLElement;
     if (!t.closest('.fuel-multiselect')) this.fuelDropdownOpen = false;
+    if (!t.closest('site-multiselect')) this.SiteDropdownOpen =false;
     if (!t.closest('.gen-multiselect')) this.genDropdownOpen = false;
   }
 
@@ -362,6 +398,7 @@ export class SearchGenerator implements OnInit, AfterViewInit {
 
   resetFilters(): void {
     this.selectedFuels = []; this.fuelDropdownOpen = false;
+    this.selectedSite = []; this.SiteDropdownOpen = false;
     this.selectedGenTypes = []; this.genDropdownOpen = false;
     this.chartSiteName = null;
     this.searchText.set('');

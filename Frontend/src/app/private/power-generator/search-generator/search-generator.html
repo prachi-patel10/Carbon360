@@ -63,6 +63,47 @@
               </div>
             </div>
 
+
+
+            <!-- Site Name -->
+            <div class="filter-field">
+              <label class="filter-label">
+                <i class="fas fa-gas-pump"></i> Site Name
+              </label>
+              <div class="site-multiselect" [class.open]="SiteDropdownOpen">
+                <div class="fuel-trigger" (click)="toggleSiteDropDown()">
+                  <div class="fuel-tags">
+                    <span *ngIf="selectedSite.length === 0" class="placeholder">All  Site Name</span>
+                    <ng-container *ngIf="selectedSite.length > 0">
+                      <span *ngFor="let f of selectedSite" class="fuel-tag">
+                        {{ f }}
+                        <span class="remove" (click)="$event.stopPropagation(); toggleSite(f)">✕</span>
+                      </span>
+                    </ng-container>
+                  </div>
+                  <span class="arrow">&#9660;</span>
+                </div>
+                <div class="fuel-dropdown" *ngIf="SiteDropdownOpen">
+                  <div class="fuel-dropdown-header">
+                    <span>{{ selectedSite.length }} selected</span>
+                    <button type="button" class="clear-btn" (click)="clearSite()">Clear all</button>
+                  </div>
+                  <label class="fuel-option select-all-option">
+                    <input type="checkbox" [checked]="selectedSite.length === Sitename.length"
+                      [indeterminate]="selectedSite.length > 0 && selectedSite.length < Sitename.length"
+                      (change)="toggleSelectAllSite()" />
+                    <span>Select all</span>
+                  </label>
+                  <label class="fuel-option" *ngFor="let fuel of Sitename"
+                    [class.selected]="isSiteSelected(fuel.Sitename)">
+                    <input type="checkbox" [checked]="isSiteSelected(fuel.Sitename)"
+                      (change)="toggleSite(fuel.Sitename)" />
+                    <span>{{ fuel.Sitename }}</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
             <!-- Generator Type -->
             <div class="filter-field">
               <label class="filter-label">
