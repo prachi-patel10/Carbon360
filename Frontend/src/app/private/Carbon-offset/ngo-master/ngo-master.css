@@ -3,7 +3,6 @@
   justify-content: center;   /* horizontal center */
   align-items: center;       /* vertical center */
   min-height: 100vh;         /* full screen height */
-  background: #f4f6f9;       /* optional light bg */
   font-family: 'Segoe UI', sans-serif;
 }
 

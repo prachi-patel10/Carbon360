@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ReactiveFormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';   // ✅ ADD THIS
 
 interface City {
   cityId: number;
@@ -15,9 +16,10 @@ interface Ngo {
 
 @Component({
   selector: 'app-project',
+    standalone: true,  
   templateUrl: './plantation-project.html',
   styleUrls: ['./plantation-project.css'],
-  imports: [ReactiveFormsModule]
+  imports: [CommonModule,ReactiveFormsModule]
 })
 export class ProjectComponent implements OnInit {
 

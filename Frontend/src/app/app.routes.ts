@@ -56,9 +56,6 @@ export const routes: Routes = [
      { path: 'forgot-password', component: ForgotPasswordComponent },  // ✅
   { path: 'reset-password', component: ResetPasswordComponent },
 
-            { path: 'Ngoentryform', component: Entryform },
-            { path: 'Plantationproject', component: ProjectComponent },
-            { path: 'NgoMaster', component: NgoComponent },
     // Dashboard Routes
     {
         path: 'dashboard',
@@ -89,6 +86,9 @@ export const routes: Routes = [
             { path: 'Generatorchart', component: GeneratorCharts },
 
 
+            { path: 'Ngoentryform', component: Entryform },
+            { path: 'Plantationproject', component: ProjectComponent },
+            { path: 'NgoMaster', component: NgoComponent },
             // { path: 'generator-review/:id', component: GeneratorReviewComponent },
             { path: 'vehicle-ec/:id', component: TripComponent },
             {

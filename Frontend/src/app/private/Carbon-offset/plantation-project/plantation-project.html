@@ -56,7 +56,7 @@
       </div>
 
       <!-- Active Toggle -->
-      <div class="form-group full-width center-toggle">
+      <div class="form-group full-width">
         <div class="status-toggle">
           <span>Active</span>
 
@@ -68,15 +68,17 @@
       </div>
 
       <!-- Buttons -->
-      <div class="form-group full-width center-toggle">
-        <button type="submit" class="save-btn">
-          {{ !projectForm.value.projectId ? 'Save' : 'Update' }}
-        </button>
+      <div class="form-group full-width">
+  <div class="btn-group">
+    <button type="submit" class="save-btn">
+      {{ !projectForm.value.projectId ? 'Save' : 'Update' }}
+    </button>
 
-        <button type="button" class="reset-btn" (click)="reset()">
-          Reset
-        </button>
-      </div>
+    <button type="button" class="reset-btn" (click)="reset()">
+      Reset
+    </button>
+  </div>
+</div>
 
     </form>
 

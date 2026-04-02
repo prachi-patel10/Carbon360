@@ -6,8 +6,13 @@
 
 * {
   box-sizing: border-box;
+  max-width: 100%;
 }
-
+html, body {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden !important;   /* ✅ FORCE REMOVE */
+}
 /* ═══════════════════════════════════════════════
    TOPBAR
 ═══════════════════════════════════════════════ */
@@ -248,11 +253,9 @@
 .layout-container {
   display: flex;
   margin-top: 64px;
-  height: calc(100vh - 64px);
+  min-height: calc(100vh - 64px);
   font-family: 'Inter', sans-serif;
-  overflow: hidden;
 }
-
 /* ═══════════════════════════════════════════════
    SIDEBAR
 ═══════════════════════════════════════════════ */
@@ -559,18 +562,20 @@ ul.deep-submenu>li:hover {
 ═══════════════════════════════════════════════ */
 .main-section {
   margin-left: 260px;
+  width: calc(100% - 260px);
   flex: 1;
   display: flex;
   flex-direction: column;
   min-height: calc(100vh - 64px);
   min-width: 0;
-  overflow-x: hidden;
-  transition: margin-left .28s cubic-bezier(.4, 0, .2, 1);
+  overflow-x: hidden;   /* ✅ FIX */
+  overflow-y: hidden;   transition: margin-left .28s cubic-bezier(.4, 0, .2, 1);
   background: #f0f4f2;
 }
 
 .sidebar.closed~.main-section {
   margin-left: 62px;
+   width: calc(100% - 62px); 
 }
 
 .page-content {
@@ -581,6 +586,12 @@ ul.deep-submenu>li:hover {
   font-family: 'Inter', sans-serif;
   scrollbar-width: thin;
   scrollbar-color: #d1d5db transparent;
+  .page-content {
+  flex: 1;
+  padding: 18px 24px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
 }
 
 .page-content::-webkit-scrollbar {
@@ -618,12 +629,16 @@ ul.deep-submenu>li:hover {
   color: white;
   margin-bottom: 16px;
   box-shadow: 0 4px 20px rgba(15, 81, 50, 0.25);
+    width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 .banner-right {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   flex-wrap: wrap;
+  max-width: 100%;
 }
 .gov-sync-btn {
   display: flex;
@@ -1110,10 +1125,11 @@ ul.deep-submenu>li:hover {
   .module-tab {
     padding: 10px;
   }
-
-  .kpi-row {
-    grid-template-columns: repeat(2, 1fr);
-  }
+.kpi-row {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr)); /* ✅ FIX */
+  gap: 10px;
+}
 
   .kpi-row-2 {
     grid-template-columns: 1fr;
@@ -1197,3 +1213,10 @@ ul.deep-submenu>li:hover {
   opacity: 1;
   transform: scale(1);
 }
+
+.menu-icon {
+  stroke: currentColor;
+  fill: none;
+  transition: 0.3s;
+}
+

@@ -1,7 +1,7 @@
-<div class="ngo-container">
+<div class="container">
 
+  <!-- ================= NGO FORM ================= -->
   <div class="card">
-
     <form [formGroup]="ngoForm" (ngSubmit)="onSubmit()" class="form-grid">
 
       <!-- NGO Name -->
@@ -10,13 +10,14 @@
           NGO Name <span class="required">*</span>
         </label>
 
-        <input type="text" formControlName="ngoName" placeholder="Enter NGO Name">
-
-        @if (ngoForm.get('ngoName')?.touched && ngoForm.get('ngoName')?.invalid) {
-          <small class="error-text">
-            NGO Name is required
-          </small>
-        }
+        <input type="text"
+               formControlName="ngoName"
+               placeholder="Enter NGO Name"
+/>
+        <small class="error-text"
+          *ngIf="ngoForm.get('ngoName')?.touched && ngoForm.get('ngoName')?.invalid">
+          NGO Name is required
+        </small>
       </div>
 
       <!-- Contact Person -->
@@ -43,19 +44,19 @@
         <input type="text" formControlName="location">
       </div>
 
-      <!-- Toggle -->
-      <div class="form-group full-width center-toggle">
-  <div class="status-toggle">
-    <span>Active</span>
-
-    <label class="switch">
-      <input type="checkbox" formControlName="isActive">
-      <span class="slider"></span>
-    </label>
-  </div>
-</div>
-      <!-- Buttons -->
+      <!-- STATUS + BUTTONS (Same Row Style) -->
       <div class="form-actions">
+
+        <!-- Toggle -->
+        <div class="status-toggle">
+          <span>Active</span>
+          <label class="switch">
+            <input type="checkbox" formControlName="isActive">
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <!-- Buttons -->
         <button type="submit" class="save-btn">
           {{ !ngoForm.value.ngoId ? 'Save' : 'Update' }}
         </button>
@@ -63,10 +64,10 @@
         <button type="button" class="reset-btn" (click)="reset()">
           Reset
         </button>
+
       </div>
 
     </form>
-
   </div>
 
 </div>

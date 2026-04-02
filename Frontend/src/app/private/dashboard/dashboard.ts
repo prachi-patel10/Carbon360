@@ -321,6 +321,22 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
 
+// Active check
+isAnyCarbonActive(): boolean {
+  return this.router.url.includes('NgoMaster') ||
+         this.router.url.includes('Plantationproject') ||
+         this.router.url.includes('Ngoentryform');
+}
+
+// Label for tooltip
+getActiveCarbonLabel(): string {
+  if (this.router.url.includes('NgoMaster')) return 'NGO Master';
+  if (this.router.url.includes('Plantationproject')) return 'Plantation Project';
+  if (this.router.url.includes('Ngoentryform')) return 'Report';
+  return 'Carbon Offset';
+}
+
+
   // ── Load split summaries (vehicle + generator separately) ────────────────────
   loadSummaries(): void {
   this.isSummaryLoading.set(true);
