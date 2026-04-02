@@ -1,62 +1,70 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { CommonModule } from '@angular/common'; // ✅ ADD THIS
 
 @Component({
   selector: 'app-entryform',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule,CommonModule],
   templateUrl: './entryform.html',
   styleUrl: './entryform.css',
 })
-export class Entryform implements OnInit{
-  plantationForm!: FormGroup;
+export class Entryform implements OnInit {
 
-  projects: any[] = [
+  plantationForm!: FormGroup;
+  yearList: number[] = [];
+  offset: number = 0;
+totalEmission: number = 0;
+treesRequired: number = 0;
+  projects = [
     { project_id: 1, project_name: 'Green City Drive' },
     { project_id: 2, project_name: 'Urban Forest Initiative' }
   ];
 
-  offset: number = 0;
-  treesRequired: number = 0;
-
   constructor(private fb: FormBuilder) {}
 
   ngOnInit() {
-    this.plantationForm = this.fb.group({
-      projectId: ['', Validators.required],
-      noOfTrees: [0, [Validators.required, Validators.min(1)]],
-      years: [10],
-      entryBy: [101] // default logged-in user
-    });
+  this.plantationForm = this.fb.group({
+    projectId: ['', Validators.required],
+    year: ['', Validators.required]
+  });
 
-    this.plantationForm.valueChanges.subscribe(val => {
-      this.calculate(val);
-    });
+  const currentYear = new Date().getFullYear();
+  for (let i = 0; i < 10; i++) {
+    this.yearList.push(currentYear - i);
   }
 
-  calculate(val: any) {
-    const trees = val.noOfTrees || 0;
-    const years = val.years || 1;
+  this.plantationForm.valueChanges.subscribe(() => {
+    this.fetchEmission();
+  });
+}
 
-    // CO2 offset (20 kg per tree/year)
-    this.offset = trees * 20 * years;
+fetchEmission() {
+  const { projectId, year } = this.plantationForm.value;
 
-    // Dummy emission (replace with API/SP later)
-    const totalEmission = 5000;
+  if (!projectId || !year) return;
 
-    this.treesRequired = Math.round(totalEmission / 20);
+  // 🔥 Replace with API later
+  this.totalEmission = this.getEmissionFromBackend(projectId, year);
+
+  this.treesRequired = Math.round(this.totalEmission / 20);
+
+  this.offset = this.totalEmission; // covered emission
+}
+
+  // 🔥 Dummy backend logic (replace with API)
+  getEmissionFromBackend(projectId: number, year: number): number {
+    return 5000 + (year % 5) * 1000; // sample dynamic data
   }
 
   submit() {
     if (this.plantationForm.valid) {
-      console.log("Form Data:", this.plantationForm.value);
-
-      // Call API here
+      console.log(this.plantationForm.value);
       alert("Saved successfully!");
     }
   }
 
   reset() {
     this.plantationForm.reset();
+    this.offset = 0;
   }
 }
-

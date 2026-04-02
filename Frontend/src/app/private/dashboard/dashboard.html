@@ -269,8 +269,9 @@
       <li class="menu-parent">
         <span class="section-label">Operations</span>
         <div class="menu-item-wrap">
-          <div class="menu-title" (click)="toggleMainMenu('fleet')"
-            [class.icon-active]="!sidebarOpen && isAnyFleetActive()">
+        <div class="menu-title"
+     (click)="handleSidebarNavigation('fleet','searchVehicle')"
+     [class.icon-active]="!sidebarOpen && isAnyFleetActive()">
             <svg class="menu-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
               stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <rect x="1" y="3" width="15" height="13" rx="2" />
@@ -331,8 +332,9 @@
       @if (isAdmin() || isReporter() || isCorporate()) {
       <li class="menu-parent">
         <div class="menu-item-wrap">
-          <div class="menu-title" (click)="toggleMainMenu('power')"
-            [class.icon-active]="!sidebarOpen && isAnyPowerActive()">
+          <div class="menu-title"
+     (click)="handleSidebarNavigation('power','searchGenerator')"
+     [class.icon-active]="!sidebarOpen && isAnyPowerActive()">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
               stroke-linecap="round" stroke-linejoin="round">
               <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />

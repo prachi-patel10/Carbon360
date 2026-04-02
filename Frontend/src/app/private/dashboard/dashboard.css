@@ -6,7 +6,6 @@
 
 * {
   box-sizing: border-box;
-  max-width: 100%;
 }
 html, body {
   margin: 0;
@@ -1219,4 +1218,3 @@ ul.deep-submenu>li:hover {
   fill: none;
   transition: 0.3s;
 }
-

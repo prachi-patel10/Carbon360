@@ -1,52 +1,74 @@
-<div class="container">
+<div class="ngo-container">
 
   <div class="card">
-    <h2>🌱 Tree Plantation Entry</h2>
 
-    <form [formGroup]="plantationForm" (ngSubmit)="submit()">
+    <form [formGroup]="plantationForm" (ngSubmit)="submit()" class="form-grid">
 
       <!-- Project -->
       <div class="form-group">
-        <label>Select Project *</label>
+        <label>Select Project <span class="required">*</span></label>
+
         <select formControlName="projectId">
-          <option value="">-- Select Project --</option>
+          <option value="">Select Project</option>
           <option *ngFor="let p of projects" [value]="p.project_id">
             {{ p.project_name }}
           </option>
         </select>
       </div>
 
-      <!-- Number of Trees -->
+      <!-- Year -->
       <div class="form-group">
-        <label>No. of Trees *</label>
-        <input type="number" formControlName="noOfTrees" placeholder="Enter number of trees">
+        <label>Year <span class="required">*</span></label>
+
+        <select formControlName="year">
+          <option value="">Select Year</option>
+          <option *ngFor="let y of yearList" [value]="y">
+            {{ y }}
+          </option>
+        </select>
       </div>
 
-      <!-- Years -->
-      <div class="form-group">
-        <label>Years</label>
-        <input type="number" formControlName="years">
+      <!-- EMPTY SPACE (for 3-column layout balance) -->
+      <div class="form-group"></div>
+
+      <!-- INFO BOX (FULL WIDTH) -->
+      <div class="form-group full-width">
+        <div class="info-box">
+
+          <div class="info-item">
+            <span>Total Emission</span>
+            <strong>{{ totalEmission }} kg</strong>
+          </div>
+
+          <div class="info-item">
+            <span>Trees Required</span>
+            <strong>{{ treesRequired }}</strong>
+          </div>
+
+          <div class="info-item">
+            <span>Estimated CO₂ Offset</span>
+            <strong>{{ offset }} kg</strong>
+          </div>
+
+        </div>
       </div>
 
-      <!-- Entry By -->
-      <div class="form-group">
-        <label>Entry By (User ID)</label>
-        <input type="number" formControlName="entryBy">
+      <!-- BUTTON -->
+       <div class="form-group full-width">
+        <div class="btn-group">
+          <button type="submit" class="btn-save">
+            Save
+          </button>
+
+          <button type="button" class="btn-reset" (click)="reset()">
+            Reset
+          </button>
+        </div>
       </div>
 
-      <!-- Auto Info -->
-      <div class="info-box">
-        <p><strong>Estimated CO₂ Offset:</strong> {{ offset }} kg</p>
-        <p><strong>Trees Required (based on emission):</strong> {{ treesRequired }}</p>
-      </div>
-
-      <!-- Buttons -->
-      <div class="btn-group">
-        <button type="submit" [disabled]="plantationForm.invalid">Save</button>
-        <button type="button" class="cancel" (click)="reset()">Cancel</button>
-      </div>
 
     </form>
+
   </div>
 
 </div>

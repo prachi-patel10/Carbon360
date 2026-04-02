@@ -1,66 +1,140 @@
-.container {
-  display: flex;
-  justify-content: center;
-  margin-top: 30px;
-}
-
-.card {
-  width: 450px;
+/* Container */
+.ngo-container {
   padding: 20px;
-  border-radius: 12px;
-  background: #ffffff;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
-h2 {
-  text-align: center;
-  color: #2e7d32;
+/* Card */
+.card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.08);
 }
 
+/* Grid Layout - 3 fields per row */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+
+/* Full width rows */
+.full-width {
+  grid-column: span 3;
+}
+
+/* Form Group */
 .form-group {
-  margin-bottom: 15px;
   display: flex;
   flex-direction: column;
+  position: relative; /* IMPORTANT */
 }
 
+/* Labels */
 label {
-  font-weight: 600;
-  margin-bottom: 5px;
+  font-size: 14px;
+  margin-bottom: 6px;
+  font-weight: 500;
 }
 
-input, select {
-  padding: 8px;
-  border-radius: 6px;
+/* Required */
+.required {
+  color: red;
+}
+
+/* Inputs & Select */
+input,
+select {
+  height: 40px;
+  padding: 8px 10px;
+  border-radius: 8px;
   border: 1px solid #ccc;
+  transition: 0.2s;
 }
 
-input:focus, select:focus {
-  border-color: #2e7d32;
+input:focus,
+select:focus {
+  border-color: #4CAF50;
   outline: none;
 }
 
-.info-box {
-  background: #e8f5e9;
-  padding: 10px;
-  border-radius: 8px;
-  margin-top: 10px;
+/* Error */
+.error-text {
+  position: absolute;
+  bottom: -18px; /* adjust spacing */
+  left: 0;
+  font-size: 12px;
+  color: red;
 }
 
-.btn-group {
+/* INFO BOX (Modern Style) */
+.info-box {
   display: flex;
   justify-content: space-between;
-  margin-top: 15px;
+  align-items: center;
+  background: #f4f9f4;
+  border: 1px solid #d6ead6;
+  border-radius: 12px;
+  padding: 16px;
 }
 
-button {
-  padding: 10px 15px;
+.info-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.info-item span {
+  font-size: 13px;
+  color: #666;
+}
+
+.info-item strong {
+  font-size: 18px;
+  color: #2e7d32;
+}
+
+/* Buttons */
+.btn-group {
+  display: flex;
+  gap: 10px;
+}
+.btn-save {
+  padding: 8px 16px;
+  border-radius: 5px;
   border: none;
-  border-radius: 6px;
+  background-color: #0f5132;
+  color: #fff;
   cursor: pointer;
-  background: #2e7d32;
-  color: white;
+  font-size: 14px;
 }
 
-button.cancel {
-  background: #d32f2f;
+.btn-save:hover {
+  background-color: #145214;
+}
+
+
+/* RESET BUTTON */
+.btn-reset {
+  background: #f3f4f6;
+  color: #374151;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-reset:hover {
+  background: #e5e7eb;
+}
+.info-box {
+  display: flex;
+  justify-content: space-around; /* better spacing */
+  align-items: center;
+  background: #f4f9f4;
+  border: 1px solid #d6ead6;
+  border-radius: 12px;
+  padding: 18px;
 }

@@ -281,6 +281,28 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
+  handleSidebarNavigation(menu: string, route: string): void {
+
+  if (!this.sidebarOpen) {
+    // ✅ Step 1: Open sidebar
+    this.sidebarOpen = true;
+
+    // ✅ Step 2: Navigate
+    this.goTo(route);
+
+    // ✅ Step 3: Optional → open that menu automatically
+    this.openedMainMenu = menu;
+    this.openedConfigMenu = menu === 'configuration' ? menu : null;
+  } else {
+    // 👉 Normal behavior when sidebar already open
+    if (menu === 'configuration') {
+      this.toggleConfigMenu(menu);
+    } else {
+      this.toggleMainMenu(menu);
+    }
+  }
+}
+
   toggleConfigMenu(menu: string): void {
     this.openedConfigMenu = this.openedConfigMenu === menu ? null : menu;
     this.openedMainMenu = null;
