@@ -97,133 +97,53 @@ namespace ProjectApp.API.Controllers.Account.VehicleTripEmission
             });
         }
 
-        //    [HttpGet("search")]
-        //    public async Task<IActionResult> SearchVehicleTrips(
-        //[FromQuery] string? search,
-        //[FromQuery] string? vehicleNumber,
-        //[FromQuery] string? fuelType,
-        //[FromQuery] string? vehicleType,
-        //[FromQuery] DateTime? startDate,
-        //[FromQuery] DateTime? endDate,
-        //[FromQuery] int? statusId,
-        //[FromQuery] int pageNumber = 1,
-        //[FromQuery] int pageSize = 10)
-        //    {
-        //        string role = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
-
-        //        var result = await _service.SearchVehicleTrips(
-        //            search,
-        //            vehicleNumber,
-        //            fuelType,
-        //            vehicleType,
-        //            startDate,
-        //            endDate,
-        //            statusId,
-        //            role,
-        //            pageNumber,
-        //            pageSize);
-
-        //        return Ok(new
-        //        {
-        //            success = true,
-        //            data = result.Item1,
-        //            totalRecords = result.Item2,
-        //            pageNumber,
-        //            pageSize
-        //        });
-        //    }
 
         [HttpGet("search")]
         public async Task<IActionResult> Search(
-           string? search = null,
-           string? vehicleNumber = null,
-           [FromQuery] List<string>? fuelType = null,
-            [FromQuery] List<string>? vehicleType=null,
-           DateTime? startDate = null,
-           DateTime? endDate = null,
-           int? statusId = null,
-           int pageNumber = 1,
-           int pageSize = 10,
-           string sortColumn = "tripstartdatetime",
-           string sortDirection = "DESC")
+    [FromQuery] string? search = null,
+    [FromQuery] string? vehicleNumber = null,
+    [FromQuery] List<string>? fuelType = null,
+    [FromQuery] List<string>? vehicleCategory = null,
+    [FromQuery] List<string>? vehicleType = null,
+    [FromQuery] DateTime? opStart = null,       
+    [FromQuery] DateTime? opEnd = null,          
+    [FromQuery] DateTime? entryStart = null,     
+    [FromQuery] DateTime? entryEnd = null,       
+    [FromQuery] int? statusId = null,
+    [FromQuery] int page = 1,                    
+    [FromQuery] int pageSize = 10,
+    [FromQuery] string sortColumn = "EntryDate",
+    [FromQuery] string sortDirection = "DESC")
         {
-
-            (IEnumerable<SearchVehicleTripEmissionDTO> data, int totalRecords) = await _service.SearchVehicleTrips(
-       search,
-       vehicleNumber,
-       fuelType,      
-       vehicleType,    
-       startDate,
-       endDate,
-       statusId,
-       null,
-       pageNumber,
-       pageSize,
-       sortColumn,
-       sortDirection
-   );
+            var (data, totalRecords) = await _service.SearchVehicleTrips(
+                search,
+                vehicleNumber,
+                fuelType,
+                vehicleCategory,
+                vehicleType,
+                opStart,          // startDate
+                opEnd,            // endDate
+                entryStart,       // entryStartDate
+                entryEnd,         // entryEndDate
+                statusId,
+                null,
+                page,
+                pageSize,
+                sortColumn,
+                sortDirection
+            );
 
             return Ok(new
             {
                 success = true,
                 data,
                 totalRecords,
-                pageNumber,
+                pageNumber = page,
                 pageSize
             });
         }
 
-        //        [HttpGet("my-actions")]
-        //        public async Task<IActionResult> GetMyActions(int pageNumber = 1, int pageSize = 10, string sortColumn = "fromCity",
-        //string sortDirection = "ASC")
-        //        {
-        //            var result = await _service.GetMyActionTripsAsync(pageNumber, pageSize);
-        //            return Ok(result);
-        //        }
-
-        //[Authorize(Roles = "Reporter,Corporate")]
-
-        [HttpGet("my-actions")]
-        public async Task<IActionResult> GetMyActions(
-          int pageNumber = 1,
-          int pageSize = 10,
-          string sortColumn = "EntryDate",
-          string sortDirection = "ASC")
-        {
-            var result = await _service.GetMyActionTripsAsync(
-                pageNumber,
-                pageSize,
-                sortColumn,
-                sortDirection
-            );
-
-            return Ok(result);
-        }
-
-        [HttpGet("{id}/actions")]
-        public async Task<IActionResult> GetWorkflowActions(string id)
-        {
-            var actions = await _service.GetWorkflowActionsAsync(id);
-
-            if (actions == null || !actions.Any())
-            {
-                return Ok(new
-                {
-                    status = true,
-                    statusCode = 200,
-                    message = "No workflow actions available for this trip.",
-                    data = new List<object>()
-                });
-            }
-
-            return Ok(new
-            {
-                status = true,
-                statusCode = 200,
-                message = "Workflow actions fetched successfully.",
-                data = actions
-            });
-        }
+        
 
         [HttpGet("pdf/{hashId}")]
         public async Task<IActionResult> GetTripDetailsForPDF(string hashId)
@@ -236,26 +156,28 @@ namespace ProjectApp.API.Controllers.Account.VehicleTripEmission
 
         [HttpGet("export-excel")]
         public async Task<IActionResult> ExportExcel(
-   string? search,
- [FromQuery] List<string>? fuelType ,
-    [FromQuery] List<string>? vehicleType ,
-   DateTime? startDate,
-   DateTime? endDate,
-   DateTime? entryStartDate,
-   DateTime? entryEndDate,
-   string sortColumn = "entrydate",
-   string sortDirection = "DESC")
+    [FromQuery] string? search = null,
+    [FromQuery] List<string>? fuelType = null,
+    [FromQuery] List<string>? vehicleCategory = null,
+    [FromQuery] List<string>? vehicleType = null,
+    [FromQuery] DateTime? opStart = null,
+    [FromQuery] DateTime? opEnd = null,
+    [FromQuery] DateTime? entryStart = null,
+    [FromQuery] DateTime? entryEnd = null,
+    [FromQuery] string sortColumn = "EntryDate",
+    [FromQuery] string sortDirection = "DESC")        // ✅ make sure this param exists
         {
             var fileBytes = await _service.ExportVehicleTripsExcel(
                 search,
                 fuelType,
+                vehicleCategory,
                 vehicleType,
-                startDate,
-                endDate,
-                entryStartDate,
-                entryEndDate,
+                opStart,
+                opEnd,
+                entryStart,
+                entryEnd,
                 sortColumn,
-                sortDirection
+                sortDirection    // ✅ make sure this is passed
             );
 
             return File(
@@ -264,6 +186,7 @@ namespace ProjectApp.API.Controllers.Account.VehicleTripEmission
                 "VehicleTripEmission.xlsx"
             );
         }
+
         [HttpGet("trip-pdf/{tripId}")]
         public async Task<IActionResult> DownloadTripPdf(string tripId)
         {

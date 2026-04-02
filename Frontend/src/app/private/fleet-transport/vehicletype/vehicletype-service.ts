@@ -17,7 +17,6 @@ export interface FilterOption {
   value: string;  // display label: "LDV","MDV","HDV" | "Bike","Bus" etc.
 }
 
-// Fixed mapping: categoryName → categoryId
 // Must match your DB: 1=LDV, 2=MDV, 3=HDV
 const CATEGORY_MAP: Record<string, string> = {
   'LDV': '1',

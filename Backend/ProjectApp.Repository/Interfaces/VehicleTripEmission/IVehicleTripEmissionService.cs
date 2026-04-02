@@ -30,18 +30,21 @@ namespace ProjectApp.Repository.Interfaces.VehicleTripEmission
         //int pageSize = 10);
 
         Task<(IEnumerable<SearchVehicleTripEmissionDTO>, int)> SearchVehicleTrips(
-           string? search,
-           string? vehicleNumber,
-           List<string>? fuelType,         
-           List<string>? vehicleType,
-           DateTime? startDate,
-           DateTime? endDate,
-           int? statusId,
-           string? userRole,
-           int pageNumber = 1,
-           int pageSize = 10,
-           string sortColumn = "entrydate",
-           string sortDirection = "DESC");
+    string? search,
+    string? vehicleNumber,
+    List<string>? fuelType,
+    List<string>? vehicleCategory,
+    List<string>? vehicleType,
+    DateTime? startDate,
+    DateTime? endDate,
+    DateTime? entryStartDate,
+    DateTime? entryEndDate,
+    int? statusId,
+    string? userRole,
+    int pageNumber = 1,
+    int pageSize = 10,
+    string sortColumn = "EntryDate",
+    string sortDirection = "DESC");
 
         //Task<PageResult> GetMyActionTripsAsync(int pageNumber, int pageSize);
         Task<PageResult> GetMyActionTripsAsync(int pageNumber, int pageSize, string sortColumn = "EntryDate", string sortDirection = "ASC");
@@ -51,15 +54,16 @@ namespace ProjectApp.Repository.Interfaces.VehicleTripEmission
         Task<Dictionary<string, object>> GetByHashIdAsyncPDF(string hashId);
 
         Task<byte[]> ExportVehicleTripsExcel(
-        string? search,
-        List<string>? fuelType,      
+    string? search,
+    List<string>? fuelType,
+    List<string>? vehicleCategory,
     List<string>? vehicleType,
-        DateTime? startDate,
-        DateTime? endDate,
-        DateTime? entryStartDate,
-        DateTime? entryEndDate,
-        string sortColumn,
-        string sortDirection);
+    DateTime? startDate,
+    DateTime? endDate,
+    DateTime? entryStartDate,
+    DateTime? entryEndDate,
+    string sortColumn,
+    string sortDirection);
 
         Task<byte[]> GenerateVehicleTripPdf(string tripId);
 

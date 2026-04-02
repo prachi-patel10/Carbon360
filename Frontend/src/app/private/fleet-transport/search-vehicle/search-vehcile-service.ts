@@ -19,8 +19,8 @@ export class SearchVehcileService {
     sortDirection: string,
     search?:       string,
     fuelTypes?:    string[],
-    vehicleTypes?: string[],
-    city?:         string,        // ← NEW
+    vehicleCategories?: string[],  
+    vehicleTypes?: string[],       
     opStart?:      string,
     opEnd?:        string,
     entryStart?:   string,
@@ -34,13 +34,13 @@ export class SearchVehcileService {
       .set('sortDirection', sortDirection);
 
     if (search)     params = params.set('search',     search);
-    if (city)       params = params.set('city',       city);   // ← NEW
     if (opStart)    params = params.set('opStart',    opStart);
     if (opEnd)      params = params.set('opEnd',      opEnd);
     if (entryStart) params = params.set('entryStart', entryStart);
     if (entryEnd)   params = params.set('entryEnd',   entryEnd);
 
     fuelTypes?.forEach(f    => { params = params.append('fuelType',    f); });
+    vehicleCategories?.forEach(c   => { params = params.append('vehicleCategory',   c); });
     vehicleTypes?.forEach(v => { params = params.append('vehicleType', v); });
 
     return this.http.get(`${this.base}/VehicleTripEmission/search`, { params });
@@ -49,8 +49,8 @@ export class SearchVehcileService {
   exportExcel(
     search?:        string,
     fuelTypes?:     string[],
+    vehicleCategories?:   string[],
     vehicleTypes?:  string[],
-    city?:          string,       // ← NEW
     opStart?:       string,
     opEnd?:         string,
     entryStart?:    string,
@@ -62,7 +62,6 @@ export class SearchVehcileService {
     let params = new HttpParams();
 
     if (search)        params = params.set('search',        search);
-    if (city)          params = params.set('city',          city);   // ← NEW
     if (opStart)       params = params.set('opStart',       opStart);
     if (opEnd)         params = params.set('opEnd',         opEnd);
     if (entryStart)    params = params.set('entryStart',    entryStart);
@@ -71,6 +70,7 @@ export class SearchVehcileService {
     if (sortDirection) params = params.set('sortDirection', sortDirection);
 
     fuelTypes?.forEach(f    => { params = params.append('fuelType',    f); });
+    vehicleCategories?.forEach(c  => { params = params.append('vehicleCategory',  c); });
     vehicleTypes?.forEach(v => { params = params.append('vehicleType', v); });
 
     return this.http.get(`${this.base}/VehicleTripEmission/export-excel`, {

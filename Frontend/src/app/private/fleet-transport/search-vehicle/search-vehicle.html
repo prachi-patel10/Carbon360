@@ -12,14 +12,6 @@
               <i class="fas fa-sliders-h"></i>
             </div>
             <span class="filter-header-label">Filters</span>
-
-            <!-- City badge: shown only when drilled from City Wise chart -->
-            <span class="city-filter-badge" *ngIf="selectedCity()">
-              <i class="fas fa-city"></i>
-              {{ selectedCity() }}
-              <button type="button" class="city-badge-clear" (click)="clearCity()" title="Remove city filter">✕</button>
-            </span>
-
             <div class="export-btn-container">
               <button type="button" class="btn btn-success" (click)="exportExcel()">
                 <i class="fas fa-file-excel me-2"></i> Export Excel
@@ -27,11 +19,11 @@
             </div>
           </div>
 
-          <!-- Row 1: filter columns -->
-          <div class="filter-row-fields">
+          <!-- Row 1: 3 Dropdown filters -->
+          <div class="filter-row-dropdowns">
 
             <!-- Fuel Type -->
-            <div class="filter-field date-filter-field">
+            <div class="filter-field">
               <label class="filter-label">
                 <i class="fas fa-gas-pump"></i> Fuel Type
               </label>
@@ -54,7 +46,8 @@
                     <button type="button" class="clear-btn" (click)="clearFuels()">Clear all</button>
                   </div>
                   <label class="fuel-option select-all-option">
-                    <input type="checkbox" [checked]="selectedFuels.length === fuelTypes.length"
+                    <input type="checkbox"
+                      [checked]="selectedFuels.length === fuelTypes.length"
                       [indeterminate]="selectedFuels.length > 0 && selectedFuels.length < fuelTypes.length"
                       (change)="toggleSelectAll()" />
                     <span>Select all</span>
@@ -64,6 +57,46 @@
                     <input type="checkbox" [checked]="isFuelSelected(fuel.fuel_name)"
                       (change)="toggleFuel(fuel.fuel_name)" />
                     <span>{{ fuel.fuel_name }}</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Category Type -->
+            <div class="filter-field">
+              <label class="filter-label">
+                <i class="fas fa-layer-group"></i> Category Type
+              </label>
+              <div class="category-multiselect" [class.open]="categoryDropdownOpen">
+                <div class="category-trigger" (click)="toggleCategoryDropdown()">
+                  <div class="category-tags">
+                    <span *ngIf="selectedCategories.length === 0" class="placeholder">All Categories</span>
+                    <ng-container *ngIf="selectedCategories.length > 0">
+                      <span *ngFor="let c of selectedCategories" class="category-tag">
+                        {{ c }}
+                        <span class="remove" (click)="$event.stopPropagation(); toggleCategory(c)">✕</span>
+                      </span>
+                    </ng-container>
+                  </div>
+                  <span class="arrow">&#9660;</span>
+                </div>
+                <div class="category-dropdown" *ngIf="categoryDropdownOpen">
+                  <div class="category-dropdown-header">
+                    <span>{{ selectedCategories.length }} selected</span>
+                    <button type="button" class="clear-btn" (click)="clearCategories()">Clear all</button>
+                  </div>
+                  <label class="category-option select-all-option">
+                    <input type="checkbox"
+                      [checked]="selectedCategories.length === vehicleCategories.length"
+                      [indeterminate]="selectedCategories.length > 0 && selectedCategories.length < vehicleCategories.length"
+                      (change)="toggleSelectAllCategories()" />
+                    <span>Select all</span>
+                  </label>
+                  <label class="category-option" *ngFor="let cat of vehicleCategories"
+                    [class.selected]="isCategorySelected(cat.name)">
+                    <input type="checkbox" [checked]="isCategorySelected(cat.name)"
+                      (change)="toggleCategory(cat.name)" />
+                    <span>{{ cat.name }}</span>
                   </label>
                 </div>
               </div>
@@ -93,7 +126,8 @@
                     <button type="button" class="clear-btn" (click)="clearVehicles()">Clear all</button>
                   </div>
                   <label class="vehicle-option select-all-option">
-                    <input type="checkbox" [checked]="selectedVehicles.length === vehicleTypes.length"
+                    <input type="checkbox"
+                      [checked]="selectedVehicles.length === vehicleTypes.length"
                       [indeterminate]="selectedVehicles.length > 0 && selectedVehicles.length < vehicleTypes.length"
                       (change)="toggleSelectAllVehicles()" />
                     <span>Select all</span>
@@ -108,34 +142,41 @@
               </div>
             </div>
 
+          </div>
+
+          <!-- Row 2: Date pickers on their own dedicated row -->
+          <div class="filter-row-dates">
+
             <!-- Operation Date -->
-            <div class="filter-field">
+            <div class="filter-field date-filter-field">
               <label class="filter-label">
                 <i class="fas fa-calendar-alt"></i> Operation Date
               </label>
-              <app-date-range-picker-component #opDatePicker pickerId="veh-operation" [startDate]="operationStartDate()"
-                [endDate]="operationEndDate()" (rangeSelected)="onOperationDateRangeSelected($event)">
+              <app-date-range-picker-component #opDatePicker pickerId="veh-operation"
+                [startDate]="operationStartDate()" [endDate]="operationEndDate()"
+                (rangeSelected)="onOperationDateRangeSelected($event)">
               </app-date-range-picker-component>
             </div>
 
-            <!-- Entry Date -->
+            <!-- Reported Date -->
             <div class="filter-field date-filter-field">
               <label class="filter-label">
                 <i class="fas fa-calendar-alt"></i> Reported Date
               </label>
-              <app-date-range-picker-component #entryDatePicker pickerId="veh-entry" [startDate]="entryStartDate()"
-                [endDate]="entryEndDate()" (rangeSelected)="onEntryDateRangeSelected($event)">
+              <app-date-range-picker-component #entryDatePicker pickerId="veh-entry"
+                [startDate]="entryStartDate()" [endDate]="entryEndDate()"
+                (rangeSelected)="onEntryDateRangeSelected($event)">
               </app-date-range-picker-component>
             </div>
 
           </div>
 
-          <!-- Row 2: Search + Reset -->
+          <!-- Row 3: Search + Reset -->
           <div class="filter-row-search">
             <div class="search-wrap">
               <i class="fas fa-search search-icon"></i>
-              <input type="text" class="search-input" placeholder="Quick search" [value]="searchText()"
-                (input)="onSearch($event)" />
+              <input type="text" class="search-input" placeholder="Quick search"
+                [value]="searchText()" (input)="onSearch($event)" />
             </div>
             <button type="button" class="btn-reset" (click)="resetFilters()">
               <i class="fas fa-rotate-left"></i> Reset Filters
@@ -152,8 +193,8 @@
         <table class="table align-middle mb-0 vehicle-table">
           <thead>
             <tr>
-              <th>Action</th>
-              <th>Download</th>
+              <th class="col-action">Action</th>
+              <th class="col-download">Download</th>
               <th (click)="sort('reportId')" class="sortable">
                 Report ID <span class="sort-icon">{{ getSortIcon('reportId') }}</span>
               </th>
@@ -184,18 +225,18 @@
               <th (click)="sort('fuelConsumedLtr')" class="sortable">
                 Fuel (L) <span class="sort-icon">{{ getSortIcon('fuelConsumedLtr') }}</span>
               </th>
-
             </tr>
           </thead>
           <tbody>
             <tr *ngFor="let e of paginatedData()">
-              <td>
+              <td class="col-action">
                 <button class="btn btn-sm btn-open" (click)="openTrip(e.tripId)">
                   <i class="fas fa-eye"></i>
                 </button>
               </td>
-              <td>
-                <button class="btn-pdf-download" (click)="downloadTrip(e.tripId)" [disabled]="isLoading(e.tripId)"
+              <td class="col-download">
+                <button class="btn-pdf-download" (click)="downloadTrip(e.tripId)"
+                  [disabled]="isLoading(e.tripId)"
                   [title]="isLoading(e.tripId) ? 'Generating...' : 'Download PDF'">
                   <i *ngIf="!isLoading(e.tripId)" class="fas fa-file-pdf"></i>
                   <i *ngIf="isLoading(e.tripId)" class="fas fa-spinner fa-spin"></i>
@@ -211,7 +252,6 @@
               <td>{{ e.tripEndDateTime | date:'dd-MMM-yyyy' }}</td>
               <td>{{ e.distanceKm }}</td>
               <td>{{ e.fuelConsumedLtr }}</td>
-              
             </tr>
             <tr *ngIf="paginatedData().length === 0">
               <td colspan="12" class="text-center py-4 text-muted">No records found.</td>
@@ -222,9 +262,7 @@
 
       <!-- Pagination Footer -->
       <div class="table-footer">
-        <div class="total-records">
-          Total Records : <b>{{ totalRecords() }}</b>
-        </div>
+        <div class="total-records">Total Records : <b>{{ totalRecords() }}</b></div>
         <div class="page-size">
           Show
           <select [value]="pageSize" (change)="changePageSize($event)">
