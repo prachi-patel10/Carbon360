@@ -13,7 +13,7 @@
             </div>
             <span class="filter-header-label">Filters</span>
 
-            <!-- Export Button — same styling as vehicle search -->
+            <!-- Export Button -->
             <div class="export-btn-container">
               <button type="button" class="btn btn-success" (click)="exportExcel()">
                 <i class="fas fa-file-excel"></i> Export Excel
@@ -21,7 +21,7 @@
             </div>
           </div>
 
-          <!-- Row 1: 3 filter fields -->
+          <!-- Row 1: 4 filter fields -->
           <div class="filter-row-fields">
 
             <!-- Fuel Type -->
@@ -66,7 +66,7 @@
             <!-- Generator Type -->
             <div class="filter-field">
               <label class="filter-label">
-                <i class="fas fa-cogs"></i> Generator 
+                <i class="fas fa-cogs"></i> Generator
               </label>
               <div class="gen-multiselect" [class.open]="genDropdownOpen">
                 <div class="gen-trigger" (click)="toggleGenDropdown()">
@@ -103,7 +103,7 @@
             </div>
 
             <!-- Operation Date -->
-            <div class="filter-field">
+            <div class="filter-field date-filter-field">
               <label class="filter-label">
                 <i class="fas fa-calendar-alt"></i> Operation Date
               </label>
@@ -113,7 +113,7 @@
             </div>
 
             <!-- Entry Date -->
-            <div class="filter-field">
+            <div class="filter-field date-filter-field">
               <label class="filter-label">
                 <i class="fas fa-calendar-alt"></i> Reported Date
               </label>
@@ -143,18 +143,19 @@
     <!-- Table Card -->
     <div class="card table-card">
 
-      <!-- Scrollable wrapper — table scrolls here, page never overflows -->
       <div class="table-responsive">
         <table class="gen-table">
           <thead>
             <tr>
+              <th class="col-action">Action</th>
+              <th class="col-download">Download</th>
               <th (click)="sortBy('reportId')" class="sortable">
                 Report ID <span class="sort-icon">{{ getSortIcon('reportId') }}</span>
               </th>
               <th (click)="sortBy('generatorName')" class="sortable">
                 Generator <span class="sort-icon">{{ getSortIcon('generatorName') }}</span>
               </th>
-               <th (click)="sortBy('totalEmission')" class="sortable">
+              <th (click)="sortBy('totalEmission')" class="sortable">
                 Total Emission (kg CO₂e) <span class="sort-icon">{{ getSortIcon('totalEmission') }}</span>
               </th>
               <th (click)="sortBy('entryDate')" class="sortable">
@@ -172,28 +173,16 @@
               <th (click)="sortBy('fuelConsumedLiters')" class="sortable">
                 Fuel (L) <span class="sort-icon">{{ getSortIcon('fuelConsumedLiters') }}</span>
               </th>
-             
-              <th>Action</th>
-              <th>Download</th>
             </tr>
           </thead>
           <tbody>
             <tr *ngFor="let e of paginatedData()">
-              <td class="report-color">{{ e.reportId }}</td>
-              <td>{{ e.generatorName }}</td>      
-              <td class="emission-value">{{ e.totalEmission }}</td>       
-              <td>{{ e.entryDate | date:'dd-MMM-yyyy' }}</td>
-              <td>{{ e.startTime | date:'dd-MMM-yyyy' }}</td>
-              <td>{{ e.endTime | date:'dd-MMM-yyyy' }}</td>
-              <td>{{ e.loadFactor }}</td>
-              <td>{{ e.fuelConsumedLiters }}</td>
-
-              <td>
+              <td class="col-action">
                 <button class="btn-open" (click)="goToDetail(e.operationId)">
                   <i class="fas fa-eye"></i>
                 </button>
               </td>
-              <td>
+              <td class="col-download">
                 <button class="btn-pdf-download" (click)="downloadTrip(e.operationId)"
                   [disabled]="isLoading(e.operationId)"
                   [title]="isLoading(e.operationId) ? 'Generating...' : 'Download PDF'">
@@ -201,9 +190,17 @@
                   <i *ngIf="isLoading(e.operationId)" class="fas fa-spinner fa-spin"></i>
                 </button>
               </td>
+              <td class="report-color">{{ e.reportId }}</td>
+              <td>{{ e.generatorName }}</td>
+              <td class="emission-value">{{ e.totalEmission }}</td>
+              <td>{{ e.entryDate | date:'dd-MMM-yyyy' }}</td>
+              <td>{{ e.startTime | date:'dd-MMM-yyyy' }}</td>
+              <td>{{ e.endTime | date:'dd-MMM-yyyy' }}</td>
+              <td>{{ e.loadFactor }}</td>
+              <td>{{ e.fuelConsumedLiters }}</td>
             </tr>
             <tr *ngIf="paginatedData().length === 0">
-              <td colspan="9" class="no-records">No records found.</td>
+              <td colspan="10" class="no-records">No records found.</td>
             </tr>
           </tbody>
         </table>

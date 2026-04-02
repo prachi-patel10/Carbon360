@@ -16,7 +16,6 @@ body {
     min-height: 100vh;
     width: 100%;
     max-width: 100%;
-    overflow-x: hidden; /* clips anything that bleeds out */
 }
 
 .generator-report-container {
@@ -43,8 +42,21 @@ body {
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
     width: 100%;
     max-width: 100%;
- overflow: hidden;
     background: #fff;
+}
+
+/* Add this new rule */
+.date-filter-field {
+    overflow: visible;
+    position: relative;
+    z-index: 100;
+}
+
+/* Add this new rule */
+.date-filter-field {
+    overflow: visible;
+    position: relative;
+    z-index: 100;
 }
 
 /* ================= FILTER FORM ================= */
@@ -480,18 +492,18 @@ body {
 }
 
 /* Give each column a sensible fixed width */
-.vehicle-table th:nth-child(1)  { width: 150px; } /* reportedid */
-.vehicle-table th:nth-child(2)  { width: 120px;  } /* Vehicle No */
-.vehicle-table th:nth-child(3)  { width: 220px;  } /* Total Emission */
-.vehicle-table th:nth-child(4)  { width: 140px; } /*VType  */
-.vehicle-table th:nth-child(5)  { width: 130px; } /*Fuel Type */
-.vehicle-table th:nth-child(6)  { width: 150px; } /*  Reported Date */
-.vehicle-table th:nth-child(7)  { width: 110px; } /*Start Date */
-.vehicle-table th:nth-child(8)  { width: 125px;  } /* End Date */
-.vehicle-table th:nth-child(9)  { width: 125px; } /* Distance  */
-.vehicle-table th:nth-child(10) { width: 100px;  } /* Fuel L*/
-.vehicle-table th:nth-child(11) { width: 80px;  } /* Action*/
-.vehicle-table th:nth-child(12) { width: 100px;  } /* Download */
+.vehicle-table th:nth-child(1)  { width: 85px; } 
+.vehicle-table th:nth-child(2)  { width: 90px;  } 
+.vehicle-table th:nth-child(3)  { width: 220px;  }
+.vehicle-table th:nth-child(4)  { width: 140px; } 
+.vehicle-table th:nth-child(5)  { width: 130px; } 
+.vehicle-table th:nth-child(6)  { width: 150px; } 
+.vehicle-table th:nth-child(7)  { width: 110px; } 
+.vehicle-table th:nth-child(8)  { width: 125px;  } 
+.vehicle-table th:nth-child(9)  { width: 125px; } 
+.vehicle-table th:nth-child(10) { width: 100px;  } 
+.vehicle-table th:nth-child(11) { width: 80px;  } 
+.vehicle-table th:nth-child(12) { width: 100px;  } 
 
 .vehicle-table th {
     background-color: #0f5132;

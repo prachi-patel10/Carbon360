@@ -13,19 +13,25 @@
             </div>
             <span class="filter-header-label">Filters</span>
 
+            <!-- City badge: shown only when drilled from City Wise chart -->
+            <span class="city-filter-badge" *ngIf="selectedCity()">
+              <i class="fas fa-city"></i>
+              {{ selectedCity() }}
+              <button type="button" class="city-badge-clear" (click)="clearCity()" title="Remove city filter">✕</button>
+            </span>
+
             <div class="export-btn-container">
               <button type="button" class="btn btn-success" (click)="exportExcel()">
                 <i class="fas fa-file-excel me-2"></i> Export Excel
               </button>
             </div>
-
           </div>
 
-          <!-- Row 1: 3 filter fields -->
+          <!-- Row 1: filter columns -->
           <div class="filter-row-fields">
 
             <!-- Fuel Type -->
-            <div class="filter-field">
+            <div class="filter-field date-filter-field">
               <label class="filter-label">
                 <i class="fas fa-gas-pump"></i> Fuel Type
               </label>
@@ -68,16 +74,10 @@
               <label class="filter-label">
                 <i class="fas fa-car"></i> Vehicle Type
               </label>
-
               <div class="vehicle-multiselect" [class.open]="vehicleDropdownOpen">
-
-                <!-- Trigger -->
                 <div class="vehicle-trigger" (click)="toggleVehicleDropdown()">
                   <div class="vehicle-tags">
-                    <span *ngIf="selectedVehicles.length === 0" class="placeholder">
-                      All Vehicle Types
-                    </span>
-
+                    <span *ngIf="selectedVehicles.length === 0" class="placeholder">All Vehicle Types</span>
                     <ng-container *ngIf="selectedVehicles.length > 0">
                       <span *ngFor="let v of selectedVehicles" class="vehicle-tag">
                         {{ v }}
@@ -85,60 +85,28 @@
                       </span>
                     </ng-container>
                   </div>
-
                   <span class="arrow">&#9660;</span>
                 </div>
-
-                <!-- Dropdown -->
                 <div class="vehicle-dropdown" *ngIf="vehicleDropdownOpen">
-
                   <div class="vehicle-dropdown-header">
                     <span>{{ selectedVehicles.length }} selected</span>
-                    <button type="button" class="clear-btn" (click)="clearVehicles()">
-                      Clear all
-                    </button>
+                    <button type="button" class="clear-btn" (click)="clearVehicles()">Clear all</button>
                   </div>
-
-                  <!-- Select All -->
                   <label class="vehicle-option select-all-option">
                     <input type="checkbox" [checked]="selectedVehicles.length === vehicleTypes.length"
                       [indeterminate]="selectedVehicles.length > 0 && selectedVehicles.length < vehicleTypes.length"
                       (change)="toggleSelectAllVehicles()" />
                     <span>Select all</span>
                   </label>
-
-                  <!-- Options -->
                   <label class="vehicle-option" *ngFor="let vehicle of vehicleTypes"
                     [class.selected]="isVehicleSelected(vehicle.vehicle_type_name)">
-
                     <input type="checkbox" [checked]="isVehicleSelected(vehicle.vehicle_type_name)"
                       (change)="toggleVehicle(vehicle.vehicle_type_name)" />
-
                     <span>{{ vehicle.vehicle_type_name }}</span>
                   </label>
-
                 </div>
               </div>
             </div>
-            <!-- Operation Date -->
-            <!-- <div class="filter-field">
-              <label class="filter-label">
-                <i class="fas fa-calendar-alt"></i> Operation Date
-              </label>
-              <app-date-range-picker-component #opDatePicker pickerId="veh-operation"
-                (rangeSelected)="onOperationDateRangeSelected($event)">
-              </app-date-range-picker-component>
-            </div> -->
-
-            <!-- Entry Date -->
-            <!-- <div class="filter-field">
-              <label class="filter-label">
-                <i class="fas fa-calendar-alt"></i> Reported Date
-              </label>
-              <app-date-range-picker-component #entryDatePicker pickerId="veh-entry"
-                (rangeSelected)="onEntryDateRangeSelected($event)">
-              </app-date-range-picker-component>
-            </div> -->
 
             <!-- Operation Date -->
             <div class="filter-field">
@@ -151,7 +119,7 @@
             </div>
 
             <!-- Entry Date -->
-            <div class="filter-field">
+            <div class="filter-field date-filter-field">
               <label class="filter-label">
                 <i class="fas fa-calendar-alt"></i> Reported Date
               </label>
@@ -160,14 +128,13 @@
               </app-date-range-picker-component>
             </div>
 
-
           </div>
 
           <!-- Row 2: Search + Reset -->
           <div class="filter-row-search">
             <div class="search-wrap">
               <i class="fas fa-search search-icon"></i>
-              <input type="text" class="search-input" placeholder="Quick search " [value]="searchText()"
+              <input type="text" class="search-input" placeholder="Quick search" [value]="searchText()"
                 (input)="onSearch($event)" />
             </div>
             <button type="button" class="btn-reset" (click)="resetFilters()">
@@ -183,28 +150,28 @@
     <div class="card table-card">
       <div class="table-responsive">
         <table class="table align-middle mb-0 vehicle-table">
-
           <thead>
             <tr>
+              <th>Action</th>
+              <th>Download</th>
               <th (click)="sort('reportId')" class="sortable">
                 Report ID <span class="sort-icon">{{ getSortIcon('reportId') }}</span>
               </th>
               <th (click)="sort('vehicleNumber')" class="sortable">
                 Vehicle No. <span class="sort-icon">{{ getSortIcon('vehicleNumber') }}</span>
               </th>
-               <th (click)="sort('totalEmission')" class="sortable">
+              <th (click)="sort('totalEmission')" class="sortable">
                 Total Emission (kg CO₂e) <span class="sort-icon">{{ getSortIcon('totalEmission') }}</span>
               </th>
               <th (click)="sort('vehicleType')" class="sortable">
-               Vehicle Type <span class="sort-icon">{{ getSortIcon('vehicleType') }}</span>
+                Vehicle Type <span class="sort-icon">{{ getSortIcon('vehicleType') }}</span>
               </th>
               <th (click)="sort('fuelType')" class="sortable">
-                Fuel Type<span class="sort-icon">{{ getSortIcon('fuelType') }}</span>
+                Fuel Type <span class="sort-icon">{{ getSortIcon('fuelType') }}</span>
               </th>
               <th (click)="sort('entryDate')" class="sortable">
-                Reported Date<span class="sort-icon">{{ getSortIcon('entryDate') }}</span>
+                Reported Date <span class="sort-icon">{{ getSortIcon('entryDate') }}</span>
               </th>
-
               <th (click)="sort('tripStartDateTime')" class="sortable">
                 Start Date <span class="sort-icon">{{ getSortIcon('tripStartDateTime') }}</span>
               </th>
@@ -215,34 +182,13 @@
                 Distance (km) <span class="sort-icon">{{ getSortIcon('distanceKm') }}</span>
               </th>
               <th (click)="sort('fuelConsumedLtr')" class="sortable">
-                Fuel(L) <span class="sort-icon">{{ getSortIcon('fuelConsumedLtr') }}</span>
+                Fuel (L) <span class="sort-icon">{{ getSortIcon('fuelConsumedLtr') }}</span>
               </th>
-             
-              <th>Action</th>
-              <th>Download</th>
 
             </tr>
           </thead>
           <tbody>
             <tr *ngFor="let e of paginatedData()">
-
-              <td class="report-color">
-                {{ e.reportId }}
-              </td>
-              <td>{{ e.vehicleNumber }}</td>
-              <td class="emission-value">
-                {{ e.totalEmission }}
-                <!-- <span class="emission-tooltip">{{ getEmissionLabel(e.totalEmission) }}</span> -->
-              </td>
-              <td>{{ e.vehicleType }}</td>
-              <td>{{ e.fuelType }}</td>
-              <td>{{ e.entryDate | date:'dd-MMM-yyyy' }}</td>
-              <td>{{ e.tripStartDateTime | date:'dd-MMM-yyyy' }}</td>
-              <td>{{ e.tripEndDateTime | date:'dd-MMM-yyyy' }}</td>
-              <td>{{ e.distanceKm }}</td>
-              <td>{{ e.fuelConsumedLtr }}</td>
-
-              
               <td>
                 <button class="btn btn-sm btn-open" (click)="openTrip(e.tripId)">
                   <i class="fas fa-eye"></i>
@@ -255,11 +201,20 @@
                   <i *ngIf="isLoading(e.tripId)" class="fas fa-spinner fa-spin"></i>
                 </button>
               </td>
+              <td class="report-color">{{ e.reportId }}</td>
+              <td>{{ e.vehicleNumber }}</td>
+              <td class="emission-value">{{ e.totalEmission }}</td>
+              <td>{{ e.vehicleType }}</td>
+              <td>{{ e.fuelType }}</td>
+              <td>{{ e.entryDate | date:'dd-MMM-yyyy' }}</td>
+              <td>{{ e.tripStartDateTime | date:'dd-MMM-yyyy' }}</td>
+              <td>{{ e.tripEndDateTime | date:'dd-MMM-yyyy' }}</td>
+              <td>{{ e.distanceKm }}</td>
+              <td>{{ e.fuelConsumedLtr }}</td>
+              
             </tr>
             <tr *ngIf="paginatedData().length === 0">
-              <td colspan="10" class="text-center py-4 text-muted">
-                No records found.
-              </td>
+              <td colspan="12" class="text-center py-4 text-muted">No records found.</td>
             </tr>
           </tbody>
         </table>

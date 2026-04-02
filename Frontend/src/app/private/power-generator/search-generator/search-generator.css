@@ -34,7 +34,7 @@ body {
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
     background: #fff;
     width: 100%;
-    overflow: hidden;
+    /* ✅ REMOVED overflow:hidden — was clipping date picker dropdowns */
 }
 
 /* ================= FILTER FORM ================= */
@@ -85,12 +85,11 @@ body {
 .export-btn:hover { background: #0f5132; }
 .export-btn i { font-size: 13px; }
 
-/* Filter fields grid — auto-fit so they never cause overflow */
+/* Filter fields grid */
 .filter-row-fields {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 12px;
-    /* margin-bottom: 12px; */
     width: 100%;
 }
 
@@ -99,6 +98,13 @@ body {
     flex-direction: column;
     min-width: 0;
     width: 100%;
+}
+
+/* ✅ Date filter fields need visible overflow for dropdown to escape */
+.date-filter-field {
+    overflow: visible;
+    position: relative;
+    z-index: 100;
 }
 
 .filter-label {
@@ -278,7 +284,7 @@ body {
 
 /* ================= GENERATOR MULTI-SELECT ================= */
 
-.gen-multiselect { position: relative; min-width: 0; width: 100%; overflow: visible;}
+.gen-multiselect { position: relative; min-width: 0; width: 100%; overflow: visible; }
 
 .gen-trigger {
     display: flex;
@@ -357,9 +363,9 @@ body {
 .gen-option input {
     accent-color: #0f5132;
 }
+
 /* ================= TABLE ================= */
 
-/* Wrapper scrolls horizontally — page never overflows */
 .table-responsive {
     width: 100%;
     max-width: 100%;
@@ -369,31 +375,52 @@ body {
     scrollbar-width: thin;
     scrollbar-color: #b8e4cc #f0f2f5;
     display: block;
+    /* ✅ border-radius only on bottom corners so table card still looks clean */
+    border-radius: 0 0 12px 12px;
 }
 
 .table-responsive::-webkit-scrollbar { height: 5px; }
 .table-responsive::-webkit-scrollbar-track { background: #f0f2f5; }
 .table-responsive::-webkit-scrollbar-thumb { background: #b8e4cc; border-radius: 4px; }
 
-/* gen-table: fixed layout with defined column widths */
 .gen-table {
     width: 100%;
-    min-width: 860px;        /* triggers scroll below this; never squishes */
+    min-width: 860px;
     border-collapse: collapse;
-    table-layout: fixed;     /* columns respect explicit widths */
+    table-layout: fixed;
 }
 
-/* Column widths — total = 860px */
-.gen-table th:nth-child(1) { width: 170px; } /*  Report     */
-.gen-table th:nth-child(2) { width: 220px; } /*Generator   */
-.gen-table th:nth-child(3) { width: 220px; } /* Reported Date    */
-.gen-table th:nth-child(4) { width: 140px; } /*Start Date        */
-.gen-table th:nth-child(5) { width: 120px; } /* End Date     */
-.gen-table th:nth-child(6) { width: 140px;  } /*Load Factor       */
-.gen-table th:nth-child(7) { width: 150px; } /*  Fuel L     */
-.gen-table th:nth-child(8) { width: 150px;  } /*  Emission          */
-.gen-table th:nth-child(9) { width: 90px;  } /* Action       */
-.gen-table th:nth-child(10) { width: 110px;  } /* Download       */
+/* ✅ Compact icon-only columns */
+.gen-table th.col-action,
+.gen-table td.col-action {
+    width: 46px;
+    min-width: 46px;
+    text-align: center;
+    padding-left: 6px;
+    padding-right: 6px;
+}
+
+.gen-table th.col-download,
+.gen-table td.col-download {
+    width: 52px;
+    min-width: 52px;
+    text-align: center;
+    padding-left: 6px;
+    padding-right: 6px;
+}
+
+/* Remaining data columns */
+.gen-table th:nth-child(1)  { width: 85px; } /* Report ID      */
+.gen-table th:nth-child(2)  { width: 85px; } /* Report ID      */
+
+.gen-table th:nth-child(3)  { width: 150px; } /* Report ID      */
+.gen-table th:nth-child(4)  { width: 200px; } /* Generator      */
+.gen-table th:nth-child(5)  { width: 160px; } /* Total Emission */
+.gen-table th:nth-child(6)  { width: 120px; } /* Reported Date  */
+.gen-table th:nth-child(7)  { width: 110px; } /* Start Date     */
+.gen-table th:nth-child(8)  { width: 110px; } /* End Date       */
+.gen-table th:nth-child(9)  { width: 110px; } /* Load Factor    */
+.gen-table th:nth-child(10) { width: 100px; } /* Fuel L         */
 
 .gen-table th {
     background-color: #0f5132;
@@ -407,7 +434,7 @@ body {
     overflow: visible;
     text-overflow: unset;
     vertical-align: middle;
-     line-height: 1.2;
+    line-height: 1.2;
 }
 
 .gen-table th.sortable { cursor: pointer; user-select: none; }
@@ -428,10 +455,8 @@ body {
 
 .gen-table tbody tr:hover td { background-color: #f0fdf4 !important; }
 
-.emission-value { font-weight: 600; 
-  color:#c2410c  !important; 
-  text-align: center;}
-.report-color{font-weight: 700;   color: #0f5132 !important; }
+.emission-value { font-weight: 600; color: #c2410c !important; text-align: center; }
+.report-color { font-weight: 700; color: #0f5132 !important; }
 .no-records {
     text-align: center;
     padding: 24px;
@@ -444,12 +469,15 @@ body {
     background: #e8f5e9;
     color: #1b5e20;
     border: none;
-    padding: 5px 9px;
+    padding: 5px 7px;
     border-radius: 6px;
     font-size: 13px;
     cursor: pointer;
     transition: background 0.2s;
     line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .btn-open:hover { background: #c8e6c9; }
@@ -459,11 +487,14 @@ body {
     border: 1px solid #f5c6c6;
     color: #c0392b;
     border-radius: 6px;
-    padding: 5px 9px;
+    padding: 5px 7px;
     cursor: pointer;
     font-size: 14px;
     line-height: 1;
     transition: background 0.2s, color 0.2s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .btn-pdf-download:hover:not(:disabled) { background: #c0392b; color: #fff; border-color: #c0392b; }
@@ -479,6 +510,7 @@ body {
     background: #f9fafb;
     flex-wrap: wrap;
     gap: 10px;
+    border-radius: 0 0 12px 12px;
 }
 
 .total-records,
@@ -511,25 +543,29 @@ body {
 
 .page-info { font-weight: 500; color: #374151; font-size: 0.84rem; white-space: nowrap; }
 
-/* Date picker fills its grid column */
-app-date-range-picker-component { width: 100%; display: block; min-width: 260px;}
+/* ✅ Date picker — must allow dropdown to escape its container */
+app-date-range-picker-component {
+    width: 100%;
+    display: block;
+    min-width: 260px;
+    position: relative;
+    z-index: 200;
+}
 
 /* ================= RESPONSIVE ================= */
 
-/* 2-column filter grid when content area shrinks */
 @media (max-width: 1100px) {
     .filter-row-fields { grid-template-columns: repeat(2, 1fr); gap: 10px; }
 }
 
-/* Stack everything on small screens */
 @media (max-width: 700px) {
     .filter-row-fields { grid-template-columns: 1fr; }
-    .filter-header { display: flex;flex-wrap: wrap; row-gap: 8px;gap:8px }
+    .filter-header { display: flex; flex-wrap: wrap; row-gap: 8px; gap: 8px; }
     .export-btn-container { margin-left: auto; width: 100%; }
     .export-btn { width: 100%; justify-content: center; }
-    .filter-row-search {display: flex; flex-direction: column; align-items: stretch;gap:8px;flex-wrap: wrap; }
+    .filter-row-search { display: flex; flex-direction: column; align-items: stretch; gap: 8px; flex-wrap: wrap; }
     .search-wrap { width: 100%; flex: 1 1 300px; }
-    .btn-reset { width: 100%; justify-content: center;flex-shrink: 0; }
+    .btn-reset { width: 100%; justify-content: center; flex-shrink: 0; }
     .table-footer { flex-direction: column; align-items: flex-start; }
     .pagination { width: 100%; justify-content: center; }
 }
