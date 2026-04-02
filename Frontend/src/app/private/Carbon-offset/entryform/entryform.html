@@ -1,0 +1,52 @@
+<div class="container">
+
+  <div class="card">
+    <h2>🌱 Tree Plantation Entry</h2>
+
+    <form [formGroup]="plantationForm" (ngSubmit)="submit()">
+
+      <!-- Project -->
+      <div class="form-group">
+        <label>Select Project *</label>
+        <select formControlName="projectId">
+          <option value="">-- Select Project --</option>
+          <option *ngFor="let p of projects" [value]="p.project_id">
+            {{ p.project_name }}
+          </option>
+        </select>
+      </div>
+
+      <!-- Number of Trees -->
+      <div class="form-group">
+        <label>No. of Trees *</label>
+        <input type="number" formControlName="noOfTrees" placeholder="Enter number of trees">
+      </div>
+
+      <!-- Years -->
+      <div class="form-group">
+        <label>Years</label>
+        <input type="number" formControlName="years">
+      </div>
+
+      <!-- Entry By -->
+      <div class="form-group">
+        <label>Entry By (User ID)</label>
+        <input type="number" formControlName="entryBy">
+      </div>
+
+      <!-- Auto Info -->
+      <div class="info-box">
+        <p><strong>Estimated CO₂ Offset:</strong> {{ offset }} kg</p>
+        <p><strong>Trees Required (based on emission):</strong> {{ treesRequired }}</p>
+      </div>
+
+      <!-- Buttons -->
+      <div class="btn-group">
+        <button type="submit" [disabled]="plantationForm.invalid">Save</button>
+        <button type="button" class="cancel" (click)="reset()">Cancel</button>
+      </div>
+
+    </form>
+  </div>
+
+</div>

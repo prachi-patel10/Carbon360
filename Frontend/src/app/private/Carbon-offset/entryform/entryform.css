@@ -1,0 +1,66 @@
+.container {
+  display: flex;
+  justify-content: center;
+  margin-top: 30px;
+}
+
+.card {
+  width: 450px;
+  padding: 20px;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+h2 {
+  text-align: center;
+  color: #2e7d32;
+}
+
+.form-group {
+  margin-bottom: 15px;
+  display: flex;
+  flex-direction: column;
+}
+
+label {
+  font-weight: 600;
+  margin-bottom: 5px;
+}
+
+input, select {
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+input:focus, select:focus {
+  border-color: #2e7d32;
+  outline: none;
+}
+
+.info-box {
+  background: #e8f5e9;
+  padding: 10px;
+  border-radius: 8px;
+  margin-top: 10px;
+}
+
+.btn-group {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 15px;
+}
+
+button {
+  padding: 10px 15px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  background: #2e7d32;
+  color: white;
+}
+
+button.cancel {
+  background: #d32f2f;
+}

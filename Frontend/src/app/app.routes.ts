@@ -31,6 +31,7 @@ import { ForgotPasswordComponent } from './public/account/forgot-password/forgot
 import { ResetPasswordComponent } from './public/account/reset-password/reset-password';
 import { NgoComponent } from './private/Carbon-offset/ngo-master/ngo-master';
 import { ProjectComponent } from './private/Carbon-offset/plantation-project/plantation-project';
+import { Entryform } from './private/Carbon-offset/entryform/entryform';
 
 export const routes: Routes = [
 
@@ -44,8 +45,9 @@ export const routes: Routes = [
         path: 'export-excel',
         component: ExportExcel
     },
-            { path: 'Ngomaster', component: NgoComponent },
-            { path: 'Plantationproject', component: ProjectComponent },
+
+            
+            //{path:'Entryform',component:Entryform},
 
     // Public Routes (No Navbar)
     { path: 'login', component: Login },
@@ -54,6 +56,9 @@ export const routes: Routes = [
      { path: 'forgot-password', component: ForgotPasswordComponent },  // ✅
   { path: 'reset-password', component: ResetPasswordComponent },
 
+            { path: 'Ngoentryform', component: Entryform },
+            { path: 'Plantationproject', component: ProjectComponent },
+            { path: 'NgoMaster', component: NgoComponent },
     // Dashboard Routes
     {
         path: 'dashboard',
