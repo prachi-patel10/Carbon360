@@ -544,8 +544,10 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
             if (statusId == 0)
                 return new List<WorkflowActionDTO>(); // No trip or inactive
 
-            
-            string role = _userContext.Role.Contains("Corporate") ? "Corporate" : "Reporter";
+
+            string role = _userContext.Role.Contains("Corporate") ? "Corporate"
+            : _userContext.Role.Contains("Admin") ? "Admin"
+            : "Reporter";
 
             int roleId = await _context.CB_Roles
                 .Where(r => r.RoleName == role)

@@ -24,7 +24,8 @@ export class SearchVehcileService {
     opStart?:      string,
     opEnd?:        string,
     entryStart?:   string,
-    entryEnd?:     string
+    entryEnd?:     string,
+    categoryType?: string
   ): Observable<any> {
 
     let params = new HttpParams()
@@ -38,6 +39,7 @@ export class SearchVehcileService {
     if (opEnd)      params = params.set('opEnd',      opEnd);
     if (entryStart) params = params.set('entryStart', entryStart);
     if (entryEnd)   params = params.set('entryEnd',   entryEnd);
+    if (categoryType) params = params.set('vehicleCategory', categoryType);
 
     fuelTypes?.forEach(f    => { params = params.append('fuelType',    f); });
     vehicleCategories?.forEach(c   => { params = params.append('vehicleCategory',   c); });
