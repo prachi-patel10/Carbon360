@@ -1,0 +1,85 @@
+<div class="container">
+
+  <div class="card">
+
+    <form [formGroup]="projectForm" (ngSubmit)="onSubmit()" class="form-grid">
+
+      <!-- Project Name -->
+      <div class="form-group">
+        <label>
+          Project Name <span class="required">*</span>
+        </label>
+
+        <input type="text" formControlName="projectName" placeholder="Enter Project Name">
+
+        @if (projectForm.get('projectName')?.touched && projectForm.get('projectName')?.invalid) {
+          <small class="error-text">Project Name is required</small>
+        }
+      </div>
+
+      <!-- NGO -->
+      <div class="form-group">
+        <label>
+          NGO <span class="required">*</span>
+        </label>
+
+        <select formControlName="ngoId">
+          <option value="">Select NGO</option>
+          <option *ngFor="let n of ngoList" [value]="n.ngoId">
+            {{ n.ngoName }}
+          </option>
+        </select>
+      </div>
+
+      <!-- Address -->
+      <div class="form-group full-width">
+        <label>Address</label>
+        <input type="text" formControlName="address">
+      </div>
+
+      <!-- City -->
+      <div class="form-group">
+        <label>City</label>
+
+        <select formControlName="cityId">
+          <option value="">Select City</option>
+          <option *ngFor="let c of cityList" [value]="c.cityId">
+            {{ c.cityName }}
+          </option>
+        </select>
+      </div>
+
+      <!-- State Auto Fill -->
+      <div class="form-group">
+        <label>State</label>
+        <input type="text" formControlName="stateName" readonly>
+      </div>
+
+      <!-- Active Toggle -->
+      <div class="form-group full-width center-toggle">
+        <div class="status-toggle">
+          <span>Active</span>
+
+          <label class="switch">
+            <input type="checkbox" formControlName="isActive">
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Buttons -->
+      <div class="form-group full-width center-toggle">
+        <button type="submit" class="save-btn">
+          {{ !projectForm.value.projectId ? 'Save' : 'Update' }}
+        </button>
+
+        <button type="button" class="reset-btn" (click)="reset()">
+          Reset
+        </button>
+      </div>
+
+    </form>
+
+  </div>
+
+</div>

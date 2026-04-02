@@ -29,6 +29,8 @@ import { VehicleCharts } from './private/vehicle-charts/vehicle-charts';
 import { GeneratorCharts } from './private/generator-charts/generator-charts';
 import { ForgotPasswordComponent } from './public/account/forgot-password/forgot-password';
 import { ResetPasswordComponent } from './public/account/reset-password/reset-password';
+import { NgoComponent } from './private/Carbon-offset/ngo-master/ngo-master';
+import { ProjectComponent } from './private/Carbon-offset/plantation-project/plantation-project';
 
 export const routes: Routes = [
 
@@ -42,6 +44,8 @@ export const routes: Routes = [
         path: 'export-excel',
         component: ExportExcel
     },
+            { path: 'Ngomaster', component: NgoComponent },
+            { path: 'Plantationproject', component: ProjectComponent },
 
     // Public Routes (No Navbar)
     { path: 'login', component: Login },

@@ -127,43 +127,10 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
 
         public async Task<bool> UpdateStatusAsync(VehicleTripStatusUpdateDTO dto)
         {
-            //        int tripId = _idEncoder.Decode(dto.TripId);
-            //        int userId = GetCurrentUserId();
-
-            //        var parameters = new[]
-            //        {
-            //    new SqlParameter("@TripId", tripId),
-            //    new SqlParameter("@StatusId", dto.StatusId),
-            //    new SqlParameter("@UserId", userId)
-            //};
-
-            //        await _context.Database.ExecuteSqlRawAsync(
-            //            "EXEC USP_CB_VehicleTripEmission_UpdateStatus @TripId,@StatusId,@UserId",
-            //            parameters);
-
-            //        return true;
 
             int tripId = _idEncoder.Decode(dto.TripId);
             int userId = GetCurrentUserId();
             int roleId = _userContext.Role.Contains("Corporate") ? 3 : 5;
-            //string role = _userContext.Role;
-
-            //if (!role.Contains("Corporate"))
-            //    throw new Exception("Only Corporate users can approve or reject trips.");
-
-            //if (dto.StatusId != 2 && dto.StatusId != 3)
-            //    throw new Exception("Invalid StatusId. Only Approve (2) or Reject (3) allowed.");
-
-            // Get current status
-            //var trip = await _context.CB_VehicleTripEmissions
-            //    .Where(x => x.tripid == tripId && x.isactive)
-            //    .FirstOrDefaultAsync();
-
-            //if (trip == null)
-            //    throw new Exception("Trip not found.");
-
-            //if (trip.StatusId == 2)
-            //    throw new Exception("Trip already approved.");
 
             var parameters = new[]
             {
@@ -267,36 +234,6 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
 
         }
 
-       //public async Task<List<ResponseVehicleTripEmissionDTO>> GetAllAsync()
-       // {
-       //     var data = await _context.CB_VehicleTripEmissions
-       //.FromSqlRaw("EXEC USP_CB_GetAllVehicleTripEmission")
-       //.ToListAsync();
-
-       //     return data.Select(x => new ResponseVehicleTripEmissionDTO
-       //     {
-       //         TripId = _idEncoder.Encode(x.tripid),
-       //         VehicleId = _idEncoder.Encode(x.vehicleid),
-       //         VehicleNumber = x.VehicleName,
-       //         VehicleType = x.VehicleType,
-       //         FromCityId = _idEncoder.Encode(x.fromcityid),
-       //         ToCityId = _idEncoder.Encode(x.tocityid),
-       //         TripStartDateTime = x.tripstartdatetime,
-       //         TripEndDateTime = x.tripenddatetime,
-       //         DistanceKm = x.distancekm,
-       //         FuelConsumedLtr = x.fuelconsumedltr,
-       //         CO2 = x.co2,
-       //         NO2 = x.no2,
-       //         CH4 = x.ch4,
-       //         TotalCO2 = x.totalco2,
-       //         TotalNO2 = x.totalno2,
-       //         TotalCH4 = x.totalch4,
-
-       //         TotalEmission = x.totalemission,
-       //         StatusId = x.StatusId
-       //     }).ToList();
-       // }
-
          public async Task<ResponseVehicleTripEmissionDTO> GetByHashIdAsync(string hashId)
         {
             int tripId = _idEncoder.Decode(hashId);
@@ -378,93 +315,6 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
 
             return _userContext.Role; // assuming Role property exists
         }
-
-        //public async Task<(IEnumerable<SearchVehicleTripEmissionDTO>, int)> SearchVehicleTrips(string? search, string? vehicleNumber, string? fuelType, string? vehicleType, DateTime? startDate, DateTime? endDate, int? statusId, string? userRole, int pageNumber = 1, int pageSize = 10)
-        //{
-        //    int userId = GetCurrentUserId();
-        //    string role = _userContext.Role;
-
-        //    await using var connection = _context.Database.GetDbConnection();
-        //    await using var command = connection.CreateCommand();
-
-        //    command.CommandText = "USP_CB_SearchVehicleTripEmission";
-        //    command.CommandType = CommandType.StoredProcedure;
-
-        //    command.Parameters.Add(new SqlParameter("@Search", (object?)search ?? DBNull.Value));
-        //    command.Parameters.Add(new SqlParameter("@VehicleNumber", (object?)vehicleNumber ?? DBNull.Value));
-        //    command.Parameters.Add(new SqlParameter("@FuelType", (object?)fuelType ?? DBNull.Value));
-        //    command.Parameters.Add(new SqlParameter("@VehicleType", (object?)vehicleType ?? DBNull.Value));
-        //    command.Parameters.Add(new SqlParameter("@StartDate", (object?)startDate ?? DBNull.Value));
-        //    command.Parameters.Add(new SqlParameter("@EndDate", (object?)endDate ?? DBNull.Value));
-        //    command.Parameters.Add(new SqlParameter("@StatusId", (object?)statusId ?? DBNull.Value));
-        //    command.Parameters.Add(new SqlParameter("@UserId", userId));
-        //    command.Parameters.Add(new SqlParameter("@UserRole", role));
-        //    command.Parameters.Add(new SqlParameter("@PageNumber", pageNumber));
-        //    command.Parameters.Add(new SqlParameter("@PageSize", pageSize));
-
-        //    var totalParam = new SqlParameter("@TotalRecords", SqlDbType.Int)
-        //    {
-        //        Direction = ParameterDirection.Output
-        //    };
-
-        //    command.Parameters.Add(totalParam);
-
-        //    if (connection.State != ConnectionState.Open)
-        //        await connection.OpenAsync();
-
-        //    var result = new List<SearchVehicleTripEmissionDTO>();
-
-        //    await using var reader = await command.ExecuteReaderAsync();
-
-        //    while (await reader.ReadAsync())
-        //    {
-        //        var dto = new SearchVehicleTripEmissionDTO
-        //        {
-        //            TripId = _idEncoder.Encode(reader.GetInt32(reader.GetOrdinal("TripId"))),
-
-        //            VehicleNumber = reader["VehicleNumber"]?.ToString() ?? "",
-        //            VehicleType = reader["VehicleType"]?.ToString() ?? "",
-        //            FuelType = reader["FuelType"]?.ToString() ?? "",
-
-        //            DistanceKm = reader.IsDBNull(reader.GetOrdinal("DistanceKm")) ? 0 :
-        //                         reader.GetDecimal(reader.GetOrdinal("DistanceKm")),
-
-        //            FuelConsumedLtr = reader.IsDBNull(reader.GetOrdinal("FuelConsumedLtr")) ? 0 :
-        //                              reader.GetDecimal(reader.GetOrdinal("FuelConsumedLtr")),
-
-        //            TripStartDateTime = reader.GetDateTime(reader.GetOrdinal("TripStartDateTime")),
-
-        //            TripEndDateTime = reader.IsDBNull(reader.GetOrdinal("TripEndDateTime"))
-        //                ? DateTime.MinValue
-        //                : reader.GetDateTime(reader.GetOrdinal("TripEndDateTime")),
-
-        //            TotalCO2 = reader.IsDBNull(reader.GetOrdinal("TotalCO2")) ? 0 :
-        //                       reader.GetDecimal(reader.GetOrdinal("TotalCO2")),
-
-        //            TotalNO2 = reader.IsDBNull(reader.GetOrdinal("TotalNO2")) ? 0 :
-        //                       reader.GetDecimal(reader.GetOrdinal("TotalNO2")),
-
-        //            TotalCH4 = reader.IsDBNull(reader.GetOrdinal("TotalCH4")) ? 0 :
-        //                       reader.GetDecimal(reader.GetOrdinal("TotalCH4")),
-
-        //            TotalEmission = reader.IsDBNull(reader.GetOrdinal("TotalEmission")) ? 0 :
-        //                                 reader.GetDecimal(reader.GetOrdinal("TotalEmission")),
-
-        //            StatusId = reader.IsDBNull(reader.GetOrdinal("StatusId")) ? 0 :
-        //                       reader.GetInt32(reader.GetOrdinal("StatusId"))
-        //        };
-
-        //        result.Add(dto);
-        //    }
-
-        //    await reader.CloseAsync();
-
-        //    int totalRecords = totalParam.Value != DBNull.Value
-        //        ? (int)totalParam.Value
-        //        : result.Count;
-
-        //    return (result, totalRecords);
-        //}
 
         public async Task<PageResult> GetMyActionTripsAsync(int pageNumber, int pageSize, string sortColumn = "EntryDate", string sortDirection = "DESC")
     {
@@ -563,18 +413,21 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
         }
 
         public async Task<(IEnumerable<SearchVehicleTripEmissionDTO>, int)> SearchVehicleTrips(
-            string? search,
-            string? vehicleNumber,
-            List<string>? fuelType,
-           List<string>? vehicleType,
-            DateTime? startDate,
-            DateTime? endDate,
-            int? statusId,
-            string? userRole,
-            int pageNumber = 1,
-            int pageSize = 10,
-            string sortColumn = "tripstartdatetime",
-            string sortDirection = "DESC")
+    string? search,
+    string? vehicleNumber,
+    List<string>? fuelType,
+    List<string>? vehicleCategory,
+    List<string>? vehicleType,
+    DateTime? startDate,
+    DateTime? endDate,
+    DateTime? entryStartDate,
+    DateTime? entryEndDate,
+    int? statusId,
+    string? userRole,
+    int pageNumber = 1,
+    int pageSize = 10,
+    string sortColumn = "EntryDate",
+    string sortDirection = "DESC")
         {
             int userId = GetCurrentUserId();
             string role = _userContext.Role;
@@ -582,13 +435,9 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
             var result = new List<SearchVehicleTripEmissionDTO>();
             int totalRecords = 0;
 
-            string? fuelTypeCsv = (fuelType != null && fuelType.Count > 0)
-        ? string.Join(",", fuelType)
-        : null;
-
-            string? vehicleTypeCsv = (vehicleType != null && vehicleType.Count > 0)
-                ? string.Join(",", vehicleType)
-                : null;
+            string? fuelTypeCsv = fuelType?.Count > 0 ? string.Join(",", fuelType) : null;
+            string? vehicleCategoryCsv = vehicleCategory?.Count > 0 ? string.Join(",", vehicleCategory) : null;
+            string? vehicleTypeCsv = vehicleType?.Count > 0 ? string.Join(",", vehicleType) : null;
 
             await using var connection = _context.Database.GetDbConnection();
             await using var command = connection.CreateCommand();
@@ -596,14 +445,21 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
             command.CommandText = "USP_CB_SearchVehicleTripEmission";
             command.CommandType = CommandType.StoredProcedure;
 
+            // ── pass date as plain date string so SP TRY_CAST works correctly ──
+            string? startDateStr = startDate?.ToString("yyyy-MM-dd");
+            string? endDateStr = endDate?.ToString("yyyy-MM-dd");
+            string? entryStartDateStr = entryStartDate?.ToString("yyyy-MM-dd");
+            string? entryEndDateStr = entryEndDate?.ToString("yyyy-MM-dd");
+
             command.Parameters.Add(new SqlParameter("@Search", (object?)search ?? DBNull.Value));
             command.Parameters.Add(new SqlParameter("@VehicleNumber", (object?)vehicleNumber ?? DBNull.Value));
-            command.Parameters.Add(new SqlParameter("@FuelType", (object?)fuelTypeCsv ?? DBNull.Value));  
+            command.Parameters.Add(new SqlParameter("@FuelType", (object?)fuelTypeCsv ?? DBNull.Value));
+            command.Parameters.Add(new SqlParameter("@VehicleCategory", (object?)vehicleCategoryCsv ?? DBNull.Value));
             command.Parameters.Add(new SqlParameter("@VehicleType", (object?)vehicleTypeCsv ?? DBNull.Value));
-            command.Parameters.Add(new SqlParameter("@StartDate", (object?)startDate ?? DBNull.Value));
-            command.Parameters.Add(new SqlParameter("@EndDate", (object?)endDate ?? DBNull.Value));
-            command.Parameters.Add(new SqlParameter("@EntryStartDate", DBNull.Value));
-            command.Parameters.Add(new SqlParameter("@EntryEndDate", DBNull.Value));
+            command.Parameters.Add(new SqlParameter("@StartDate", (object?)startDateStr ?? DBNull.Value));
+            command.Parameters.Add(new SqlParameter("@EndDate", (object?)endDateStr ?? DBNull.Value));
+            command.Parameters.Add(new SqlParameter("@EntryStartDate", (object?)entryStartDateStr ?? DBNull.Value));
+            command.Parameters.Add(new SqlParameter("@EntryEndDate", (object?)entryEndDateStr ?? DBNull.Value));
             command.Parameters.Add(new SqlParameter("@StatusId", (object?)statusId ?? DBNull.Value));
             command.Parameters.Add(new SqlParameter("@UserId", userId));
             command.Parameters.Add(new SqlParameter("@UserRole", role));
@@ -878,42 +734,46 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
 
 
         public async Task<byte[]> ExportVehicleTripsExcel(
-      string? search,
-       List<string>? fuelType,
+    string? search,
+    List<string>? fuelType,
+    List<string>? vehicleCategory,
     List<string>? vehicleType,
-      DateTime? startDate,
-      DateTime? endDate,
-      DateTime? entryStartDate,
-      DateTime? entryEndDate,
-      string sortColumn,
-      string sortDirection)
+    DateTime? startDate,
+    DateTime? endDate,
+    DateTime? entryStartDate,
+    DateTime? entryEndDate,
+    string sortColumn,
+    string sortDirection)
         {
-            (IEnumerable<SearchVehicleTripEmissionDTO> data, int total) = await SearchVehicleTrips(
-        search,
-        null,
-        fuelType,       
-        vehicleType,    
-        startDate,
-        endDate,
-        null,
-        null,
-        1,
-        100000,
-        sortColumn,
-        sortDirection
-    );
+            var (data, _) = await SearchVehicleTrips(
+                search,
+                null,
+                fuelType,
+                vehicleCategory,
+                vehicleType,
+                startDate,
+                endDate,
+                entryStartDate,
+                entryEndDate,
+                null,
+                null,
+                1,
+                100000,
+                sortColumn,
+                sortDirection
+            );
 
             var columns = new Dictionary<string, string>
     {
-        {"Vehicle No", "VehicleNumber"},
-        {"Vehicle Type", "VehicleType"},
-        {"Fuel Type", "FuelType"},
-        {"Entry Date", "EntryDate"},
-        {"Distance (KM)", "DistanceKm"},
-        {"Fuel Used (Ltr)", "FuelConsumedLtr"},
-        {"Start Date", "TripStartDateTime"},
-        {"End Date", "TripEndDateTime"},
-        {"Total Emission", "TotalEmission"}
+        { "Vehicle No",      "VehicleNumber"     },
+        { "Vehicle Type",    "VehicleType"       },
+        { "Fuel Type",       "FuelType"          },
+        { "Entry Date",      "EntryDate"         },
+        { "Distance (KM)",   "DistanceKm"        },
+        { "Fuel Used (Ltr)", "FuelConsumedLtr"   },
+        { "Start Date",      "TripStartDateTime" },
+        { "End Date",        "TripEndDateTime"   },
+        { "Total Emission",  "TotalEmission"     }
     };
 
             return await ExcelExportHelper.ExportToExcelAsync(
