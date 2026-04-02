@@ -11,8 +11,6 @@ public partial class CB_MasterSiteLocation
 
     public string SiteName { get; set; }
 
-    public string BuildingName { get; set; }
-
     public string City { get; set; }
 
     public string State { get; set; }

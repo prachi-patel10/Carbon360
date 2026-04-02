@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
-using ProjectApp.Core.DTOs.Charts;
 
 namespace ProjectApp.Core.Models;
 
@@ -14,34 +13,63 @@ public partial class CBContext : DbContext
     {
     }
 
-    // ── Regular entity tables ─────────────────────────────────────────────
     public virtual DbSet<CB_Department> CB_Departments { get; set; }
-    public virtual DbSet<CB_EmissionFactor> CB_EmissionFactors { get; set; }
-    public virtual DbSet<CB_GeneratorOperation> CB_GeneratorOperations { get; set; }
-    public virtual DbSet<CB_MasterAction> CB_MasterActions { get; set; }
-    public virtual DbSet<CB_MasterCity> CB_MasterCities { get; set; }
-    public virtual DbSet<CB_MasterFuelType> CB_MasterFuelTypes { get; set; }
-    public virtual DbSet<CB_MasterGenerator> CB_MasterGenerators { get; set; }
-    public virtual DbSet<CB_MasterSiteLocation> CB_MasterSiteLocations { get; set; }
-    public virtual DbSet<CB_MasterStatus> CB_MasterStatuses { get; set; }
-    public virtual DbSet<CB_MasterVehicle> CB_MasterVehicles { get; set; }
-    public virtual DbSet<CB_MasterVehicleType> CB_MasterVehicleTypes { get; set; }
-    public virtual DbSet<CB_MasterWorkflow> CB_MasterWorkflows { get; set; }
-    public virtual DbSet<CB_Role> CB_Roles { get; set; }
-    public virtual DbSet<CB_User> CB_Users { get; set; }
-    public virtual DbSet<CB_UserRoleMapping> CB_UserRoleMappings { get; set; }
-    public virtual DbSet<CB_VehicleTripEmission> CB_VehicleTripEmissions { get; set; }
-    public virtual DbSet<CB_VehicleTypeCategory> CB_VehicleTypeCategories { get; set; }
 
-    public DbSet<VehicleCategoryEmissionRawDto> VehicleCategoryEmissionRaw { get; set; }
+    public virtual DbSet<CB_EmissionFactor> CB_EmissionFactors { get; set; }
+
+    public virtual DbSet<CB_GeneratorOperation> CB_GeneratorOperations { get; set; }
+
+    public virtual DbSet<CB_GeneratorOperationHistory> CB_GeneratorOperationHistories { get; set; }
+
+    public virtual DbSet<CB_MasterAction> CB_MasterActions { get; set; }
+
+    public virtual DbSet<CB_MasterCity> CB_MasterCities { get; set; }
+
+    public virtual DbSet<CB_MasterFuelType> CB_MasterFuelTypes { get; set; }
+
+    public virtual DbSet<CB_MasterGenerator> CB_MasterGenerators { get; set; }
+
+    public virtual DbSet<CB_MasterNGO> CB_MasterNGOs { get; set; }
+
+    public virtual DbSet<CB_MasterSiteLocation> CB_MasterSiteLocations { get; set; }
+
+    public virtual DbSet<CB_MasterStatus> CB_MasterStatuses { get; set; }
+
+    public virtual DbSet<CB_MasterVehicle> CB_MasterVehicles { get; set; }
+
+    public virtual DbSet<CB_MasterVehicleType> CB_MasterVehicleTypes { get; set; }
+
+    public virtual DbSet<CB_MasterWorkflow> CB_MasterWorkflows { get; set; }
+
+    public virtual DbSet<CB_PasswordResetToken> CB_PasswordResetTokens { get; set; }
+
+    public virtual DbSet<CB_PlantationProject> CB_PlantationProjects { get; set; }
+
+    public virtual DbSet<CB_Role> CB_Roles { get; set; }
+
+    public virtual DbSet<CB_TreePlantationEntry> CB_TreePlantationEntries { get; set; }
+
+    public virtual DbSet<CB_User> CB_Users { get; set; }
+
+    public virtual DbSet<CB_UserRoleMapping> CB_UserRoleMappings { get; set; }
+
+    public virtual DbSet<CB_VehicleTripEmission> CB_VehicleTripEmissions { get; set; }
+
+    public virtual DbSet<CB_VehicleTripEmissionHistory> CB_VehicleTripEmissionHistories { get; set; }
+
+    public virtual DbSet<CB_VehicleTypeCategory> CB_VehicleTypeCategories { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<CB_Department>(entity =>
         {
             entity.HasKey(e => e.DepartmentId).HasName("PK__CB_Depar__B2079BED8E6AD1B5");
+
             entity.ToTable("CB_Department");
-            entity.Property(e => e.DepartmentName).HasMaxLength(50).IsUnicode(false);
+
+            entity.Property(e => e.DepartmentName)
+                .HasMaxLength(50)
+                .IsUnicode(false);
             entity.Property(e => e.EntryDate).HasColumnType("datetime");
             entity.Property(e => e.UpdateDate).HasColumnType("datetime");
         });
@@ -49,23 +77,33 @@ public partial class CBContext : DbContext
         modelBuilder.Entity<CB_EmissionFactor>(entity =>
         {
             entity.HasKey(e => e.EmissionFactorId).HasName("PK__CB_Emiss__C9186AB3BB588D20");
+
             entity.ToTable("CB_EmissionFactor");
+
             entity.Property(e => e.CH4_Factor_KgPerL).HasColumnType("decimal(16, 8)");
             entity.Property(e => e.CO2_Factor_KgPerL).HasColumnType("decimal(16, 8)");
-            entity.Property(e => e.EntryDate).HasDefaultValueSql("(getdate())").HasColumnType("datetime");
+            entity.Property(e => e.EntryDate)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
             entity.Property(e => e.IsActive).HasDefaultValue(true);
             entity.Property(e => e.NO2_Factor_KgPerL).HasColumnType("decimal(16, 8)");
             entity.Property(e => e.UpdateDate).HasColumnType("datetime");
+
             entity.HasOne(d => d.Fuel).WithMany(p => p.CB_EmissionFactors)
-                .HasForeignKey(d => d.FuelId).HasConstraintName("FK_EmissionFactor_Fuel");
+                .HasForeignKey(d => d.FuelId)
+                .HasConstraintName("FK_EmissionFactor_Fuel");
         });
 
         modelBuilder.Entity<CB_GeneratorOperation>(entity =>
         {
             entity.HasKey(e => e.OperationId).HasName("PK__CB_Gener__A4F5FC44E0AD9E3B");
+
             entity.ToTable("CB_GeneratorOperation");
+
             entity.Property(e => e.EndTime).HasColumnType("datetime");
-            entity.Property(e => e.EntryDate).HasDefaultValueSql("(getdate())").HasColumnType("datetime");
+            entity.Property(e => e.EntryDate)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
             entity.Property(e => e.FuelConsumedLiters).HasColumnType("decimal(16, 8)");
             entity.Property(e => e.LoadFactor).HasColumnType("decimal(16, 8)");
             entity.Property(e => e.PowerOutputKWH).HasColumnType("decimal(16, 8)");
@@ -76,26 +114,51 @@ public partial class CBContext : DbContext
             entity.Property(e => e.ch4_kg).HasColumnType("decimal(16, 8)");
             entity.Property(e => e.co2_kg).HasColumnType("decimal(16, 8)");
             entity.Property(e => e.no2_kg).HasColumnType("decimal(16, 8)");
-            entity.Property(e => e.reportId).HasMaxLength(50).IsUnicode(false);
+            entity.Property(e => e.reportId)
+                .HasMaxLength(50)
+                .IsUnicode(false);
             entity.Property(e => e.total_ch4_kg).HasColumnType("decimal(16, 8)");
             entity.Property(e => e.total_co2_kg).HasColumnType("decimal(16, 8)");
             entity.Property(e => e.total_co2e_kg).HasColumnType("decimal(16, 8)");
             entity.Property(e => e.total_no2_kg).HasColumnType("decimal(16, 8)");
+
             entity.HasOne(d => d.Generator).WithMany(p => p.CB_GeneratorOperations)
-                .HasForeignKey(d => d.GeneratorId).OnDelete(DeleteBehavior.ClientSetNull)
+                .HasForeignKey(d => d.GeneratorId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_operation_generator");
+
             entity.HasOne(d => d.Site).WithMany(p => p.CB_GeneratorOperations)
-                .HasForeignKey(d => d.SiteId).HasConstraintName("FK_GeneratorOperation_Site");
+                .HasForeignKey(d => d.SiteId)
+                .HasConstraintName("FK_GeneratorOperation_Site");
+
             entity.HasOne(d => d.Status).WithMany(p => p.CB_GeneratorOperations)
-                .HasForeignKey(d => d.StatusId).OnDelete(DeleteBehavior.ClientSetNull)
+                .HasForeignKey(d => d.StatusId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_GeneratorOperation_MasterStatus");
+        });
+
+        modelBuilder.Entity<CB_GeneratorOperationHistory>(entity =>
+        {
+            entity.HasKey(e => e.HistoryId);
+
+            entity.ToTable("CB_GeneratorOperationHistory");
+
+            entity.Property(e => e.ActionDate).HasColumnType("datetime");
+            entity.Property(e => e.EntryDate).HasColumnType("datetime");
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+            entity.Property(e => e.UpdatedDate).HasColumnType("datetime");
         });
 
         modelBuilder.Entity<CB_MasterAction>(entity =>
         {
             entity.HasKey(e => e.ActionId).HasName("PK__CB_Actio__FFE3F4D9DD2474D3");
+
             entity.ToTable("CB_MasterAction");
-            entity.Property(e => e.ActionName).IsRequired().HasMaxLength(50).IsUnicode(false);
+
+            entity.Property(e => e.ActionName)
+                .IsRequired()
+                .HasMaxLength(50)
+                .IsUnicode(false);
             entity.Property(e => e.IsActive).HasDefaultValue(true);
             entity.Property(e => e.IsDeleted).HasDefaultValue(false);
         });
@@ -103,170 +166,394 @@ public partial class CBContext : DbContext
         modelBuilder.Entity<CB_MasterCity>(entity =>
         {
             entity.HasKey(e => e.CityId).HasName("PK__CB_Maste__F2D21B76AD4B5974");
+
             entity.ToTable("CB_MasterCity");
-            entity.Property(e => e.CityName).IsRequired().HasMaxLength(100);
-            entity.Property(e => e.EntryDate).HasDefaultValueSql("(getdate())").HasColumnType("datetime");
-            entity.Property(e => e.IsActive).HasDefaultValue(true);
-            entity.Property(e => e.IsDeleted).HasDefaultValue(false);
-            entity.Property(e => e.ShortCode).HasMaxLength(50).IsUnicode(false);
-            entity.Property(e => e.StateName).IsRequired().HasMaxLength(100);
+
+            entity.Property(e => e.CityName)
+                .IsRequired()
+                .HasMaxLength(100);
+            entity.Property(e => e.EntryDate)
+                .HasDefaultValueSql("(getdate())")
+                .HasAnnotation("Relational:DefaultConstraintName", "DF__CB_Master__Entry__591C1437")
+                .HasColumnType("datetime");
+            entity.Property(e => e.IsActive)
+                .HasDefaultValue(true)
+                .HasAnnotation("Relational:DefaultConstraintName", "DF__CB_Master__IsAct__5733CBC5");
+            entity.Property(e => e.IsDeleted)
+                .HasDefaultValue(false)
+                .HasAnnotation("Relational:DefaultConstraintName", "DF__CB_Master__IsDel__5827EFFE");
+            entity.Property(e => e.ShortCode)
+                .HasMaxLength(50)
+                .IsUnicode(false);
+            entity.Property(e => e.StateName)
+                .IsRequired()
+                .HasMaxLength(100);
             entity.Property(e => e.UpdateDate).HasColumnType("datetime");
         });
 
         modelBuilder.Entity<CB_MasterFuelType>(entity =>
         {
             entity.HasKey(e => e.fuel_id).HasName("PK__CB_Maste__A40C1884DD9ACC8E");
+
             entity.ToTable("CB_MasterFuelType");
-            entity.Property(e => e.EntryDate).HasDefaultValueSql("(getdate())").HasColumnType("datetime");
+
+            entity.Property(e => e.EntryDate)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
             entity.Property(e => e.UpdateDate).HasColumnType("datetime");
-            entity.Property(e => e.fuel_Desc).HasMaxLength(30).IsUnicode(false);
-            entity.Property(e => e.fuel_name).IsRequired().HasMaxLength(30).IsUnicode(false);
+            entity.Property(e => e.fuel_Desc)
+                .HasMaxLength(30)
+                .IsUnicode(false);
+            entity.Property(e => e.fuel_name)
+                .IsRequired()
+                .HasMaxLength(30)
+                .IsUnicode(false);
         });
 
         modelBuilder.Entity<CB_MasterGenerator>(entity =>
         {
             entity.HasKey(e => e.GeneratorId).HasName("PK__CB_Maste__41B536093A981D06");
+
             entity.ToTable("CB_MasterGenerator");
-            entity.Property(e => e.EntryDate).HasDefaultValueSql("(getdate())").HasColumnType("datetime");
-            entity.Property(e => e.GeneratorName).IsRequired().IsUnicode(false);
+
+            entity.Property(e => e.EntryDate)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.GeneratorName)
+                .IsRequired()
+                .IsUnicode(false);
             entity.Property(e => e.IsActive).HasDefaultValue(true);
             entity.Property(e => e.RatedCapacityKW).HasColumnType("decimal(10, 2)");
             entity.Property(e => e.UpdateDate).HasColumnType("datetime");
+
             entity.HasOne(d => d.Department).WithMany(p => p.CB_MasterGenerators)
-                .HasForeignKey(d => d.DepartmentId).OnDelete(DeleteBehavior.ClientSetNull)
+                .HasForeignKey(d => d.DepartmentId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_DepartentId");
+
             entity.HasOne(d => d.Fuel).WithMany(p => p.CB_MasterGenerators)
-                .HasForeignKey(d => d.FuelId).OnDelete(DeleteBehavior.ClientSetNull)
+                .HasForeignKey(d => d.FuelId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_FuelId");
+
             entity.HasOne(d => d.Site).WithMany(p => p.CB_MasterGenerators)
-                .HasForeignKey(d => d.SiteId).OnDelete(DeleteBehavior.ClientSetNull)
+                .HasForeignKey(d => d.SiteId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_SiteId");
+        });
+
+        modelBuilder.Entity<CB_MasterNGO>(entity =>
+        {
+            entity.HasKey(e => e.NgoId).HasName("PK__CB_Maste__94E56EE3FE9F2F0D");
+
+            entity.ToTable("CB_MasterNGO");
+
+            entity.Property(e => e.ContactPerson)
+                .HasMaxLength(100)
+                .IsUnicode(false);
+            entity.Property(e => e.Email)
+                .HasMaxLength(100)
+                .IsUnicode(false);
+            entity.Property(e => e.EntryDate)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+            entity.Property(e => e.Location)
+                .HasMaxLength(255)
+                .IsUnicode(false);
+            entity.Property(e => e.NgoName)
+                .IsRequired()
+                .HasMaxLength(150)
+                .IsUnicode(false);
+            entity.Property(e => e.Phone)
+                .HasMaxLength(20)
+                .IsUnicode(false);
+            entity.Property(e => e.UpdateDate).HasColumnType("datetime");
         });
 
         modelBuilder.Entity<CB_MasterSiteLocation>(entity =>
         {
             entity.HasKey(e => e.SiteId).HasName("PK__CB_Maste__B9DCB96316817821");
+
             entity.ToTable("CB_MasterSiteLocation");
-            entity.Property(e => e.BuildingName).HasMaxLength(100).IsUnicode(false);
-            entity.Property(e => e.City).HasMaxLength(100).IsUnicode(false);
-            entity.Property(e => e.EntryDate).HasDefaultValueSql("(getdate())").HasColumnType("datetime");
+
+            entity.Property(e => e.City)
+                .HasMaxLength(100)
+                .IsUnicode(false);
+            entity.Property(e => e.EntryDate)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
             entity.Property(e => e.IsActive).HasDefaultValue(true);
-            entity.Property(e => e.ShortCode).IsRequired().HasMaxLength(50).IsUnicode(false).HasDefaultValue("");
-            entity.Property(e => e.SiteName).IsRequired().HasMaxLength(100).IsUnicode(false);
-            entity.Property(e => e.State).HasMaxLength(100).IsUnicode(false);
+            entity.Property(e => e.ShortCode)
+                .IsRequired()
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasDefaultValue("");
+            entity.Property(e => e.SiteName)
+                .IsRequired()
+                .HasMaxLength(100)
+                .IsUnicode(false);
+            entity.Property(e => e.State)
+                .HasMaxLength(100)
+                .IsUnicode(false);
             entity.Property(e => e.UpdateDate).HasColumnType("datetime");
         });
 
         modelBuilder.Entity<CB_MasterStatus>(entity =>
         {
             entity.HasKey(e => e.Statusid);
+
             entity.ToTable("CB_MasterStatus");
+
             entity.Property(e => e.Statusid).ValueGeneratedNever();
-            entity.Property(e => e.Status).HasMaxLength(50).IsUnicode(false);
+            entity.Property(e => e.Status)
+                .HasMaxLength(50)
+                .IsUnicode(false);
         });
 
         modelBuilder.Entity<CB_MasterVehicle>(entity =>
         {
             entity.HasKey(e => e.vehicle_id).HasName("PK__CB_Maste__F2947BC1DBB88EBF");
+
             entity.ToTable("CB_MasterVehicle");
+
             entity.HasIndex(e => e.vehicle_number, "UQ_vehicle_number").IsUnique();
-            entity.Property(e => e.EntryDate).HasDefaultValueSql("(getdate())").HasColumnType("datetime");
+
+            entity.Property(e => e.EntryDate)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
             entity.Property(e => e.UpdateDate).HasColumnType("datetime");
-            entity.Property(e => e.emission_standard).HasMaxLength(10).IsUnicode(false);
-            entity.Property(e => e.vehicle_number).IsRequired().HasMaxLength(20).IsUnicode(false);
+            entity.Property(e => e.emission_standard)
+                .HasMaxLength(10)
+                .IsUnicode(false);
+            entity.Property(e => e.vehicle_number)
+                .IsRequired()
+                .HasMaxLength(20)
+                .IsUnicode(false);
+
             entity.HasOne(d => d.department).WithMany(p => p.CB_MasterVehicles)
-                .HasForeignKey(d => d.department_id).OnDelete(DeleteBehavior.ClientSetNull)
+                .HasForeignKey(d => d.department_id)
+                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Vehicle_Department");
+
             entity.HasOne(d => d.fuel).WithMany(p => p.CB_MasterVehicles)
-                .HasForeignKey(d => d.fuel_id).OnDelete(DeleteBehavior.ClientSetNull)
+                .HasForeignKey(d => d.fuel_id)
+                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Vehicle_Fuel");
+
             entity.HasOne(d => d.vehicle_type).WithMany(p => p.CB_MasterVehicles)
-                .HasForeignKey(d => d.vehicle_type_id).OnDelete(DeleteBehavior.ClientSetNull)
+                .HasForeignKey(d => d.vehicle_type_id)
+                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Vehicle_VehicleType");
         });
 
         modelBuilder.Entity<CB_MasterVehicleType>(entity =>
         {
             entity.HasKey(e => e.vehicle_type_id).HasName("PK__CB_Maste__2A00721841B4422D");
+
             entity.ToTable("CB_MasterVehicleType");
-            entity.Property(e => e.EntryDate).HasDefaultValueSql("(getdate())").HasColumnType("datetime");
+
+            entity.Property(e => e.EntryDate)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
             entity.Property(e => e.IsActive).HasDefaultValue(true);
             entity.Property(e => e.UpdateDate).HasColumnType("datetime");
-            entity.Property(e => e.description).HasMaxLength(200).IsUnicode(false);
-            entity.Property(e => e.vehicle_type_name).IsRequired().HasMaxLength(30).IsUnicode(false);
+            entity.Property(e => e.description)
+                .HasMaxLength(200)
+                .IsUnicode(false);
+            entity.Property(e => e.vehicle_type_name)
+                .IsRequired()
+                .HasMaxLength(30)
+                .IsUnicode(false);
+
             entity.HasOne(d => d.Category).WithMany(p => p.CB_MasterVehicleTypes)
-                .HasForeignKey(d => d.CategoryId).HasConstraintName("FK_VehicleType_Category");
+                .HasForeignKey(d => d.CategoryId)
+                .HasConstraintName("FK_VehicleType_Category");
         });
 
         modelBuilder.Entity<CB_MasterWorkflow>(entity =>
         {
             entity.HasKey(e => e.WorkflowId);
+
             entity.ToTable("CB_MasterWorkflow");
+
             entity.Property(e => e.WorkflowId).ValueGeneratedNever();
             entity.Property(e => e.IsActive).HasDefaultValue(true);
             entity.Property(e => e.IsDeleted).HasDefaultValue(false);
+
             entity.HasOne(d => d.Action).WithMany(p => p.CB_MasterWorkflows)
-                .HasForeignKey(d => d.ActionId).OnDelete(DeleteBehavior.ClientSetNull)
+                .HasForeignKey(d => d.ActionId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Workflow_Action");
+
             entity.HasOne(d => d.CurrentStatus).WithMany(p => p.CB_MasterWorkflowCurrentStatuses)
-                .HasForeignKey(d => d.CurrentStatusId).HasConstraintName("FK_Workflow_CurrentStatus");
+                .HasForeignKey(d => d.CurrentStatusId)
+                .HasConstraintName("FK_Workflow_CurrentStatus");
+
             entity.HasOne(d => d.NextStatus).WithMany(p => p.CB_MasterWorkflowNextStatuses)
-                .HasForeignKey(d => d.NextStatusId).OnDelete(DeleteBehavior.ClientSetNull)
+                .HasForeignKey(d => d.NextStatusId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Workflow_NextStatus");
+
             entity.HasOne(d => d.Role).WithMany(p => p.CB_MasterWorkflows)
-                .HasForeignKey(d => d.RoleId).OnDelete(DeleteBehavior.ClientSetNull)
+                .HasForeignKey(d => d.RoleId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Workflow_Role");
+        });
+
+        modelBuilder.Entity<CB_PasswordResetToken>(entity =>
+        {
+            entity.HasKey(e => e.TokenId).HasName("PK__CB_Passw__658FEEEABC6C710F");
+
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("(getutcdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.ExpiresAt).HasColumnType("datetime");
+            entity.Property(e => e.IsUsed).HasDefaultValue(false);
+            entity.Property(e => e.Token)
+                .IsRequired()
+                .HasMaxLength(500);
+
+            entity.HasOne(d => d.User).WithMany(p => p.CB_PasswordResetTokens)
+                .HasForeignKey(d => d.UserId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__CB_Passwo__UserI__2BFF54FD");
+        });
+
+        modelBuilder.Entity<CB_PlantationProject>(entity =>
+        {
+            entity.HasKey(e => e.ProjectId).HasName("PK__CB_Plant__761ABEF0AD943741");
+
+            entity.ToTable("CB_PlantationProject");
+
+            entity.Property(e => e.Address)
+                .HasMaxLength(255)
+                .IsUnicode(false);
+            entity.Property(e => e.EntryDate)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+            entity.Property(e => e.ProjectName)
+                .IsRequired()
+                .HasMaxLength(150)
+                .IsUnicode(false);
+            entity.Property(e => e.UpdateDate).HasColumnType("datetime");
+
+            entity.HasOne(d => d.City).WithMany(p => p.CB_PlantationProjects)
+                .HasForeignKey(d => d.CityId)
+                .HasConstraintName("FK_Project_City");
+
+            entity.HasOne(d => d.Ngo).WithMany(p => p.CB_PlantationProjects)
+                .HasForeignKey(d => d.NgoId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_project_ngo");
         });
 
         modelBuilder.Entity<CB_Role>(entity =>
         {
             entity.HasKey(e => e.RoleId).HasName("PK__CB_Role__8AFACE1A4E6560C1");
+
             entity.ToTable("CB_Role");
-            entity.Property(e => e.Description).HasMaxLength(100).IsUnicode(false);
+
+            entity.Property(e => e.Description)
+                .HasMaxLength(100)
+                .IsUnicode(false);
             entity.Property(e => e.EntryDate).HasColumnType("datetime");
-            entity.Property(e => e.RoleName).HasMaxLength(50).IsUnicode(false);
+            entity.Property(e => e.RoleName)
+                .HasMaxLength(50)
+                .IsUnicode(false);
             entity.Property(e => e.UpdateDate).HasColumnType("datetime");
+        });
+
+        modelBuilder.Entity<CB_TreePlantationEntry>(entity =>
+        {
+            entity.HasKey(e => e.PlantationId).HasName("PK__CB_TreeP__64A9B1E20896DE1F");
+
+            entity.ToTable("CB_TreePlantationEntry");
+
+            entity.Property(e => e.EntryDate).HasColumnType("datetime");
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+            entity.Property(e => e.UpdateDate).HasColumnType("datetime");
+
+            entity.HasOne(d => d.Project).WithMany(p => p.CB_TreePlantationEntries)
+                .HasForeignKey(d => d.ProjectId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_TreePlantation_Project");
         });
 
         modelBuilder.Entity<CB_User>(entity =>
         {
             entity.HasKey(e => e.UserId).HasName("PK__CB_User__1788CC4C129F2098");
+
             entity.ToTable("CB_User");
-            entity.Property(e => e.Email).HasMaxLength(100).IsUnicode(false);
+
+            entity.Property(e => e.Email)
+                .HasMaxLength(100)
+                .IsUnicode(false);
             entity.Property(e => e.EntryDate).HasColumnType("datetime");
-            entity.Property(e => e.Fname).IsRequired().HasMaxLength(100).IsUnicode(false).HasDefaultValue("");
-            entity.Property(e => e.Lname).IsRequired().HasMaxLength(100).IsUnicode(false).HasDefaultValue("");
-            entity.Property(e => e.Password).HasMaxLength(100).IsUnicode(false);
+            entity.Property(e => e.Fname)
+                .IsRequired()
+                .HasMaxLength(100)
+                .IsUnicode(false)
+                .HasDefaultValue("");
+            entity.Property(e => e.Lname)
+                .IsRequired()
+                .HasMaxLength(100)
+                .IsUnicode(false)
+                .HasDefaultValue("");
+            entity.Property(e => e.Password)
+                .HasMaxLength(100)
+                .IsUnicode(false);
             entity.Property(e => e.UpdateDate).HasColumnType("datetime");
-            entity.Property(e => e.UserName).IsRequired().HasMaxLength(100).IsUnicode(false).HasDefaultValue("");
+            entity.Property(e => e.UserName)
+                .IsRequired()
+                .HasMaxLength(100)
+                .IsUnicode(false)
+                .HasDefaultValue("");
+
             entity.HasOne(d => d.Department).WithMany(p => p.CB_Users)
-                .HasForeignKey(d => d.DepartmentId).HasConstraintName("FK_CBUser_Department");
+                .HasForeignKey(d => d.DepartmentId)
+                .HasConstraintName("FK_CBUser_Department");
         });
 
         modelBuilder.Entity<CB_UserRoleMapping>(entity =>
         {
             entity.HasKey(e => e.id).HasName("PK__CB_UserR__3213E83F76D89AD1");
+
             entity.ToTable("CB_UserRoleMapping");
+
             entity.HasOne(d => d.Role).WithMany(p => p.CB_UserRoleMappings)
-                .HasForeignKey(d => d.RoleId).HasConstraintName("FK_UserRoleMapping_Roles");
+                .HasForeignKey(d => d.RoleId)
+                .HasConstraintName("FK_UserRoleMapping_Roles");
+
             entity.HasOne(d => d.User).WithMany(p => p.CB_UserRoleMappings)
-                .HasForeignKey(d => d.UserId).HasConstraintName("FK_UserRoleMapping_Users");
+                .HasForeignKey(d => d.UserId)
+                .HasConstraintName("FK_UserRoleMapping_Users");
         });
 
         modelBuilder.Entity<CB_VehicleTripEmission>(entity =>
         {
             entity.HasKey(e => e.tripid).HasName("PK_vehicle_trip");
+
             entity.ToTable("CB_VehicleTripEmission");
+
             entity.Property(e => e.StatusId).HasDefaultValue(1);
             entity.Property(e => e.ch4).HasColumnType("decimal(16, 8)");
             entity.Property(e => e.co2).HasColumnType("decimal(16, 8)");
             entity.Property(e => e.distancekm).HasColumnType("decimal(16, 8)");
-            entity.Property(e => e.entrydate).HasDefaultValueSql("(getdate())").HasColumnType("datetime");
+            entity.Property(e => e.entrydate)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
             entity.Property(e => e.fuelconsumedltr).HasColumnType("decimal(16, 8)");
-            entity.Property(e => e.fueltype).IsRequired().HasMaxLength(20).IsUnicode(false);
+            entity.Property(e => e.fueltype)
+                .IsRequired()
+                .HasMaxLength(20)
+                .IsUnicode(false);
             entity.Property(e => e.isactive).HasDefaultValue(true);
             entity.Property(e => e.no2).HasColumnType("decimal(16, 8)");
-            entity.Property(e => e.reportId).HasMaxLength(50).IsUnicode(false);
+            entity.Property(e => e.reportId)
+                .HasMaxLength(50)
+                .IsUnicode(false);
             entity.Property(e => e.totalch4).HasColumnType("decimal(16, 8)");
             entity.Property(e => e.totalco2).HasColumnType("decimal(16, 8)");
             entity.Property(e => e.totalemission).HasColumnType("decimal(16, 8)");
@@ -274,74 +561,67 @@ public partial class CBContext : DbContext
             entity.Property(e => e.tripenddatetime).HasColumnType("datetime");
             entity.Property(e => e.tripstartdatetime).HasColumnType("datetime");
             entity.Property(e => e.updatedate).HasColumnType("datetime");
+
             entity.HasOne(d => d.Status).WithMany(p => p.CB_VehicleTripEmissions)
-                .HasForeignKey(d => d.StatusId).OnDelete(DeleteBehavior.ClientSetNull)
+                .HasForeignKey(d => d.StatusId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_CB_VehicleTripEmission_Status");
+
             entity.HasOne(d => d.entrybyNavigation).WithMany(p => p.CB_VehicleTripEmissionentrybyNavigations)
-                .HasForeignKey(d => d.entryby).OnDelete(DeleteBehavior.ClientSetNull)
+                .HasForeignKey(d => d.entryby)
+                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_vehicle_trip_entry_by");
+
             entity.HasOne(d => d.fromcity).WithMany(p => p.CB_VehicleTripEmissionfromcities)
-                .HasForeignKey(d => d.fromcityid).OnDelete(DeleteBehavior.ClientSetNull)
+                .HasForeignKey(d => d.fromcityid)
+                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_vehicle_trip_from_city");
+
             entity.HasOne(d => d.tocity).WithMany(p => p.CB_VehicleTripEmissiontocities)
-                .HasForeignKey(d => d.tocityid).OnDelete(DeleteBehavior.ClientSetNull)
+                .HasForeignKey(d => d.tocityid)
+                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_vehicle_trip_to_city");
+
             entity.HasOne(d => d.updatebyNavigation).WithMany(p => p.CB_VehicleTripEmissionupdatebyNavigations)
-                .HasForeignKey(d => d.updateby).HasConstraintName("FK_vehicle_trip_update_by");
+                .HasForeignKey(d => d.updateby)
+                .HasConstraintName("FK_vehicle_trip_update_by");
+
             entity.HasOne(d => d.vehicle).WithMany(p => p.CB_VehicleTripEmissions)
-                .HasForeignKey(d => d.vehicleid).OnDelete(DeleteBehavior.ClientSetNull)
+                .HasForeignKey(d => d.vehicleid)
+                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_vehicle_trip_vehicle");
+        });
+
+        modelBuilder.Entity<CB_VehicleTripEmissionHistory>(entity =>
+        {
+            entity.HasKey(e => e.HistoryId).HasName("PK__CB_Vehic__4D7B4ABD569E795C");
+
+            entity.ToTable("CB_VehicleTripEmissionHistory");
+
+            entity.Property(e => e.ActionDate)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.EntryDate)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+            entity.Property(e => e.UpdatedDate).HasColumnType("datetime");
         });
 
         modelBuilder.Entity<CB_VehicleTypeCategory>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PK__CB_Vehic__3214EC07FDE7C0AD");
+
             entity.ToTable("CB_VehicleTypeCategory");
-            entity.Property(e => e.Category).IsRequired().HasMaxLength(255);
+
+            entity.Property(e => e.Category)
+                .IsRequired()
+                .HasMaxLength(255);
             entity.Property(e => e.EntryDate).HasColumnType("datetime");
             entity.Property(e => e.UpdateDate).HasColumnType("datetime");
         });
 
         OnModelCreatingPartial(modelBuilder);
-
-        
-        modelBuilder.Entity<FuelTypeMonthlyConsumptionDto>().HasNoKey().ToView(null);
-
-        
-        modelBuilder.Entity<MonthlyEmissionRawDto>().HasNoKey().ToView(null);
-
-        
-        modelBuilder.Entity<GeneratorRunHoursMonthlyRawDto>().HasNoKey().ToView(null);
-
-        
-        modelBuilder.Entity<GeneratorRunHoursRawDto>().HasNoKey().ToView(null);
-
-        
-        modelBuilder.Entity<GeneratorLoadFactorRawDto>().HasNoKey().ToView(null);
-
-        
-        modelBuilder.Entity<VehicleDistanceMonthlyRawDto>().HasNoKey().ToView(null);
-
-       
-        modelBuilder.Entity<VehicleTypeDistanceRawDto>().HasNoKey().ToView(null);
-
-
-        modelBuilder.Entity<CityEmissionDto>().HasNoKey().ToView(null);
-
-       
-        modelBuilder.Entity<SiteEmissionDto>().HasNoKey().ToView(null);
-
-      
-        modelBuilder.Entity<DashboardSummaryDto>().HasNoKey().ToView(null);
-
-        modelBuilder.Entity<VehicleSummaryDto>().HasNoKey().ToView(null);
-
-     
-        modelBuilder.Entity<GeneratorSummaryDto>().HasNoKey().ToView(null);
-
-       
-        modelBuilder.Entity<GeneratorRunHoursChartResponseDto>().HasNoKey().ToView(null);
-        modelBuilder.Entity<VehicleCategoryEmissionRawDto>().HasNoKey().ToView(null);
     }
 
     partial void OnModelCreatingPartial(ModelBuilder modelBuilder);

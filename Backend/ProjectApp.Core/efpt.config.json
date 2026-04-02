@@ -31,6 +31,10 @@
          "ObjectType": 0
       },
       {
+         "Name": "[dbo].[CB_GeneratorOperationHistory]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[dbo].[CB_MasterAction]",
          "ObjectType": 0
       },
@@ -44,6 +48,10 @@
       },
       {
          "Name": "[dbo].[CB_MasterGenerator]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[CB_MasterNGO]",
          "ObjectType": 0
       },
       {
@@ -67,7 +75,19 @@
          "ObjectType": 0
       },
       {
+         "Name": "[dbo].[CB_PasswordResetTokens]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[CB_PlantationProject]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[dbo].[CB_Role]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[CB_TreePlantationEntry]",
          "ObjectType": 0
       },
       {
@@ -80,6 +100,10 @@
       },
       {
          "Name": "[dbo].[CB_VehicleTripEmission]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[CB_VehicleTripEmissionHistory]",
          "ObjectType": 0
       },
       {

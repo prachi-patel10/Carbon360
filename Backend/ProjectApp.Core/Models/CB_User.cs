@@ -33,6 +33,8 @@ public partial class CB_User
 
     public string UserName { get; set; }
 
+    public virtual ICollection<CB_PasswordResetToken> CB_PasswordResetTokens { get; set; } = new List<CB_PasswordResetToken>();
+
     public virtual ICollection<CB_UserRoleMapping> CB_UserRoleMappings { get; set; } = new List<CB_UserRoleMapping>();
 
     public virtual ICollection<CB_VehicleTripEmission> CB_VehicleTripEmissionentrybyNavigations { get; set; } = new List<CB_VehicleTripEmission>();
