@@ -22,7 +22,7 @@
   border-color: #1b5e20;
   box-shadow: 0 0 0 3px rgba(27, 94, 32, 0.1);
 }
-.range-input i { color: #1b5e20; font-size: 13px; flex-shrink: 0; }
+.range-input i { color: #adb5bd; font-size: 13px; flex-shrink: 0; }
 .placeholder-text { color: #adb5bd; font-size: 13px; }
 .date-display {
   font-size: 12px;

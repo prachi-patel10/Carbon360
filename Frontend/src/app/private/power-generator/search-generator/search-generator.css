@@ -273,7 +273,7 @@ body {
 }
 
 .placeholder {
-    color: #adb5bd;
+    /* color: #adb5bd; */
     font-size: 13px;
     white-space: nowrap;
     overflow: hidden;
@@ -513,12 +513,12 @@ body {
 
 /* Remaining data columns */
 .gen-table th:nth-child(1) {
-    width: 60px;
+    width: 120px;
 }
 
 /* Report ID      */
 .gen-table th:nth-child(2) {
-    width: 85px;
+    width: 100px;
 }
 
 /* Report ID      */
@@ -549,17 +549,17 @@ body {
 
 /* Start Date     */
 .gen-table th:nth-child(8) {
-    width: 110px;
+    width: 140px;
 }
 
 /* End Date       */
 .gen-table th:nth-child(9) {
-    width: 140px;
+    width: 90px;
 }
 
 /* Load Factor    */
 .gen-table th:nth-child(10) {
-    width: 90px;
+    width: 40px;
 }
 
 /* Fuel L         */
@@ -826,4 +826,8 @@ app-date-range-picker-component {
         align-items: center;
         gap: 4px;
     }
+}
+
+.col-action .btn-pdf-download {
+  margin-left: 6px; /* space only to the left of PDF button */
 }

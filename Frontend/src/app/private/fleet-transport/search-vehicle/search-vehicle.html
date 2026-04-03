@@ -30,14 +30,17 @@
               <div class="fuel-multiselect" [class.open]="fuelDropdownOpen">
                 <div class="fuel-trigger" (click)="toggleFuelDropdown()">
                   <div class="fuel-tags">
-                    <span *ngIf="selectedFuels.length === 0" class="placeholder">All Fuel Types</span>
-                    <ng-container *ngIf="selectedFuels.length > 0">
-                      <span *ngFor="let f of selectedFuels" class="fuel-tag">
-                        {{ f }}
-                        <span class="remove"
-                          (click)="$event.stopPropagation(); toggleFuel(f)">✕</span>
-                      </span>
-                    </ng-container>
+                    <!-- FIXED: [style.display] instead of *ngIf -->
+                    <span
+                      [style.display]="selectedFuels.length === 0 ? 'inline-flex' : 'none'"
+                      class="placeholder">
+                      <i class="fas fa-gas-pump placeholder-icon"></i> Select Fuel Type
+                    </span>
+                    <span *ngFor="let f of selectedFuels" class="fuel-tag">
+                      {{ f }}
+                      <span class="remove"
+                        (click)="$event.stopPropagation(); toggleFuel(f)">✕</span>
+                    </span>
                   </div>
                   <span class="arrow">&#9660;</span>
                 </div>
@@ -64,7 +67,7 @@
               </div>
             </div>
 
-            <!-- Category Type (single dropdown — handles both chart drill-down and manual select) -->
+            <!-- Category Type -->
             <div class="filter-field">
               <label class="filter-label">
                 <i class="fas fa-layer-group"></i> Category Type
@@ -73,7 +76,6 @@
                 <div class="category-trigger" (click)="toggleCategoryDropdown()">
                   <div class="category-tags">
 
-                    <!-- chart drill-down mode: show single removable tag -->
                     <ng-container *ngIf="chartCategory(); else normalCategoryTags">
                       <span class="category-tag">
                         {{ chartCategory() }}
@@ -82,24 +84,24 @@
                       </span>
                     </ng-container>
 
-                    <!-- normal manual multiselect mode -->
                     <ng-template #normalCategoryTags>
-                      <span *ngIf="selectedCategories.length === 0"
-                        class="placeholder">All Categories</span>
-                      <ng-container *ngIf="selectedCategories.length > 0">
-                        <span *ngFor="let c of selectedCategories" class="category-tag">
-                          {{ c }}
-                          <span class="remove"
-                            (click)="$event.stopPropagation(); toggleCategory(c)">✕</span>
-                        </span>
-                      </ng-container>
+                      <!-- FIXED: [style.display] instead of *ngIf -->
+                      <span
+                        [style.display]="selectedCategories.length === 0 ? 'inline-flex' : 'none'"
+                        class="placeholder">
+                        <i class="fas fa-layer-group placeholder-icon"></i> Select Category
+                      </span>
+                      <span *ngFor="let c of selectedCategories" class="category-tag">
+                        {{ c }}
+                        <span class="remove"
+                          (click)="$event.stopPropagation(); toggleCategory(c)">✕</span>
+                      </span>
                     </ng-template>
 
                   </div>
                   <span class="arrow">&#9660;</span>
                 </div>
 
-                <!-- dropdown only available in normal mode, not chart drill-down -->
                 <div class="category-dropdown"
                   *ngIf="categoryDropdownOpen && !chartCategory()">
                   <div class="category-dropdown-header">
@@ -133,15 +135,17 @@
               <div class="vehicle-multiselect" [class.open]="vehicleDropdownOpen">
                 <div class="vehicle-trigger" (click)="toggleVehicleDropdown()">
                   <div class="vehicle-tags">
-                    <span *ngIf="selectedVehicles.length === 0"
-                      class="placeholder">All Vehicle Types</span>
-                    <ng-container *ngIf="selectedVehicles.length > 0">
-                      <span *ngFor="let v of selectedVehicles" class="vehicle-tag">
-                        {{ v }}
-                        <span class="remove"
-                          (click)="$event.stopPropagation(); toggleVehicle(v)">✕</span>
-                      </span>
-                    </ng-container>
+                    <!-- FIXED: [style.display] instead of *ngIf -->
+                    <span
+                      [style.display]="selectedVehicles.length === 0 ? 'inline-flex' : 'none'"
+                      class="placeholder">
+                      <i class="fas fa-car placeholder-icon"></i> Select Vehicle Type
+                    </span>
+                    <span *ngFor="let v of selectedVehicles" class="vehicle-tag">
+                      {{ v }}
+                      <span class="remove"
+                        (click)="$event.stopPropagation(); toggleVehicle(v)">✕</span>
+                    </span>
                   </div>
                   <span class="arrow">&#9660;</span>
                 </div>
@@ -174,7 +178,6 @@
           <!-- Row 2: Date pickers -->
           <div class="filter-row-dates">
 
-            <!-- Operation Date -->
             <div class="filter-field date-filter-field">
               <label class="filter-label">
                 <i class="fas fa-calendar-alt"></i> Operation Date
@@ -185,7 +188,6 @@
               </app-date-range-picker-component>
             </div>
 
-            <!-- Reported Date -->
             <div class="filter-field date-filter-field">
               <label class="filter-label">
                 <i class="fas fa-calendar-alt"></i> Reported Date
@@ -202,7 +204,7 @@
           <div class="filter-row-search">
             <div class="search-wrap">
               <i class="fas fa-search search-icon"></i>
-              <input type="text" class="search-input" placeholder="Quick search"
+              <input type="text" class="search-input" placeholder="Search by vehicle no., report ID, fuel type..."
                 [value]="searchText()" (input)="onSearch($event)" />
             </div>
             <button type="button" class="btn-reset" (click)="resetFilters()">
@@ -220,8 +222,7 @@
         <table class="table align-middle mb-0 vehicle-table">
           <thead>
             <tr>
-              <th class="col-action">Action</th>
-              <th class="col-download">Download</th>
+              <th class="col-actions">Actions</th>
               <th (click)="sort('reportId')" class="sortable">
                 Report ID <span class="sort-icon">{{ getSortIcon('reportId') }}</span>
               </th>
@@ -242,12 +243,10 @@
                 Reported Date <span class="sort-icon">{{ getSortIcon('entryDate') }}</span>
               </th>
               <th (click)="sort('tripStartDateTime')" class="sortable">
-                Start Date
-                <span class="sort-icon">{{ getSortIcon('tripStartDateTime') }}</span>
+                Start Date <span class="sort-icon">{{ getSortIcon('tripStartDateTime') }}</span>
               </th>
               <th (click)="sort('tripEndDateTime')" class="sortable">
-                End Date
-                <span class="sort-icon">{{ getSortIcon('tripEndDateTime') }}</span>
+                End Date <span class="sort-icon">{{ getSortIcon('tripEndDateTime') }}</span>
               </th>
               <th (click)="sort('distanceKm')" class="sortable">
                 Distance (km) <span class="sort-icon">{{ getSortIcon('distanceKm') }}</span>
@@ -259,18 +258,18 @@
           </thead>
           <tbody>
             <tr *ngFor="let e of paginatedData()">
-              <td class="col-action">
-                <button class="btn btn-sm btn-open" (click)="openTrip(e.tripId)">
-                  <i class="fas fa-eye"></i>
-                </button>
-              </td>
-              <td class="col-download">
-                <button class="btn-pdf-download" (click)="downloadTrip(e.tripId)"
-                  [disabled]="isLoading(e.tripId)"
-                  [title]="isLoading(e.tripId) ? 'Generating...' : 'Download PDF'">
-                  <i *ngIf="!isLoading(e.tripId)" class="fas fa-file-pdf"></i>
-                  <i *ngIf="isLoading(e.tripId)" class="fas fa-spinner fa-spin"></i>
-                </button>
+              <td class="col-actions">
+                <div class="action-btns">
+                  <button class="btn-open" (click)="openTrip(e.tripId)" title="View Details">
+                    <i class="fas fa-eye"></i>
+                  </button>
+                  <button class="btn-pdf-download" (click)="downloadTrip(e.tripId)"
+                    [disabled]="isLoading(e.tripId)"
+                    [title]="isLoading(e.tripId) ? 'Generating...' : 'Download PDF'">
+                    <i *ngIf="!isLoading(e.tripId)" class="fas fa-file-pdf"></i>
+                    <i *ngIf="isLoading(e.tripId)" class="fas fa-spinner fa-spin"></i>
+                  </button>
+                </div>
               </td>
               <td class="report-color">{{ e.reportId }}</td>
               <td>{{ e.vehicleNumber }}</td>
@@ -284,7 +283,7 @@
               <td>{{ e.fuelConsumedLtr }}</td>
             </tr>
             <tr *ngIf="paginatedData().length === 0">
-              <td colspan="12" class="text-center py-4 text-muted">No records found.</td>
+              <td colspan="11" class="text-center py-4 text-muted">No records found.</td>
             </tr>
           </tbody>
         </table>

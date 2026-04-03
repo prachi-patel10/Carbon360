@@ -114,4 +114,14 @@ export class SearchGeneratorService {
     });
   }
 
+  //get all sitenames
+   getSiteNames(): Observable<any[]> {
+    return this.http.get<any>(`${environment.apiBaseUrl}/SiteLocation/All`).pipe(
+      map(res => {
+        const data = Array.isArray(res) ? res : (res.data ?? []);
+        return data.filter((s: any) => s.isActive === true || s.isActive === 1);
+      })
+    );
+  }
+
 }

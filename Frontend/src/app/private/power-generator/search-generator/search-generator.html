@@ -21,7 +21,7 @@
             </div>
           </div>
 
-          <!-- Row 1: 4 filter fields -->
+          <!-- Row 1: filter fields -->
           <div class="filter-row-fields">
 
             <!-- Fuel Type -->
@@ -32,7 +32,9 @@
               <div class="fuel-multiselect" [class.open]="fuelDropdownOpen">
                 <div class="fuel-trigger" (click)="toggleFuelDropdown()">
                   <div class="fuel-tags">
-                    <span *ngIf="selectedFuels.length === 0" class="placeholder">All Fuel Types</span>
+                    <span *ngIf="selectedFuels.length === 0" class="placeholder">
+                      <i class="fas fa-gas-pump placeholder-icon"></i> Select Fuel Type
+                    </span>
                     <ng-container *ngIf="selectedFuels.length > 0">
                       <span *ngFor="let f of selectedFuels" class="fuel-tag">
                         {{ f }}
@@ -48,7 +50,8 @@
                     <button type="button" class="clear-btn" (click)="clearFuels()">Clear all</button>
                   </div>
                   <label class="fuel-option select-all-option">
-                    <input type="checkbox" [checked]="selectedFuels.length === fuelTypes.length"
+                    <input type="checkbox"
+                      [checked]="selectedFuels.length === fuelTypes.length"
                       [indeterminate]="selectedFuels.length > 0 && selectedFuels.length < fuelTypes.length"
                       (change)="toggleSelectAll()" />
                     <span>Select all</span>
@@ -63,46 +66,64 @@
               </div>
             </div>
 
-
-
-            <!-- Site Name -->
+            <!-- ── Site Name ──────────────────────────────────── -->
             <div class="filter-field">
               <label class="filter-label">
-                <i class="fas fa-gas-pump"></i> Site Name
+                <i class="fas fa-map-marker-alt"></i> Site Name
               </label>
               <div class="site-multiselect" [class.open]="SiteDropdownOpen">
                 <div class="fuel-trigger" (click)="toggleSiteDropDown()">
                   <div class="fuel-tags">
-                    <span *ngIf="selectedSite.length === 0" class="placeholder">All  Site Name</span>
-                    <ng-container *ngIf="selectedSite.length > 0">
-                      <span *ngFor="let f of selectedSite" class="fuel-tag">
-                        {{ f }}
-                        <span class="remove" (click)="$event.stopPropagation(); toggleSite(f)">✕</span>
+
+                    <!-- Chart drilldown chip (takes priority) -->
+                    <ng-container *ngIf="chartSiteName">
+                      <span class="fuel-tag chart-site-chip">
+                        <i class="fas fa-chart-bar" style="font-size:9px;margin-right:3px;opacity:.8;"></i>
+                        {{ chartSiteName }}
+                        <span class="remove"
+                          (click)="$event.stopPropagation(); clearChartSite()">✕</span>
                       </span>
                     </ng-container>
+
+                    <!-- Manual selection chips -->
+                    <ng-container *ngIf="!chartSiteName">
+                      <span *ngIf="selectedSite.length === 0" class="placeholder">
+                        <i class="fas fa-map-marker-alt placeholder-icon"></i> Select Site Name
+                      </span>
+                      <span *ngFor="let s of selectedSite" class="fuel-tag">
+                        {{ s }}
+                        <span class="remove"
+                          (click)="$event.stopPropagation(); toggleSite(s)">✕</span>
+                      </span>
+                    </ng-container>
+
                   </div>
                   <span class="arrow">&#9660;</span>
                 </div>
+
                 <div class="fuel-dropdown" *ngIf="SiteDropdownOpen">
                   <div class="fuel-dropdown-header">
                     <span>{{ selectedSite.length }} selected</span>
                     <button type="button" class="clear-btn" (click)="clearSite()">Clear all</button>
                   </div>
                   <label class="fuel-option select-all-option">
-                    <input type="checkbox" [checked]="selectedSite.length === Sitename.length"
+                    <input type="checkbox"
+                      [checked]="selectedSite.length === Sitename.length && Sitename.length > 0"
                       [indeterminate]="selectedSite.length > 0 && selectedSite.length < Sitename.length"
                       (change)="toggleSelectAllSite()" />
                     <span>Select all</span>
                   </label>
-                  <label class="fuel-option" *ngFor="let fuel of Sitename"
-                    [class.selected]="isSiteSelected(fuel.Sitename)">
-                    <input type="checkbox" [checked]="isSiteSelected(fuel.Sitename)"
-                      (change)="toggleSite(fuel.Sitename)" />
-                    <span>{{ fuel.Sitename }}</span>
+                  <label class="fuel-option" *ngFor="let site of Sitename"
+                    [class.selected]="isSiteSelected(site.siteName ?? site.SiteName ?? site.site_name)">
+                    <input type="checkbox"
+                      [checked]="isSiteSelected(site.siteName ?? site.SiteName ?? site.site_name)"
+                      (change)="toggleSite(site.siteName ?? site.SiteName ?? site.site_name)" />
+                    <span>{{ site.siteName ?? site.SiteName ?? site.site_name ?? site.name }}</span>
                   </label>
                 </div>
               </div>
             </div>
+            <!-- ── /Site Name ─────────────────────────────────── -->
 
             <!-- Generator Type -->
             <div class="filter-field">
@@ -112,7 +133,9 @@
               <div class="gen-multiselect" [class.open]="genDropdownOpen">
                 <div class="gen-trigger" (click)="toggleGenDropdown()">
                   <div class="gen-tags">
-                    <span *ngIf="selectedGenTypes.length === 0" class="placeholder">All Generator Types</span>
+                    <span *ngIf="selectedGenTypes.length === 0" class="placeholder">
+                      <i class="fas fa-cogs placeholder-icon"></i> Select Generator Type
+                    </span>
                     <ng-container *ngIf="selectedGenTypes.length > 0">
                       <span *ngFor="let g of selectedGenTypes" class="gen-tag">
                         {{ g }}
@@ -128,7 +151,8 @@
                     <button type="button" class="clear-btn" (click)="clearGenTypes()">Clear all</button>
                   </div>
                   <label class="gen-option select-all-option">
-                    <input type="checkbox" [checked]="selectedGenTypes.length === generatorTypes.length"
+                    <input type="checkbox"
+                      [checked]="selectedGenTypes.length === generatorTypes.length"
                       [indeterminate]="selectedGenTypes.length > 0 && selectedGenTypes.length < generatorTypes.length"
                       (change)="toggleSelectAllGen()" />
                     <span>Select all</span>
@@ -169,8 +193,9 @@
           <div class="filter-row-search">
             <div class="search-wrap">
               <i class="fas fa-search search-icon"></i>
-              <input type="text" class="search-input" placeholder="Quick search" [value]="searchText()"
-                (input)="onSearch($event)" />
+              <input type="text" class="search-input"
+                placeholder="Search by generator, report ID, fuel type..."
+                [value]="searchText()" (input)="onSearch($event)" />
             </div>
             <button type="button" class="btn-reset" (click)="resetFilters()">
               <i class="fas fa-rotate-left"></i> Reset Filters
@@ -183,13 +208,11 @@
 
     <!-- Table Card -->
     <div class="card table-card">
-
       <div class="table-responsive">
         <table class="gen-table">
           <thead>
             <tr>
-              <th class="col-action">Action</th>
-              <th class="col-download">Download</th>
+              <th class="col-action">Actions</th>
               <th (click)="sortBy('reportId')" class="sortable">
                 Report ID <span class="sort-icon">{{ getSortIcon('reportId') }}</span>
               </th>
@@ -222,8 +245,6 @@
                 <button class="btn-open" (click)="goToDetail(e.operationId)">
                   <i class="fas fa-eye"></i>
                 </button>
-              </td>
-              <td class="col-download">
                 <button class="btn-pdf-download" (click)="downloadTrip(e.operationId)"
                   [disabled]="isLoading(e.operationId)"
                   [title]="isLoading(e.operationId) ? 'Generating...' : 'Download PDF'">
