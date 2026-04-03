@@ -16,6 +16,7 @@ using ProjectApp.Repository.Interfaces.Masters.Role;
 using ProjectApp.Repository.Interfaces.Masters.Tree;
 using ProjectApp.Repository.Interfaces.Masters.Vehicle;
 using ProjectApp.Repository.Interfaces.Masters.VehicleType;
+using ProjectApp.Repository.Interfaces.OffSet;
 using ProjectApp.Repository.Interfaces.SiteLocation;
 using ProjectApp.Repository.Interfaces.User;
 using ProjectApp.Repository.Interfaces.VehicleTripEmission;
@@ -32,6 +33,7 @@ using ProjectApp.Repository.Services.Masters.Role;
 using ProjectApp.Repository.Services.Masters.Tree;
 using ProjectApp.Repository.Services.Masters.Vehicle;
 using ProjectApp.Repository.Services.Masters.VehicleType;
+using ProjectApp.Repository.Services.OffSet;
 using ProjectApp.Repository.Services.SiteLocation;
 using ProjectApp.Repository.Services.User;
 using ProjectApp.Repository.Services.VehicleTripEmission;
@@ -74,6 +76,7 @@ namespace ProjectApp.API.Extentions
             services.AddScoped<IEmailService, EmailService>();
             services.AddScoped<ITreeService, TreeService>();
             services.AddScoped<IPlantationProject, PlantationProjectService>();
+            services.AddScoped<IAbsorptionEntry, AbsorptionEntryService>();
             return services;
         }
     }
