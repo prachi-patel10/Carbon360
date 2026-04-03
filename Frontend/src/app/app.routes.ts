@@ -30,6 +30,8 @@ import { GeneratorCharts } from './private/generator-charts/generator-charts';
 import { ForgotPasswordComponent } from './public/account/forgot-password/forgot-password';
 import { ResetPasswordComponent } from './public/account/reset-password/reset-password';
 import { Entryform } from './private/Carbon-offset/entryform/entryform';
+import { MasterTreeComponent } from './private/Carbon-offset/tree-master/tree-master';
+import { ProjectComponent } from './private/Carbon-offset/plantation-project/plantation-project';
 
 export const routes: Routes = [
 
@@ -85,6 +87,9 @@ export const routes: Routes = [
 
 
             { path: 'Ngoentryform', component: Entryform },
+            { path: 'Treemaster', component: MasterTreeComponent },
+            { path: 'Plantationproject', component: ProjectComponent },
+
             // { path: 'generator-review/:id', component: GeneratorReviewComponent },
             { path: 'vehicle-ec/:id', component: TripComponent },
             {

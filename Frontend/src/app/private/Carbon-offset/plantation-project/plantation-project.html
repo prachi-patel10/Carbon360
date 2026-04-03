@@ -1,0 +1,104 @@
+<div class="container">
+
+  <!-- ================= FORM ================= -->
+  <div class="card">
+    <form [formGroup]="projectForm" (ngSubmit)="submitProject()" class="form-grid">
+
+      <!-- Project Name -->
+      <div class="form-group">
+        <label>Project Name <span class="required">*</span></label>
+        <input type="text" formControlName="ProjectName" placeholder="Enter Project Name">
+
+        <small class="error-text"
+          *ngIf="projectForm.get('ProjectName')?.touched && projectForm.get('ProjectName')?.invalid">
+          Project Name is required
+        </small>
+      </div>
+
+      <!-- Financial Year -->
+      <div class="form-group">
+        <label>Financial Year <span class="required">*</span></label>
+        <input type="text" formControlName="FinancialYear" placeholder="e.g. 2025-26">
+      </div>
+
+      <!-- Status -->
+      <div class="form-actions">
+        <div class="status-toggle">
+          <span>Active</span>
+          <label class="switch">
+            <input type="checkbox" formControlName="IsActive">
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Buttons -->
+      <div class="form-actions">
+        <button type="submit" class="save-btn">
+          {{ !projectForm.value.ProjectId ? 'Save' : 'Update' }}
+        </button>
+
+        <button type="button" class="reset-btn" (click)="resetForm()">Reset</button>
+      </div>
+
+    </form>
+  </div>
+
+  <!-- ================= TABLE ================= -->
+  <div class="card">
+
+    <!-- Search -->
+    <div class="search-row">
+      <div [formGroup]="searchForm">
+        <input type="text"
+               class="search-input"
+               placeholder="Quick Search"
+               formControlName="searchText">
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th (click)="sort('ProjectName')" class="sortable">
+              Project Name {{ getSortIcon('ProjectName') }}
+            </th>
+            <th>Financial Year</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr *ngFor="let p of projects()">
+            <td>{{ p.ProjectName }}</td>
+            <td>{{ p.FinancialYear }}</td>
+
+            <td>
+              <label class="switch">
+                <input type="checkbox"
+                       [checked]="p.IsActive"
+                       (change)="toggleActive(p)">
+                <span class="slider"></span>
+              </label>
+            </td>
+
+            <td class="actions">
+              <button class="edit-btn" (click)="edit(p)">Edit</button>
+              <button class="delete-btn" (click)="deleteUI(p)">Delete</button>
+            </td>
+          </tr>
+
+          <tr *ngIf="projects().length === 0">
+            <td colspan="4" style="text-align:center;">No records found</td>
+          </tr>
+
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+
+</div>

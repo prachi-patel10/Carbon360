@@ -1,140 +1,208 @@
-/* Container */
-.ngo-container {
-  padding: 20px;
-}
-
-/* Card */
-.card {
-  background: #fff;
-  border-radius: 16px;
-  padding: 24px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.08);
-}
-
-/* Grid Layout - 3 fields per row */
-.form-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 18px;
-}
-
-/* Full width rows */
-.full-width {
-  grid-column: span 3;
-}
-
-/* Form Group */
+/* ================= CONTAINER ================= */
+/* ================= FORM GROUP FIX ================= */
 .form-group {
   display: flex;
   flex-direction: column;
-  position: relative; /* IMPORTANT */
 }
 
-/* Labels */
-label {
-  font-size: 14px;
+/* Label */
+.form-group label {
   margin-bottom: 6px;
   font-weight: 500;
+  font-size: 14px;
+  color: #374151;
 }
 
-/* Required */
-.required {
-  color: red;
-}
-
-/* Inputs & Select */
-input,
-select {
-  height: 40px;
+/* ================= SELECT DROPDOWN ================= */
+.form-group select {
+  width: 100%;
   padding: 8px 10px;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-  transition: 0.2s;
-}
+  border-radius: 6px;
+  border: 1px solid #d1d5db;
+  background-color: #f9fafb;
+  font-size: 14px;
+  color: #111827;
 
-input:focus,
-select:focus {
-  border-color: #4CAF50;
+  transition: all 0.2s ease;
   outline: none;
 }
 
-/* Error */
-.error-text {
-  position: absolute;
-  bottom: -18px; /* adjust spacing */
-  left: 0;
-  font-size: 12px;
-  color: red;
+/* Hover */
+.form-group select:hover {
+  border-color: #9ca3af;
 }
 
-/* INFO BOX (Modern Style) */
-.info-box {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: #f4f9f4;
-  border: 1px solid #d6ead6;
+/* Focus (IMPORTANT for UI look) */
+.form-group select:focus {
+  border-color: #1b5e20;
+  background-color: #fff;
+  box-shadow: 0 0 0 2px rgba(27, 94, 32, 0.15);
+}
+
+/* Disabled */
+.form-group select:disabled {
+  background-color: #e5e7eb;
+  cursor: not-allowed;
+}
+
+/* ================= GRID FIX ================= */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+/* ================= CARD IMPROVEMENT ================= */
+.card {
+  background-color: #fff;
   border-radius: 12px;
-  padding: 16px;
+  padding: 20px;
+  margin-bottom: 15px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
 }
-
-.info-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.info-item span {
-  font-size: 13px;
-  color: #666;
-}
-
-.info-item strong {
-  font-size: 18px;
-  color: #2e7d32;
-}
-
-/* Buttons */
-.btn-group {
-  display: flex;
-  gap: 10px;
-}
-.btn-save {
-  padding: 8px 16px;
-  border-radius: 5px;
-  border: none;
-  background-color: #0f5132;
-  color: #fff;
-  cursor: pointer;
-  font-size: 14px;
-}
-
-.btn-save:hover {
-  background-color: #145214;
-}
-
-
-/* RESET BUTTON */
-.btn-reset {
-  background: #f3f4f6;
-  color: #374151;
-  border: none;
-  padding: 10px 16px;
-  border-radius: 8px;
-  font-size: 13px;
+/* ================= TITLE ================= */
+h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #1b5e20;
   font-weight: 600;
-  cursor: pointer;
 }
 
-.btn-reset:hover {
-  background: #e5e7eb;
-}
+
+
+/* ================= INFO BOX ================= */
 .info-box {
-  display: flex;
-  justify-content: space-around; /* better spacing */
-  align-items: center;
-  background: #f4f9f4;
-  border: 1px solid #d6ead6;
-  border-radius: 12px;
-  padding: 18px;
+  background: #ecfdf5;
+  border: 1px solid #bbf7d0;
+  padding: 12px 15px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-weight: 600;
+  color: #065f46;
+}
+
+/* ================= TABLE ================= */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 16px;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+thead {
+  background-color: #0f5132;
+  color: white;
+}
+
+th {
+  padding: 12px;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+td {
+  padding: 10px;
+  border-bottom: 1px solid #f1f5f9;
+  text-align: center;
+}
+
+tbody tr:hover td {
+  background: #f0fdf4;
+}
+
+/* ================= INPUT (IF EDITABLE FUTURE) ================= */
+input[type="number"] {
+  width: 70px;
+  padding: 5px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+/* ================= SUMMARY ================= */
+.summary {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.summary p {
+  margin: 5px 0;
+  font-weight: 500;
+}
+
+/* Status Colors */
+.status-ok {
+  color: #15803d;
+  font-weight: 600;
+}
+
+.status-pending {
+  color: #dc2626;
+  font-weight: 600;
+}
+
+/* ================= BUTTONS ================= */
+.buttons {
+  text-align: center;
+  margin-top: 10px;
+}
+
+button {
+  padding: 10px 18px;
+  margin: 5px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+/* Save Button */
+.save {
+  background: #1b5e20;
+  color: white;
+}
+
+.save:hover {
+  background: #166534;
+}
+
+/* Cancel Button */
+.cancel {
+  background: #dc2626;
+  color: white;
+}
+
+.cancel:hover {
+  background: #b91c1c;
+}
+
+/* ================= EMPTY STATE ================= */
+td[colspan] {
+  color: #6b7280;
+  padding: 15px;
+}
+
+/* ================= RESPONSIVE ================= */
+@media (max-width: 768px) {
+
+  .row {
+    flex-direction: column;
+  }
+
+  table {
+    font-size: 13px;
+  }
+
+  th, td {
+    padding: 8px;
+  }
+
+  button {
+    width: 100%;
+  }
 }

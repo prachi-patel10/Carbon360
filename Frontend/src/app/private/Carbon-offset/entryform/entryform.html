@@ -1,74 +1,83 @@
-<div class="ngo-container">
+<div class="container">
 
+  <!-- ================= FILTER ================= -->
   <div class="card">
 
-    <form [formGroup]="plantationForm" (ngSubmit)="submit()" class="form-grid">
-
-      <!-- Project -->
-      <div class="form-group">
-        <label>Select Project <span class="required">*</span></label>
-
-        <select formControlName="projectId">
-          <option value="">Select Project</option>
-          <option *ngFor="let p of projects" [value]="p.project_id">
-            {{ p.project_name }}
-          </option>
-        </select>
-      </div>
+    <!-- ✅ FORM should be main wrapper -->
+    <form [formGroup]="form" class="form-grid">
 
       <!-- Year -->
       <div class="form-group">
-        <label>Year <span class="required">*</span></label>
+        <label>Financial Year</label>
 
-        <select formControlName="year">
-          <option value="">Select Year</option>
-          <option *ngFor="let y of yearList" [value]="y">
-            {{ y }}
+        <select formControlName="year" (change)="onYearChange()">
+          <option value="" disabled selected hidden>Select Year</option>
+          <option *ngFor="let y of years" [value]="y">{{ y }}</option>
+        </select>
+      </div>
+
+      <!-- Project -->
+      <div class="form-group">
+        <label>Project Name</label>
+
+        <select formControlName="projectId" (change)="onProjectChange()">
+          <option value="" disabled selected hidden>Select Project</option>
+          <option *ngFor="let p of projects" [value]="p.ProjectId">
+            {{ p.ProjectName }}
           </option>
         </select>
       </div>
 
-      <!-- EMPTY SPACE (for 3-column layout balance) -->
-      <div class="form-group"></div>
-
-      <!-- INFO BOX (FULL WIDTH) -->
-      <div class="form-group full-width">
-        <div class="info-box">
-
-          <div class="info-item">
-            <span>Total Emission</span>
-            <strong>{{ totalEmission }} kg</strong>
-          </div>
-
-          <div class="info-item">
-            <span>Trees Required</span>
-            <strong>{{ treesRequired }}</strong>
-          </div>
-
-          <div class="info-item">
-            <span>Estimated CO₂ Offset</span>
-            <strong>{{ offset }} kg</strong>
-          </div>
-
-        </div>
-      </div>
-
-      <!-- BUTTON -->
-       <div class="form-group full-width">
-        <div class="btn-group">
-          <button type="submit" class="btn-save">
-            Save
-          </button>
-
-          <button type="button" class="btn-reset" (click)="reset()">
-            Reset
-          </button>
-        </div>
-      </div>
-
-
     </form>
+</div>
 
+  <!-- ================= EMISSION ================= -->
+  <div class="info-box">
+    Total Emission (Last Year): {{ emission }} kg
+  </div>
+
+  <!-- ================= TABLE ================= -->
+  <table>
+    <thead>
+      <tr>
+        <th>Tree</th>
+        <th>CO₂ / Year</th>
+        <th>Count</th>
+        <th>Total</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      <tr *ngFor="let t of treeData">
+        <td>{{ t.TreeName }}</td>
+        <td>{{ t.Co2 }}</td>
+        <td>{{ t.TreeCount }}</td>
+        <td>{{ t.Total }}</td>
+      </tr>
+
+      <tr *ngIf="treeData.length === 0">
+        <td colspan="4" style="text-align:center;">No data found</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- ================= SUMMARY ================= -->
+  <div class="summary">
+    <p>Total Offset: {{ summary.totalOffset }} kg</p>
+    <p>Remaining Emission: {{ summary.remaining }} kg</p>
+
+    <p>
+      Status:
+      <span [ngClass]="summary.remaining <= 0 ? 'status-ok' : 'status-pending'">
+        {{ summary.remaining <= 0 ? 'Achieved ✅' : 'Pending ❌' }}
+      </span>
+    </p>
+  </div>
+
+  <!-- ================= BUTTONS ================= -->
+  <div class="buttons">
+    <button class="save" (click)="save()">Save Entry</button>
+    <button class="cancel" (click)="reset()">Cancel</button>
   </div>
 
 </div>

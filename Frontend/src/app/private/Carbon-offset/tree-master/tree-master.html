@@ -1,1 +1,139 @@
-<p>tree-master works!</p>
+<div class="container">
+
+  <!-- ================= CREATE / EDIT TREE FORM ================= -->
+  <div class="card">
+    <form [formGroup]="treeForm" (ngSubmit)="submitTree()" class="form-grid">
+
+      <!-- Tree Name -->
+      <div class="form-group">
+        <label>
+          Tree Name <span class="required">*</span>
+        </label>
+        <input type="text" formControlName="TreeName" placeholder="Enter Tree Name">
+        <small class="error-text"
+          *ngIf="treeForm.get('TreeName')?.touched && treeForm.get('TreeName')?.invalid">
+          Tree Name is required
+        </small>
+      </div>
+
+      <!-- CO2 Absorption -->
+      <div class="form-group">
+        <label>
+          CO₂ Absorption Per Year (Kg) <span class="required">*</span>
+        </label>
+        <input type="number" formControlName="co2AbsorptionPerYear" placeholder="Enter CO2 Absorption">
+        <small class="error-text"
+          *ngIf="treeForm.get('co2AbsorptionPerYear')?.touched && treeForm.get('co2AbsorptionPerYear')?.invalid">
+          CO₂ Absorption is required
+        </small>
+      </div>
+
+      <!-- Status -->
+      <div class="form-actions">
+        <div class="status-toggle">
+          <span>Active</span>
+          <label class="switch">
+            <input type="checkbox" formControlName="IsActive">
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Buttons -->
+      <div class="form-actions">
+        <button type="submit" class="save-btn">
+          {{ !treeForm.value.TreeId ? 'Save' : 'Update' }}
+        </button>
+        <button type="button" class="reset-btn" (click)="resetForm()">Reset</button>
+      </div>
+
+    </form>
+  </div>
+
+  <!-- ================= SEARCH + TABLE + PAGINATION ================= -->
+  <div class="card">
+
+    <!-- Search Row -->
+    <div class="search-row">
+      <div [formGroup]="searchForm">
+        <input type="text"
+               class="search-input"
+               placeholder="Quick Search"
+               formControlName="searchText">
+      </div>
+
+      <div class="search-right">
+        <!-- Active Filter -->
+        <div class="status-toggle">
+          <span>Active Only</span>
+          <label class="switch">
+            <input type="checkbox"
+                   [checked]="onlyActive()"
+                   (change)="onActiveFilterChange($event)">
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th (click)="sort('TreeName')">
+        Tree Name 
+        {{getSortIcon('TreeName')}}
+      </th>
+
+      <th (click)="sort('TreeType')">
+        Tree Type 
+        {{getSortIcon('TreeType')}}
+      </th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr *ngFor="let t of trees()">
+            <td>{{ t.TreeName }}</td>
+            <td>{{ t.co2AbsorptionPerYear }}</td>
+            <td>
+              <label class="switch">
+                <input type="checkbox" [checked]="t.IsActive" (change)="toggleActive(t)">
+                <span class="slider"></span>
+              </label>
+            </td>
+            <td class="actions">
+              <button class="edit-btn" (click)="edit(t)">Edit</button>
+              <button class="delete-btn" (click)="deleteUI(t)">Delete</button>
+            </td>
+          </tr>
+
+          <tr *ngIf="trees().length === 0">
+            <td colspan="4" style="text-align: center; padding: 20px; color: #999;">
+              No records found
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination-info">
+      <span>Total Records: {{ totalRecords() }}</span>
+      <div class="pagination-controls">
+        <button (click)="previousPage()" [disabled]="currentPage() === 1">Previous</button>
+        <span>Page {{ currentPage() }} of {{ totalPages() }}</span>
+        <button (click)="nextPage()" [disabled]="currentPage() === totalPages()">Next</button>
+        <label for="pageSize">Page Size:</label>
+        <select id="pageSize" [value]="requestedRecords()" (change)="onRecordsChange($event)">
+          <option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</option>
+        </select>
+      </div>
+    </div>
+
+  </div>
+
+</div>
