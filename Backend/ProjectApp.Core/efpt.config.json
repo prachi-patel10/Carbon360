@@ -51,10 +51,6 @@
          "ObjectType": 0
       },
       {
-         "Name": "[dbo].[CB_MasterNGO]",
-         "ObjectType": 0
-      },
-      {
          "Name": "[dbo].[CB_MasterSiteLocation]",
          "ObjectType": 0
       },
@@ -79,15 +75,7 @@
          "ObjectType": 0
       },
       {
-         "Name": "[dbo].[CB_PlantationProject]",
-         "ObjectType": 0
-      },
-      {
          "Name": "[dbo].[CB_Role]",
-         "ObjectType": 0
-      },
-      {
-         "Name": "[dbo].[CB_TreePlantationEntry]",
          "ObjectType": 0
       },
       {

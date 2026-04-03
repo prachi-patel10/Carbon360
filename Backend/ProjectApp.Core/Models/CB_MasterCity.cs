@@ -27,8 +27,6 @@ public partial class CB_MasterCity
 
     public string ShortCode { get; set; }
 
-    public virtual ICollection<CB_PlantationProject> CB_PlantationProjects { get; set; } = new List<CB_PlantationProject>();
-
     public virtual ICollection<CB_VehicleTripEmission> CB_VehicleTripEmissionfromcities { get; set; } = new List<CB_VehicleTripEmission>();
 
     public virtual ICollection<CB_VehicleTripEmission> CB_VehicleTripEmissiontocities { get; set; } = new List<CB_VehicleTripEmission>();

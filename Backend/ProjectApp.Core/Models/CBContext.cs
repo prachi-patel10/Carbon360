@@ -29,8 +29,6 @@ public partial class CBContext : DbContext
 
     public virtual DbSet<CB_MasterGenerator> CB_MasterGenerators { get; set; }
 
-    public virtual DbSet<CB_MasterNGO> CB_MasterNGOs { get; set; }
-
     public virtual DbSet<CB_MasterSiteLocation> CB_MasterSiteLocations { get; set; }
 
     public virtual DbSet<CB_MasterStatus> CB_MasterStatuses { get; set; }
@@ -43,11 +41,7 @@ public partial class CBContext : DbContext
 
     public virtual DbSet<CB_PasswordResetToken> CB_PasswordResetTokens { get; set; }
 
-    public virtual DbSet<CB_PlantationProject> CB_PlantationProjects { get; set; }
-
     public virtual DbSet<CB_Role> CB_Roles { get; set; }
-
-    public virtual DbSet<CB_TreePlantationEntry> CB_TreePlantationEntries { get; set; }
 
     public virtual DbSet<CB_User> CB_Users { get; set; }
 
@@ -242,35 +236,6 @@ public partial class CBContext : DbContext
                 .HasConstraintName("FK_SiteId");
         });
 
-        modelBuilder.Entity<CB_MasterNGO>(entity =>
-        {
-            entity.HasKey(e => e.NgoId).HasName("PK__CB_Maste__94E56EE3FE9F2F0D");
-
-            entity.ToTable("CB_MasterNGO");
-
-            entity.Property(e => e.ContactPerson)
-                .HasMaxLength(100)
-                .IsUnicode(false);
-            entity.Property(e => e.Email)
-                .HasMaxLength(100)
-                .IsUnicode(false);
-            entity.Property(e => e.EntryDate)
-                .HasDefaultValueSql("(getdate())")
-                .HasColumnType("datetime");
-            entity.Property(e => e.IsActive).HasDefaultValue(true);
-            entity.Property(e => e.Location)
-                .HasMaxLength(255)
-                .IsUnicode(false);
-            entity.Property(e => e.NgoName)
-                .IsRequired()
-                .HasMaxLength(150)
-                .IsUnicode(false);
-            entity.Property(e => e.Phone)
-                .HasMaxLength(20)
-                .IsUnicode(false);
-            entity.Property(e => e.UpdateDate).HasColumnType("datetime");
-        });
-
         modelBuilder.Entity<CB_MasterSiteLocation>(entity =>
         {
             entity.HasKey(e => e.SiteId).HasName("PK__CB_Maste__B9DCB96316817821");
@@ -420,35 +385,6 @@ public partial class CBContext : DbContext
                 .HasConstraintName("FK__CB_Passwo__UserI__2BFF54FD");
         });
 
-        modelBuilder.Entity<CB_PlantationProject>(entity =>
-        {
-            entity.HasKey(e => e.ProjectId).HasName("PK__CB_Plant__761ABEF0AD943741");
-
-            entity.ToTable("CB_PlantationProject");
-
-            entity.Property(e => e.Address)
-                .HasMaxLength(255)
-                .IsUnicode(false);
-            entity.Property(e => e.EntryDate)
-                .HasDefaultValueSql("(getdate())")
-                .HasColumnType("datetime");
-            entity.Property(e => e.IsActive).HasDefaultValue(true);
-            entity.Property(e => e.ProjectName)
-                .IsRequired()
-                .HasMaxLength(150)
-                .IsUnicode(false);
-            entity.Property(e => e.UpdateDate).HasColumnType("datetime");
-
-            entity.HasOne(d => d.City).WithMany(p => p.CB_PlantationProjects)
-                .HasForeignKey(d => d.CityId)
-                .HasConstraintName("FK_Project_City");
-
-            entity.HasOne(d => d.Ngo).WithMany(p => p.CB_PlantationProjects)
-                .HasForeignKey(d => d.NgoId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_project_ngo");
-        });
-
         modelBuilder.Entity<CB_Role>(entity =>
         {
             entity.HasKey(e => e.RoleId).HasName("PK__CB_Role__8AFACE1A4E6560C1");
@@ -463,22 +399,6 @@ public partial class CBContext : DbContext
                 .HasMaxLength(50)
                 .IsUnicode(false);
             entity.Property(e => e.UpdateDate).HasColumnType("datetime");
-        });
-
-        modelBuilder.Entity<CB_TreePlantationEntry>(entity =>
-        {
-            entity.HasKey(e => e.PlantationId).HasName("PK__CB_TreeP__64A9B1E20896DE1F");
-
-            entity.ToTable("CB_TreePlantationEntry");
-
-            entity.Property(e => e.EntryDate).HasColumnType("datetime");
-            entity.Property(e => e.IsActive).HasDefaultValue(true);
-            entity.Property(e => e.UpdateDate).HasColumnType("datetime");
-
-            entity.HasOne(d => d.Project).WithMany(p => p.CB_TreePlantationEntries)
-                .HasForeignKey(d => d.ProjectId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_TreePlantation_Project");
         });
 
         modelBuilder.Entity<CB_User>(entity =>
