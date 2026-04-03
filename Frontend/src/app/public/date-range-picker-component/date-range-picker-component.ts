@@ -38,6 +38,7 @@ export class DateRangePickerComponent {
     }
   }
 
+
   constructor(public pickerState: DatePickerStateServiceTs) { }
 
   get showPicker(): boolean {
@@ -135,12 +136,12 @@ export class DateRangePickerComponent {
   }
 
   setRange(start: Date, end: Date): void {
-  this.selectedStart = start;
-  this.selectedEnd = end;
-  this.fromValue = start.toISOString().split('T')[0];
-  this.toValue = end.toISOString().split('T')[0];
-  this.startDate = start.toISOString();
-  this.endDate = end.toISOString();
-}
+    this.selectedStart = start;
+    this.selectedEnd = end;
+    this.fromValue = start.toISOString().split('T')[0];
+    this.toValue = end.toISOString().split('T')[0];
+    this.startDate = start.toISOString();
+    this.endDate = end.toISOString();
+  }
 
 }

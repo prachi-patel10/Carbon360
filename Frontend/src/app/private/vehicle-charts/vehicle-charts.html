@@ -268,25 +268,10 @@
     <div class="category-legend" [class.hidden]="!showCategoryCanvas()">
       @for (item of categoryLegend(); track item.category) {
       <div class="cat-legend-row" (click)="onCategoryBarClick(item.category)" title="Click to view records">
-        <!-- Color swatch (bar) -->
         <span class="cat-swatch-bar" [style.background]="item.color"></span>
-        <!-- Category name -->
         <span class="cat-legend-name">{{ item.category }}</span>
-        <!-- Distance badge -->
-        <span class="cat-badge cat-badge-dist">
-          <i class="fas fa-road"></i>
-          {{ formatNum(item.distance) }} km
-        </span>
-        <!-- Emission badge -->
-        <span class="cat-badge cat-badge-emis">
-          <i class="fas fa-smog"></i>
-          {{ formatEmission(item.emission) }} kg
-        </span>
-        <!-- Drill-down arrow -->
-        <span class="cat-drill-icon"><i class="fas fa-chevron-right"></i></span>
       </div>
       }
     </div>
   </div>
-
 </div>

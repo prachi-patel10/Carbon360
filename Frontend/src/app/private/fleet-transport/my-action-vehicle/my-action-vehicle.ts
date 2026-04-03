@@ -24,6 +24,7 @@ entryDate: string
   styleUrl: './my-action-vehicle.css',
 })
 
+
 export class MyActionVehicle implements OnInit{
 
   trips = signal<VehicleTripDisplay[]>([])
@@ -49,6 +50,7 @@ sortDirection = 'DESC'
   }
   this.loadTrips()
 }
+
   editTrip(tripId: string) {
  this.router.navigate(
   ['/dashboard/vehicle-ec', tripId],

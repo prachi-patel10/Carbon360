@@ -132,7 +132,6 @@ namespace ProjectApp.API.Controllers.Account.VehicleTripEmission
                 sortColumn,
                 sortDirection
             );
-
             return Ok(new
             {
                 success = true,
@@ -204,6 +203,18 @@ namespace ProjectApp.API.Controllers.Account.VehicleTripEmission
                 Console.WriteLine($"PDF ERROR: {ex}"); // log full stack trace
                 return StatusCode(500, new { message = ex.Message, detail = ex.StackTrace });
             }
+        }
+
+        [HttpGet("myactions")]
+        public async Task<IActionResult> GetMyActions(
+     [FromQuery] int pageNumber = 1,
+     [FromQuery] int pageSize = 10,
+     [FromQuery] string sortColumn = "EntryDate",
+     [FromQuery] string sortDirection = "DESC")
+        {
+            var result = await _service.GetMyActionTripsAsync(
+                pageNumber, pageSize, sortColumn, sortDirection);
+            return Ok(result);
         }
 
 

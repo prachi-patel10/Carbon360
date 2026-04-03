@@ -43,7 +43,7 @@ export class MyActionVehicleService {
   getTrips(page: number, limit: number, sortColumn: string, sortDirection: string): Observable<any> {
 
   return this.http.get<any>(
-    `${this.apiUrl}/VehicleTripEmission/my-actions?pageNumber=${page}&pageSize=${limit}&sortColumn=${sortColumn}&sortDirection=${sortDirection}`
+    `${this.apiUrl}/VehicleTripEmission/myactions?pageNumber=${page}&pageSize=${limit}&sortColumn=${sortColumn}&sortDirection=${sortDirection}`
   )
 
 }

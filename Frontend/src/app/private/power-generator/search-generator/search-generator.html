@@ -50,8 +50,7 @@
                     <button type="button" class="clear-btn" (click)="clearFuels()">Clear all</button>
                   </div>
                   <label class="fuel-option select-all-option">
-                    <input type="checkbox"
-                      [checked]="selectedFuels.length === fuelTypes.length"
+                    <input type="checkbox" [checked]="selectedFuels.length === fuelTypes.length"
                       [indeterminate]="selectedFuels.length > 0 && selectedFuels.length < fuelTypes.length"
                       (change)="toggleSelectAll()" />
                     <span>Select all</span>
@@ -80,8 +79,7 @@
                       <span class="fuel-tag chart-site-chip">
                         <i class="fas fa-chart-bar" style="font-size:9px;margin-right:3px;opacity:.8;"></i>
                         {{ chartSiteName }}
-                        <span class="remove"
-                          (click)="$event.stopPropagation(); clearChartSite()">✕</span>
+                        <span class="remove" (click)="$event.stopPropagation(); clearChartSite()">✕</span>
                       </span>
                     </ng-container>
 
@@ -92,8 +90,7 @@
                       </span>
                       <span *ngFor="let s of selectedSite" class="fuel-tag">
                         {{ s }}
-                        <span class="remove"
-                          (click)="$event.stopPropagation(); toggleSite(s)">✕</span>
+                        <span class="remove" (click)="$event.stopPropagation(); toggleSite(s)">✕</span>
                       </span>
                     </ng-container>
 
@@ -107,16 +104,14 @@
                     <button type="button" class="clear-btn" (click)="clearSite()">Clear all</button>
                   </div>
                   <label class="fuel-option select-all-option">
-                    <input type="checkbox"
-                      [checked]="selectedSite.length === Sitename.length && Sitename.length > 0"
+                    <input type="checkbox" [checked]="selectedSite.length === Sitename.length && Sitename.length > 0"
                       [indeterminate]="selectedSite.length > 0 && selectedSite.length < Sitename.length"
                       (change)="toggleSelectAllSite()" />
                     <span>Select all</span>
                   </label>
                   <label class="fuel-option" *ngFor="let site of Sitename"
                     [class.selected]="isSiteSelected(site.siteName ?? site.SiteName ?? site.site_name)">
-                    <input type="checkbox"
-                      [checked]="isSiteSelected(site.siteName ?? site.SiteName ?? site.site_name)"
+                    <input type="checkbox" [checked]="isSiteSelected(site.siteName ?? site.SiteName ?? site.site_name)"
                       (change)="toggleSite(site.siteName ?? site.SiteName ?? site.site_name)" />
                     <span>{{ site.siteName ?? site.SiteName ?? site.site_name ?? site.name }}</span>
                   </label>
@@ -151,8 +146,7 @@
                     <button type="button" class="clear-btn" (click)="clearGenTypes()">Clear all</button>
                   </div>
                   <label class="gen-option select-all-option">
-                    <input type="checkbox"
-                      [checked]="selectedGenTypes.length === generatorTypes.length"
+                    <input type="checkbox" [checked]="selectedGenTypes.length === generatorTypes.length"
                       [indeterminate]="selectedGenTypes.length > 0 && selectedGenTypes.length < generatorTypes.length"
                       (change)="toggleSelectAllGen()" />
                     <span>Select all</span>
@@ -172,9 +166,10 @@
               <label class="filter-label">
                 <i class="fas fa-calendar-alt"></i> Operation Date
               </label>
-              <app-date-range-picker-component #opDatePicker pickerId="operation"
-                (rangeSelected)="onDateRangeSelected($event)">
+              <app-date-range-picker-component #opDatePicker pickerId="opDate" [startDate]="operationStartDate()"
+                [endDate]="operationEndDate()" (rangeSelected)="onDateRangeSelected($event)">
               </app-date-range-picker-component>
+
             </div>
 
             <!-- Entry Date -->
@@ -182,8 +177,8 @@
               <label class="filter-label">
                 <i class="fas fa-calendar-alt"></i> Reported Date
               </label>
-              <app-date-range-picker-component #entryDatePicker pickerId="entry"
-                (rangeSelected)="onEntryDateRangeSelected($event)">
+              <app-date-range-picker-component #entryDatePicker pickerId="entryDate" [startDate]="entryStartDate()"
+                [endDate]="entryEndDate()" (rangeSelected)="onEntryDateRangeSelected($event)">
               </app-date-range-picker-component>
             </div>
 
@@ -193,8 +188,7 @@
           <div class="filter-row-search">
             <div class="search-wrap">
               <i class="fas fa-search search-icon"></i>
-              <input type="text" class="search-input"
-                placeholder="Search by generator, report ID, fuel type..."
+              <input type="text" class="search-input" placeholder="Search by generator, report ID, fuel type..."
                 [value]="searchText()" (input)="onSearch($event)" />
             </div>
             <button type="button" class="btn-reset" (click)="resetFilters()">

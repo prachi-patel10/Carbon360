@@ -32,71 +32,71 @@ export class VehicleCharts implements OnInit, AfterViewInit, OnChanges, OnDestro
   @Input() year: number = new Date().getFullYear();
   @Output() gridRowClick = new EventEmitter<Record<string, any>>();
 
-  @ViewChild('vehicleFuelCanvas')        fuelCanvasRef!: ElementRef<HTMLCanvasElement>;
-  @ViewChild('vehicleEmissionCanvas')    emissionCanvasRef!: ElementRef<HTMLCanvasElement>;
-  @ViewChild('vehicleDistanceCanvas')    distanceCanvasRef!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('vehicleFuelCanvas') fuelCanvasRef!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('vehicleEmissionCanvas') emissionCanvasRef!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('vehicleDistanceCanvas') distanceCanvasRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('vehicleDistancePieCanvas') distancePieCanvasRef!: ElementRef<HTMLCanvasElement>;
-  @ViewChild('vehicleCategoryCanvas')    categoryCanvasRef!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('vehicleCategoryCanvas') categoryCanvasRef!: ElementRef<HTMLCanvasElement>;
 
   // ── Signals ──────────────────────────────────────────────────
-  isFuelLoading      = signal(false);
-  isEmissionLoading  = signal(false);
-  isDistanceLoading  = signal(false);
-  isVtypeLoading     = signal(false);
-  isCategoryLoading  = signal(false);
+  isFuelLoading = signal(false);
+  isEmissionLoading = signal(false);
+  isDistanceLoading = signal(false);
+  isVtypeLoading = signal(false);
+  isCategoryLoading = signal(false);
 
-  fuelError      = signal('');
-  emissionError  = signal('');
-  distanceError  = signal('');
-  vtypeError     = signal('');
-  categoryError  = signal('');
+  fuelError = signal('');
+  emissionError = signal('');
+  distanceError = signal('');
+  vtypeError = signal('');
+  categoryError = signal('');
 
-  fuelLegend     = signal<{ fuelType: string; color: string }[]>([]);
+  fuelLegend = signal<{ fuelType: string; color: string }[]>([]);
   emissionLegend = signal<{ label: string; color: string }[]>([]);
-  pieLegend      = signal<{ label: string; color: string; value: number; pct: string }[]>([]);
+  pieLegend = signal<{ label: string; color: string; value: number; pct: string }[]>([]);
   categoryLegend = signal<{ category: string; color: string; distance: number; emission: number }[]>([]);
 
-  vehicleTotal    = signal(0);
-  topFuelType     = signal('-');
-  topFuelAmount   = signal(0);
-  totalCO2e       = signal(0);
+  vehicleTotal = signal(0);
+  topFuelType = signal('-');
+  topFuelAmount = signal(0);
+  totalCO2e = signal(0);
   totalDistanceKM = signal(0);
-  totalTrips      = signal(0);
+  totalTrips = signal(0);
 
   vtypeTableRows = signal<VehicleTypeDistancePivotResponse | null>(null);
 
-  showFuelCanvas     = computed(() => !this.isFuelLoading()     && !this.fuelError());
+  showFuelCanvas = computed(() => !this.isFuelLoading() && !this.fuelError());
   showEmissionCanvas = computed(() => !this.isEmissionLoading() && !this.emissionError());
   showDistanceCanvas = computed(() => !this.isDistanceLoading() && !this.distanceError());
-  showVtypeTable     = computed(() => !this.isVtypeLoading()    && !this.vtypeError());
+  showVtypeTable = computed(() => !this.isVtypeLoading() && !this.vtypeError());
   showCategoryCanvas = computed(() => !this.isCategoryLoading() && !this.categoryError());
 
-  vtypeTotalDist  = computed(() => this.vtypeTableRows()?.grandTotal ?? 0);
+  vtypeTotalDist = computed(() => this.vtypeTableRows()?.grandTotal ?? 0);
   vtypeTotalTrips = computed(() =>
     (this.vtypeTableRows()?.tripsMatrix ?? []).reduce((s, r) => s + r.reduce((a, b) => a + b, 0), 0));
-  vtypeTotalFuel  = computed(() =>
+  vtypeTotalFuel = computed(() =>
     (this.vtypeTableRows()?.fuelMatrix ?? []).reduce((s, r) => s + r.reduce((a, b) => a + b, 0), 0));
 
   // ── Chart instances ───────────────────────────────────────────
-  private fuelChart?:        Chart;
-  private emissionChart?:    Chart;
-  private distanceChart?:    Chart;
+  private fuelChart?: Chart;
+  private emissionChart?: Chart;
+  private distanceChart?: Chart;
   private distancePieChart?: Chart;
-  private categoryChart?:    Chart;
+  private categoryChart?: Chart;
 
-  private destroy$  = new Subject<void>();
+  private destroy$ = new Subject<void>();
   private viewReady = false;
 
-  private _lastFuelData?:     FuelCombinedChartResponse;
+  private _lastFuelData?: FuelCombinedChartResponse;
   private _lastEmissionData?: MonthlyEmissionChartResponse;
   private _lastDistanceData?: VehicleDistanceChartResponse;
-  private _lastVtypeData?:    VehicleTypeDistancePivotResponse;
+  private _lastVtypeData?: VehicleTypeDistancePivotResponse;
   private _lastCategoryData?: VehicleCategoryChartResponse;
 
-  private pendingFuel?:     FuelCombinedChartResponse;
+  private pendingFuel?: FuelCombinedChartResponse;
   private pendingEmission?: MonthlyEmissionChartResponse;
   private pendingDistance?: VehicleDistanceChartResponse;
-  private pendingVtype?:    VehicleTypeDistancePivotResponse;
+  private pendingVtype?: VehicleTypeDistancePivotResponse;
   private pendingCategory?: VehicleCategoryChartResponse;
 
   constructor(private svc: DashboardService, private router: Router) { }
@@ -114,10 +114,10 @@ export class VehicleCharts implements OnInit, AfterViewInit, OnChanges, OnDestro
 
   ngAfterViewInit(): void {
     this.viewReady = true;
-    if (this.pendingFuel)     { this.deferRenderFuel(this.pendingFuel);         this.pendingFuel     = undefined; }
+    if (this.pendingFuel) { this.deferRenderFuel(this.pendingFuel); this.pendingFuel = undefined; }
     if (this.pendingEmission) { this.deferRenderEmission(this.pendingEmission); this.pendingEmission = undefined; }
     if (this.pendingDistance) { this.deferRenderDistance(this.pendingDistance); this.pendingDistance = undefined; }
-    if (this.pendingVtype)    { this.deferRenderVtype(this.pendingVtype);       this.pendingVtype    = undefined; }
+    if (this.pendingVtype) { this.deferRenderVtype(this.pendingVtype); this.pendingVtype = undefined; }
     if (this.pendingCategory) { this.deferRenderCategory(this.pendingCategory); this.pendingCategory = undefined; }
   }
 
@@ -135,7 +135,7 @@ export class VehicleCharts implements OnInit, AfterViewInit, OnChanges, OnDestro
 
   private getMonthLabels(): string[] {
     return ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-            'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   }
 
   // ── Date helpers ──────────────────────────────────────────────
@@ -160,14 +160,12 @@ export class VehicleCharts implements OnInit, AfterViewInit, OnChanges, OnDestro
     search?: string;
     opStart?: string;
     opEnd?: string;
-    reportedStart?: string;
-    reportedEnd?: string;
   }): void {
     const qp: Record<string, any> = { source: 'chart', year: this.year };
 
-    if (params.fuelType)        qp['fuelType']        = params.fuelType;
-    if (params.city)            qp['city']            = params.city;
-    if (params.search)          qp['search']          = params.search;
+    if (params.fuelType) qp['fuelType'] = params.fuelType;
+    if (params.city) qp['city'] = params.city;
+    if (params.search) qp['search'] = params.search;
     if (params.vehicleCategory) qp['vehicleCategory'] = params.vehicleCategory;
 
     if (params.vehicleTypeNames && params.vehicleTypeNames.length > 1)
@@ -183,10 +181,8 @@ export class VehicleCharts implements OnInit, AfterViewInit, OnChanges, OnDestro
       qp['reportedStart'] = start; qp['reportedEnd'] = end;
     } else {
       const yr = this.buildYearRange();
-      qp['opStart']       = params.opStart       ?? yr.start;
-      qp['opEnd']         = params.opEnd         ?? yr.end;
-      qp['reportedStart'] = params.reportedStart ?? yr.start;
-      qp['reportedEnd']   = params.reportedEnd   ?? yr.end;
+      qp['opStart'] = params.opStart ?? yr.start;
+      qp['opEnd'] = params.opEnd ?? yr.end;
     }
 
     this.gridRowClick.emit(qp);
@@ -198,38 +194,44 @@ export class VehicleCharts implements OnInit, AfterViewInit, OnChanges, OnDestro
     this.navigateToVehicleSearch({ monthIndex: mi, fuelType, vehicleTypeNames: vtNames });
   }
   private onEmissionPointClick(mi: number): void { this.navigateToVehicleSearch({ monthIndex: mi }); }
-  private onDistanceBarClick(mi: number): void   { this.navigateToVehicleSearch({ monthIndex: mi }); }
+  private onDistanceBarClick(mi: number): void { this.navigateToVehicleSearch({ monthIndex: mi }); }
 
   onCategoryBarClick(categoryName: string): void {
-    const { start, end } = this.buildYearRange();
-    this.navigateToVehicleSearch({
-      vehicleCategory: categoryName,
-      opStart: start, opEnd: end,
-      reportedStart: start, reportedEnd: end
+    // Only filter by vehicleCategory + operation year
+    // Do NOT pass reportedStart/reportedEnd — the SP only uses tripstartdatetime
+    this.gridRowClick.emit({ vehicleCategory: categoryName, year: this.year });
+    this.router.navigate(['/dashboard/searchVehicle'], {
+      queryParams: {
+        source: 'chart',
+        year: this.year,
+        vehicleCategory: categoryName,
+        opStart: `${this.year}-01-01`,
+        opEnd: `${this.year}-12-31`
+      }
     });
   }
 
   onFuelGridRowClick(mi: number, fuelType?: string): void { this.navigateToVehicleSearch({ monthIndex: mi, fuelType }); }
-  onEmissionGridRowClick(mi: number): void                { this.navigateToVehicleSearch({ monthIndex: mi }); }
-  onDistanceGridRowClick(mi: number): void                { this.navigateToVehicleSearch({ monthIndex: mi }); }
+  onEmissionGridRowClick(mi: number): void { this.navigateToVehicleSearch({ monthIndex: mi }); }
+  onDistanceGridRowClick(mi: number): void { this.navigateToVehicleSearch({ monthIndex: mi }); }
 
   onVtypeGridCellClick(mi: number, vehicleType: string): void {
     const p: Parameters<typeof this.navigateToVehicleSearch>[0] = {};
-    if (mi >= 0)     p.monthIndex  = mi;
+    if (mi >= 0) p.monthIndex = mi;
     if (vehicleType) p.vehicleType = vehicleType;
     this.navigateToVehicleSearch(p);
   }
 
   onVtypeTypeTotalClick(vehicleType: string): void {
     const { start, end } = this.buildYearRange();
-    this.navigateToVehicleSearch({ vehicleType, opStart: start, opEnd: end, reportedStart: start, reportedEnd: end });
+    this.navigateToVehicleSearch({ vehicleType, opStart: start, opEnd: end });
   }
 
   onVtypeMonthTotalClick(mi: number): void { this.navigateToVehicleSearch({ monthIndex: mi }); }
 
   onPieVtypeClick(vehicleType: string): void {
     const { start, end } = this.buildYearRange();
-    this.navigateToVehicleSearch({ vehicleType, opStart: start, opEnd: end, reportedStart: start, reportedEnd: end });
+    this.navigateToVehicleSearch({ vehicleType, opStart: start, opEnd: end });
   }
 
   // ═══════════════════════════════════════════════════════════════
@@ -291,10 +293,10 @@ export class VehicleCharts implements OnInit, AfterViewInit, OnChanges, OnDestro
     this.isDistanceLoading.set(true); this.distanceError.set('');
     this.distanceChart?.destroy();
     const empty: VehicleDistanceChartResponse = {
-      labels:       this.getMonthLabels(),
+      labels: this.getMonthLabels(),
       distanceData: new Array(12).fill(0),
-      tripData:     new Array(12).fill(0),
-      fuelData:     new Array(12).fill(0)
+      tripData: new Array(12).fill(0),
+      fuelData: new Array(12).fill(0)
     };
     this.svc.getVehicleDistanceMonthly(this.year)
       .pipe(takeUntil(this.destroy$), finalize(() => this.isDistanceLoading.set(false)))
@@ -363,10 +365,10 @@ export class VehicleCharts implements OnInit, AfterViewInit, OnChanges, OnDestro
             return;
           }
 
-          const labels: string[]       = d.labels       ?? [];
+          const labels: string[] = d.labels ?? [];
           const distanceData: number[] = (d.distanceData ?? []).map(Number);
           const emissionData: number[] = (d.emissionData ?? []).map(Number);
-          const colors: string[]       = d.colors        ?? [];
+          const colors: string[] = d.colors ?? [];
 
           if (!labels.length) {
             this.categoryError.set('No category data found for this year.');
@@ -381,14 +383,14 @@ export class VehicleCharts implements OnInit, AfterViewInit, OnChanges, OnDestro
           this.categoryLegend.set(
             labels.map((cat, i) => ({
               category: cat,
-              color:    colors[i]       ?? '#888888',
+              color: colors[i] ?? '#888888',
               distance: distanceData[i] ?? 0,
               emission: emissionData[i] ?? 0,
             }))
           );
 
           if (this.viewReady) this.deferRenderCategory(mapped);
-          else                this.pendingCategory = mapped;
+          else this.pendingCategory = mapped;
         },
         error: err => {
           this.categoryLegend.set([]);
@@ -678,9 +680,9 @@ export class VehicleCharts implements OnInit, AfterViewInit, OnChanges, OnDestro
       requestAnimationFrame(() => this.renderDistancePieChart(data)); return;
     }
     this.distancePieChart?.destroy(); this.distancePieChart = undefined;
-    const labels  = data.vehicleTypes.filter((_, i) => data.typeTotals[i] > 0);
-    const values  = data.typeTotals.filter(v => v > 0);
-    const colors  = data.colors.filter((_, i) => data.typeTotals[i] > 0);
+    const labels = data.vehicleTypes.filter((_, i) => data.typeTotals[i] > 0);
+    const values = data.typeTotals.filter(v => v > 0);
+    const colors = data.colors.filter((_, i) => data.typeTotals[i] > 0);
     const hasData = values.length > 0;
     this.distancePieChart = new Chart(canvas, {
       type: 'doughnut',
@@ -746,10 +748,23 @@ export class VehicleCharts implements OnInit, AfterViewInit, OnChanges, OnDestro
 
     const hasData = data.labels?.length > 0;
 
-    // Max emission value with 15% headroom so top tick label is never clipped
-    const maxEmission = hasData
-      ? Math.max(...(data.emissionData ?? [0])) * 1.15
-      : 1;
+    // ── Clean step size based on emission magnitude ───────────
+    const rawMax = hasData ? Math.max(...(data.emissionData ?? [0])) : 1;
+
+    const getCleanStep = (max: number): number => {
+      if (max <= 100) return 20;
+      if (max <= 500) return 100;
+      if (max <= 1000) return 200;
+      if (max <= 2000) return 500;
+      if (max <= 5000) return 1000;
+      if (max <= 10000) return 2000;
+      if (max <= 20000) return 5000;
+      if (max <= 50000) return 10000;
+      return 20000;
+    };
+
+    const cleanStep = getCleanStep(rawMax);
+    const maxEmission = Math.ceil(rawMax / cleanStep) * cleanStep;
 
     this.categoryChart = new Chart(canvas, {
       type: 'bar',
@@ -816,8 +831,8 @@ export class VehicleCharts implements OnInit, AfterViewInit, OnChanges, OnDestro
                   return `  Distance : ${val.toLocaleString('en-IN')} km`;
                 if (ctx.dataset.label === 'Emission (kg)')
                   return `  Emission : ${val.toLocaleString('en-IN', {
-                    minimumFractionDigits: 0,
-                    maximumFractionDigits: 5
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
                   })} kg`;
                 return ` ${ctx.dataset.label}: ${val.toLocaleString('en-IN')}`;
               },
@@ -845,16 +860,15 @@ export class VehicleCharts implements OnInit, AfterViewInit, OnChanges, OnDestro
             grid: { drawOnChartArea: false },
             min: 0,
             max: maxEmission,
-            // ── Let Chart.js auto-generate evenly spaced decimal
-            //    ticks across the emission range — clean & readable
             ticks: {
               color: '#c2410c', font: { size: 11 },
+              stepSize: cleanStep,  // ✅ clean 0, 2000, 4000, 6000...
               callback: (v: any) => {
                 const num = Number(v);
                 if (num === 0) return '0 kg';
                 return `${num.toLocaleString('en-IN', {
-                  minimumFractionDigits: 0,
-                  maximumFractionDigits: 5
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2
                 })} kg`;
               }
             },

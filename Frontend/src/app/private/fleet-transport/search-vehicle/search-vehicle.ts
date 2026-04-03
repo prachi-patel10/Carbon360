@@ -122,12 +122,23 @@ export class SearchVehicle implements OnInit {
 
   private applyChartParams(params: Record<string, any>): void {
 
-    // ── Category goes to its own signal, NOT searchText ──
+    // ── Reset all filters first so no stale values bleed in ──────
+    this.selectedFuels = [];
+    this.selectedVehicles = [];
+    this.selectedCategories = [];
+    this.chartCategory.set(null);
+    this.searchText.set('');
+    this.operationStartDate.set(null);
+    this.operationEndDate.set(null);
+    this.entryStartDate.set(null);   // ← always clear reported date
+    this.entryEndDate.set(null);     // ← always clear reported date
+
+    // ── vehicleCategory: stored in dedicated signal, not searchText ──
     if (params['vehicleCategory']) {
       this.chartCategory.set(params['vehicleCategory']);
-      //this.searchText.set(params['vehicleCategory']); 
     }
 
+    // ── fuelType ────────────────────────────────────────────────
     if (params['fuelType']) {
       const raw = (params['fuelType'] as string).trim();
       const matched = this.fuelTypes.find(
@@ -136,9 +147,13 @@ export class SearchVehicle implements OnInit {
       this.selectedFuels = [matched ? matched.fuel_name : raw];
     }
 
+    // ── vehicleType ─────────────────────────────────────────────
     if (params['vehicleType']) {
       const rawList = (params['vehicleType'] as string)
-        .split(',').map((v: string) => v.trim()).filter((v: string) => v.length > 0);
+        .split(',')
+        .map((v: string) => v.trim())
+        .filter((v: string) => v.length > 0);
+
       this.selectedVehicles = rawList.map((raw: string) => {
         const matched = this.vehicleTypes.find(
           (v: any) =>
@@ -151,7 +166,10 @@ export class SearchVehicle implements OnInit {
       });
     }
 
+    // ── free-text search ─────────────────────────────────────────
     if (params['search']) this.searchText.set(params['search']);
+
+    // ── Operation date: apply if explicitly passed ───────────────
     if (params['opStart']) this.operationStartDate.set(params['opStart']);
     if (params['opEnd']) this.operationEndDate.set(params['opEnd']);
   }
@@ -224,8 +242,8 @@ export class SearchVehicle implements OnInit {
       this.selectedVehicles.length > 0 ? this.selectedVehicles : undefined,
       this.opStartForApi() || undefined,
       this.opEndForApi() || undefined,
-      this.entryStartForApi() || undefined,
-      this.entryEndForApi() || undefined,
+      this.entryStartForApi() || undefined,   // null when coming from category drill-down
+      this.entryEndForApi() || undefined,   // null when coming from category drill-down
       this.chartCategory() || undefined
     ).subscribe({
       next: (res: any) => {
@@ -286,10 +304,15 @@ export class SearchVehicle implements OnInit {
         const link = document.createElement('a');
         link.href = url;
         link.download = `Search_Fleet&Transport_${ds}.pdf`;
-        document.body.appendChild(link); link.click();
-        document.body.removeChild(link); window.URL.revokeObjectURL(url);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
       })
-      .catch(err => { console.error('PDF download error:', err); alert('PDF generation failed: ' + err.message); })
+      .catch(err => {
+        console.error('PDF download error:', err);
+        alert('PDF generation failed: ' + err.message);
+      })
       .finally(() => { this.loadingTrips[tripId] = false; });
   }
 
@@ -300,7 +323,7 @@ export class SearchVehicle implements OnInit {
   @HostListener('document:click', ['$event'])
   onDocumentClick(e: MouseEvent) {
     if (!(e.target as HTMLElement).closest('.fuel-multiselect')) this.fuelDropdownOpen = false;
-    if (!(e.target as HTMLElement).closest('.category-multiselect')) this.categoryDropdownOpen = false;  // ✅ NEW
+    if (!(e.target as HTMLElement).closest('.category-multiselect')) this.categoryDropdownOpen = false;
     if (!(e.target as HTMLElement).closest('.vehicle-multiselect')) this.vehicleDropdownOpen = false;
   }
 
@@ -329,7 +352,7 @@ export class SearchVehicle implements OnInit {
   clearFuels() { this.selectedFuels = []; this.loadTrips(1); }
 
   // ═══════════════════════════════════════════════════════════════
-  //  VEHICLE CATEGORY MULTI-SELECT  ✅ NEW
+  //  VEHICLE CATEGORY MULTI-SELECT
   // ═══════════════════════════════════════════════════════════════
 
   toggleCategoryDropdown() { this.categoryDropdownOpen = !this.categoryDropdownOpen; }
@@ -466,7 +489,10 @@ export class SearchVehicle implements OnInit {
 
   openTrip(tripId: string) {
     if (!tripId) return;
-    this.router.navigate(['/dashboard/vehicle-ec', tripId], { queryParams: { source: 'search' } });
+    this.router.navigate(
+      ['/dashboard/vehicle-ec', tripId],
+      { queryParams: { mode: 'view', page: 'search' } } 
+    );
   }
 
   // ═══════════════════════════════════════════════════════════════
@@ -477,7 +503,7 @@ export class SearchVehicle implements OnInit {
     this.service.exportExcel(
       this.searchText() || undefined,
       this.selectedFuels.length > 0 ? this.selectedFuels : undefined,
-      this.selectedCategories.length > 0 ? this.selectedCategories : undefined,  // ✅ NEW
+      this.selectedCategories.length > 0 ? this.selectedCategories : undefined,
       this.selectedVehicles.length > 0 ? this.selectedVehicles : undefined,
       this.opStartForApi() || undefined,
       this.opEndForApi() || undefined,
@@ -500,7 +526,9 @@ export class SearchVehicle implements OnInit {
         ('0' + now.getMinutes()).slice(-2) +
         ('0' + now.getSeconds()).slice(-2);
       a.download = `Search_Fleet&Transport_${fmt}.xlsx`;
-      a.href = url; a.click(); window.URL.revokeObjectURL(url);
+      a.href = url;
+      a.click();
+      window.URL.revokeObjectURL(url);
     });
   }
 
