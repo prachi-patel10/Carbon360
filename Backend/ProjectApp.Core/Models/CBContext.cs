@@ -13,6 +13,8 @@ public partial class CBContext : DbContext
     {
     }
 
+    public virtual DbSet<CB_AbsorptionEntry> CB_AbsorptionEntries { get; set; }
+
     public virtual DbSet<CB_Department> CB_Departments { get; set; }
 
     public virtual DbSet<CB_EmissionFactor> CB_EmissionFactors { get; set; }
@@ -33,6 +35,8 @@ public partial class CBContext : DbContext
 
     public virtual DbSet<CB_MasterStatus> CB_MasterStatuses { get; set; }
 
+    public virtual DbSet<CB_MasterTree> CB_MasterTrees { get; set; }
+
     public virtual DbSet<CB_MasterVehicle> CB_MasterVehicles { get; set; }
 
     public virtual DbSet<CB_MasterVehicleType> CB_MasterVehicleTypes { get; set; }
@@ -40,6 +44,8 @@ public partial class CBContext : DbContext
     public virtual DbSet<CB_MasterWorkflow> CB_MasterWorkflows { get; set; }
 
     public virtual DbSet<CB_PasswordResetToken> CB_PasswordResetTokens { get; set; }
+
+    public virtual DbSet<CB_PlantationProject> CB_PlantationProjects { get; set; }
 
     public virtual DbSet<CB_Role> CB_Roles { get; set; }
 
@@ -55,6 +61,26 @@ public partial class CBContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<CB_AbsorptionEntry>(entity =>
+        {
+            entity.HasKey(e => e.EntryId).HasName("PK__CB_Absor__F57BD2F73BB64EAE");
+
+            entity.ToTable("CB_AbsorptionEntry");
+
+            entity.Property(e => e.EntryDate).HasColumnType("datetime");
+            entity.Property(e => e.UpdateDate).HasColumnType("datetime");
+
+            entity.HasOne(d => d.Project).WithMany(p => p.CB_AbsorptionEntries)
+                .HasForeignKey(d => d.ProjectId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__CB_Absorp__Updat__7350E786");
+
+            entity.HasOne(d => d.Tree).WithMany(p => p.CB_AbsorptionEntries)
+                .HasForeignKey(d => d.TreeId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__CB_Absorp__TreeI__74450BBF");
+        });
+
         modelBuilder.Entity<CB_Department>(entity =>
         {
             entity.HasKey(e => e.DepartmentId).HasName("PK__CB_Depar__B2079BED8E6AD1B5");
@@ -276,6 +302,21 @@ public partial class CBContext : DbContext
                 .IsUnicode(false);
         });
 
+        modelBuilder.Entity<CB_MasterTree>(entity =>
+        {
+            entity.HasKey(e => e.TreeId).HasName("PK__CB_Maste__35F32425A70A4419");
+
+            entity.ToTable("CB_MasterTree");
+
+            entity.Property(e => e.EntryDate).HasColumnType("datetime");
+            entity.Property(e => e.TreeName)
+                .IsRequired()
+                .HasMaxLength(100)
+                .IsUnicode(false);
+            entity.Property(e => e.UpdateDate).HasColumnType("datetime");
+            entity.Property(e => e.co2AbsorptionPerYear).HasColumnType("decimal(10, 2)");
+        });
+
         modelBuilder.Entity<CB_MasterVehicle>(entity =>
         {
             entity.HasKey(e => e.vehicle_id).HasName("PK__CB_Maste__F2947BC1DBB88EBF");
@@ -383,6 +424,24 @@ public partial class CBContext : DbContext
                 .HasForeignKey(d => d.UserId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__CB_Passwo__UserI__2BFF54FD");
+        });
+
+        modelBuilder.Entity<CB_PlantationProject>(entity =>
+        {
+            entity.HasKey(e => e.ProjectId).HasName("PK__CB_Plant__761ABEF0CE650F25");
+
+            entity.ToTable("CB_PlantationProject");
+
+            entity.Property(e => e.EntryDate).HasColumnType("datetime");
+            entity.Property(e => e.FinancialYear)
+                .IsRequired()
+                .HasMaxLength(10)
+                .IsUnicode(false);
+            entity.Property(e => e.ProjectName)
+                .IsRequired()
+                .HasMaxLength(150)
+                .IsUnicode(false);
+            entity.Property(e => e.UpdateDate).HasColumnType("datetime");
         });
 
         modelBuilder.Entity<CB_Role>(entity =>
