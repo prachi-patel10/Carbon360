@@ -1,11 +1,14 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using ProjectApp.Core.DTOs.Masters.Tree;
 using ProjectApp.Repository.Interfaces.Masters.Tree;
 
 namespace ProjectApp.API.Controllers.Masters.Tree
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class TreeController : ControllerBase
     {
         private readonly ITreeService _treeService;
@@ -32,5 +35,58 @@ namespace ProjectApp.API.Controllers.Masters.Tree
 
             return Ok(result);
         }
+
+        [HttpPost("Create")]
+        public async Task<IActionResult> Create([FromBody] TreeCreateDTO dto)
+        {
+            var result = await _treeService.CreateTreeAsync(dto);
+            return Ok(result);
+        }
+
+        [HttpPut("Update")]
+        public async Task<IActionResult> Update([FromBody] TreeUpdateDTO dto)
+        {
+            var result = await _treeService.UpdateTreeAsync(dto);
+
+            if (!result)
+                return BadRequest("Update failed");
+
+            return Ok("Updated Successfully");
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(string id)
+        {
+            var result = await _treeService.DeleteTreeAsync(id);
+
+            if (!result)
+                return BadRequest("Delete failed");
+
+            return Ok("Deleted Successfully");
+        }
+
+        [HttpGet("Search")]
+        public async Task<IActionResult> Search(
+            [FromQuery] string? searchText,
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 10,
+            [FromQuery] string? sortColumn = "TreeName",
+            [FromQuery] string? sortDirection = "ASC",
+            [FromQuery] bool? isActive = null)
+        {
+            var dto = new TreeSearchDTO
+            {
+                Search = searchText,
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                SortColumn = sortColumn,
+                SortDirection = sortDirection,
+                IsActive = isActive
+            };
+
+            var result = await _treeService.SearchTreesAsync(dto);
+            return Ok(result);
+        }
+
     }
 }

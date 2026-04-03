@@ -1,4 +1,5 @@
 ﻿using ProjectApp.Core.DTOs.Masters.Tree;
+using ProjectApp.Repository.Utilities.SP;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,5 +13,13 @@ namespace ProjectApp.Repository.Interfaces.Masters.Tree
         Task<List<TreeResponseDTO>> GetAllTreesAsync();
 
         Task<TreeResponseDTO> GetTreeByIdAsync(string encryptedId);
+
+        Task<TreeResponseDTO> CreateTreeAsync(TreeCreateDTO dto);
+
+        Task<bool> UpdateTreeAsync(TreeUpdateDTO dto);
+
+        Task<bool> DeleteTreeAsync(string encryptedId);
+
+        Task<PageResult> SearchTreesAsync(TreeSearchDTO dto);
     }
 }

@@ -5,6 +5,7 @@ using ProjectApp.Core.Models;
 using ProjectApp.Repository.Interfaces.Masters.Tree;
 using ProjectApp.Repository.Interfaces.User;
 using ProjectApp.Repository.Utilities.Auth;
+using ProjectApp.Repository.Utilities.SP;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -85,6 +86,111 @@ namespace ProjectApp.Repository.Services.Masters.Tree
             }
 
             return null;
+        }
+
+        // ✅ CREATE
+        public async Task<TreeResponseDTO> CreateTreeAsync(TreeCreateDTO dto)
+        {
+            var insertedId = _context.Database
+                .SqlQueryRaw<int>(
+                    "EXEC USP_CB_TreeMasterInsert @TreeName, @Co2AbsorptionPerYear, @EntryBy",
+                    new SqlParameter("@TreeName", dto.TreeName),
+                    new SqlParameter("@Co2AbsorptionPerYear", dto.Co2AbsorptionPerYear),
+                    new SqlParameter("@EntryBy", GetCurrentUserId())
+                )
+                .AsEnumerable().First();
+
+            return new TreeResponseDTO
+            {
+                TreeId = _idEncoder.Encode(insertedId),
+                TreeName = dto.TreeName,
+                Co2AbsorptionPerYear = dto.Co2AbsorptionPerYear,
+                IsActive = true
+            };
+        }
+
+        // ✅ UPDATE
+        public async Task<bool> UpdateTreeAsync(TreeUpdateDTO dto)
+        {
+            int id = _idEncoder.Decode(dto.TreeId);
+
+            await _context.Database.ExecuteSqlRawAsync(
+                "EXEC USP_CB_TreeMasterUpdate @TreeId, @TreeName, @Co2AbsorptionPerYear, @IsActive, @UpdatedBy",
+                new SqlParameter("@TreeId", id),
+                new SqlParameter("@TreeName", dto.TreeName),
+                new SqlParameter("@Co2AbsorptionPerYear", dto.Co2AbsorptionPerYear),
+                new SqlParameter("@IsActive", dto.IsActive),
+                new SqlParameter("@UpdatedBy", GetCurrentUserId())
+            );
+
+            return true;
+        }
+
+        // ✅ DELETE (Soft Delete)
+        public async Task<bool> DeleteTreeAsync(string encryptedId)
+        {
+            int id = _idEncoder.Decode(encryptedId);
+
+            await _context.Database.ExecuteSqlRawAsync(
+                "EXEC USP_CB_TreeMasterDelete @TreeId, @UpdatedBy",
+                new SqlParameter("@TreeId", id),
+                new SqlParameter("@UpdatedBy", GetCurrentUserId())
+            );
+
+            return true;
+        }
+
+        // ✅ SEARCH
+        public async Task<PageResult> SearchTreesAsync(TreeSearchDTO dto)
+        {
+            var parameters = new List<SqlParameter>
+        {
+            new SqlParameter("@Search", dto.Search ?? (object)DBNull.Value),
+            new SqlParameter("@IsActive", dto.IsActive ?? (object)DBNull.Value),
+            new SqlParameter("@PageNumber", dto.PageNumber),
+            new SqlParameter("@PageSize", dto.PageSize),
+            new SqlParameter("@SortColumn", dto.SortColumn),
+            new SqlParameter("@SortDirection", dto.SortDirection)
+        };
+
+            var conn = _context.Database.GetDbConnection();
+            await conn.OpenAsync();
+
+            using var cmd = conn.CreateCommand();
+            cmd.CommandText = "USP_CB_TreeMasterSearch";
+            cmd.CommandType = CommandType.StoredProcedure;
+
+            foreach (var p in parameters)
+                cmd.Parameters.Add(p);
+
+            using var reader = await cmd.ExecuteReaderAsync();
+
+            int totalRecords = 0;
+            if (await reader.ReadAsync())
+                totalRecords = reader.GetInt32(0);
+
+            await reader.NextResultAsync();
+
+            var list = new List<TreeResponseDTO>();
+
+            while (await reader.ReadAsync())
+            {
+                list.Add(new TreeResponseDTO
+                {
+                    TreeId = _idEncoder.Encode(Convert.ToInt32(reader["TreeId"])),
+                    TreeName = reader["TreeName"].ToString(),
+                    Co2AbsorptionPerYear = Convert.ToDecimal(reader["Co2AbsorptionPerYear"]),
+                    IsActive = Convert.ToBoolean(reader["IsActive"])
+                });
+            }
+
+            return new PageResult
+            {
+                Data = list,
+                TotalRecords = totalRecords,
+                CurrentPage = dto.PageNumber,
+                TotalPages = (int)Math.Ceiling((double)totalRecords / dto.PageSize)
+            };
         }
 
     }
