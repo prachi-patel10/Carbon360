@@ -29,7 +29,6 @@ import { VehicleCharts } from './private/vehicle-charts/vehicle-charts';
 import { GeneratorCharts } from './private/generator-charts/generator-charts';
 import { ForgotPasswordComponent } from './public/account/forgot-password/forgot-password';
 import { ResetPasswordComponent } from './public/account/reset-password/reset-password';
-import { ProjectComponent } from './private/Carbon-offset/plantation-project/plantation-project';
 import { Entryform } from './private/Carbon-offset/entryform/entryform';
 
 export const routes: Routes = [
@@ -86,7 +85,6 @@ export const routes: Routes = [
 
 
             { path: 'Ngoentryform', component: Entryform },
-            { path: 'Plantationproject', component: ProjectComponent },
             // { path: 'generator-review/:id', component: GeneratorReviewComponent },
             { path: 'vehicle-ec/:id', component: TripComponent },
             {
