@@ -21,5 +21,8 @@ namespace ProjectApp.Repository.Interfaces.Masters.Tree
         Task<bool> DeleteTreeAsync(string encryptedId);
 
         Task<PageResult> SearchTreesAsync(TreeSearchDTO dto);
+
+        Task<bool> UpdateStatusAsync(TreeMasterStatusUpdateDTO dto);
+
     }
 }

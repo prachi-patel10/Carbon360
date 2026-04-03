@@ -193,6 +193,21 @@ namespace ProjectApp.Repository.Services.Masters.Tree
             };
         }
 
+
+        public async Task<bool> UpdateStatusAsync(TreeMasterStatusUpdateDTO dto)
+        {
+            int id = _idEncoder.Decode(dto.TreeId);
+
+            await _context.Database.ExecuteSqlRawAsync(
+                "UPDATE CB_MasterTree SET IsActive=@IsActive, UpdateBy=@UpdateBy, UpdateDate=GETDATE() WHERE TreeId=@TreeId",
+                new SqlParameter("@IsActive", dto.IsActive),
+                new SqlParameter("@TreeId", id),
+                new SqlParameter("@UpdateBy", GetCurrentUserId())
+            );
+
+            return true;
+        }
+
     }
 
 }

@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using ProjectApp.Core.DTOs.Masters.Tree;
+using ProjectApp.Core.DTOs.Masters.VehicleType;
 using ProjectApp.Repository.Interfaces.Masters.Tree;
 
 namespace ProjectApp.API.Controllers.Masters.Tree
@@ -65,6 +66,7 @@ namespace ProjectApp.API.Controllers.Masters.Tree
             return Ok("Deleted Successfully");
         }
 
+
         [HttpGet("Search")]
         public async Task<IActionResult> Search(
             [FromQuery] string? searchText,
@@ -86,6 +88,17 @@ namespace ProjectApp.API.Controllers.Masters.Tree
 
             var result = await _treeService.SearchTreesAsync(dto);
             return Ok(result);
+        }
+
+        [HttpPatch("UpdateStatus")]
+        public async Task<IActionResult> UpdateStatus([FromBody] TreeMasterStatusUpdateDTO dto)
+        {
+            var result = await _treeService.UpdateStatusAsync(dto);
+
+            if (!result)
+                return BadRequest("Status update failed");
+
+            return Ok("Status updated successfully");
         }
 
     }
