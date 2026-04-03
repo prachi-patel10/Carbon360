@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
+using ProjectApp.Core.DTOs.Charts;
 
 namespace ProjectApp.Core.Models;
 
@@ -58,6 +59,30 @@ public partial class CBContext : DbContext
     public virtual DbSet<CB_VehicleTripEmissionHistory> CB_VehicleTripEmissionHistories { get; set; }
 
     public virtual DbSet<CB_VehicleTypeCategory> CB_VehicleTypeCategories { get; set; }
+
+    public virtual DbSet<SiteEmissionDto> SiteEmissionDtos { get; set; }
+
+    public virtual DbSet<FuelTypeMonthlyConsumptionDto> FuelTypeMonthlyConsumptionDtos { get; set; }
+
+    public virtual DbSet<GeneratorRunHoursRawDto> GeneratorRunHoursRawDtos { get; set; }
+
+    public virtual DbSet<GeneratorRunHoursMonthlyRawDto> GeneratorRunHoursMonthlyRawDtos { get; set; }
+
+    public virtual DbSet<VehicleTypeDistanceRawDto> VehicleTypeDistanceRawDtos { get; set; }
+
+    public virtual DbSet<VehicleCategoryEmissionRawDto> VehicleCategoryEmissionRawDtos { get; set; }
+
+    public virtual DbSet<VehicleDistanceMonthlyRawDto> VehicleDistanceMonthlyRawDtos { get; set; }
+
+    public virtual DbSet<MonthlyEmissionRawDto> MonthlyEmissionRawDtos { get; set; }
+
+    public virtual DbSet<VehicleSummaryDto> VehicleSummaryDtos { get; set; }
+
+    public virtual DbSet<GeneratorSummaryDto> GeneratorSummaryDtos { get; set; }
+
+
+
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -599,6 +624,68 @@ public partial class CBContext : DbContext
             entity.Property(e => e.EntryDate).HasColumnType("datetime");
             entity.Property(e => e.UpdateDate).HasColumnType("datetime");
         });
+
+        modelBuilder.Entity<SiteEmissionDto>(entity =>
+        {
+            entity.HasNoKey(); // IMPORTANT
+            entity.ToView(null); // prevents EF from expecting a table
+        });
+
+        OnModelCreatingPartial(modelBuilder);
+
+        modelBuilder.Entity<FuelTypeMonthlyConsumptionDto>(entity =>
+        {
+            entity.HasNoKey(); // IMPORTANT
+            entity.ToView(null); // prevents EF from expecting a table
+        });
+
+        modelBuilder.Entity<GeneratorRunHoursRawDto>(entity =>
+        {
+            entity.HasNoKey(); // IMPORTANT
+            entity.ToView(null); // prevents EF from expecting a table
+        });
+
+        modelBuilder.Entity<GeneratorRunHoursMonthlyRawDto>(entity =>
+        {
+            entity.HasNoKey(); // IMPORTANT
+            entity.ToView(null); // prevents EF from expecting a table
+        });
+
+        modelBuilder.Entity<VehicleTypeDistanceRawDto>(entity =>
+        {
+            entity.HasNoKey(); // IMPORTANT
+            entity.ToView(null); // prevents EF from expecting a table
+        });
+
+        modelBuilder.Entity<VehicleCategoryEmissionRawDto>(entity =>
+        {
+            entity.HasNoKey(); // IMPORTANT
+            entity.ToView(null); // prevents EF from expecting a table
+        });
+
+        modelBuilder.Entity<VehicleDistanceMonthlyRawDto>(entity =>
+        {
+            entity.HasNoKey(); // IMPORTANT
+            entity.ToView(null); // prevents EF from expecting a table
+        });
+
+        modelBuilder.Entity<MonthlyEmissionRawDto>(entity =>
+        {
+            entity.HasNoKey(); // IMPORTANT
+            entity.ToView(null); // prevents EF from expecting a table
+        });
+        modelBuilder.Entity<VehicleSummaryDto>(entity =>
+        {
+            entity.HasNoKey(); // IMPORTANT
+            entity.ToView(null); // prevents EF from expecting a table
+        });
+
+        modelBuilder.Entity<GeneratorSummaryDto>(entity =>
+        {
+            entity.HasNoKey(); // IMPORTANT
+            entity.ToView(null); // prevents EF from expecting a table
+        });
+
 
         OnModelCreatingPartial(modelBuilder);
     }
