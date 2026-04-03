@@ -8,6 +8,7 @@ using ProjectApp.Core.DTOs.Masters.Department;
 using ProjectApp.Core.DTOs.Masters.EmissionFactor;
 using ProjectApp.Core.DTOs.Masters.Fuel;
 using ProjectApp.Core.DTOs.Masters.Generator;
+using ProjectApp.Core.DTOs.Masters.PlantationProject;
 using ProjectApp.Core.DTOs.Masters.SiteLocation;
 using ProjectApp.Core.DTOs.Masters.Tree;
 using ProjectApp.Core.DTOs.Masters.Vehicle;
@@ -79,6 +80,9 @@ namespace ProjectApp.API.Extentions
 
             //---------- Tree Master ----------------------------
             CreateMap<CB_MasterTree, TreeResponseDTO>().ReverseMap();
+
+            //-----Plantation Project ----------------------------
+            CreateMap<CB_PlantationProject, PlantationProjectDTO>().ReverseMap();
 
         }
     }

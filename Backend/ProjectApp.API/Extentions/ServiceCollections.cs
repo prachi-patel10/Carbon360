@@ -11,6 +11,7 @@ using ProjectApp.Repository.Interfaces.Masters.Department;
 using ProjectApp.Repository.Interfaces.Masters.EmissionFactor;
 using ProjectApp.Repository.Interfaces.Masters.Fuel;
 using ProjectApp.Repository.Interfaces.Masters.Generator;
+using ProjectApp.Repository.Interfaces.Masters.PlantationProject;
 using ProjectApp.Repository.Interfaces.Masters.Role;
 using ProjectApp.Repository.Interfaces.Masters.Tree;
 using ProjectApp.Repository.Interfaces.Masters.Vehicle;
@@ -26,6 +27,7 @@ using ProjectApp.Repository.Services.Masters.Department;
 using ProjectApp.Repository.Services.Masters.EmissionFactor;
 using ProjectApp.Repository.Services.Masters.Fuel;
 using ProjectApp.Repository.Services.Masters.Generator;
+using ProjectApp.Repository.Services.Masters.PlantationProject;
 using ProjectApp.Repository.Services.Masters.Role;
 using ProjectApp.Repository.Services.Masters.Tree;
 using ProjectApp.Repository.Services.Masters.Vehicle;
@@ -71,6 +73,7 @@ namespace ProjectApp.API.Extentions
             services.AddScoped<IChartService, ChartService>();
             services.AddScoped<IEmailService, EmailService>();
             services.AddScoped<ITreeService, TreeService>();
+            services.AddScoped<IPlantationProject, PlantationProjectService>();
             return services;
         }
     }

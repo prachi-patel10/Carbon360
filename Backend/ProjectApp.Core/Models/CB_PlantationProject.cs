@@ -11,7 +11,7 @@ public partial class CB_PlantationProject
 
     public string ProjectName { get; set; }
 
-    public string FinancialYear { get; set; }
+    public int? FinancialYear { get; set; }
 
     public int? EntryBy { get; set; }
 
