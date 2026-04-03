@@ -9,6 +9,7 @@ using ProjectApp.Core.DTOs.Masters.EmissionFactor;
 using ProjectApp.Core.DTOs.Masters.Fuel;
 using ProjectApp.Core.DTOs.Masters.Generator;
 using ProjectApp.Core.DTOs.Masters.SiteLocation;
+using ProjectApp.Core.DTOs.Masters.Tree;
 using ProjectApp.Core.DTOs.Masters.Vehicle;
 using ProjectApp.Core.DTOs.Masters.VehicleType;
 using ProjectApp.Core.Models;
@@ -75,6 +76,9 @@ namespace ProjectApp.API.Extentions
                     opt => opt.MapFrom(src => src.EmissionFactorId));
 
             CreateMap<CB_GeneratorOperation, GeneratorOperationResponseDTO>().ReverseMap();
+
+            //---------- Tree Master ----------------------------
+            CreateMap<CB_MasterTree, TreeResponseDTO>().ReverseMap();
 
         }
     }
