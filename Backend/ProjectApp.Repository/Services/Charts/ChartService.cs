@@ -571,8 +571,8 @@ namespace ProjectApp.Repository.Services.Charts
             var columns = new Dictionary<string, string>
             {
                 { "Month", "Month" },
-                { "Diesel", "Diesel" },
                 { "Petrol", "Petrol" },
+                 { "Diesel", "Diesel" },
                 { "CNG", "CNG" },
                 { "LPG", "LPG" }
             };
@@ -760,7 +760,7 @@ namespace ProjectApp.Repository.Services.Charts
             data.VehicleTypes, // labels
                     data.TypeTotals, // values
                     "Vehicle Type Report",
-            $"Vehicle Type Distance Distribution - {year}"
+            $"Vehicle Type Distance - {year}"
             );
         }
 

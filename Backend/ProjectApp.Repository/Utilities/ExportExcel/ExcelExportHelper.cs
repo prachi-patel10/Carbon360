@@ -8,6 +8,18 @@ using NPOI.XSSF.UserModel;
 using NPOI.XSSF.UserModel.Charts;
 using ProjectApp.Core.DTOs.Charts;
 using System.Reflection;
+using System.Text;
+using NPOI.XSSF.UserModel;
+using NPOI.SS.UserModel;
+using NPOI.SS.Util;
+using NPOI.OpenXmlFormats.Dml.Chart;
+using System.Text;
+
+// ✅ Aliases to avoid namespace conflicts
+using DmlFill = NPOI.OpenXmlFormats.Dml.CT_SolidColorFillProperties;
+using DmlColor = NPOI.OpenXmlFormats.Dml.CT_SRgbColor;
+using DmlLine = NPOI.OpenXmlFormats.Dml.CT_LineProperties;
+
 
 namespace ProjectApp.Repository.Services.Common
 {
@@ -208,6 +220,7 @@ namespace ProjectApp.Repository.Services.Common
             if (!data.Any())
                 return Array.Empty<byte>();
 
+            var dataList = data.ToList();
             var workbook = new XSSFWorkbook();
             var sheet = workbook.CreateSheet(sheetName);
 
@@ -219,30 +232,24 @@ namespace ProjectApp.Repository.Services.Common
 
             // 2️⃣ DATA
             int rowIdx = 1;
-            foreach (var item in data)
+            foreach (var item in dataList)
             {
                 var row = sheet.CreateRow(rowIdx++);
                 col = 0;
-
                 foreach (var propName in columnMappings.Values)
                 {
                     var prop = typeof(T).GetProperty(propName);
                     var val = prop?.GetValue(item);
-
                     var cell = row.CreateCell(col++);
 
-                    if (val is double d)
-                        cell.SetCellValue(d);
-                    else if (val is int i)
-                        cell.SetCellValue(i);
-                    else if (val is decimal dec)
-                        cell.SetCellValue((double)dec);
-                    else
-                        cell.SetCellValue(val?.ToString());
+                    if (val is double d) cell.SetCellValue(d);
+                    else if (val is int i) cell.SetCellValue(i);
+                    else if (val is decimal dec) cell.SetCellValue((double)dec);
+                    else cell.SetCellValue(val?.ToString());
                 }
             }
 
-            // 3️⃣ CHART
+            // 3️⃣ CHART SETUP
             var drawing = sheet.CreateDrawingPatriarch();
             var anchor = drawing.CreateAnchor(0, 0, 0, 0, col + 1, 1, col + 12, 22);
             var chart = (XSSFChart)drawing.CreateChart(anchor);
@@ -253,13 +260,9 @@ namespace ProjectApp.Repository.Services.Common
             var bottomAxis = chart.CreateCategoryAxis(AxisPosition.Bottom);
             var leftAxis = chart.CreateValueAxis(AxisPosition.Left);
 
-            // ❌ REMOVE THIS (important)
-            // leftAxis.Minimum = 0;
-
-            // ✅ FIX 1: ONLY mapped numeric columns
+            // ✅ MAX VALUE CALCULATE
             var numericProps = columnMappings.Values.Skip(1).ToList();
-
-            var values = data
+            var allValues = dataList
                 .SelectMany(x => numericProps.Select(p =>
                 {
                     var prop = typeof(T).GetProperty(p);
@@ -269,30 +272,45 @@ namespace ProjectApp.Repository.Services.Common
                 .DefaultIfEmpty(0)
                 .ToList();
 
-            double maxValue = values.Max();
+            double maxValue = allValues.Max();
 
             var dataFactory = chart.ChartDataFactory;
             var chartData = dataFactory.CreateBarChartData<string, double>();
 
-            int rowCount = data.Count();
+            int rowCount = dataList.Count;
+
+            // ✅ KEY FIX: X-axis range row 1 se rowCount tak
             var xAxisRange = new CellRangeAddress(1, rowCount, 0, 0);
 
+            // ✅ KEY FIX: Sirf wo series add karo jinka data > 0 ho
+            // seriesCol = Excel sheet column index (always increment)
             int seriesCol = 1;
             foreach (var header in columnMappings.Keys.Skip(1))
             {
-                var yRange = new CellRangeAddress(1, rowCount, seriesCol, seriesCol);
+                var propName = columnMappings[header];
 
-                chartData.AddSeries(
-                    DataSources.FromStringCellRange(sheet, xAxisRange),
-                    DataSources.FromNumericCellRange(sheet, yRange)
-                ).SetTitle(header);
+                bool hasAnyData = dataList.Any(x =>
+                {
+                    var prop = typeof(T).GetProperty(propName);
+                    return Convert.ToDouble(prop?.GetValue(x) ?? 0) > 0;
+                });
 
-                seriesCol++;
+                if (hasAnyData)
+                {
+                    // ✅ seriesCol = actual Excel column index
+                    var yRange = new CellRangeAddress(1, rowCount, seriesCol, seriesCol);
+                    chartData.AddSeries(
+                        DataSources.FromStringCellRange(sheet, xAxisRange),
+                        DataSources.FromNumericCellRange(sheet, yRange)
+                    ).SetTitle(header);
+                }
+
+                seriesCol++; // ✅ Hamesha increment - Excel column track karna zaroori hai
             }
 
             chart.Plot(chartData, bottomAxis, leftAxis);
 
-            // ✅🔥 REAL FIX: FORCE Y-AXIS SCALE (NO AUTO BUG)
+            // ✅ Y-AXIS SCALE FIX
             var ctChart = chart.GetCTChart();
 
             double minAxis = 0;
@@ -317,7 +335,7 @@ namespace ProjectApp.Repository.Services.Common
                 };
             }
 
-            // ✅ STACKED BAR FIX
+            // ✅ CLUSTERED BAR + GAP WIDTH
             if (ctChart.plotArea.barChart != null && ctChart.plotArea.barChart.Count > 0)
             {
                 var barChart = ctChart.plotArea.barChart[0];
@@ -329,16 +347,17 @@ namespace ProjectApp.Repository.Services.Common
 
                 barChart.grouping = new NPOI.OpenXmlFormats.Dml.Chart.CT_BarGrouping
                 {
-                    val = NPOI.OpenXmlFormats.Dml.Chart.ST_BarGrouping.stacked
+                    val = NPOI.OpenXmlFormats.Dml.Chart.ST_BarGrouping.clustered
                 };
 
-                barChart.overlap = new NPOI.OpenXmlFormats.Dml.Chart.CT_Overlap
+                // ✅ Wider bars = small values (Jan 400) clearly visible honge
+                barChart.gapWidth = new NPOI.OpenXmlFormats.Dml.Chart.CT_GapAmount
                 {
-                    val = 100
+                    val = 50  // ✅ 50 = bahut wide bars, 400 clearly dikhega
                 };
             }
 
-            // 4️⃣ AUTO SIZE
+            // 4️⃣ AUTO SIZE COLUMNS
             for (int i = 0; i < columnMappings.Count; i++)
                 sheet.AutoSizeColumn(i);
 
@@ -346,6 +365,187 @@ namespace ProjectApp.Repository.Services.Common
             workbook.Write(stream);
             return stream.ToArray();
         }
+        //    public static async Task<byte[]> ExportExcelWithChartAsync<T>(
+        //IEnumerable<T> data,
+        //Dictionary<string, string> columnMappings,
+        //string sheetName = "Sheet1",
+        //string chartTitle = "Report Chart")
+        //    {
+        //        if (!data.Any())
+        //            return Array.Empty<byte>();
+
+        //        var workbook = new XSSFWorkbook();
+        //        var sheet = workbook.CreateSheet(sheetName);
+
+        //        // 1️⃣ HEADERS
+        //        var headerRow = sheet.CreateRow(0);
+        //        int col = 0;
+        //        foreach (var header in columnMappings.Keys)
+        //            headerRow.CreateCell(col++).SetCellValue(header);
+
+        //        // 2️⃣ DATA
+        //        int rowIdx = 1;
+        //        foreach (var item in data)
+        //        {
+        //            var row = sheet.CreateRow(rowIdx++);
+        //            col = 0;
+
+        //            foreach (var propName in columnMappings.Values)
+        //            {
+        //                var prop = typeof(T).GetProperty(propName);
+        //                var val = prop?.GetValue(item);
+
+        //                var cell = row.CreateCell(col++);
+
+        //                if (val is double d)
+        //                    cell.SetCellValue(d);
+        //                else if (val is int i)
+        //                    cell.SetCellValue(i);
+        //                else if (val is decimal dec)
+        //                    cell.SetCellValue((double)dec);
+        //                else
+        //                    cell.SetCellValue(val?.ToString());
+        //            }
+        //        }
+
+        //        // 3️⃣ CHART
+        //        var drawing = sheet.CreateDrawingPatriarch();
+        //        var anchor = drawing.CreateAnchor(0, 0, 0, 0, col + 1, 1, col + 12, 22);
+        //        var chart = (XSSFChart)drawing.CreateChart(anchor);
+
+        //        chart.SetTitle(chartTitle);
+        //        chart.GetOrCreateLegend().Position = LegendPosition.Bottom;
+
+        //        var bottomAxis = chart.CreateCategoryAxis(AxisPosition.Bottom);
+        //        var leftAxis = chart.CreateValueAxis(AxisPosition.Left);
+
+        //        // ❌ REMOVE THIS (important)
+        //        // leftAxis.Minimum = 0;
+
+        //        // ✅ FIX 1: ONLY mapped numeric columns
+        //        var numericProps = columnMappings.Values.Skip(1).ToList();
+
+        //        var values = data
+        //            .SelectMany(x => numericProps.Select(p =>
+        //            {
+        //                var prop = typeof(T).GetProperty(p);
+        //                return Convert.ToDouble(prop?.GetValue(x) ?? 0);
+        //            }))
+        //            .Where(v => v > 0)
+        //            .DefaultIfEmpty(0)
+        //            .ToList();
+
+        //        double maxValue = values.Max();
+
+        //        var dataFactory = chart.ChartDataFactory;
+        //        var chartData = dataFactory.CreateBarChartData<string, double>();
+
+        //        int rowCount = data.Count();
+        //        var xAxisRange = new CellRangeAddress(1, rowCount, 0, 0);
+
+        //        int seriesCol = 1;
+        //        foreach (var header in columnMappings.Keys.Skip(1))
+        //        {
+        //            var propName = columnMappings[header];
+
+        //            // ✅ Pure zero columns chart se skip karo
+        //            bool hasData = data.Any(x =>
+        //            {
+        //                var prop = typeof(T).GetProperty(propName);
+        //                return Convert.ToDouble(prop?.GetValue(x) ?? 0) > 0;
+        //            });
+
+        //            if (hasData)  // ✅ Sirf non-zero series add karo
+        //            {
+        //                var yRange = new CellRangeAddress(1, rowCount, seriesCol, seriesCol);
+        //                chartData.AddSeries(
+        //                    DataSources.FromStringCellRange(sheet, xAxisRange),
+        //                    DataSources.FromNumericCellRange(sheet, yRange)
+        //                ).SetTitle(header);
+        //            }
+
+        //            seriesCol++;  // ✅ seriesCol badhta rahe (column position sahi rahe)
+        //        }
+
+        //        //int seriesCol = 1;
+        //        //foreach (var header in columnMappings.Keys.Skip(1))
+        //        //{
+        //        //    var yRange = new CellRangeAddress(1, rowCount, seriesCol, seriesCol);
+
+        //        //    chartData.AddSeries(
+        //        //        DataSources.FromStringCellRange(sheet, xAxisRange),
+        //        //        DataSources.FromNumericCellRange(sheet, yRange)
+        //        //    ).SetTitle(header);
+
+        //        //    seriesCol++;
+        //        //}
+
+        //        chart.Plot(chartData, bottomAxis, leftAxis);
+
+        //        // ✅🔥 REAL FIX: FORCE Y-AXIS SCALE (NO AUTO BUG)
+        //        var ctChart = chart.GetCTChart();
+
+        //        double minAxis = 0;
+        //        double axisMax = Math.Ceiling(maxValue / 500) * 500;
+
+        //        foreach (var valAx in ctChart.plotArea.valAx)
+        //        {
+        //            valAx.scaling = new NPOI.OpenXmlFormats.Dml.Chart.CT_Scaling
+        //            {
+        //                orientation = new NPOI.OpenXmlFormats.Dml.Chart.CT_Orientation
+        //                {
+        //                    val = NPOI.OpenXmlFormats.Dml.Chart.ST_Orientation.minMax
+        //                },
+        //                min = new NPOI.OpenXmlFormats.Dml.Chart.CT_Double { val = minAxis },
+        //                max = new NPOI.OpenXmlFormats.Dml.Chart.CT_Double { val = axisMax }
+        //            };
+
+        //            valAx.crossesAt = null;
+        //            valAx.crosses = new NPOI.OpenXmlFormats.Dml.Chart.CT_Crosses
+        //            {
+        //                val = NPOI.OpenXmlFormats.Dml.Chart.ST_Crosses.autoZero
+        //            };
+        //        }
+
+        //        // ✅ STACKED BAR FIX
+
+        //        // ✅ GROUPED (CLUSTERED) BAR FIX - stacked ki jagah clustered karo
+        //        if (ctChart.plotArea.barChart != null && ctChart.plotArea.barChart.Count > 0)
+        //        {
+        //            var barChart = ctChart.plotArea.barChart[0];
+
+        //            barChart.barDir = new NPOI.OpenXmlFormats.Dml.Chart.CT_BarDir
+        //            {
+        //                val = NPOI.OpenXmlFormats.Dml.Chart.ST_BarDir.col
+        //            };
+
+        //            // ❌ PEHLE: stacked tha
+        //            // barChart.grouping = new CT_BarGrouping { val = ST_BarGrouping.stacked };
+
+        //            // ✅ AB: clustered karo
+        //            barChart.grouping = new NPOI.OpenXmlFormats.Dml.Chart.CT_BarGrouping
+        //            {
+        //                val = NPOI.OpenXmlFormats.Dml.Chart.ST_BarGrouping.clustered
+        //            };
+
+        //            barChart.gapWidth = new NPOI.OpenXmlFormats.Dml.Chart.CT_GapAmount
+        //            {
+        //                val = 80  // Kam gap = wider bars
+        //            };
+
+
+        //            // ❌ overlap 100 hatao - sirf stacked ke liye tha
+        //            // barChart.overlap = new CT_Overlap { val = 100 };
+        //        }
+
+        //        // 4️⃣ AUTO SIZE
+        //        for (int i = 0; i < columnMappings.Count; i++)
+        //            sheet.AutoSizeColumn(i);
+
+        //        using var stream = new MemoryStream();
+        //        workbook.Write(stream);
+        //        return stream.ToArray();
+        //    }
 
         public static async Task<byte[]> ExportExcelWithLineChartAsync<T>(
     IEnumerable<T> data,
@@ -753,95 +953,395 @@ namespace ProjectApp.Repository.Services.Common
 
             return await Task.FromResult(stream.ToArray());
         }
+public static async Task<byte[]> ExportVehicleTypePieChartAsync(
+    List<string> labels,
+    List<decimal> values,
+    string sheetName = "Sheet1",
+    string chartTitle = "Pie Chart Report")
+    {
+        if (labels == null || values == null || !labels.Any() || !values.Any())
+            return Array.Empty<byte>();
 
-        public static async Task<byte[]> ExportVehicleTypePieChartAsync(
-List<string> labels,
-List<decimal> values,
-string sheetName = "Sheet1",
-string chartTitle = "Pie Chart Report")
-        {
-            if (labels == null || values == null || !labels.Any() || !values.Any())
-                return Array.Empty<byte>();
+        // =====================================================
+        // STEP 1 — Custom Colors
+        // =====================================================
+        var sliceColors = new List<string>
+    {
+        "4472C4", // Bike    → Blue
+        "70AD47", // Bus     → Green
+        "ED7D31", // Car     → Orange
+        "E91E8C", // Tractor → Pink
+        "7B61C4", // Truck   → Purple
+        "FF0000", // fallback
+        "00B0F0",
+        "FFFF00"
+    };
 
-            var workbook = new XSSFWorkbook();
-            var sheet = workbook.CreateSheet(sheetName);
+        var workbook = new XSSFWorkbook();
+        var sheet = workbook.CreateSheet(sheetName);
 
-            // =========================
-            // :one: HEADERS
-            // =========================
+            // =====================================================
+            // STEP 2 — Headers (Styled)
+            // =====================================================
+            int tableFontSize = 14; // ← YAHAN SE CONTROL KARO (bada = 16, chota = 11)
+            int rowHeightPt = 22; // ← Row height points mein
+
+            // Header Font + Style
+            var headerFont = workbook.CreateFont();
+            headerFont.IsBold = true;
+            headerFont.FontHeightInPoints = (short)tableFontSize;
+            headerFont.FontName = "Calibri";
+
+            var headerStyle = workbook.CreateCellStyle();
+            headerStyle.SetFont(headerFont);
+            headerStyle.FillForegroundColor = NPOI.HSSF.Util.HSSFColor.Grey25Percent.Index;
+            headerStyle.FillPattern = FillPattern.SolidForeground;
+            headerStyle.BorderBottom = BorderStyle.Medium;
+            headerStyle.BorderTop = BorderStyle.Medium;
+            headerStyle.BorderLeft = BorderStyle.Medium;
+            headerStyle.BorderRight = BorderStyle.Medium;
+            headerStyle.Alignment = HorizontalAlignment.Center;
+
             var headerRow = sheet.CreateRow(0);
-            headerRow.CreateCell(0).SetCellValue("Category");
-            headerRow.CreateCell(1).SetCellValue("Value");
+            headerRow.HeightInPoints = (short)rowHeightPt;
 
-            // =========================
-            // :two: DATA
-            // =========================
+            var h0 = headerRow.CreateCell(0);
+            var h1 = headerRow.CreateCell(1);
+            h0.SetCellValue("Category");
+            h1.SetCellValue("Value");
+            h0.CellStyle = headerStyle;
+            h1.CellStyle = headerStyle;
+
+            // =====================================================
+            // STEP 3 — Data Rows (Styled)
+            // =====================================================
+
+            // Data Font + Style
+            var dataFont = workbook.CreateFont();
+            dataFont.FontHeightInPoints = (short)tableFontSize;
+            dataFont.FontName = "Calibri";
+
+            var dataStyle = workbook.CreateCellStyle();
+            dataStyle.SetFont(dataFont);
+            dataStyle.BorderBottom = BorderStyle.Thin;
+            dataStyle.BorderTop = BorderStyle.Thin;
+            dataStyle.BorderLeft = BorderStyle.Thin;
+            dataStyle.BorderRight = BorderStyle.Thin;
+            dataStyle.Alignment = HorizontalAlignment.Left;
+
+            // Value cell right-align
+            var valueStyle = workbook.CreateCellStyle();
+            valueStyle.SetFont(dataFont);
+            valueStyle.BorderBottom = BorderStyle.Thin;
+            valueStyle.BorderTop = BorderStyle.Thin;
+            valueStyle.BorderLeft = BorderStyle.Thin;
+            valueStyle.BorderRight = BorderStyle.Thin;
+            valueStyle.Alignment = HorizontalAlignment.Right;
+
             int rowIndex = 1;
-
             for (int i = 0; i < labels.Count; i++)
             {
                 var row = sheet.CreateRow(rowIndex++);
-                row.CreateCell(0).SetCellValue(labels[i]);
-                row.CreateCell(1).SetCellValue((double)values[i]);
+                row.HeightInPoints = (short)rowHeightPt; // ← Row height apply
+
+                var c0 = row.CreateCell(0);
+                var c1 = row.CreateCell(1);
+
+                c0.SetCellValue(labels[i]);
+                c1.SetCellValue((double)values[i]);
+
+                c0.CellStyle = dataStyle;
+                c1.CellStyle = valueStyle;
             }
 
             int rowCount = labels.Count;
 
-            // =========================
-            // :three: CHART
-            // =========================
+            //// =====================================================
+            //// STEP 2 — Headers
+            //// =====================================================
+            //var headerRow = sheet.CreateRow(0);
+            //headerRow.CreateCell(0).SetCellValue("Category");
+            //headerRow.CreateCell(1).SetCellValue("Value");
+
+            //// =====================================================
+            //// STEP 3 — Data Rows
+            //// =====================================================
+            //int rowIndex = 1;
+            //for (int i = 0; i < labels.Count; i++)
+            //{
+            //    var row = sheet.CreateRow(rowIndex++);
+            //    row.CreateCell(0).SetCellValue(labels[i]);
+            //    row.CreateCell(1).SetCellValue((double)values[i]);
+            //}
+
+            //int rowCount = labels.Count;
+
+            // =====================================================
+            // STEP 4 — Chart Drawing Area
+            // =====================================================
             var drawing = sheet.CreateDrawingPatriarch();
+        var anchor = drawing.CreateAnchor(0, 0, 0, 0, 6, 1, 17, 24);
 
-            var anchor = drawing.CreateAnchor(0, 0, 0, 0, 3, 1, 12, 20);
-            var chart = (XSSFChart)drawing.CreateChart(anchor);
+        var chart = (XSSFChart)drawing.CreateChart(anchor);
+        chart.SetTitle(chartTitle);
+        chart.GetOrCreateLegend().Position = LegendPosition.Bottom;
 
-            chart.SetTitle(chartTitle);
-            chart.GetOrCreateLegend().Position = LegendPosition.Right;
 
-            var categories = DataSources.FromStringCellRange(
-            sheet,
-            new CellRangeAddress(1, rowCount, 0, 0)
-            );
+        var categories = DataSources.FromStringCellRange(
+            sheet, new CellRangeAddress(1, rowCount, 0, 0));
 
-            var dataValues = DataSources.FromNumericCellRange(
-            sheet,
-            new CellRangeAddress(1, rowCount, 1, 1)
-            );
+        var dataValues = DataSources.FromNumericCellRange(
+            sheet, new CellRangeAddress(1, rowCount, 1, 1));
 
-            var pieData = chart.ChartDataFactory.CreatePieChartData<string, double>();
+        // =====================================================
+        // STEP 5 — Plot Pie Chart
+        // =====================================================
+        var pieData = chart.ChartDataFactory.CreatePieChartData<string, double>();
+        var series = pieData.AddSeries(categories, dataValues);
+        series.SetTitle(chartTitle);
+        chart.Plot(pieData);
 
-            var series = pieData.AddSeries(categories, dataValues);
-            series.SetTitle(chartTitle);
+        // =====================================================
+        // STEP 6 — CT Level: Labels + Custom Colors
+        // =====================================================
+        var ctChart = chart.GetCTChart();
+        var plotArea = ctChart.plotArea;
 
-            chart.Plot(pieData);
+        if (plotArea.pieChart != null && plotArea.pieChart.Count > 0)
+        {
+            var pieChart = plotArea.pieChart[0];
 
-            // =========================
-            // :fire: LABELS (VALUE + %)
-            // =========================
-            var ctChart = chart.GetCTChart();
+            // ----- DATA LABELS -----
+            //pieChart.dLbls = new CT_DLbls();
+            //pieChart.dLbls.showVal = new CT_Boolean { val = 1 };
+            //pieChart.dLbls.showPercent = new CT_Boolean { val = 1 };
+            //pieChart.dLbls.showLegendKey = new CT_Boolean { val = 0 };
+            //pieChart.dLbls.showCatName = new CT_Boolean { val = 0 };
+            //pieChart.dLbls.showSerName = new CT_Boolean { val = 0 };
 
-            if (ctChart.plotArea.pieChart != null && ctChart.plotArea.pieChart.Count > 0)
+                // ----- DATA LABELS (Category + Value + Percentage) -----
+            pieChart.dLbls = new CT_DLbls();
+            pieChart.dLbls.showVal = new CT_Boolean { val = 1 };   // ✅ Value dikhao
+            pieChart.dLbls.showPercent = new CT_Boolean { val = 1 };   // ✅ % dikhao
+            pieChart.dLbls.showCatName = new CT_Boolean { val = 1 };   // ✅ Category name dikhao (Bike, Bus etc.)
+            pieChart.dLbls.showLegendKey = new CT_Boolean { val = 0 };   // ❌ Legend key mat dikhao
+            pieChart.dLbls.showSerName = new CT_Boolean { val = 0 };   // ❌ Series name mat dikhao (yahi Image 2 ka problem tha)
+            pieChart.dLbls.showLeaderLines = new CT_Boolean { val = 1 };  // ✅ Leader lines (line from label to slice)
+
+                // ----- CUSTOM COLORS PER SLICE -----
+                if (pieChart.ser != null && pieChart.ser.Count > 0)
             {
-                var pieChart = ctChart.plotArea.pieChart[0];
+                var ser = pieChart.ser[0];
+                ser.dPt = new List<CT_DPt>();
 
-                pieChart.dLbls = new CT_DLbls();
-                pieChart.dLbls.showVal = new CT_Boolean { val = 1 };
-                pieChart.dLbls.showPercent = new CT_Boolean { val = 1 };
+                for (int i = 0; i < labels.Count; i++)
+                {
+                    string hexColor = i < sliceColors.Count ? sliceColors[i] : "CCCCCC";
+
+                    var dpt = new CT_DPt();
+                    dpt.idx = new CT_UnsignedInt { val = (uint)i };
+                    dpt.bubble3D = new CT_Boolean { val = 0 };
+
+                    // ✅ FIXED: Correct namespace for CT_ShapeProperties
+                    dpt.spPr = new NPOI.OpenXmlFormats.Dml.Chart.CT_ShapeProperties();
+
+                    // ✅ FIXED: DmlFill alias = NPOI.OpenXmlFormats.Dml.CT_SolidColorFillProperties
+                    dpt.spPr.solidFill = new DmlFill();
+                    dpt.spPr.solidFill.srgbClr = new DmlColor
+                    {
+                        val = HexStringToByteArray(hexColor)
+                    };
+
+                    // ✅ FIXED: DmlLine alias = NPOI.OpenXmlFormats.Dml.CT_LineProperties
+                    dpt.spPr.ln = new DmlLine();
+                    dpt.spPr.ln.solidFill = new DmlFill();
+                    dpt.spPr.ln.solidFill.srgbClr = new DmlColor
+                    {
+                        val = HexStringToByteArray(hexColor)
+                    };
+
+                    ser.dPt.Add(dpt);
+                }
             }
-
-            // =========================
-            // AUTO SIZE
-            // =========================
-            sheet.AutoSizeColumn(0);
-            sheet.AutoSizeColumn(1);
-
-            using var stream = new MemoryStream();
-            workbook.Write(stream);
-
-            return stream.ToArray();
         }
 
-        public static async Task<byte[]> ExportCityWiseEmissionStackedBarChartAsync(
+        // =====================================================
+        // STEP 7 — Convert to Donut Style via XML
+        // =====================================================
+        ApplyDoughnutStyle(chart, labelFontSize: 20);
+
+
+            // =====================================================
+            // STEP 8 — Auto Size Columns
+            // =====================================================
+
+            // =====================================================
+            // STEP 8 — Column Width (Manual - AutoSize se better control)
+            // =====================================================
+            sheet.SetColumnWidth(0, 20 * 256); // Category column — 20 characters wide
+            sheet.SetColumnWidth(1, 15 * 256); // Value column    — 15 characters wide
+
+        //    sheet.AutoSizeColumn(0);
+        //sheet.AutoSizeColumn(1);
+
+        using var stream = new MemoryStream();
+        workbook.Write(stream);
+        return stream.ToArray();
+    }
+
+    // =====================================================
+    // HELPER 1 — HEX → byte[]
+    // =====================================================
+    private static byte[] HexStringToByteArray(string hex)
+    {
+        hex = hex.Replace("#", "");
+        return new byte[]
+        {
+        Convert.ToByte(hex.Substring(0, 2), 16),
+        Convert.ToByte(hex.Substring(2, 2), 16),
+        Convert.ToByte(hex.Substring(4, 2), 16)
+        };
+    }
+
+    // =====================================================
+    // HELPER 2 — Pie → Donut via XML string replace
+    // =====================================================
+    private static void ApplyDoughnutStyle(XSSFChart chart, int labelFontSize = 11)
+{
+    try
+    {
+        var part = chart.GetPackagePart();
+
+        string xml;
+        using (var inputStream = part.GetInputStream())
+        using (var reader = new StreamReader(inputStream, Encoding.UTF8))
+        {
+            xml = reader.ReadToEnd();
+        }
+
+        if (xml.Contains("<c:pieChart>"))
+        {
+            // ✅ Pie → Donut
+            xml = xml.Replace(
+                "<c:pieChart>",
+                "<c:doughnutChart><c:holeSize val=\"50\"/>"
+            );
+            xml = xml.Replace("</c:pieChart>", "</c:doughnutChart>");
+        }
+
+        // ✅ Label font size inject karo (txPr XML inject before </c:dLbls>)
+        // Font size in EMUs — 100 = 1pt, isliye 11pt = 1100
+        int fontSizeVal = labelFontSize * 100;
+        string fontXml = $@"<c:txPr>
+          <a:bodyPr/>
+          <a:lstStyle/>
+          <a:p>
+            <a:pPr>
+              <a:defRPr sz=""{fontSizeVal}"" b=""0""/>
+            </a:pPr>
+          </a:p>
+        </c:txPr>";
+
+        xml = xml.Replace("</c:dLbls>", fontXml + "</c:dLbls>");
+
+        using var outputStream = part.GetOutputStream();
+        using var writer = new StreamWriter(outputStream, Encoding.UTF8);
+        writer.Write(xml);
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Donut conversion failed: {ex.Message}");
+    }
+}
+
+    //        public static async Task<byte[]> ExportVehicleTypePieChartAsync(
+    //List<string> labels,
+    //List<decimal> values,
+    //string sheetName = "Sheet1",
+    //string chartTitle = "Pie Chart Report")
+    //        {
+    //            if (labels == null || values == null || !labels.Any() || !values.Any())
+    //                return Array.Empty<byte>();
+
+    //            var workbook = new XSSFWorkbook();
+    //            var sheet = workbook.CreateSheet(sheetName);
+
+    //            // =========================
+    //            // :one: HEADERS
+    //            // =========================
+    //            var headerRow = sheet.CreateRow(0);
+    //            headerRow.CreateCell(0).SetCellValue("Category");
+    //            headerRow.CreateCell(1).SetCellValue("Value");
+
+    //            // =========================
+    //            // :two: DATA
+    //            // =========================
+    //            int rowIndex = 1;
+
+    //            for (int i = 0; i < labels.Count; i++)
+    //            {
+    //                var row = sheet.CreateRow(rowIndex++);
+    //                row.CreateCell(0).SetCellValue(labels[i]);
+    //                row.CreateCell(1).SetCellValue((double)values[i]);
+    //            }
+
+    //            int rowCount = labels.Count;
+
+    //            // =========================
+    //            // :three: CHART
+    //            // =========================
+    //            var drawing = sheet.CreateDrawingPatriarch();
+
+    //            var anchor = drawing.CreateAnchor(0, 0, 0, 0, 3, 1, 12, 20);
+    //            var chart = (XSSFChart)drawing.CreateChart(anchor);
+
+    //            chart.SetTitle(chartTitle);
+    //            chart.GetOrCreateLegend().Position = LegendPosition.Right;
+
+    //            var categories = DataSources.FromStringCellRange(
+    //            sheet,
+    //            new CellRangeAddress(1, rowCount, 0, 0)
+    //            );
+
+    //            var dataValues = DataSources.FromNumericCellRange(
+    //            sheet,
+    //            new CellRangeAddress(1, rowCount, 1, 1)
+    //            );
+
+    //            var pieData = chart.ChartDataFactory.CreatePieChartData<string, double>();
+
+    //            var series = pieData.AddSeries(categories, dataValues);
+    //            series.SetTitle(chartTitle);
+
+    //            chart.Plot(pieData);
+
+    //            // =========================
+    //            // :fire: LABELS (VALUE + %)
+    //            // =========================
+    //            var ctChart = chart.GetCTChart();
+
+    //            if (ctChart.plotArea.pieChart != null && ctChart.plotArea.pieChart.Count > 0)
+    //            {
+    //                var pieChart = ctChart.plotArea.pieChart[0];
+
+    //                pieChart.dLbls = new CT_DLbls();
+    //                pieChart.dLbls.showVal = new CT_Boolean { val = 1 };
+    //                pieChart.dLbls.showPercent = new CT_Boolean { val = 1 };
+    //            }
+
+    //            // =========================
+    //            // AUTO SIZE
+    //            // =========================
+    //            sheet.AutoSizeColumn(0);
+    //            sheet.AutoSizeColumn(1);
+
+    //            using var stream = new MemoryStream();
+    //            workbook.Write(stream);
+
+    //            return stream.ToArray();
+    //        }
+
+    public static async Task<byte[]> ExportCityWiseEmissionStackedBarChartAsync(
     List<string> cities,
     List<decimal> co2Values,
     List<decimal> no2Values,

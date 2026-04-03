@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using ProjectApp.Core.DTOs.Account.GeneratorOperation;
+using ProjectApp.Core.DTOs.Account.OffSet;
 using ProjectApp.Core.DTOs.Account.Role;
 using ProjectApp.Core.DTOs.Account.User;
 using ProjectApp.Core.DTOs.Account.VehicleTripEmission;
@@ -83,6 +84,9 @@ namespace ProjectApp.API.Extentions
 
             //-----Plantation Project ----------------------------
             CreateMap<CB_PlantationProject, PlantationProjectDTO>().ReverseMap();
+
+            CreateMap<CB_AbsorptionEntry, AbsorptionEntryDTO>().ReverseMap();
+
 
         }
     }
