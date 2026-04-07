@@ -42,9 +42,15 @@ public class OffsetEntryController : ControllerBase
 
     // GET ALL
     [HttpGet("list")]
-    public async Task<IActionResult> GetAll(int pageNumber = 1, int pageSize = 10, string search = null)
+    public async Task<IActionResult> GetAll(
+       int pageNumber = 1,
+       int pageSize = 10,
+       string? search = null,          // ✅ MAKE NULLABLE
+       int? projectId = null,
+       int? financialYear = null
+   )
     {
-        var result = await _service.GetAll(pageNumber, pageSize, search);
+        var result = await _service.GetAll(pageNumber, pageSize, search, projectId, financialYear);
         return Ok(result);
     }
 

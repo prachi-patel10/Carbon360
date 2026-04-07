@@ -26,7 +26,13 @@ namespace ProjectApp.Repository.Interfaces.OffSet
 
 
         Task<int> InsertOffsetEntry(OffsetEntryDto model);
-        Task<object> GetAll(int pageNumber, int pageSize, string search);
+        Task<object> GetAll(
+    int pageNumber,
+    int pageSize,
+    string search,
+    int? projectId,
+    int? financialYear
+);
         Task<object> GetById(int offsetEntryId);
         Task<bool> Delete(int offsetEntryId);
     }

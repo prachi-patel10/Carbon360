@@ -50,75 +50,7 @@ namespace ProjectApp.Repository.Services.OffSet
             return Convert.ToInt32(result);
         }
 
-        // ================= GET ALL =================
-        public async Task<object> GetAll(int pageNumber, int pageSize, string search)
-        {
-            using var conn = _context.Database.GetDbConnection();
-            await conn.OpenAsync();
-
-            using var cmd = conn.CreateCommand();
-            cmd.CommandText = "USP_CB_OffsetEntry_GetAll";
-            cmd.CommandType = CommandType.StoredProcedure;
-
-            cmd.Parameters.Add(new SqlParameter("@PageNumber", pageNumber));
-            cmd.Parameters.Add(new SqlParameter("@PageSize", pageSize));
-            cmd.Parameters.Add(new SqlParameter("@Search", search ?? (object)DBNull.Value));
-
-            int totalRecords = 0;
-            var data = new List<object>();
-            object summary = null;
-
-            using var reader = await cmd.ExecuteReaderAsync();
-
-            // ================= 1️⃣ DATA =================
-            while (await reader.ReadAsync())
-            {
-                data.Add(new
-                {
-                    OffsetEntryId = reader["OffsetEntryId"],
-                    ProjectName = reader["ProjectName"],
-                    FinancialYear = reader["FinancialYear"],
-                    TotalOffset = reader["TotalOffset"] == DBNull.Value
-    ? 0
-    : Convert.ToDecimal(reader["TotalOffset"]),
-                    EntryDate = reader["EntryDate"]
-                });
-            }
-
-            // ================= 2️⃣ TOTAL COUNT =================
-            await reader.NextResultAsync();
-
-            if (await reader.ReadAsync())
-            {
-                totalRecords = Convert.ToInt32(reader["TotalRecords"]);
-            }
-
-            // ================= 3️⃣ SUMMARY =================
-            await reader.NextResultAsync();
-
-            if (await reader.ReadAsync())
-            {
-                summary = new
-                {
-                    FinancialYear = reader["FinancialYear"],
-                    VehicleEmission = reader["VehicleEmission"],
-                    GeneratorEmission = reader["GeneratorEmission"],
-                    TotalEmission = reader["TotalEmission"],
-                    TotalOffset = reader["TotalOffset"] == DBNull.Value
-            ? 0
-            : Convert.ToDecimal(reader["TotalOffset"]),
-                    RemainingEmission = reader["RemainingEmission"],
-                    Status = reader["Status"]
-                };
-            }
-
-            return new
-            {
-                totalRecords,
-                data,
-                summary
-            };
-        }
+    
 
         // ================= GET BY ID =================
         public async Task<object> GetById(int offsetEntryId)
@@ -180,6 +112,85 @@ namespace ProjectApp.Repository.Services.OffSet
             await cmd.ExecuteNonQueryAsync();
 
             return true;
+        }
+        // ================= GET ALL =================
+
+        public async Task<object> GetAll(
+       int pageNumber,
+       int pageSize,
+       string search,
+       int? projectId,
+       int? financialYear
+   )
+        {
+            using var conn = _context.Database.GetDbConnection();
+            await conn.OpenAsync();
+
+            using var cmd = conn.CreateCommand();
+            cmd.CommandText = "USP_CB_OffsetEntry_GetAll";
+            cmd.CommandType = CommandType.StoredProcedure;
+
+            // 🔥 SIMPLE PARAMS (NO EXTRA VALIDATION)
+            cmd.Parameters.Add(new SqlParameter("@PageNumber", pageNumber));
+            cmd.Parameters.Add(new SqlParameter("@PageSize", pageSize));
+            cmd.Parameters.Add(new SqlParameter("@Search", search));
+            cmd.Parameters.Add(new SqlParameter("@ProjectId", projectId));
+            cmd.Parameters.Add(new SqlParameter("@FinancialYear", financialYear));
+
+            int totalRecords = 0;
+            var data = new List<object>();
+            object summary = null;
+
+            using var reader = await cmd.ExecuteReaderAsync();
+
+            // ================= DATA =================
+            while (await reader.ReadAsync())
+            {
+                data.Add(new
+                {
+                    OffsetEntryId = reader["OffsetEntryId"],
+                    ProjectName = reader["ProjectName"],
+                    FinancialYear = reader["FinancialYear"],
+                    TotalOffset = reader["TotalOffset"] != DBNull.Value
+                        ? Convert.ToDecimal(reader["TotalOffset"])
+                        : 0,
+                    EntryDate = reader["EntryDate"]
+                });
+            }
+
+            // ================= TOTAL COUNT =================
+            await reader.NextResultAsync();
+
+            if (await reader.ReadAsync())
+            {
+                totalRecords = Convert.ToInt32(reader["TotalRecords"]);
+            }
+
+            // ================= SUMMARY =================
+            await reader.NextResultAsync();
+
+            if (await reader.ReadAsync())
+            {
+                summary = new
+                {
+                    FinancialYear = reader["FinancialYear"],
+                    VehicleEmission = reader["VehicleEmission"],
+                    GeneratorEmission = reader["GeneratorEmission"],
+                    TotalEmission = reader["TotalEmission"],
+                    TotalOffset = reader["TotalOffset"] != DBNull.Value
+                        ? Convert.ToDecimal(reader["TotalOffset"])
+                        : 0,
+                    RemainingEmission = reader["RemainingEmission"],
+                    Status = reader["Status"]
+                };
+            }
+
+            return new
+            {
+                totalRecords,
+                data,
+                summary
+            };
         }
     }
 }
