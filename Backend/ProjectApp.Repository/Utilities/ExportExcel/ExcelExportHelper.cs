@@ -1,23 +1,23 @@
 ﻿using ClosedXML.Excel;
+using NPOI.OpenXmlFormats.Dml;
 //using DocumentFormat.OpenXml.Drawing.Charts;
 using NPOI.OpenXmlFormats.Dml.Chart;
+using NPOI.OpenXmlFormats.Dml.Chart;
+using NPOI.SS.UserModel;
 using NPOI.SS.UserModel;
 using NPOI.SS.UserModel.Charts;
 using NPOI.SS.Util;
+using NPOI.SS.Util;
+using NPOI.XSSF.UserModel;
 using NPOI.XSSF.UserModel;
 using NPOI.XSSF.UserModel.Charts;
 using ProjectApp.Core.DTOs.Charts;
 using System.Reflection;
 using System.Text;
-using NPOI.XSSF.UserModel;
-using NPOI.SS.UserModel;
-using NPOI.SS.Util;
-using NPOI.OpenXmlFormats.Dml.Chart;
 using System.Text;
-
+using DmlColor = NPOI.OpenXmlFormats.Dml.CT_SRgbColor;
 // ✅ Aliases to avoid namespace conflicts
 using DmlFill = NPOI.OpenXmlFormats.Dml.CT_SolidColorFillProperties;
-using DmlColor = NPOI.OpenXmlFormats.Dml.CT_SRgbColor;
 using DmlLine = NPOI.OpenXmlFormats.Dml.CT_LineProperties;
 
 
@@ -2155,14 +2155,7 @@ public static async Task<byte[]> ExportVehicleTypePieChartAsync(
             if (categories == null || !categories.Any())
                 return Array.Empty<byte>();
 
-            var categoryColors = new List<string>
-    {
-        "4472C4",
-        "70AD47",
-        "ED7D31",
-        "D4537E",
-        "534AB7",
-    };
+            var categoryColors = new List<string> { "4472C4", "70AD47", "ED7D31", "D4537E", "534AB7" };
 
             var workbook = new XSSFWorkbook();
             var sheet = workbook.CreateSheet(sheetName);
@@ -2183,7 +2176,6 @@ public static async Task<byte[]> ExportVehicleTypePieChartAsync(
             }
 
             int rowCount = categories.Count;
-
             var drawing = sheet.CreateDrawingPatriarch();
 
             var xRange = DataSources.FromStringCellRange(sheet, new CellRangeAddress(1, rowCount, 0, 0));
@@ -2193,7 +2185,7 @@ public static async Task<byte[]> ExportVehicleTypePieChartAsync(
             // =========================================================
             // 📊 1️⃣ BAR CHART
             // =========================================================
-            var anchorBar = drawing.CreateAnchor(0, 0, 0, 0, 4, 1, 18, 15);
+            var anchorBar = drawing.CreateAnchor(0, 0, 0, 0, 4, 1, 18, 26);
             var barChart = (XSSFChart)drawing.CreateChart(anchorBar);
 
             barChart.SetTitle("Distance (km)");
@@ -2206,22 +2198,14 @@ public static async Task<byte[]> ExportVehicleTypePieChartAsync(
             barData.AddSeries(xRange, distRange).SetTitle("Distance (km)");
             barChart.Plot(barData, barBottomAxis, barLeftAxis);
 
-            // 🔥 BAR FIRST GAP FIX
-            var barCTFix = barChart.GetCTChart();
-            var barPlotFix = barCTFix.plotArea;
-
-            if (barPlotFix.valAx?.Count > 0)
-            {
-                barPlotFix.valAx[0].crossBetween = new CT_CrossBetween
-                {
-                    val = ST_CrossBetween.between
-                };
-            }
-
-            // 🎨 BAR STYLE
             var barCT = barChart.GetCTChart();
             var barPA = barCT.plotArea;
 
+            // Bar Gap Fix
+            if (barPA.valAx?.Count > 0)
+                barPA.valAx[0].crossBetween = new CT_CrossBetween { val = ST_CrossBetween.between };
+
+            // Bar Style
             if (barPA.barChart?.Count > 0)
             {
                 var bc = barPA.barChart[0];
@@ -2233,30 +2217,23 @@ public static async Task<byte[]> ExportVehicleTypePieChartAsync(
                 {
                     var ser = bc.ser[0];
                     ser.dPt = new List<CT_DPt>();
-
                     for (int i = 0; i < categories.Count; i++)
                     {
-                        string hex = categoryColors[i % categoryColors.Count];
-
-                        var dpt = new CT_DPt();
-                        dpt.idx = new CT_UnsignedInt { val = (uint)i };
-
+                        var dpt = new CT_DPt { idx = new CT_UnsignedInt { val = (uint)i } };
                         dpt.spPr = new NPOI.OpenXmlFormats.Dml.Chart.CT_ShapeProperties();
-                        dpt.spPr.solidFill = new NPOI.OpenXmlFormats.Dml.CT_SolidColorFillProperties();
-                        dpt.spPr.solidFill.srgbClr = new NPOI.OpenXmlFormats.Dml.CT_SRgbColor
+                        dpt.spPr.solidFill = new NPOI.OpenXmlFormats.Dml.CT_SolidColorFillProperties
                         {
-                            val = HexStringToByteArray(hex)
+                            srgbClr = new NPOI.OpenXmlFormats.Dml.CT_SRgbColor { val = HexStringToByteArray(categoryColors[i % categoryColors.Count]) }
                         };
-
                         ser.dPt.Add(dpt);
                     }
                 }
             }
 
             // =========================================================
-            // 📈 2️⃣ LINE CHART
+            // 📈 2️⃣ LINE CHART (With Overlap Fixes)
             // =========================================================
-            var anchorLine = drawing.CreateAnchor(0, 0, 0, 0, 4, 16, 18, 30);
+            var anchorLine = drawing.CreateAnchor(0, 0, 0, 0, 4, 30, 18, 50);
             var lineChart = (XSSFChart)drawing.CreateChart(anchorLine);
 
             lineChart.SetTitle("Emission (kg CO2e)");
@@ -2265,47 +2242,70 @@ public static async Task<byte[]> ExportVehicleTypePieChartAsync(
             var lineBottomAxis = lineChart.CreateCategoryAxis(AxisPosition.Bottom);
             var lineLeftAxis = lineChart.CreateValueAxis(AxisPosition.Left);
 
+            // Padding at Top to avoid Title Overlap
+            double maxVal = emissionValues.Any() ? emissionValues.Max() : 0;
+            lineLeftAxis.Maximum = maxVal + (maxVal * 0.20);
+
             var lineData = lineChart.ChartDataFactory.CreateLineChartData<string, double>();
             lineData.AddSeries(xRange, emitRange).SetTitle("Emission");
             lineChart.Plot(lineData, lineBottomAxis, lineLeftAxis);
 
-            // 🔥 LINE FIRST POINT GAP FIX
-            var lineCTFix = lineChart.GetCTChart();
-            var linePlotFix = lineCTFix.plotArea;
-
-            if (linePlotFix.valAx?.Count > 0)
-            {
-                linePlotFix.valAx[0].crossBetween = new CT_CrossBetween
-                {
-                    val = ST_CrossBetween.between
-                };
-            }
-
-            // 🎨 LINE STYLE + DATA LABELS
             var lineCT = lineChart.GetCTChart();
             var linePA = lineCT.plotArea;
+
+            // ✅ FIX 1: Plot Area ko Right side shift karna (Y-Axis Numbers ke liye jagah)
+            if (linePA.layout == null) linePA.layout = new CT_Layout();
+            linePA.layout.manualLayout = new CT_ManualLayout
+            {
+                x = new CT_Double { val = 0.15 },    // 15% Right Shift
+                w = new CT_Double { val = 0.75 },    // Width adjust taaki right side na kategi
+                xMode = new CT_LayoutMode { val = ST_LayoutMode.edge },
+                wMode = new CT_LayoutMode { val = ST_LayoutMode.edge }
+            };
 
             if (linePA.lineChart?.Count > 0)
             {
                 var lc = linePA.lineChart[0];
-
                 foreach (var ser in lc.ser)
                 {
+                    // Line Styling
                     ser.spPr = new NPOI.OpenXmlFormats.Dml.Chart.CT_ShapeProperties();
-                    ser.spPr.ln = new NPOI.OpenXmlFormats.Dml.CT_LineProperties();
-
-                    ser.spPr.ln.prstDash = new NPOI.OpenXmlFormats.Dml.CT_PresetLineDashProperties
+                    ser.spPr.ln = new NPOI.OpenXmlFormats.Dml.CT_LineProperties
                     {
-                        val = NPOI.OpenXmlFormats.Dml.ST_PresetLineDashVal.dash
+                        w = 28575,
+                        prstDash = new CT_PresetLineDashProperties { val = ST_PresetLineDashVal.dash }
                     };
+                    ser.marker = new CT_Marker { symbol = new CT_MarkerStyle { val = ST_MarkerStyle.circle } };
 
-                    ser.marker = new CT_Marker();
-                    ser.marker.symbol = new CT_MarkerStyle { val = ST_MarkerStyle.circle };
-
-                    // ✅ DATA LABELS
+                    // ✅ FIX 2 & 3: Data Labels position and overlap avoidance
+                    // ✅ FIX 2 & 3: Data Labels position and overlap avoidance
                     ser.dLbls = new CT_DLbls();
                     ser.dLbls.showVal = new CT_Boolean { val = 1 };
+                    ser.dLbls.showSerName = new CT_Boolean { val = 0 };
+                    ser.dLbls.showCatName = new CT_Boolean { val = 0 };
+                    ser.dLbls.dLblPos = new CT_DLblPos { val = ST_DLblPos.r }; // Position Right
+
+                    // Overlap ko allow mat karo (Excel version dependent, but good to have)
+                    ser.dLbls.showLeaderLines = new CT_Boolean { val = 1 };
+
+                    // 'delete' error fix: 
+                    // NPOI mein 'delete' property aksar directly assignable nahi hoti list ki tarah.
+                    // Isko as-is chhod dein ya individual labels (dLbl) ke liye use karein.
+                    // Filhal, overlapping hatane ke liye dLblPos kafi hai.
+                    //ser.dLbls = new CT_DLbls();
+                    //ser.dLbls.showVal = new CT_Boolean { val = 1 };
+                    //ser.dLbls.showSerName = new CT_Boolean { val = 0 };
+                    //ser.dLbls.showCatName = new CT_Boolean { val = 0 };
+                    //ser.dLbls.dLblPos = new CT_DLblPos { val = ST_DLblPos.r }; // Position Right
+                    //ser.dLbls.delete = new List<CT_Boolean>();
                 }
+            }
+
+            // ✅ FIX 4: Axis Numbers Tick Position
+            if (linePA.valAx?.Count > 0)
+            {
+                linePA.valAx[0].tickLblPos = new CT_TickLblPos { val = ST_TickLblPos.nextTo };
+                linePA.valAx[0].crossBetween = new CT_CrossBetween { val = ST_CrossBetween.between };
             }
 
             // ================= COLUMN WIDTH =================
@@ -2317,6 +2317,231 @@ public static async Task<byte[]> ExportVehicleTypePieChartAsync(
             workbook.Write(stream);
             return stream.ToArray();
         }
+
+
+        //    public static async Task<byte[]> ExportVehicleCategoryComboChartAsync(
+        //List<string> categories,
+        //List<double> distanceValues,
+        //List<double> emissionValues,
+        //string sheetName = "Category Report",
+        //string chartTitle = "Vehicle Category Wise Distance & Emission")
+        //    {
+        //        if (categories == null || !categories.Any())
+        //            return Array.Empty<byte>();
+
+        //        var categoryColors = new List<string>
+        //{
+        //    "4472C4",
+        //    "70AD47",
+        //    "ED7D31",
+        //    "D4537E",
+        //    "534AB7",
+        //};
+
+        //        var workbook = new XSSFWorkbook();
+        //        var sheet = workbook.CreateSheet(sheetName);
+
+        //        // ================= HEADER =================
+        //        var headerRow = sheet.CreateRow(0);
+        //        headerRow.CreateCell(0).SetCellValue("Vehicle Category");
+        //        headerRow.CreateCell(1).SetCellValue("Distance (km)");
+        //        headerRow.CreateCell(2).SetCellValue("Emission (kg CO2e)");
+
+        //        // ================= DATA =================
+        //        for (int i = 0; i < categories.Count; i++)
+        //        {
+        //            var row = sheet.CreateRow(i + 1);
+        //            row.CreateCell(0).SetCellValue(categories[i]);
+        //            row.CreateCell(1).SetCellValue(distanceValues[i]);
+        //            row.CreateCell(2).SetCellValue(emissionValues[i]);
+        //        }
+
+        //        int rowCount = categories.Count;
+
+        //        var drawing = sheet.CreateDrawingPatriarch();
+
+        //        var xRange = DataSources.FromStringCellRange(sheet, new CellRangeAddress(1, rowCount, 0, 0));
+        //        var distRange = DataSources.FromNumericCellRange(sheet, new CellRangeAddress(1, rowCount, 1, 1));
+        //        var emitRange = DataSources.FromNumericCellRange(sheet, new CellRangeAddress(1, rowCount, 2, 2));
+
+        //        // =========================================================
+        //        // 📊 1️⃣ BAR CHART
+        //        // =========================================================
+        //        var anchorBar = drawing.CreateAnchor(0, 0, 0, 0, 4, 1, 18, 15);
+        //        var barChart = (XSSFChart)drawing.CreateChart(anchorBar);
+
+        //        barChart.SetTitle("Distance (km)");
+        //        barChart.GetOrCreateLegend().Position = LegendPosition.Bottom;
+
+        //        var barBottomAxis = barChart.CreateCategoryAxis(AxisPosition.Bottom);
+        //        var barLeftAxis = barChart.CreateValueAxis(AxisPosition.Left);
+
+        //        var barData = barChart.ChartDataFactory.CreateBarChartData<string, double>();
+        //        barData.AddSeries(xRange, distRange).SetTitle("Distance (km)");
+        //        barChart.Plot(barData, barBottomAxis, barLeftAxis);
+
+        //        // 🔥 BAR FIRST GAP FIX
+        //        var barCTFix = barChart.GetCTChart();
+        //        var barPlotFix = barCTFix.plotArea;
+
+        //        if (barPlotFix.valAx?.Count > 0)
+        //        {
+        //            barPlotFix.valAx[0].crossBetween = new CT_CrossBetween
+        //            {
+        //                val = ST_CrossBetween.between
+        //            };
+        //        }
+
+        //        // 🎨 BAR STYLE
+        //        var barCT = barChart.GetCTChart();
+        //        var barPA = barCT.plotArea;
+
+        //        if (barPA.barChart?.Count > 0)
+        //        {
+        //            var bc = barPA.barChart[0];
+        //            bc.barDir = new CT_BarDir { val = ST_BarDir.col };
+        //            bc.grouping = new CT_BarGrouping { val = ST_BarGrouping.clustered };
+        //            bc.gapWidth = new CT_GapAmount { val = 80 };
+
+        //            if (bc.ser?.Count > 0)
+        //            {
+        //                var ser = bc.ser[0];
+        //                ser.dPt = new List<CT_DPt>();
+
+        //                for (int i = 0; i < categories.Count; i++)
+        //                {
+        //                    string hex = categoryColors[i % categoryColors.Count];
+
+        //                    var dpt = new CT_DPt();
+        //                    dpt.idx = new CT_UnsignedInt { val = (uint)i };
+
+        //                    dpt.spPr = new NPOI.OpenXmlFormats.Dml.Chart.CT_ShapeProperties();
+        //                    dpt.spPr.solidFill = new NPOI.OpenXmlFormats.Dml.CT_SolidColorFillProperties();
+        //                    dpt.spPr.solidFill.srgbClr = new NPOI.OpenXmlFormats.Dml.CT_SRgbColor
+        //                    {
+        //                        val = HexStringToByteArray(hex)
+        //                    };
+
+        //                    ser.dPt.Add(dpt);
+        //                }
+        //            }
+        //        }
+
+        //        // =========================================================
+        //        // 📈 2️⃣ LINE CHART
+        //        // =========================================================
+        //        // ... (existing code for data and bar chart)
+
+        //        // =========================================================
+        //        // 📈 2️⃣ LINE CHART
+        //        // =========================================================
+        //        var anchorLine = drawing.CreateAnchor(0, 0, 0, 0, 4, 16, 18, 30);
+        //        var lineChart = (XSSFChart)drawing.CreateChart(anchorLine);
+
+        //        lineChart.SetTitle("Emission (kg CO2e)");
+        //        lineChart.GetOrCreateLegend().Position = LegendPosition.Bottom;
+
+        //        var lineBottomAxis = lineChart.CreateCategoryAxis(AxisPosition.Bottom);
+        //        var lineLeftAxis = lineChart.CreateValueAxis(AxisPosition.Left);
+
+        //        // ✅ FIX 1: Axis ke upar extra jagah chhodne ke liye Scale set karein
+        //        // Agar aapka max data 19000 hai, to hum axis ko 22000 tak le jayenge
+        //        double maxVal = emissionValues.Max();
+        //        lineLeftAxis.Maximum = maxVal + (maxVal * 0.15); // 15% extra space at top
+
+        //        var lineData = lineChart.ChartDataFactory.CreateLineChartData<string, double>();
+        //        lineData.AddSeries(xRange, emitRange).SetTitle("Emission");
+        //        lineChart.Plot(lineData, lineBottomAxis, lineLeftAxis);
+
+        //        // ... (existing gap fix code)
+
+        //        // 🎨 LINE STYLE + DATA LABELS
+        //        var lineCT = lineChart.GetCTChart();
+        //        var linePA = lineCT.plotArea;
+
+        //        if (linePA.lineChart?.Count > 0)
+        //        {
+        //            var lc = linePA.lineChart[0];
+
+        //            foreach (var ser in lc.ser)
+        //            {
+        //                // ... (existing line styling code)
+        //                ser.spPr = new NPOI.OpenXmlFormats.Dml.Chart.CT_ShapeProperties();
+        //                ser.spPr.ln = new NPOI.OpenXmlFormats.Dml.CT_LineProperties();
+        //                ser.spPr.ln.prstDash = new NPOI.OpenXmlFormats.Dml.CT_PresetLineDashProperties { val = NPOI.OpenXmlFormats.Dml.ST_PresetLineDashVal.dash };
+        //                ser.marker = new CT_Marker { symbol = new CT_MarkerStyle { val = ST_MarkerStyle.circle } };
+
+        //                // ✅ FIX 2: DATA LABELS positioning and content
+        //                ser.dLbls = new CT_DLbls();
+        //                ser.dLbls.showVal = new CT_Boolean { val = 1 };     // Value dikhao
+        //                ser.dLbls.showSerName = new CT_Boolean { val = 0 }; // Series name band karo (Overlap kam hoga)
+        //                ser.dLbls.showCatName = new CT_Boolean { val = 0 }; // Category name band karo
+
+        //                // Labels ko point ke "Below" (neeche) set karein taaki title se na takraye
+        //                ser.dLbls.dLblPos = new CT_DLblPos { val = ST_DLblPos.b };
+        //            }
+        //        }
+        //        //var anchorLine = drawing.CreateAnchor(0, 0, 0, 0, 4, 16, 18, 30);
+        //        //var lineChart = (XSSFChart)drawing.CreateChart(anchorLine);
+
+        //        //lineChart.SetTitle("Emission (kg CO2e)");
+        //        //lineChart.GetOrCreateLegend().Position = LegendPosition.Bottom;
+
+        //        //var lineBottomAxis = lineChart.CreateCategoryAxis(AxisPosition.Bottom);
+        //        //var lineLeftAxis = lineChart.CreateValueAxis(AxisPosition.Left);
+
+        //        //var lineData = lineChart.ChartDataFactory.CreateLineChartData<string, double>();
+        //        //lineData.AddSeries(xRange, emitRange).SetTitle("Emission");
+        //        //lineChart.Plot(lineData, lineBottomAxis, lineLeftAxis);
+
+        //        //// 🔥 LINE FIRST POINT GAP FIX
+        //        //var lineCTFix = lineChart.GetCTChart();
+        //        //var linePlotFix = lineCTFix.plotArea;
+
+        //        //if (linePlotFix.valAx?.Count > 0)
+        //        //{
+        //        //    linePlotFix.valAx[0].crossBetween = new CT_CrossBetween
+        //        //    {
+        //        //        val = ST_CrossBetween.between
+        //        //    };
+        //        //}
+
+        //        //// 🎨 LINE STYLE + DATA LABELS
+        //        //var lineCT = lineChart.GetCTChart();
+        //        //var linePA = lineCT.plotArea;
+
+        //        //if (linePA.lineChart?.Count > 0)
+        //        //{
+        //        //    var lc = linePA.lineChart[0];
+
+        //        //    foreach (var ser in lc.ser)
+        //        //    {
+        //        //        ser.spPr = new NPOI.OpenXmlFormats.Dml.Chart.CT_ShapeProperties();
+        //        //        ser.spPr.ln = new NPOI.OpenXmlFormats.Dml.CT_LineProperties();
+
+        //        //        ser.spPr.ln.prstDash = new NPOI.OpenXmlFormats.Dml.CT_PresetLineDashProperties
+        //        //        {
+        //        //            val = NPOI.OpenXmlFormats.Dml.ST_PresetLineDashVal.dash
+        //        //        };
+
+        //        //        ser.marker = new CT_Marker();
+        //        //        ser.marker.symbol = new CT_MarkerStyle { val = ST_MarkerStyle.circle };
+
+        //        //        // ✅ DATA LABELS
+        //        //        ser.dLbls = new CT_DLbls();
+        //        //        ser.dLbls.showVal = new CT_Boolean { val = 1 };
+        //        //    }
+        //        //}
+
+        //        // ================= COLUMN WIDTH =================
+        //        sheet.SetColumnWidth(0, 22 * 256);
+        //        sheet.SetColumnWidth(1, 18 * 256);
+        //        sheet.SetColumnWidth(2, 22 * 256);
+
+        //        using var stream = new MemoryStream();
+        //        workbook.Write(stream);
+        //        return stream.ToArray();
+        //    }
 
         //    public static async Task<byte[]> ExportVehicleCategoryComboChartAsync(
         //List<string> categories,
