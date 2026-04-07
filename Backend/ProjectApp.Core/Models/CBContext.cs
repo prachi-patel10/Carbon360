@@ -44,6 +44,10 @@ public partial class CBContext : DbContext
 
     public virtual DbSet<CB_MasterWorkflow> CB_MasterWorkflows { get; set; }
 
+    public virtual DbSet<CB_OffsetEntry> CB_OffsetEntries { get; set; }
+
+    public virtual DbSet<CB_OffsetEntryDetail> CB_OffsetEntryDetails { get; set; }
+
     public virtual DbSet<CB_PasswordResetToken> CB_PasswordResetTokens { get; set; }
 
     public virtual DbSet<CB_PlantationProject> CB_PlantationProjects { get; set; }
@@ -59,6 +63,8 @@ public partial class CBContext : DbContext
     public virtual DbSet<CB_VehicleTripEmissionHistory> CB_VehicleTripEmissionHistories { get; set; }
 
     public virtual DbSet<CB_VehicleTypeCategory> CB_VehicleTypeCategories { get; set; }
+
+
     public virtual DbSet<SiteEmissionDto> SiteEmissionDtos { get; set; }
 
     public virtual DbSet<FuelTypeMonthlyConsumptionDto> FuelTypeMonthlyConsumptionDtos { get; set; }
@@ -429,6 +435,58 @@ public partial class CBContext : DbContext
                 .HasConstraintName("FK_Workflow_Role");
         });
 
+        modelBuilder.Entity<CB_OffsetEntry>(entity =>
+        {
+            entity.HasKey(e => e.OffsetEntryId).HasName("PK__CB_Offse__E4B640D7F071036C");
+
+            entity.ToTable("CB_OffsetEntry");
+
+            entity.Property(e => e.EntryBy).HasMaxLength(50);
+            entity.Property(e => e.EntryDate)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+            entity.Property(e => e.PreviousYearEmission)
+                .HasDefaultValue(0m)
+                .HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.TotalOffset)
+                .HasDefaultValue(0m)
+                .HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.UpdateBy).HasMaxLength(50);
+            entity.Property(e => e.UpdateDate).HasColumnType("datetime");
+
+            entity.HasOne(d => d.Project).WithMany(p => p.CB_OffsetEntries)
+                .HasForeignKey(d => d.ProjectId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Project_Offset");
+        });
+
+        modelBuilder.Entity<CB_OffsetEntryDetail>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__CB_Offse__3214EC076902C7D8");
+
+            entity.Property(e => e.Co2Total)
+                .HasDefaultValue(0m)
+                .HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.EntryBy).HasMaxLength(50);
+            entity.Property(e => e.EntryDate)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+            entity.Property(e => e.UpdateBy).HasMaxLength(50);
+            entity.Property(e => e.UpdateDate).HasColumnType("datetime");
+
+            entity.HasOne(d => d.OffsetEntry).WithMany(p => p.CB_OffsetEntryDetails)
+                .HasForeignKey(d => d.OffsetEntryId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_OffsetEntry");
+
+            entity.HasOne(d => d.Tree).WithMany(p => p.CB_OffsetEntryDetails)
+                .HasForeignKey(d => d.TreeId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Tree");
+        });
+
         modelBuilder.Entity<CB_PasswordResetToken>(entity =>
         {
             entity.HasKey(e => e.TokenId).HasName("PK__CB_Passw__658FEEEABC6C710F");
@@ -618,6 +676,7 @@ public partial class CBContext : DbContext
             entity.Property(e => e.UpdateDate).HasColumnType("datetime");
         });
 
+
         modelBuilder.Entity<SiteEmissionDto>(entity =>
         {
             entity.HasNoKey(); // IMPORTANT
@@ -680,6 +739,8 @@ public partial class CBContext : DbContext
         });
 
 
+
+        OnModelCreatingPartial(modelBuilder);
 
         OnModelCreatingPartial(modelBuilder);
     }

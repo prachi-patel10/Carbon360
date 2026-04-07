@@ -62,6 +62,13 @@ namespace ProjectApp.API.Controllers.Masters.PlantationProject
             return Ok(data);
         }
 
+        [HttpGet("by-year")]
+        public async Task<IActionResult> GetByYear(int year)
+        {
+            var result = await _service.GetProjectsByYear(year);
+            return Ok(result);
+        }
+
         [HttpGet("search")]
         public async Task<IActionResult> Search(
               string? searchText,

@@ -7,39 +7,28 @@ import { environment } from '../../../enviorments/environment';
 })
 export class ReportService {
 
-  private apiUrl = `${environment.apiBaseUrl}/AbsorptionEntry`;
+  private apiUrl = `${environment.apiBaseUrl}/OffsetEntry`;
 
   constructor(private http: HttpClient) {}
 
-  // ✅ PROJECT DROPDOWN
   getProjectsByYear(year: number) {
-    return this.http.get(`${this.apiUrl}/projects?year=${year}`);
+    return this.http.get(`${environment.apiBaseUrl}/PlantationProject/by-year?year=${year}`);
   }
 
-  // ✅ SEARCH API (IMPORTANT)
-  getEntries(
-    year: number,
-    projectId: number,
-    pageNumber: number,
-    pageSize: number,
-    search: string,
-    sortColumn: string,
-    sortDirection: string
-  ) {
+  getTreeMaster() {
+    return this.http.get(`${environment.apiBaseUrl}/Tree/Search?pageNumber=1&pageSize=50&sortColumn=TreeName&sortDirection=ASC`);
+  }
+
+  getEntries(pageNumber: number, pageSize: number, search: string) {
     let params = new HttpParams()
-      .set('FinancialYear', year)
-      .set('ProjectId', projectId || '')
-      .set('PageNumber', pageNumber)
-      .set('PageSize', pageSize)
-      .set('Search', search || '')
-      .set('SortColumn', sortColumn)
-      .set('SortDirection', sortDirection);
+      .set('pageNumber', pageNumber)
+      .set('pageSize', pageSize)
+      .set('search', search || '');
 
-    return this.http.get(`${this.apiUrl}/entries`, { params });
+    return this.http.get(`${this.apiUrl}/list`, { params });
   }
 
-  // ✅ INSERT
-  saveEntry(payload: any) {
-    return this.http.post(`${this.apiUrl}/save`, payload);
+  saveOffsetEntry(payload: any) {
+    return this.http.post(`${this.apiUrl}/insert`, payload);
   }
 }

@@ -24,4 +24,6 @@ public partial class CB_PlantationProject
     public bool? IsActive { get; set; }
 
     public virtual ICollection<CB_AbsorptionEntry> CB_AbsorptionEntries { get; set; } = new List<CB_AbsorptionEntry>();
+
+    public virtual ICollection<CB_OffsetEntry> CB_OffsetEntries { get; set; } = new List<CB_OffsetEntry>();
 }

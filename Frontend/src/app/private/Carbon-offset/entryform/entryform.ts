@@ -1,164 +1,203 @@
 import { Component, OnInit, signal } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import Swal from 'sweetalert2';
 import { ReportService } from './entryformservice';
-
-interface TreeEntry {
-  EntryId: number;
-  ProjectId: number;
-  TreeId: number;
-  TreeName: string;
-  Co2AbsorptionPerYear: number;
-  TreeCount: number;
-  Co2Total: number;
-  IsActive: boolean;
-}
 
 @Component({
   selector: 'app-entryform',
   standalone: true,
   templateUrl: './entryform.html',
   styleUrls: ['./entryform.css'],
-  imports: [CommonModule, ReactiveFormsModule]
+  imports: [CommonModule, ReactiveFormsModule, FormsModule],
 })
 export class EntryFormComponent implements OnInit {
-
   form!: FormGroup;
 
-  years: number[] = [2025, 2024, 2023];
+years: number[] = [];
   projects: any[] = [];
 
-  treeData = signal<TreeEntry[]>([]);
-  emission = signal(0);
+  treeInputs: any[] = [];
 
-  // ✅ SUMMARY FIX
+  // ✅ LIST
+  entries = signal<any[]>([]);
+  treeInputsSignal = signal<any[]>([]);
+  totalOffset = signal(0);
+  remainingEmission = signal(0);
+  status = signal('');
+  totalRecords = signal(0);
+
+  // ✅ SUMMARY
   summary = {
+    totalEmission: 0,
     totalOffset: 0,
-    remaining: 0
+    remainingEmission: 0,
+    status: '',
   };
 
-  // PAGINATION
-  requestedRecords = signal(5);
-  currentPage = signal(1);
-  totalRecords = signal(0);
-  totalPages = signal(1);
-  searchText = signal('');
-  sortColumn = signal('TreeName');
-  sortDirection = signal<'asc' | 'desc'>('asc');
-
-  constructor(private fb: FormBuilder, private service: ReportService) {}
+  constructor(
+    private fb: FormBuilder,
+    private service: ReportService,
+  ) {}
 
   ngOnInit(): void {
     this.form = this.fb.group({
       year: [''],
       projectId: [''],
-      searchText: ['']
     });
-
-    this.form.get('searchText')?.valueChanges.subscribe(val => {
-      this.searchText.set(val || '');
-      this.currentPage.set(1);
-      this.loadTreeEntries();
-    });
-  }
-
-  // ================= YEAR =================
-  onYearChange() {
-    const year = this.form.value.year;
-    if (!year) return;
-
-    this.service.getProjectsByYear(year).subscribe((res: any) => {
-      this.projects = res.data;
-    });
+  this.generateYears();
+    this.loadTreeMaster();
+    this.loadEntries();
   }
 
   // ================= PROJECT =================
-  onProjectChange() {
-    this.currentPage.set(1);
-    this.loadTreeEntries();
-  }
+ onYearChange() {
+  const year = Number(this.form.value.year);
 
-  // ================= LOAD =================
-  loadTreeEntries() {
-  const { year, projectId } = this.form.value;
+  if (!year) return;
 
-  if (!year || !projectId) return;
-
-  this.service.getEntries(
-    year,
-    projectId,
-    this.currentPage(),
-    this.requestedRecords(),
-    this.searchText(),
-    this.sortColumn(),
-    this.sortDirection()
-  ).subscribe({
+  this.service.getProjectsByYear(year).subscribe({
     next: (res: any) => {
+      console.log('Projects API:', res);
 
-      // ✅ DIRECT RESPONSE (no res.data.data nonsense now)
-      this.treeData.set(res.data || []);
+      const data = Array.isArray(res) ? res : (res?.data || []);
 
-      this.totalRecords.set(res.totalRecords || 0);
-      this.totalPages.set(Math.ceil(this.totalRecords() / this.requestedRecords()));
+      // ✅ NORMALIZE KEYS
+      this.projects = data.map((p: any) => ({
+        ProjectId: p.ProjectId ?? p.projectId,
+        ProjectName: p.ProjectName ?? p.projectName
+      }));
 
-      // ✅ SUMMARY
-      this.emission.set(res.summary?.previousYearEmission || 0);
-      this.summary.totalOffset = res.summary?.totalOffset || 0;
-      this.summary.remaining = res.summary?.remainingEmission || 0;
+      console.log('Normalized Projects:', this.projects);
     },
-    error: () => Swal.fire('Error', 'Failed to load data', 'error')
+    error: () => {
+      Swal.fire('Error', 'Projects not loading', 'error');
+    }
   });
 }
+  // ================= TREE MASTER =================
+  loadTreeMaster() {
+    this.service.getTreeMaster().subscribe({
+      next: (res: any) => {
+        const trees = res?.data || [];
 
+        this.treeInputsSignal.set(
+          trees.map((t: any) => ({
+            treeId: t.TreeId,
+            treeName: t.treeName,
+            co2: t.co2AbsorptionPerYear,
+            count: 0,
+            total: 0,
+          })),
+        );
+      },
+      error: () => Swal.fire('Error', 'Tree not loading', 'error'),
+    });
+  }
+ // ================= YEARS =================
+  generateYears() {
+  const currentYear = new Date().getFullYear();
+
+  for (let i = 0; i < 10; i++) {
+    this.years.push(currentYear - i);
+  }
+}
   // ================= SAVE =================
- saveEntry(tree: any, count: number) {
+ saveAll() {
+
+  const projectId = this.form.value.projectId;
+
+  if (!projectId) {
+    Swal.fire('Error', 'Select project first', 'error');
+    return;
+  }
+
+  const selectedTrees = this.treeInputsSignal()
+    .filter(t => t.count > 0)
+    .map(t => ({
+      treeId: t.treeId,
+      treeCount: Number(t.count)
+    }));
+
+  if (selectedTrees.length === 0) {
+    Swal.fire('Error', 'Enter at least one tree count', 'error');
+    return;
+  }
 
   const payload = {
-    ProjectId: tree.projectId,
-    TreeId: tree.treeId,
-    TreeCount: Number(count),
-    IsActive: true,
-    EntryBy: 1
+    projectId: projectId,
+    trees: selectedTrees
   };
 
-  this.service.saveEntry(payload).subscribe({
+  this.service.saveOffsetEntry(payload).subscribe({
     next: () => {
-      Swal.fire('Success', 'Entry saved successfully', 'success');
-      this.loadTreeEntries();
+      Swal.fire('Success', 'Saved successfully', 'success');
+
+      // reset
+      this.treeInputsSignal.update(trees =>
+        trees.map(t => ({ ...t, count: 0, total: 0 }))
+      );
+
+      this.totalOffset.set(0);
+      this.remainingEmission.set(this.summary.totalEmission);
+      this.status.set('Pending');
+
+      this.loadEntries();
     },
-    error: (err: any) =>
-      Swal.fire('Error', err?.message || 'Save failed', 'error')
+    error: () => Swal.fire('Error', 'Save failed', 'error')
   });
 }
+  // ================= LOAD LIST + SUMMARY =================
+  loadEntries() {
+    this.service.getEntries(1, 10, '').subscribe((res: any) => {
+      this.entries.set(res.data || []);
+      this.totalRecords.set(res.totalRecords || 0);
 
-  // ================= PAGINATION =================
-  previousPage() {
-    if (this.currentPage() > 1) {
-      this.currentPage.set(this.currentPage() - 1);
-      this.loadTreeEntries();
-    }
+      // ✅ SUMMARY FIX
+      if (res.summary) {
+        this.summary.totalEmission = res.summary.totalEmission || 0;
+        this.summary.totalOffset = res.summary.totalOffset || 0;
+        this.summary.remainingEmission = res.summary.remainingEmission || 0;
+        this.summary.status = res.summary.status || '';
+      }
+    });
   }
 
-  nextPage() {
-    if (this.currentPage() < this.totalPages()) {
-      this.currentPage.set(this.currentPage() + 1);
-      this.loadTreeEntries();
-    }
-  }
+  onCountChange(index: number) {
 
-  onRecordsChange(event: any) {
-    this.requestedRecords.set(+event.target.value);
-    this.currentPage.set(1);
-    this.loadTreeEntries();
-  }
+  const trees = [...this.treeInputsSignal()];
+
+  const item = trees[index];
+
+  // ✅ calculate row total
+  item.total = item.count * item.co2;
+
+  this.treeInputsSignal.set(trees);
+
+  // ✅ calculate grand total offset
+  const totalOffset = trees.reduce((sum, t) => sum + (t.total || 0), 0);
+  this.totalOffset.set(totalOffset);
+
+  // ✅ remaining emission
+  const remaining = this.summary.totalEmission - totalOffset;
+  this.remainingEmission.set(remaining);
+
+  // ✅ status
+  this.status.set(remaining <= 0 ? 'Achieved' : 'Pending');
+}
 
   // ================= RESET =================
   reset() {
     this.form.reset();
-    this.treeData.set([]);
     this.projects = [];
-    this.emission.set(0);
-    this.summary = { totalOffset: 0, remaining: 0 };
+    this.treeInputs.forEach((t) => (t.count = 0));
+    this.entries.set([]);
+
+    this.summary = {
+      totalEmission: 0,
+      totalOffset: 0,
+      remainingEmission: 0,
+      status: '',
+    };
   }
 }

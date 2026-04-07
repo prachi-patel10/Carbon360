@@ -7,6 +7,7 @@ using ProjectApp.Repository.Interfaces.Masters.PlantationProject;
 using ProjectApp.Repository.Utilities.Auth;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -160,6 +161,34 @@ namespace ProjectApp.Repository.Services.Masters.PlantationProject
 
             return true;
         }
+
+        public async Task<List<ProjectByYearDTO>> GetProjectsByYear(int year)
+        {
+            using var conn = _context.Database.GetDbConnection();
+            await conn.OpenAsync();
+
+            using var cmd = conn.CreateCommand();
+            cmd.CommandText = "USP_CB_ProjectByYear";
+            cmd.CommandType = CommandType.StoredProcedure;
+
+            cmd.Parameters.Add(new SqlParameter("@FinancialYear", year));
+
+            var result = new List<ProjectByYearDTO>();
+
+            using var reader = await cmd.ExecuteReaderAsync();
+
+            while (await reader.ReadAsync())
+            {
+                result.Add(new ProjectByYearDTO
+                {
+                    ProjectId = Convert.ToInt32(reader["ProjectId"]),
+                    ProjectName = reader["ProjectName"].ToString()
+                });
+            }
+
+            return result;
+        }
     }
+    
     
 }

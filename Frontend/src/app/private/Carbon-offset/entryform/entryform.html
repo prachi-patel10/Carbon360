@@ -1,36 +1,28 @@
 <div class="container">
-
   <!-- FILTER -->
   <div class="card">
     <form [formGroup]="form" class="form-grid">
-
       <div class="form-group">
-        <label>Financial Year</label>
+        <label>Year</label>
         <select formControlName="year" (change)="onYearChange()">
-          <option value="" disabled selected hidden>Select Year</option>
+          <option value="">Select</option>
           <option *ngFor="let y of years" [value]="y">{{ y }}</option>
         </select>
       </div>
 
       <div class="form-group">
-        <label>Project Name</label>
-        <select formControlName="projectId" (change)="onProjectChange()">
-          <option value="" disabled selected hidden>Select Project</option>
-          <option *ngFor="let p of projects" [value]="p.ProjectId">
-            {{ p.ProjectName }}
+        <label>Project</label>
+        <select formControlName="projectId">
+          <option value="">Select</option>
+          <option *ngFor="let p of projects" [value]="p?.ProjectId || p?.projectId">
+            {{ p?.ProjectName || p?.projectName }}
           </option>
         </select>
       </div>
-
     </form>
   </div>
 
-  <!-- EMISSION -->
-  <div class="info-box">
-    Total Emission (Last Year): {{ emission() }} kg
-  </div>
-
-  <!-- TABLE -->
+  <!-- TREE TABLE -->
   <table>
     <thead>
       <tr>
@@ -38,45 +30,67 @@
         <th>CO₂ / Year</th>
         <th>Count</th>
         <th>Total</th>
-        <th>Action</th>
       </tr>
     </thead>
 
     <tbody>
-<tr *ngFor="let t of treeData()">
-          <td>{{ t.TreeName }}</td>
-        <td>{{ t.Co2AbsorptionPerYear }}</td>
-        <td>
-          <input #countInput type="number" min="1" placeholder="Enter count">
-        </td>
-        <td>{{ t.Co2Total }}</td>
-        <td>
-         <button (click)="saveEntry(t, +countInput.value)">Save</button>
-        </td>
-      </tr>
+      <tr *ngFor="let t of treeInputsSignal(); let i = index">
+        <td>{{ t.treeName }}</td>
+        <td>{{ t.co2 }}</td>
 
-      <tr *ngIf="treeData().length === 0">
-        <td colspan="5" style="text-align:center;">No data found</td>
+        <td>
+          <input type="number" [(ngModel)]="t.count" (ngModelChange)="onCountChange(i)" min="0" />
+        </td>
+
+        <!-- ✅ NEW COLUMN -->
+        <td>{{ t.total }}</td>
       </tr>
     </tbody>
   </table>
 
-  <!-- SUMMARY -->
-  <div class="summary">
-    <p>Total Offset: {{ summary.totalOffset }} kg</p>
-    <p>Remaining Emission: {{ summary.remaining }} kg</p>
-
-    <p>
-      Status:
-      <span [ngClass]="summary.remaining <= 0 ? 'status-ok' : 'status-pending'">
-        {{ summary.remaining <= 0 ? 'Achieved ✅' : 'Pending ❌' }}
-      </span>
-    </p>
-  </div>
-
-  <!-- BUTTONS -->
+  <!-- SAVE -->
   <div class="buttons">
+    <button (click)="saveAll()">Save All</button>
     <button class="cancel" (click)="reset()">Reset</button>
   </div>
 
+  <!-- SUMMARY -->
+  <div class="summary">
+    <p>Total Emission: {{ summary.totalEmission }}</p>
+
+    <!-- 🔥 LIVE OFFSET -->
+    <p>Total Offset: {{ totalOffset() }}</p>
+
+    <!-- 🔥 LIVE REMAINING -->
+    <p>Remaining: {{ remainingEmission() }}</p>
+
+    <p>
+      Status:
+      <span [ngClass]="status() === 'Achieved' ? 'status-ok' : 'status-pending'">
+        {{ status() }}
+      </span>
+    </p>
+  </div>
+  <!-- LIST -->
+  <h3>Saved Entries</h3>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Project</th>
+        <th>Year</th>
+        <th>Total Offset</th>
+        <th>Date</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      <tr *ngFor="let e of entries()">
+        <td>{{ e.projectName }}</td>
+        <td>{{ e.financialYear }}</td>
+        <td>{{ e.totalOffset }}</td>
+        <td>{{ e.entryDate | date: 'short' }}</td>
+      </tr>
+    </tbody>
+  </table>
 </div>

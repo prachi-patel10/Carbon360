@@ -79,6 +79,14 @@
          "ObjectType": 0
       },
       {
+         "Name": "[dbo].[CB_OffsetEntry]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[CB_OffsetEntryDetails]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[dbo].[CB_PasswordResetTokens]",
          "ObjectType": 0
       },

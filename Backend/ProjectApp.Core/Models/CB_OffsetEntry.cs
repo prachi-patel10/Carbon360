@@ -5,25 +5,27 @@ using System.Collections.Generic;
 
 namespace ProjectApp.Core.Models;
 
-public partial class CB_MasterTree
+public partial class CB_OffsetEntry
 {
-    public int TreeId { get; set; }
+    public int OffsetEntryId { get; set; }
 
-    public string TreeName { get; set; }
+    public int ProjectId { get; set; }
 
-    public decimal co2AbsorptionPerYear { get; set; }
+    public decimal? PreviousYearEmission { get; set; }
+
+    public decimal? TotalOffset { get; set; }
 
     public bool? IsActive { get; set; }
 
-    public int? EntryBy { get; set; }
+    public string EntryBy { get; set; }
 
     public DateTime? EntryDate { get; set; }
 
-    public int? UpdateBy { get; set; }
+    public string UpdateBy { get; set; }
 
     public DateTime? UpdateDate { get; set; }
 
-    public virtual ICollection<CB_AbsorptionEntry> CB_AbsorptionEntries { get; set; } = new List<CB_AbsorptionEntry>();
-
     public virtual ICollection<CB_OffsetEntryDetail> CB_OffsetEntryDetails { get; set; } = new List<CB_OffsetEntryDetail>();
+
+    public virtual CB_PlantationProject Project { get; set; }
 }

@@ -2,53 +2,65 @@
 using ProjectApp.Core.DTOs.Account.OffSet;
 using ProjectApp.Repository.Interfaces.OffSet;
 
-namespace ProjectApp.API.Controllers.OffSet
+[ApiController]
+[Route("api/[controller]")]
+public class OffsetEntryController : ControllerBase
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class AbsorptionEntryController : ControllerBase
+    private readonly IAbsorptionEntry _service;
+
+    public OffsetEntryController(IAbsorptionEntry service)
     {
-        private readonly IAbsorptionEntry _service;
+        _service = service;
+    }
 
-        public AbsorptionEntryController(IAbsorptionEntry service)
+    // INSERT
+    [HttpPost("insert")]
+    public async Task<IActionResult> Insert([FromBody] OffsetEntryDto model)
+    {
+        try
         {
-            _service = service;
-        }
+            // 🔥 Extract UserId from JWT
+            var userIdClaim = User.FindFirst("UserId")?.Value;
 
-        // ================= INSERT =================
-        [HttpPost("save")]
-        public async Task<IActionResult> Save([FromBody] AbsorptionEntryInsertDTO request)
+            if (string.IsNullOrEmpty(userIdClaim))
+                return Unauthorized("UserId not found in token");
+
+            int userId = Convert.ToInt32(userIdClaim);
+
+            // ✅ Set EntryBy here
+            model.EntryBy = userId;
+
+            var result = await _service.InsertOffsetEntry(model);
+
+            return Ok(new { message = "Inserted successfully", id = result });
+        }
+        catch (Exception ex)
         {
-            var result = await _service.InsertAsync(request);
-
-            if (!result.Success)
-                return BadRequest(result);
-
-            return Ok(result);
+            return BadRequest(ex.Message);
         }
+    }
 
-        // ================= SEARCH =================
-        [HttpGet("entries")]
-        public async Task<IActionResult> GetEntries(
-            int? ProjectId,
-            string FinancialYear,
-            int PageNumber = 1,
-            int PageSize = 5,
-            string Search = "",
-            string SortColumn = "TreeName",
-            string SortDirection = "asc")
-        {
-            var result = await _service.SearchAsync(
-                ProjectId,
-                FinancialYear,
-                PageNumber,
-                PageSize,
-                Search,
-                SortColumn,
-                SortDirection
-            );
+    // GET ALL
+    [HttpGet("list")]
+    public async Task<IActionResult> GetAll(int pageNumber = 1, int pageSize = 10, string search = null)
+    {
+        var result = await _service.GetAll(pageNumber, pageSize, search);
+        return Ok(result);
+    }
 
-            return Ok(result);
-        }
+    // GET BY ID
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetById(int id)
+    {
+        var result = await _service.GetById(id);
+        return Ok(result);
+    }
+
+    // DELETE
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Delete(int id)
+    {
+        await _service.Delete(id);
+        return Ok(new { Message = "Deleted Successfully" });
     }
 }
