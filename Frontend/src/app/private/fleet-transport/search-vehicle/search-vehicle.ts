@@ -94,18 +94,26 @@ export class SearchVehicle implements OnInit {
   // ═══════════════════════════════════════════════════════════════
 
   ngOnInit(): void {
-    this.loadFuelTypes();
-    this.loadVehicleTypes();
+  this.loadFuelTypes();
+  this.loadVehicleTypes();
 
-    this.route.queryParams.subscribe(params => {
-      if (params['source'] === 'chart') {
-        this.pendingChartParams = { ...params };
-        this.applyChartParamsWhenReady();
-      } else {
-        this.loadTrips(1);
-      }
-    });
-  }
+  this.route.queryParams.subscribe(params => {
+    if (params['source'] === 'chart') {
+      this.pendingChartParams = { ...params };
+
+      // ✅ KEY FIX: Clear URL query params so page refresh loads all records
+      this.router.navigate([], {
+        relativeTo: this.route,
+        queryParams: {},
+        replaceUrl: true
+      });
+
+      this.applyChartParamsWhenReady();
+    } else {
+      this.loadTrips(1);
+    }
+  });
+}
 
   // ═══════════════════════════════════════════════════════════════
   //  CHART PARAM APPLICATION

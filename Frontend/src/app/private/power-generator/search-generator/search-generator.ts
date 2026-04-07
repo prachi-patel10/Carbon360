@@ -35,17 +35,12 @@ export class SearchGenerator implements OnInit, AfterViewInit {
   fuelDropdownOpen = false;
 
   // ── Site ───────────────────────────────────────────────────────
-  /** Full list loaded from API */
   Sitename: any[] = [];
-  /** Currently selected site names (manual multi-select) */
   selectedSite: string[] = [];
   SiteDropdownOpen = false;
-  /**
-   * Holds the single site name drilled-down from the chart.
-   * When set it is shown as a chip in the Site dropdown and sent as
-   * the siteNames param; manual selectedSite is ignored.
-   */
-  chartSiteName: string | null = null;
+
+  // ✅ signal so Angular detects changes after async router navigation
+  chartSiteName = signal<string | null>(null);
 
   // ── Generator ──────────────────────────────────────────────────
   generatorTypes: any[] = [];
@@ -87,6 +82,7 @@ export class SearchGenerator implements OnInit, AfterViewInit {
   private _pendingOpStart: string | null = null;
   private _pendingOpEnd: string | null = null;
   private _viewReady = false;
+  private _chartParamsConsumed = false;
 
   constructor(
     private service: SearchGeneratorService,
@@ -121,11 +117,17 @@ export class SearchGenerator implements OnInit, AfterViewInit {
 
     this.route.queryParams.subscribe(params => {
 
-      // Full reset on every navigation
+      // ✅ Ignore second fire after URL is cleared
+      if (this._chartParamsConsumed) {
+        this._chartParamsConsumed = false;
+        return;
+      }
+
+      // ── Full reset ──────────────────────────────────────────
       this.selectedFuels = [];
       this.selectedGenTypes = [];
       this.selectedSite = [];
-      this.chartSiteName = null;
+      this.chartSiteName.set(null);
       this.searchText.set('');
       this.operationStartDate.set(null);
       this.operationEndDate.set(null);
@@ -140,31 +142,30 @@ export class SearchGenerator implements OnInit, AfterViewInit {
 
       if (params['source'] === 'chart') {
 
-        // ── Fuel type filter ─────────────────────────────────
-        if (params['fuelType']) {
-          this.selectedFuels = [params['fuelType'].trim()];
-        }
+        if (params['fuelType'])      this.selectedFuels   = [params['fuelType'].trim()];
+        if (params['generatorName']) this.selectedGenTypes = [params['generatorName'].trim()];
 
-        // ── Generator filter ─────────────────────────────────
-        if (params['generatorName']) {
-          this.selectedGenTypes = [params['generatorName'].trim()];
-        }
-
-        // ── Site filter — stored in chartSiteName so it shows
-        //    as a chip and is sent as siteNames param ─────────
-        if (params['siteNames']) {
-          this.chartSiteName = params['siteNames'].trim();
-        }
+        // ✅ Use signal .set()
+        if (params['siteNames'])     this.chartSiteName.set(params['siteNames'].trim());
 
         this.searchText.set('');
 
-        // ── Operation Date ───────────────────────────────────
         const opStart = toIsoDate(params['startDate']);
-        const opEnd = toIsoDate(params['endDate']);
+        const opEnd   = toIsoDate(params['endDate']);
         if (opStart) this.operationStartDate.set(opStart);
-        if (opEnd) this.operationEndDate.set(opEnd);
+        if (opEnd)   this.operationEndDate.set(opEnd);
 
         this.applyPickersIfReady();
+
+        // ✅ Mark consumed BEFORE clearing URL
+        this._chartParamsConsumed = true;
+
+        // ✅ Clear URL so browser refresh loads all records
+        this.router.navigate([], {
+          relativeTo: this.route,
+          queryParams: {},
+          replaceUrl: true
+        });
       }
 
       this.loadEmissions();
@@ -205,12 +206,10 @@ export class SearchGenerator implements OnInit, AfterViewInit {
     });
   }
 
-  /** Load site names from API via service (replaces SiteLocationMasterService direct call) */
   loadSiteName(): void {
     this.service.getSiteNames().subscribe({
       next: data => { this.Sitename = data; },
-      error: err => {
-        // Fallback to SiteLocationMasterService if dedicated endpoint unavailable
+      error: () => {
         this.SiteService.getAll().subscribe(res => {
           const raw = Array.isArray(res) ? res : res.data || [];
           this.Sitename = raw.filter((f: any) => f.isActive === true || f.isActive === 1);
@@ -233,33 +232,28 @@ export class SearchGenerator implements OnInit, AfterViewInit {
       ? this.selectedFuels.map(f => f.trim()).join(',')
       : undefined;
 
-    // Never send generatorNames when chartSiteName is active
-    const genParam = (this.selectedGenTypes.length > 0 && !this.chartSiteName)
+    // ✅ Use signal ()
+    const genParam = (this.selectedGenTypes.length > 0 && !this.chartSiteName())
       ? this.selectedGenTypes.map(g => g.trim()).join(',')
       : undefined;
 
-    // chartSiteName takes priority; fall back to manual selectedSite
-    const siteParam = this.chartSiteName
-      ? this.chartSiteName.trim()
+    // ✅ Use signal ()
+    const siteParam = this.chartSiteName()
+      ? this.chartSiteName()!.trim()
       : this.selectedSite.length > 0
         ? this.selectedSite.map(s => s.trim()).join(',')
         : undefined;
 
-    // Only pure site-chart drilldown suppresses free-text search
-    const hasChartSiteFilter = !!this.chartSiteName;
+    // ✅ Use signal ()
+    const hasChartSiteFilter = !!this.chartSiteName();
     const searchParam = hasChartSiteFilter
       ? undefined
       : (this.searchText()?.trim() || undefined);
 
-    const opStart = this.operationStartDate() || undefined;
-    const opEnd = this.operationEndDate() || undefined;
-    const entryStart = this.entryStartDate() || undefined;
-    const entryEnd = this.entryEndDate() || undefined;
-
-    console.log('loadEmissions() params →', {
-      siteParam, genParam, fuelParam, searchParam,
-      opStart, opEnd, entryStart, entryEnd
-    });
+    const opStart    = this.operationStartDate() || undefined;
+    const opEnd      = this.operationEndDate()   || undefined;
+    const entryStart = this.entryStartDate()     || undefined;
+    const entryEnd   = this.entryEndDate()       || undefined;
 
     this.service.searchEmissions(
       this.currentPage(), this.pageSize,
@@ -271,13 +265,13 @@ export class SearchGenerator implements OnInit, AfterViewInit {
     ).subscribe({
       next: (res: any) => {
         const records = res.data ?? [];
-        const total = res.totalRecords ?? 0;
+        const total   = res.totalRecords ?? 0;
 
         const mapped = records.map((e: any) => ({
           ...e,
           generatorName: e.generatorName ?? 'Unknown Generator',
-          fuelType: e.fuelType ?? 'Unknown',
-          status: e.statusName ?? (e.statusId === 1 ? 'Completed' : 'Pending'),
+          fuelType:      e.fuelType      ?? 'Unknown',
+          status:        e.statusName    ?? (e.statusId === 1 ? 'Completed' : 'Pending'),
           totalEmission: e.totalEmission ?? 0,
         }));
 
@@ -293,8 +287,8 @@ export class SearchGenerator implements OnInit, AfterViewInit {
           });
         }
 
-        // When drilled from site chart, populate generator chips from results
-        if (this.chartSiteName && mapped.length > 0) {
+        // ✅ Use signal ()
+        if (this.chartSiteName() && mapped.length > 0) {
           const uniqueGenNames: string[] = [
             ...new Set<string>(
               mapped
@@ -334,19 +328,36 @@ export class SearchGenerator implements OnInit, AfterViewInit {
 
   // ── Multi-Select: Site ─────────────────────────────────────────
 
-  toggleSiteDropDown(): void { this.SiteDropdownOpen = !this.SiteDropdownOpen; }
-  isSiteSelected(name: string): boolean { return this.selectedSite.includes(name); }
+  toggleSiteDropDown(): void {
+    this.SiteDropdownOpen = !this.SiteDropdownOpen;
+
+    // ✅ When opening, sync chartSiteName into selectedSite so checkbox shows checked
+    if (this.SiteDropdownOpen && this.chartSiteName()) {
+      const name = this.chartSiteName()!;
+      if (!this.selectedSite.includes(name)) {
+        this.selectedSite = [name];
+      }
+    }
+  }
+
+  // ✅ Check both selectedSite array AND chartSiteName signal
+  isSiteSelected(name: string): boolean {
+    return this.selectedSite.includes(name) ||
+      (!!this.chartSiteName() && this.chartSiteName() === name);
+  }
 
   toggleSite(name: string): void {
-    // Selecting a site manually clears chart drilldown
-    this.chartSiteName = null;
+    // ✅ If unchecking the chart-drilled site, clear chartSiteName signal too
+    if (this.chartSiteName() === name) {
+      this.chartSiteName.set(null);
+    }
     const i = this.selectedSite.indexOf(name);
     i > -1 ? this.selectedSite.splice(i, 1) : this.selectedSite.push(name);
     this.applyFilters();
   }
 
   toggleSelectAllSite(): void {
-    this.chartSiteName = null;
+    this.chartSiteName.set(null);                          // ✅ signal
     this.selectedSite = this.selectedSite.length === this.Sitename.length
       ? [] : this.Sitename.map((s: any) => s.siteName ?? s.SiteName ?? s.site_name ?? s.name);
     this.applyFilters();
@@ -354,13 +365,13 @@ export class SearchGenerator implements OnInit, AfterViewInit {
 
   clearSite(): void {
     this.selectedSite = [];
-    this.chartSiteName = null;
+    this.chartSiteName.set(null);                          // ✅ signal
     this.applyFilters();
   }
 
-  /** Remove chart-drilled site chip */
   clearChartSite(): void {
-    this.chartSiteName = null;
+    this.chartSiteName.set(null);                          // ✅ signal
+    this.selectedSite = [];
     this.selectedGenTypes = [];
     this.applyFilters();
   }
@@ -376,20 +387,20 @@ export class SearchGenerator implements OnInit, AfterViewInit {
       this.selectedGenTypes = this.selectedGenTypes.filter(g => g !== name);
     else
       this.selectedGenTypes.push(name);
-    this.chartSiteName = null;
+    this.chartSiteName.set(null);                          // ✅ signal
     this.applyFilters();
   }
 
   toggleSelectAllGen(): void {
     this.selectedGenTypes = this.selectedGenTypes.length === this.generatorTypes.length
       ? [] : this.generatorTypes.map(g => g.gen_name);
-    this.chartSiteName = null;
+    this.chartSiteName.set(null);                          // ✅ signal
     this.applyFilters();
   }
 
   clearGenTypes(): void {
     this.selectedGenTypes = [];
-    this.chartSiteName = null;
+    this.chartSiteName.set(null);                          // ✅ signal
     this.applyFilters();
   }
 
@@ -399,15 +410,15 @@ export class SearchGenerator implements OnInit, AfterViewInit {
   onDocumentClick(e: MouseEvent): void {
     const t = e.target as HTMLElement;
     if (!t.closest('.fuel-multiselect')) this.fuelDropdownOpen = false;
-    if (!t.closest('.site-multiselect')) this.SiteDropdownOpen = false;  // fixed: was 'site-multiselect' without dot
-    if (!t.closest('.gen-multiselect')) this.genDropdownOpen = false;
+    if (!t.closest('.site-multiselect')) this.SiteDropdownOpen = false;
+    if (!t.closest('.gen-multiselect'))  this.genDropdownOpen  = false;
   }
 
   // ── Search ─────────────────────────────────────────────────────
 
   onSearch(event: any): void {
     this.searchText.set(event.target.value);
-    this.chartSiteName = null;
+    this.chartSiteName.set(null);                          // ✅ signal
     this.applyFilters();
   }
 
@@ -438,14 +449,14 @@ export class SearchGenerator implements OnInit, AfterViewInit {
   // ── Reset ──────────────────────────────────────────────────────
 
   resetFilters(): void {
-    this.selectedFuels = []; this.fuelDropdownOpen = false;
-    this.selectedSite = []; this.SiteDropdownOpen = false;
-    this.selectedGenTypes = []; this.genDropdownOpen = false;
-    this.chartSiteName = null;
+    this.selectedFuels    = []; this.fuelDropdownOpen = false;
+    this.selectedSite     = []; this.SiteDropdownOpen = false;
+    this.selectedGenTypes = []; this.genDropdownOpen  = false;
+    this.chartSiteName.set(null);                          // ✅ signal
     this.searchText.set('');
     this.operationStartDate.set(null); this.operationEndDate.set(null);
-    this.entryStartDate.set(null); this.entryEndDate.set(null);
-    this._pendingOpStart = null; this._pendingOpEnd = null;
+    this.entryStartDate.set(null);     this.entryEndDate.set(null);
+    this._pendingOpStart = null;       this._pendingOpEnd = null;
     this.currentPage.set(1);
     this.opDatePicker?.reset();
     this.entryDatePicker?.reset();
@@ -459,8 +470,8 @@ export class SearchGenerator implements OnInit, AfterViewInit {
   // ── Pagination ─────────────────────────────────────────────────
 
   paginatedData() { return this.filteredData(); }
-  totalRecords() { return this.totalRecordsCount(); }
-  totalPages() { return this.totalPagesCount(); }
+  totalRecords()  { return this.totalRecordsCount(); }
+  totalPages()    { return this.totalPagesCount(); }
 
   goToPage(page: number): void {
     if (page < 1 || page > this.totalPages()) return;
@@ -520,13 +531,13 @@ export class SearchGenerator implements OnInit, AfterViewInit {
       })
       .then((blob: any) => {
         const now = new Date();
-        const ts = now.getFullYear()
+        const ts  = now.getFullYear()
           + String(now.getMonth() + 1).padStart(2, '0')
           + String(now.getDate()).padStart(2, '0') + '_'
           + String(now.getHours()).padStart(2, '0')
           + String(now.getMinutes()).padStart(2, '0')
           + String(now.getSeconds()).padStart(2, '0');
-        const url = URL.createObjectURL(blob);
+        const url  = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url; link.download = `Search_PowerGenerator_${ts}.pdf`;
         document.body.appendChild(link); link.click();
@@ -540,20 +551,21 @@ export class SearchGenerator implements OnInit, AfterViewInit {
 
   exportExcel(): void {
     const params: any = {};
-    if (this.searchText() && !this.chartSiteName)
+    // ✅ Use signal ()
+    if (this.searchText() && !this.chartSiteName())
       params.search = this.searchText();
     if (this.selectedFuels.length > 0)
       params.fuelTypes = this.selectedFuels.join(',');
-    if (this.selectedGenTypes.length > 0 && !this.chartSiteName)
+    if (this.selectedGenTypes.length > 0 && !this.chartSiteName())
       params.generatorTypes = this.selectedGenTypes.join(',');
-    if (this.chartSiteName)
-      params.siteNames = this.chartSiteName;
+    if (this.chartSiteName())
+      params.siteNames = this.chartSiteName();
     else if (this.selectedSite.length > 0)
       params.siteNames = this.selectedSite.join(',');
-    if (this.operationStartDate()) params.startDate = this.operationStartDate();
-    if (this.operationEndDate()) params.endDate = this.operationEndDate();
-    if (this.entryStartDate()) params.entryStartDate = this.entryStartDate();
-    if (this.entryEndDate()) params.entryEndDate = this.entryEndDate();
+    if (this.operationStartDate()) params.startDate    = this.operationStartDate();
+    if (this.operationEndDate())   params.endDate      = this.operationEndDate();
+    if (this.entryStartDate())     params.entryStartDate = this.entryStartDate();
+    if (this.entryEndDate())       params.entryEndDate   = this.entryEndDate();
     params.isExport = true;
 
     this.service.exportExcel(params).subscribe(blob => {
@@ -561,9 +573,9 @@ export class SearchGenerator implements OnInit, AfterViewInit {
         type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
       });
       const url = URL.createObjectURL(file);
-      const a = document.createElement('a');
+      const a   = document.createElement('a');
       const now = new Date();
-      const ts = ('0' + now.getDate()).slice(-2)
+      const ts  = ('0' + now.getDate()).slice(-2)
         + ('0' + (now.getMonth() + 1)).slice(-2) + now.getFullYear() + '_'
         + ('0' + now.getHours()).slice(-2)
         + ('0' + now.getMinutes()).slice(-2)

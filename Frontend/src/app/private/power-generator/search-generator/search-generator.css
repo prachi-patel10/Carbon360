@@ -254,10 +254,9 @@ body {
     font-size: 11px;
     padding: 2px 7px;
     font-weight: 500;
-    white-space: nowrap;
-    max-width: 120px;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    white-space: normal;     
+    max-width: 100%;         
+    word-break: break-word;
 }
 
 .fuel-tag .remove {
@@ -538,7 +537,7 @@ body {
 /* Report ID      */
 
 .gen-table th:nth-child(3) {
-    width: 180px;
+    width: 200px;
 }
 
 /* Report ID      */
