@@ -246,19 +246,19 @@ namespace ProjectApp.API.Controllers.Charts
             return Ok(new { status = true, data });
         }
 
-        [HttpGet("ExportVehicleCategoryEmission")]
-        public async Task<IActionResult> ExportVehicleCategoryEmission([FromQuery] int year)
-        {
-            var fileBytes = await _service.ExportVehicleCategoryEmissionExcelAsync(year);
-            if (fileBytes == null || fileBytes.Length == 0)
-                return NotFound("No data found for the given year.");
+        //[HttpGet("ExportVehicleCategoryEmission")]
+        //public async Task<IActionResult> ExportVehicleCategoryEmission([FromQuery] int year)
+        //{
+        //    var fileBytes = await _service.ExportVehicleCategoryEmissionExcelAsync(year);
+        //    if (fileBytes == null || fileBytes.Length == 0)
+        //        return NotFound("No data found for the given year.");
 
-            return File(
-                fileBytes,
-                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                $"VehicleCategoryEmission_{year}.xlsx"
-            );
-        }
+        //    return File(
+        //        fileBytes,
+        //        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        //        $"VehicleCategoryEmission_{year}.xlsx"
+        //    );
+        //}
 
         [HttpGet("ExportGeneratorFuel")]
         public async Task<IActionResult> ExportGeneratorFuel([FromQuery] int year)
@@ -315,5 +315,19 @@ namespace ProjectApp.API.Controllers.Charts
                 "SiteEmissionChart.xlsx");
         }
 
+        [HttpGet("ExportVehicleCategoryEmission")]
+        public async Task<IActionResult> ExportVehicleCategoryEmission([FromQuery] int year)
+        {
+            var fileBytes = await _service.ExportVehicleCategoryEmissionExcelAsync(year);
+
+            if (fileBytes == null || fileBytes.Length == 0)
+                return NotFound("No data found for the given year.");
+
+            return File(
+                fileBytes,
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                $"VehicleCategoryEmission_{year}.xlsx"
+            );
+        }
     }
 }

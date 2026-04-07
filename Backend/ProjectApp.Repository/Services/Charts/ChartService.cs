@@ -810,24 +810,24 @@ namespace ProjectApp.Repository.Services.Charts
             };
         }
 
-        public async Task<byte[]> ExportVehicleCategoryEmissionExcelAsync(int year)
-        {
-            var data = await GetVehicleCategoryWiseEmissionAsync(year);
-            if (!data.Labels.Any()) return Array.Empty<byte>();
+        //public async Task<byte[]> ExportVehicleCategoryEmissionExcelAsync(int year)
+        //{
+        //    var data = await GetVehicleCategoryWiseEmissionAsync(year);
+        //    if (!data.Labels.Any()) return Array.Empty<byte>();
 
-            var rows = data.Labels.Select((cat, i) => new Dictionary<string, object>
-            {
-                ["Vehicle Category"] = cat,
-                ["Distance (km)"] = data.DistanceData[i],
-                ["Emission (kg)"] = data.EmissionData[i]
-            }).ToList();
+        //    var rows = data.Labels.Select((cat, i) => new Dictionary<string, object>
+        //    {
+        //        ["Vehicle Category"] = cat,
+        //        ["Distance (km)"] = data.DistanceData[i],
+        //        ["Emission (kg)"] = data.EmissionData[i]
+        //    }).ToList();
 
-            return await ExcelExportHelper.ExportDynamicPivotExcelWithChartAsync(
-                rows,
-                "Category Emission",
-                $"Vehicle Category Emission - {year}"
-            );
-        }
+        //    return await ExcelExportHelper.ExportDynamicPivotExcelWithChartAsync(
+        //        rows,
+        //        "Category Emission",
+        //        $"Vehicle Category Emission - {year}"
+        //    );
+        //}
 
         //public async Task<byte[]> ExportCityWiseEmissionExcelAsync(int year)
         //{
@@ -1028,6 +1028,26 @@ namespace ProjectApp.Repository.Services.Charts
             // ✅ Excel Chart
             return ExcelExportHelper.ExportExactUIChart(
                 sites, co2e, co2, no2, ch4
+            );
+        }
+
+        public async Task<byte[]> ExportVehicleCategoryEmissionExcelAsync(int year)
+        {
+            var data = await GetVehicleCategoryWiseEmissionAsync(year);
+
+            if (!data.Labels.Any())
+                return Array.Empty<byte>();
+
+            var categories = data.Labels;
+            var distanceVals = data.DistanceData.Select(d => (double)d).ToList();
+            var emissionVals = data.EmissionData.Select(e => (double)e).ToList();
+
+            return await ExcelExportHelper.ExportVehicleCategoryComboChartAsync(
+                categories,
+                distanceVals,
+                emissionVals,
+                "Category Report",
+                $"Vehicle Category Wise Distance & Emission - {year}"
             );
         }
     }
