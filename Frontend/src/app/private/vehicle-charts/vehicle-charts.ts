@@ -99,6 +99,13 @@ export class VehicleCharts implements OnInit, AfterViewInit, OnChanges, OnDestro
   private pendingVtype?: VehicleTypeDistancePivotResponse;
   private pendingCategory?: VehicleCategoryChartResponse;
 
+  // ── View-mode signals (one per chart card) ────────────────────
+  fuelView = signal<'chart' | 'details'>('chart');
+  emissionView = signal<'chart' | 'details'>('chart');
+  distanceView = signal<'chart' | 'details'>('chart');
+  pieView = signal<'chart' | 'details'>('chart');
+  categoryView = signal<'chart' | 'details'>('chart');
+
   constructor(private svc: DashboardService, private router: Router) { }
 
   ngOnInit(): void { this.loadAll(); }

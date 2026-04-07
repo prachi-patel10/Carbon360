@@ -57,11 +57,12 @@ updateTrip(tripId: string, data: any): Observable<any> {
     data
   );
 }
-  getWorkflowActions(tripId: string): Observable<any> {
-  return this.http.get(
-    `${this.apiUrl}/VehicleTripEmission/${tripId}/actions`
-  );
-}
+
+//   getWorkflowActions(tripId: string): Observable<any> {
+//   return this.http.get(
+//     `${this.apiUrl}/VehicleTripEmission/${tripId}/actions`
+//   );
+// }
 
  downloadTripPdf(tripId: string) {
     return this.http.get(`${this.apiUrl}/trip-pdf/${tripId}`, {

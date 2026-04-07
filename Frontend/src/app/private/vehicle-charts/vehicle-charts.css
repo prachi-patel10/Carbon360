@@ -721,3 +721,57 @@
     height: 180px;
   }
 }
+
+/* ══════════════════════════════════════════════════════════════
+   HEADER ACTIONS — toggle group + export btn
+══════════════════════════════════════════════════════════════ */
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.view-toggle-group {
+  display: flex;
+  border: 1px solid #e2e8f0;
+  border-radius: 7px;
+  overflow: hidden;
+}
+
+.view-toggle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: #fff;
+  border: none;
+  cursor: pointer;
+  color: #94a3b8;
+  font-size: 11px;
+  transition: background 0.15s, color 0.15s;
+  padding: 0;
+  line-height: 1;
+}
+
+.view-toggle-btn:first-child {
+  border-right: 1px solid #e2e8f0;
+}
+
+.view-toggle-btn:hover {
+  background: #f8fafc;
+  color: #475569;
+}
+
+.view-toggle-btn.active {
+  background: #0f5132;
+  color: #ffffff;
+}
+
+/* keep original export btn style, just remove old margin-left:auto from container */
+.export-btn-container {
+  margin-left: 0;
+}
+
