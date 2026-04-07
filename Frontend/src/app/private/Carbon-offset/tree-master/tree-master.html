@@ -21,9 +21,10 @@
         <label>
           CO₂ Absorption Per Year (Kg) <span class="required">*</span>
         </label>
-        <input type="number" formControlName="co2AbsorptionPerYear" placeholder="Enter CO2 Absorption">
-        <small class="error-text"
-          *ngIf="treeForm.get('co2AbsorptionPerYear')?.touched && treeForm.get('co2AbsorptionPerYear')?.invalid">
+<input type="number"
+       formControlName="Co2AbsorptionPerYear"
+       placeholder="Enter CO2 Absorption">        <small class="error-text"
+          *ngIf="treeForm.get('Co2AbsorptionPerYear')?.touched && treeForm.get('co2AbsorptionPerYear')?.invalid">
           CO₂ Absorption is required
         </small>
       </div>
@@ -86,19 +87,19 @@
         {{getSortIcon('TreeName')}}
       </th>
 
-      <th (click)="sort('TreeType')">
-        Tree Type 
-        {{getSortIcon('TreeType')}}
-      </th>
+      <th (click)="sort('Co2AbsorptionPerYear')">
+  CO₂ Absorption
+  {{getSortIcon('Co2AbsorptionPerYear')}}
+</th>
             <th>Status</th>
             <th>Actions</th>
           </tr>
         </thead>
 
         <tbody>
-          <tr *ngFor="let t of trees()">
-            <td>{{ t.TreeName }}</td>
-            <td>{{ t.co2AbsorptionPerYear }}</td>
+<tr *ngFor="let t of trees()">
+              <td>{{ t.TreeName }}</td>
+            <td>{{ t.Co2AbsorptionPerYear }}</td>
             <td>
               <label class="switch">
                 <input type="checkbox" [checked]="t.IsActive" (change)="toggleActive(t)">

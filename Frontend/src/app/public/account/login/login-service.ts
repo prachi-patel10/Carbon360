@@ -17,8 +17,8 @@ export class LoginService {
   }
    // ✅ Add these two:
     forgotPassword(email: string) {
-    return this.http.post(`${this.baseUrl}/forgot-password`, { email })
-      .pipe(timeout(5000));                        // ✅ fail fast after 5 seconds
+    return this.http.post(`${this.baseUrl}/forgot-password`, { email });
+                            // ✅ fail fast after 5 seconds
   }
 
   resetPassword(token: string, newPassword: string) {

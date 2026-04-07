@@ -1,25 +1,19 @@
 <div class="container">
 
-  <!-- ================= FILTER ================= -->
+  <!-- FILTER -->
   <div class="card">
-
-    <!-- ✅ FORM should be main wrapper -->
     <form [formGroup]="form" class="form-grid">
 
-      <!-- Year -->
       <div class="form-group">
         <label>Financial Year</label>
-
         <select formControlName="year" (change)="onYearChange()">
           <option value="" disabled selected hidden>Select Year</option>
           <option *ngFor="let y of years" [value]="y">{{ y }}</option>
         </select>
       </div>
 
-      <!-- Project -->
       <div class="form-group">
         <label>Project Name</label>
-
         <select formControlName="projectId" (change)="onProjectChange()">
           <option value="" disabled selected hidden>Select Project</option>
           <option *ngFor="let p of projects" [value]="p.ProjectId">
@@ -29,14 +23,14 @@
       </div>
 
     </form>
-</div>
-
-  <!-- ================= EMISSION ================= -->
-  <div class="info-box">
-    Total Emission (Last Year): {{ emission }} kg
   </div>
 
-  <!-- ================= TABLE ================= -->
+  <!-- EMISSION -->
+  <div class="info-box">
+    Total Emission (Last Year): {{ emission() }} kg
+  </div>
+
+  <!-- TABLE -->
   <table>
     <thead>
       <tr>
@@ -44,24 +38,30 @@
         <th>CO₂ / Year</th>
         <th>Count</th>
         <th>Total</th>
+        <th>Action</th>
       </tr>
     </thead>
 
     <tbody>
-      <tr *ngFor="let t of treeData">
-        <td>{{ t.TreeName }}</td>
-        <td>{{ t.Co2 }}</td>
-        <td>{{ t.TreeCount }}</td>
-        <td>{{ t.Total }}</td>
+<tr *ngFor="let t of treeData()">
+          <td>{{ t.TreeName }}</td>
+        <td>{{ t.Co2AbsorptionPerYear }}</td>
+        <td>
+          <input #countInput type="number" min="1" placeholder="Enter count">
+        </td>
+        <td>{{ t.Co2Total }}</td>
+        <td>
+         <button (click)="saveEntry(t, +countInput.value)">Save</button>
+        </td>
       </tr>
 
-      <tr *ngIf="treeData.length === 0">
-        <td colspan="4" style="text-align:center;">No data found</td>
+      <tr *ngIf="treeData().length === 0">
+        <td colspan="5" style="text-align:center;">No data found</td>
       </tr>
     </tbody>
   </table>
 
-  <!-- ================= SUMMARY ================= -->
+  <!-- SUMMARY -->
   <div class="summary">
     <p>Total Offset: {{ summary.totalOffset }} kg</p>
     <p>Remaining Emission: {{ summary.remaining }} kg</p>
@@ -74,10 +74,9 @@
     </p>
   </div>
 
-  <!-- ================= BUTTONS ================= -->
+  <!-- BUTTONS -->
   <div class="buttons">
-    <button class="save" (click)="save()">Save Entry</button>
-    <button class="cancel" (click)="reset()">Cancel</button>
+    <button class="cancel" (click)="reset()">Reset</button>
   </div>
 
 </div>

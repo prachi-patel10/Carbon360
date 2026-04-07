@@ -1,45 +1,71 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { ReportService } from './entryformservice';
 import Swal from 'sweetalert2';
+import { ReportService } from './entryformservice';
+
+interface TreeEntry {
+  EntryId: number;
+  ProjectId: number;
+  TreeId: number;
+  TreeName: string;
+  Co2AbsorptionPerYear: number;
+  TreeCount: number;
+  Co2Total: number;
+  IsActive: boolean;
+}
 
 @Component({
-  selector: 'app-report',
+  selector: 'app-entryform',
   standalone: true,
   templateUrl: './entryform.html',
-  styleUrls: ['./entryform.css'], // ✅ reuse same CSS
+  styleUrls: ['./entryform.css'],
   imports: [CommonModule, ReactiveFormsModule]
 })
-export class Entryform implements OnInit {
+export class EntryFormComponent implements OnInit {
 
   form!: FormGroup;
 
   years: number[] = [2025, 2024, 2023];
   projects: any[] = [];
 
-  treeData: any[] = [];
+  treeData = signal<TreeEntry[]>([]);
+  emission = signal(0);
 
-  emission = 0;
-
+  // ✅ SUMMARY FIX
   summary = {
     totalOffset: 0,
     remaining: 0
   };
 
+  // PAGINATION
+  requestedRecords = signal(5);
+  currentPage = signal(1);
+  totalRecords = signal(0);
+  totalPages = signal(1);
+  searchText = signal('');
+  sortColumn = signal('TreeName');
+  sortDirection = signal<'asc' | 'desc'>('asc');
+
   constructor(private fb: FormBuilder, private service: ReportService) {}
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.form = this.fb.group({
       year: [''],
-      projectId: ['']
+      projectId: [''],
+      searchText: ['']
+    });
+
+    this.form.get('searchText')?.valueChanges.subscribe(val => {
+      this.searchText.set(val || '');
+      this.currentPage.set(1);
+      this.loadTreeEntries();
     });
   }
 
-  // ================= YEAR CHANGE =================
+  // ================= YEAR =================
   onYearChange() {
     const year = this.form.value.year;
-
     if (!year) return;
 
     this.service.getProjectsByYear(year).subscribe((res: any) => {
@@ -47,39 +73,92 @@ export class Entryform implements OnInit {
     });
   }
 
-  // ================= PROJECT CHANGE =================
+  // ================= PROJECT =================
   onProjectChange() {
-    const { year, projectId } = this.form.value;
-
-    if (!projectId) return;
-
-    this.service.getReportData(year, projectId).subscribe((res: any) => {
-
-      this.treeData = res.data.trees;
-      this.emission = res.data.emission;
-
-      this.summary.totalOffset = res.data.totalOffset;
-      this.summary.remaining = res.data.remaining;
-    });
+    this.currentPage.set(1);
+    this.loadTreeEntries();
   }
 
-  // ================= SAVE =================
-  save() {
-    const payload = {
-      ...this.form.value
-    };
+  // ================= LOAD =================
+  loadTreeEntries() {
+  const { year, projectId } = this.form.value;
 
-    this.service.saveEntry(payload).subscribe(() => {
-      Swal.fire('Success', 'Entry Saved Successfully', 'success');
-    });
+  if (!year || !projectId) return;
+
+  this.service.getEntries(
+    year,
+    projectId,
+    this.currentPage(),
+    this.requestedRecords(),
+    this.searchText(),
+    this.sortColumn(),
+    this.sortDirection()
+  ).subscribe({
+    next: (res: any) => {
+
+      // ✅ DIRECT RESPONSE (no res.data.data nonsense now)
+      this.treeData.set(res.data || []);
+
+      this.totalRecords.set(res.totalRecords || 0);
+      this.totalPages.set(Math.ceil(this.totalRecords() / this.requestedRecords()));
+
+      // ✅ SUMMARY
+      this.emission.set(res.summary?.previousYearEmission || 0);
+      this.summary.totalOffset = res.summary?.totalOffset || 0;
+      this.summary.remaining = res.summary?.remainingEmission || 0;
+    },
+    error: () => Swal.fire('Error', 'Failed to load data', 'error')
+  });
+}
+
+  // ================= SAVE =================
+ saveEntry(tree: any, count: number) {
+
+  const payload = {
+    ProjectId: tree.projectId,
+    TreeId: tree.treeId,
+    TreeCount: Number(count),
+    IsActive: true,
+    EntryBy: 1
+  };
+
+  this.service.saveEntry(payload).subscribe({
+    next: () => {
+      Swal.fire('Success', 'Entry saved successfully', 'success');
+      this.loadTreeEntries();
+    },
+    error: (err: any) =>
+      Swal.fire('Error', err?.message || 'Save failed', 'error')
+  });
+}
+
+  // ================= PAGINATION =================
+  previousPage() {
+    if (this.currentPage() > 1) {
+      this.currentPage.set(this.currentPage() - 1);
+      this.loadTreeEntries();
+    }
+  }
+
+  nextPage() {
+    if (this.currentPage() < this.totalPages()) {
+      this.currentPage.set(this.currentPage() + 1);
+      this.loadTreeEntries();
+    }
+  }
+
+  onRecordsChange(event: any) {
+    this.requestedRecords.set(+event.target.value);
+    this.currentPage.set(1);
+    this.loadTreeEntries();
   }
 
   // ================= RESET =================
   reset() {
     this.form.reset();
-    this.treeData = [];
+    this.treeData.set([]);
     this.projects = [];
+    this.emission.set(0);
     this.summary = { totalOffset: 0, remaining: 0 };
-    this.emission = 0;
   }
 }

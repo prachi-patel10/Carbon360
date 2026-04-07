@@ -1,27 +1,45 @@
-import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { environment } from '../../../enviorments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ReportService {
 
-  private api = 'https://your-api-url/api/report';
+  private apiUrl = `${environment.apiBaseUrl}/AbsorptionEntry`;
 
   constructor(private http: HttpClient) {}
 
-  // Get projects based on year
+  // ✅ PROJECT DROPDOWN
   getProjectsByYear(year: number) {
-    return this.http.get(`${this.api}/projects?year=${year}`);
+    return this.http.get(`${this.apiUrl}/projects?year=${year}`);
   }
 
-  // Get tree + emission + summary data
-  getReportData(year: number, projectId: string) {
-    return this.http.get(`${this.api}/data?year=${year}&projectId=${projectId}`);
+  // ✅ SEARCH API (IMPORTANT)
+  getEntries(
+    year: number,
+    projectId: number,
+    pageNumber: number,
+    pageSize: number,
+    search: string,
+    sortColumn: string,
+    sortDirection: string
+  ) {
+    let params = new HttpParams()
+      .set('FinancialYear', year)
+      .set('ProjectId', projectId || '')
+      .set('PageNumber', pageNumber)
+      .set('PageSize', pageSize)
+      .set('Search', search || '')
+      .set('SortColumn', sortColumn)
+      .set('SortDirection', sortDirection);
+
+    return this.http.get(`${this.apiUrl}/entries`, { params });
   }
 
-  // Save entry
-  saveEntry(data: any) {
-    return this.http.post(`${this.api}/save`, data);
+  // ✅ INSERT
+  saveEntry(payload: any) {
+    return this.http.post(`${this.apiUrl}/save`, payload);
   }
 }

@@ -1,13 +1,13 @@
 import { TestBed } from '@angular/core/testing';
 
-import { EmissionfactorService } from './emissionfactor-service';
+import { EmissionFactorService } from './emissionfactor-service';
 
 describe('EmissionfactorService', () => {
-  let service: EmissionfactorService;
+  let service: EmissionFactorService;
 
   beforeEach(() => {
     TestBed.configureTestingModule({});
-    service = TestBed.inject(EmissionfactorService);
+    service = TestBed.inject(EmissionFactorService);
   });
 
   it('should be created', () => {

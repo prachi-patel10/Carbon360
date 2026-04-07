@@ -11,7 +11,14 @@ namespace ProjectApp.Repository.Interfaces.OffSet
     {
         //Task<AbsorptionEntrySearchDTO> SearchAsync(AbsorptionEntrySearchDTO request);
 
-
+        Task<object> SearchAsync(
+            int? projectId,
+            string financialYear,
+            int pageNumber,
+            int pageSize,
+            string search,
+            string sortColumn,
+            string sortDirection);
         Task<ServiceResponse<AbsorptionEntryDTO>> InsertAsync(AbsorptionEntryInsertDTO request);
     }
 }

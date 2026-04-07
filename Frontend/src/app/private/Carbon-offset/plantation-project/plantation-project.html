@@ -99,6 +99,20 @@
       </table>
     </div>
 
+     <!-- Pagination -->
+    <div class="pagination-info">
+      <span>Total Records: {{ totalRecords() }}</span>
+      <div class="pagination-controls">
+        <button (click)="previousPage()" [disabled]="currentPage() === 1">Previous</button>
+        <span>Page {{ currentPage() }} of {{ totalPages() }}</span>
+        <button (click)="nextPage()" [disabled]="currentPage() === totalPages()">Next</button>
+        <label for="pageSize">Page Size:</label>
+        <select id="pageSize" [value]="requestedRecords()" (change)="onRecordsChange($event)">
+          <option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</option>
+        </select>
+      </div>
+    </div>
+
   </div>
 
 </div>

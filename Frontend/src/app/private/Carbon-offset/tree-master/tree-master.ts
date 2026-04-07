@@ -1,142 +1,229 @@
-import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { MasterTreeService } from './master-tree-service'; // <-- backend service
-import { ReactiveFormsModule } from '@angular/forms';
+import { Component, OnInit, signal } from '@angular/core';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { MasterTreeService, MasterTree } from './master-tree-service';
 import { CommonModule } from '@angular/common';
+import Swal from 'sweetalert2';
+
 @Component({
   selector: 'app-master-tree',
   templateUrl: './tree-master.html',
   styleUrls: ['./treemaster.css'],
-  imports:[ReactiveFormsModule,CommonModule]
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule]
 })
 export class MasterTreeComponent implements OnInit {
 
   treeForm!: FormGroup;
   searchForm!: FormGroup;
 
-  treeList: any[] = [];
-  filteredList: any[] = [];
+  // ✅ SIGNALS (same as department)
+  trees = signal<MasterTree[]>([]);
+  totalRecords = signal(0);
+  totalPages = signal(1);
+  currentPage = signal(1);
+  requestedRecords = signal(5);
+  onlyActive = signal<boolean>(true);
+  searchText = signal('');
 
-  currentPageNum = 1;
-  pageSizeOptions = [5,10,20,50];
-  requestedSize = 10;
+  sortColumn = 'TreeName';
+  sortDirection: 'asc' | 'desc' = 'asc';
 
-  sortColumn = '';
-  sortDirection: 'asc'|'desc' = 'asc';
+  pageSizeOptions = [5, 10, 20];
 
-  constructor(private fb: FormBuilder, private treeService: MasterTreeService) {}
+  constructor(
+    private fb: FormBuilder,
+    private service: MasterTreeService
+  ) {}
 
   ngOnInit(): void {
+    this.initForms();
+    this.loadTrees();
+  }
+
+  // ================= FORMS =================
+  initForms() {
     this.treeForm = this.fb.group({
-      TreeId: [0],
+      TreeId: [''],
       TreeName: ['', Validators.required],
-      co2AbsorptionPerYear: [0, Validators.required],
-      IsActive: [true]
+      Co2AbsorptionPerYear: [0, Validators.required],
+      IsActive: [true],
     });
 
     this.searchForm = this.fb.group({
-      searchText: ['']
+      searchText: [''],
     });
 
-    this.loadTrees();
-
+    // 🔍 LIVE SEARCH
     this.searchForm.get('searchText')?.valueChanges.subscribe(val => {
-      this.filterTrees();
+      this.searchText.set(val || '');
+      this.currentPage.set(1);
+      this.loadTrees();
     });
   }
 
+  // ================= LOAD =================
   loadTrees() {
-    this.treeService.getTrees().subscribe((res: any[]) => {
-      this.treeList = res;
-      this.filterTrees();
-    });
-  }
+  this.service.getPaged(
+    this.currentPage(),
+    this.requestedRecords(),
+    this.searchText(),
+    this.onlyActive(),
+    this.sortColumn,
+    this.sortDirection
+  ).subscribe({
+    next: (res: any) => {
 
-  filterTrees() {
-    const val = this.searchForm.get('searchText')?.value?.toLowerCase() || '';
-    this.filteredList = this.treeList.filter(t =>
-      t.TreeName.toLowerCase().includes(val)
-    );
-  }
+      console.log('API Response:', res); // DEBUG
 
-  trees() {
-    let list = [...this.filteredList];
-    if(this.sortColumn) {
-      list.sort((a:any,b:any) => {
-        const x = a[this.sortColumn];
-        const y = b[this.sortColumn];
-        if(x < y) return this.sortDirection==='asc'? -1:1;
-        if(x > y) return this.sortDirection==='asc'? 1:-1;
-        return 0;
-      });
-    }
-    return list.slice((this.currentPageNum-1)*this.requestedSize, this.currentPageNum*this.requestedSize);
-  }
+      const mapped = res.data.map((t: any) => ({
+        TreeId: t.treeId,
+        TreeName: t.treeName,
+        Co2AbsorptionPerYear: t.co2AbsorptionPerYear,
+        IsActive: t.isActive
+      }));
 
-  totalRecords() { return this.filteredList.length; }
-  currentPage() { return this.currentPageNum; }
-  totalPages() { return Math.ceil(this.filteredList.length/this.requestedSize); }
-  requestedRecords() { return this.requestedSize; }
-
-  onRecordsChange(e:any) {
-    this.requestedSize = +e.target.value;
-  }
-  previousPage() { if(this.currentPageNum>1) this.currentPageNum--; }
-  nextPage() { if(this.currentPageNum<this.totalPages()) this.currentPageNum++; }
-
-
-sort(column: string) {
-  if (this.sortColumn === column)
-    this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
-  else {
-    this.sortColumn = column;
-    this.sortDirection = 'asc';
-  }
-
-  const sorted = [...this.treeList].sort((a: any, b: any) => {
-    let valA = a[column] ?? '';
-    let valB = b[column] ?? '';
-    if (typeof valA === 'string') valA = valA.toLowerCase();
-    if (typeof valB === 'string') valB = valB.toLowerCase();
-    if (valA < valB) return this.sortDirection === 'asc' ? -1 : 1;
-    if (valA > valB) return this.sortDirection === 'asc' ? 1 : -1;
-    return 0;
+      this.trees.set(mapped);
+      this.totalRecords.set(res.totalRecords);
+      this.totalPages.set(res.totalPages);
+    },
+    error: () => alert('Failed to load trees')
   });
-
-  this.treeList = sorted;
 }
+  // ================= SORT =================
+  sort(column: string) {
+    if (this.sortColumn === column)
+      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+    else {
+      this.sortColumn = column;
+      this.sortDirection = 'asc';
+    }
 
-getSortIcon(column: string) {
+    this.loadTrees(); // ✅ backend sorting
+  }
+
+  getSortIcon(column: string) {
+    if (this.sortColumn !== column) return '↕';
     return this.sortDirection === 'asc' ? '↑' : '↓';
   }
 
+  // ================= PAGINATION =================
+  previousPage() {
+    if (this.currentPage() > 1) {
+      this.currentPage.set(this.currentPage() - 1);
+      this.loadTrees();
+    }
+  }
+
+  nextPage() {
+    if (this.currentPage() < this.totalPages()) {
+      this.currentPage.set(this.currentPage() + 1);
+      this.loadTrees();
+    }
+  }
+
+  onRecordsChange(event: any) {
+    this.requestedRecords.set(+event.target.value);
+    this.currentPage.set(1);
+    this.loadTrees();
+  }
+
+  // ================= ACTIVE FILTER =================
+  onActiveFilterChange(e: any) {
+    this.onlyActive.set(e.target.checked);
+    this.currentPage.set(1);
+    this.loadTrees();
+  }
+
+  // ================= SUBMIT =================
   submitTree() {
-    if(this.treeForm.invalid) return;
+
+    if (this.treeForm.invalid) {
+      this.treeForm.markAllAsTouched();
+      return;
+    }
 
     const data = this.treeForm.value;
-    if(data.TreeId === 0) {
-      this.treeService.addTree(data).subscribe(res=> this.loadTrees());
-    } else {
-      this.treeService.updateTree(data).subscribe(res=> this.loadTrees());
-    }
+    const isCreate = !data.TreeId;
+
+    const obs = isCreate
+      ? this.service.create(data)
+      : this.service.update(data);
+
+   obs.subscribe({
+  next: (res: any) => {
+
+    console.log('API Success Response:', res);
+
+    Swal.fire(
+      'Success',
+      isCreate ? 'Created successfully' : 'Updated successfully',
+      'success'
+    );
+
+    this.loadTrees();
     this.resetForm();
+  },
+  error: (err) => {
+
+    console.error('API Error:', err);
+
+    Swal.fire('Error', 'Operation failed', 'error');
+  }
+});
   }
 
-  resetForm() {
-    this.treeForm.reset({ TreeId: 0, TreeName:'', co2AbsorptionPerYear:0, IsActive:true });
-  }
-
-  edit(tree:any) {
+  edit(tree: MasterTree) {
     this.treeForm.patchValue(tree);
   }
 
-  deleteUI(tree:any) {
-    if(confirm('Are you sure to delete this tree?')) {
-      this.treeService.deleteTree(tree.TreeId).subscribe(res => this.loadTrees());
+  deleteUI(tree: MasterTree) {
+  Swal.fire({
+    title: 'Are you sure?',
+    icon: 'warning',
+    showCancelButton: true
+  }).then(res => {
+
+    if (res.isConfirmed) {
+
+      this.service.delete(tree.TreeId).subscribe({
+        next: () => {
+
+          // ✅ REMOVE FROM SIGNAL (INSTANT UI UPDATE)
+          this.trees.update(list =>
+            list.filter(t => t.TreeId !== tree.TreeId)
+          );
+
+          // ✅ OPTIONAL (refresh pagination data)
+          this.totalRecords.update(v => v - 1);
+
+          Swal.fire('Deleted!', 'Tree deleted successfully', 'success');
+        },
+        error: () => {
+          Swal.fire('Error', 'Delete failed', 'error');
+        }
+      });
+      this.trees.update(list => {
+  const updated = list.filter(t => t.TreeId !== tree.TreeId);
+  console.log('After delete:', updated);
+  return updated;
+});
+
     }
+
+  });
+}
+  toggleActive(tree: MasterTree) {
+    this.service.toggleActive(tree.TreeId).subscribe(() => {
+      this.loadTrees();
+    });
   }
 
-  onlyActive() { return false; } // implement if needed
-  onActiveFilterChange(e:any) {} // implement if needed
-  toggleActive(tree:any) {} // implement if needed
+  resetForm() {
+    this.treeForm.reset({
+      TreeId: '',
+      TreeName: '',
+      Co2AbsorptionPerYear: 0,
+      IsActive: true
+    });
+  }
 }
