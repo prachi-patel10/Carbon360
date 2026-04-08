@@ -12,6 +12,7 @@ using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static Org.BouncyCastle.Math.EC.ECCurve;
 
 namespace ProjectApp.Repository.Services.Masters.Tree
 {
@@ -208,6 +209,47 @@ namespace ProjectApp.Repository.Services.Masters.Tree
             return true;
         }
 
+        public async Task<TreeDetailsDTO> GetTreeDetailsAsync(TreeRequestDTO request)
+        {
+            TreeDetailsDTO result = null;
+
+            using var conn = _context.Database.GetDbConnection();
+            await conn.OpenAsync();
+
+            using var cmd = conn.CreateCommand();
+            cmd.CommandText = "USP_CB_GetTreeDetailsSummary";
+            cmd.CommandType = CommandType.StoredProcedure;
+
+            // ✅ SQL PARAMETERS (NEW SqlParameter)
+            var treeIdParam = cmd.CreateParameter();
+            treeIdParam.ParameterName = "@TreeId";
+            treeIdParam.DbType = DbType.Int32;
+            treeIdParam.Value = request.TreeId;
+            cmd.Parameters.Add(treeIdParam);
+
+            var treeCountParam = cmd.CreateParameter();
+            treeCountParam.ParameterName = "@TreeCount";
+            treeCountParam.DbType = DbType.Int32;
+            treeCountParam.Value = request.TreeCount;
+            cmd.Parameters.Add(treeCountParam);
+
+            using var reader = await cmd.ExecuteReaderAsync();
+
+            if (await reader.ReadAsync())
+            {
+                result = new TreeDetailsDTO
+                {
+                    TreeId = Convert.ToInt32(reader["TreeId"]),
+                    TreeName = reader["TreeName"].ToString(),
+                    Co2PerTree = Convert.ToDecimal(reader["Co2PerTree"]),
+                    TreeCount = Convert.ToInt32(reader["TreeCount"]),
+                    TotalCo2 = Convert.ToDecimal(reader["TotalCo2"])
+                };
+            }
+
+            return result;
+        }
     }
+    
 
 }

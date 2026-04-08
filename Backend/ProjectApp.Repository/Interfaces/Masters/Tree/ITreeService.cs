@@ -11,6 +11,7 @@ namespace ProjectApp.Repository.Interfaces.Masters.Tree
     public interface ITreeService
     {
         Task<List<TreeResponseDTO>> GetAllTreesAsync();
+        Task<TreeDetailsDTO> GetTreeDetailsAsync(TreeRequestDTO request);
 
         Task<TreeResponseDTO> GetTreeByIdAsync(string encryptedId);
 
