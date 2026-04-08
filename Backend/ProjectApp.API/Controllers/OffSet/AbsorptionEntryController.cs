@@ -69,4 +69,12 @@ public class OffsetEntryController : ControllerBase
         await _service.Delete(id);
         return Ok(new { Message = "Deleted Successfully" });
     }
+
+    [HttpPost("save-draft")]
+    public async Task<IActionResult> SaveDraft([FromBody] OffsetEntrySaveDraftRequestDTO request)
+    {
+        var result = await _service.SaveDraftAsync(request);
+
+        return Ok(result);
+    }
 }

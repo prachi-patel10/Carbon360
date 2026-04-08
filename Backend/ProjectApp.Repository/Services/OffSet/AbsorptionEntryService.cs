@@ -192,5 +192,62 @@ namespace ProjectApp.Repository.Services.OffSet
                 summary
             };
         }
+
+        public async Task<OffsetEntrySaveDraftResponseDTO> SaveDraftAsync(OffsetEntrySaveDraftRequestDTO request)
+        {
+            var result = new OffsetEntrySaveDraftResponseDTO();
+
+            using var conn = _context.Database.GetDbConnection();
+            await conn.OpenAsync();
+
+            using var cmd = conn.CreateCommand();
+            cmd.CommandText = "USP_CB_OffsetEntrySaveDraft";
+            cmd.CommandType = CommandType.StoredProcedure;
+
+            // ✅ ProjectId
+            var projectParam = cmd.CreateParameter();
+            projectParam.ParameterName = "@ProjectId";
+            projectParam.DbType = DbType.Int32;
+            projectParam.Value = request.ProjectId;
+            cmd.Parameters.Add(projectParam);
+
+            // ✅ EntryBy
+            var entryByParam = cmd.CreateParameter();
+            entryByParam.ParameterName = "@EntryBy";
+            entryByParam.DbType = DbType.String;
+            entryByParam.Value = request.EntryBy;
+            cmd.Parameters.Add(entryByParam);
+
+            // 🔥 CREATE DATATABLE (FOR TABLE TYPE)
+            var table = new DataTable();
+            table.Columns.Add("TreeId", typeof(int));
+            table.Columns.Add("TreeCount", typeof(int));
+
+            foreach (var item in request.Trees)
+            {
+                table.Rows.Add(item.TreeId, item.TreeCount);
+            }
+
+            // 🔥 TABLE TYPE PARAMETER
+            var treeParam = new SqlParameter("@TreeData", SqlDbType.Structured)
+            {
+                TypeName = "dbo.TreeTypes",   // ⚠️ MUST MATCH SQL TYPE NAME
+                Value = table
+            };
+
+            cmd.Parameters.Add(treeParam);
+
+            // 🔥 EXECUTE
+            using var reader = await cmd.ExecuteReaderAsync();
+
+            if (await reader.ReadAsync())
+            {
+                result.OffsetEntryId = Convert.ToInt32(reader["OffsetEntryId"]);
+                result.TotalOffset = Convert.ToDecimal(reader["TotalOffset"]);
+            }
+
+            return result;
+        }
+    
     }
 }
