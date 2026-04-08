@@ -15,7 +15,7 @@ namespace ProjectApp.Repository.Interfaces.Masters.PlantationProject
 
         Task<PlantationProjectDTO> GetByIdAsync(string projectId);
         Task<List<PlantationProjectDTO>> GetAllAsync();
-        Task<List<ProjectByYearDTO>> GetProjectsByYear(int year);
+        Task<List<ProjectByYearDTO>> GetProjectsByYearAsync(ProjectByYearRequestDTO request);
 
         Task<(int TotalCount, List<PlantationProjectDTO> Data)> SearchAsync(PlantationProjectSearchDTO dto);
     }

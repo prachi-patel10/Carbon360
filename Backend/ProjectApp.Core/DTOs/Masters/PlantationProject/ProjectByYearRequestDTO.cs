@@ -6,10 +6,8 @@ using System.Threading.Tasks;
 
 namespace ProjectApp.Core.DTOs.Masters.PlantationProject
 {
-    public class ProjectByYearDTO
+    public class ProjectByYearRequestDTO
     {
-        public int ProjectId { get; set; }
-        public string ProjectName { get; set; }
-        public decimal PreviousYearEmission { get; set; }
+        public string FinancialYear { get; set; }
     }
 }
