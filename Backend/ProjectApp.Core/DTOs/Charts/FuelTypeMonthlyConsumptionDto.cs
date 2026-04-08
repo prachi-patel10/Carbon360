@@ -9,8 +9,9 @@ namespace ProjectApp.Core.DTOs.Charts
     public class FuelTypeMonthlyConsumptionDto
     {
         public string FuelType { get; set; }
-        public string Source { get; set; }  // ✅ "Vehicle" or "Generator"
+        public string Source { get; set; }  
         public int MonthNumber { get; set; }
+        public int YearNumber { get; set; }
         public string MonthName { get; set; }
         public decimal TotalFuelConsumed { get; set; }
     }

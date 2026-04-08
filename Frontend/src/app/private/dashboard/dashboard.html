@@ -1,27 +1,21 @@
 <!-- ================= TOPBAR ================= -->
 <header class="topbar">
-    <div class="topbar-left">
- 
-  <div class="brand" (click)="goToDashboard()" style="cursor: pointer">
-    <h1>CARBON<span>360</span></h1>
-    <p>Track • Analyze • Improve</p>
+  <div class="topbar-left">
+    <div class="brand" (click)="goToDashboard()" style="cursor: pointer">
+      <h1>CARBON<span>360</span></h1>
+      <p>Track • Analyze • Improve</p>
+    </div>
+    <button class="menu-btn-top morph" (click)="toggleSidebar()" [class.active]="sidebarOpen">
+      <svg viewBox="0 0 24 24" width="22" height="22">
+        <path class="line top" d="M4 6H20"></path>
+        <path class="line middle" d="M4 12H20"></path>
+        <path class="line bottom" d="M4 18H20"></path>
+        <path class="menu-arrow" d="M14 6 L8 12 L14 18"></path>
+      </svg>
+    </button>
   </div>
-  <!-- MENU BUTTON -->
-<button class="menu-btn-top morph" (click)="toggleSidebar()" [class.active]="sidebarOpen">
-  <svg viewBox="0 0 24 24" width="22" height="22">
-    
-    <!-- Hamburger -->
-    <path class="line top" d="M4 6H20"></path>
-    <path class="line middle" d="M4 12H20"></path>
-    <path class="line bottom" d="M4 18H20"></path>
 
-    <!-- Arrow -->
-    <path class="menu-arrow" d="M14 6 L8 12 L14 18"></path>
-
-  </svg>
-</button>
-  </div>
-    <div class="page-title">{{ pageTitle }}</div>
+  <div class="page-title">{{ pageTitle }}</div>
 
   <div class="right">
     <div class="admin-wrapper">
@@ -29,17 +23,14 @@
 
       @if (showProfileCard()) {
       <div class="admin-dropdown" (click)="$event.stopPropagation()">
-        <!-- //username -->
-          <div class="user-name-block">
-    <div class="user-avatar-large">{{ loggedInUser.charAt(0) }}</div>
-    <div class="user-info">
-      <span class="user-fullname">{{ firstName }}</span>
-      <span class="user-username">{{ loggedInUser }}</span>
-    </div>
-  </div>
-
-  <div class="divider"></div>
-  <!-- username -->
+        <div class="user-name-block">
+          <div class="user-avatar-large">{{ loggedInUser.charAt(0) }}</div>
+          <div class="user-info">
+            <span class="user-fullname">{{ firstName }}</span>
+            <span class="user-username">{{ loggedInUser }}</span>
+          </div>
+        </div>
+        <div class="divider"></div>
         @if (roles && roles.length === 1) {
         <div class="user-role-block">
           <span class="role-label">Role</span>
@@ -77,8 +68,8 @@
 
   <!-- ================= SIDEBAR ================= -->
   <aside class="sidebar" [class.closed]="!sidebarOpen">
-
     <ul class="menu">
+
       <!-- ============ DASHBOARD HOME ============ -->
       <li class="menu-parent">
         <div class="menu-item-wrap">
@@ -125,6 +116,8 @@
 
         @if (isConfigMenuOpen('configuration')) {
         <ul class="submenu">
+
+          <!-- Administration -->
           <li class="menu-parent">
             <div class="menu-title nested-title" (click)="toggleSubMenu('admin')">
               <svg class="menu-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -179,6 +172,8 @@
             </ul>
             }
           </li>
+
+          <!-- Vehicle -->
           <li class="menu-parent">
             <div class="menu-title nested-title" (click)="toggleSubMenu('vehicle')">
               <svg class="menu-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -227,6 +222,8 @@
             </ul>
             }
           </li>
+
+          <!-- Generator -->
           <li class="menu-parent">
             <div class="menu-title nested-title" (click)="toggleSubMenu('generator')">
               <svg class="menu-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -259,6 +256,7 @@
             </ul>
             }
           </li>
+
         </ul>
         }
       </li>
@@ -269,9 +267,8 @@
       <li class="menu-parent">
         <span class="section-label">Operations</span>
         <div class="menu-item-wrap">
-        <div class="menu-title"
-     (click)="handleSidebarNavigation('fleet','searchVehicle')"
-     [class.icon-active]="!sidebarOpen && isAnyFleetActive()">
+          <div class="menu-title" (click)="handleSidebarNavigation('fleet','searchVehicle')"
+            [class.icon-active]="!sidebarOpen && isAnyFleetActive()">
             <svg class="menu-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
               stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <rect x="1" y="3" width="15" height="13" rx="2" />
@@ -332,9 +329,8 @@
       @if (isAdmin() || isReporter() || isCorporate()) {
       <li class="menu-parent">
         <div class="menu-item-wrap">
-          <div class="menu-title"
-     (click)="handleSidebarNavigation('power','searchGenerator')"
-     [class.icon-active]="!sidebarOpen && isAnyPowerActive()">
+          <div class="menu-title" (click)="handleSidebarNavigation('power','searchGenerator')"
+            [class.icon-active]="!sidebarOpen && isAnyPowerActive()">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
               stroke-linecap="round" stroke-linejoin="round">
               <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
@@ -387,87 +383,62 @@
         }
       </li>
 
-<!-- ============ CARBON OFFSET MODULE ============ -->
-@if (isAdmin() || isReporter() || isCorporate()) {
-<li class="menu-parent">
-  <span class="section-label">Carbon Offset</span>
-
-  <div class="menu-item-wrap">
-    <div class="menu-title"
-         (click)="toggleMainMenu('carbonOffset')"
-         [class.icon-active]="!sidebarOpen && isAnyCarbonActive()">
-
-      <!-- ICON -->
-      <svg class="menu-icon" width="16" height="16" viewBox="0 0 24 24"
-           fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M12 2C8 6 6 9 6 12a6 6 0 0 0 12 0c0-3-2-6-6-10z"/>
-      </svg>
-
-      <span>Carbon Offset</span>
-
-      <!-- ARROW -->
-       <svg class="arrow" [class.rotate]="isMainMenuOpen('carbonOffset')" width="12" height="12" viewBox="0 0 24 24"
-              fill="none" stroke="currentColor" stroke-width="2.5">
+      <!-- ============ CARBON OFFSET MODULE ============ -->
+      @if (isAdmin() || isReporter() || isCorporate()) {
+      <li class="menu-parent">
+        <span class="section-label">Carbon Offset</span>
+        <div class="menu-item-wrap">
+          <div class="menu-title" (click)="toggleMainMenu('carbonOffset')"
+            [class.icon-active]="!sidebarOpen && isAnyCarbonActive()">
+            <svg class="menu-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2">
+              <path d="M12 2C8 6 6 9 6 12a6 6 0 0 0 12 0c0-3-2-6-6-10z" />
+            </svg>
+            <span>Carbon Offset</span>
+            <svg class="arrow" [class.rotate]="isMainMenuOpen('carbonOffset')" width="12" height="12"
+              viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
               <polyline points="6 9 12 15 18 9" />
             </svg>
-    </div>
+          </div>
+          <div class="sidebar-tooltip">
+            <span class="tooltip-parent" *ngIf="isAnyCarbonActive()">Carbon Offset</span>
+            <span class="tooltip-title">{{ isAnyCarbonActive() ? getActiveCarbonLabel() : 'Carbon Offset' }}</span>
+          </div>
+        </div>
 
-    <!-- TOOLTIP -->
-    <div class="sidebar-tooltip">
-      <span class="tooltip-parent" *ngIf="isAnyCarbonActive()">Carbon Offset</span>
-      <span class="tooltip-title">
-        {{ isAnyCarbonActive() ? getActiveCarbonLabel() : 'Carbon Offset' }}
-      </span>
-    </div>
-  </div>
-
-  <!-- SUBMENU -->
-  @if (isMainMenuOpen('carbonOffset')) {
-  <ul class="submenu">
-
-    <!-- NGO MASTER -->
-   <li (click)="goTo('Treemaster')" [class.active-link]="isActive('/Treemaster')">
-  <svg class="item-icon" width="13" height="13" viewBox="0 0 24 24"
-       fill="none" stroke="currentColor" stroke-width="2"
-       stroke-linecap="round" stroke-linejoin="round">
-    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-    <circle cx="12" cy="7" r="4"/>
-  </svg>
-  <span>Tree master</span>
-</li>
-
-    <!-- PLANTATION PROJECT -->
-   <li (click)="goTo('Plantationproject')" 
-    [class.active-link]="isActive('/Plantationproject')">
-  <svg class="item-icon" width="13" height="13" viewBox="0 0 24 24"
-       fill="none" stroke="currentColor" stroke-width="2"
-       stroke-linecap="round" stroke-linejoin="round">
-    <path d="M12 2C8 6 6 9 6 12a6 6 0 0 0 12 0c0-3-2-6-6-10z"/>
-  </svg>
-  <span>Plantation Project</span>
-</li>
-
-    <!-- REPORT -->
- <li (click)="goTo('Ngoentryform')" 
-    [class.active-link]="isActive('/Ngoentryform')">
-  <svg class="item-icon" width="13" height="13" viewBox="0 0 24 24"
-       fill="none" stroke="currentColor" stroke-width="2"
-       stroke-linecap="round" stroke-linejoin="round">
-    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12"/>
-    <polyline points="14 2 14 8 20 8"/>
-  </svg>
-  <span>Report</span>
-</li>
-  </ul>
-  }
-
-</li>
-}
+        @if (isMainMenuOpen('carbonOffset')) {
+        <ul class="submenu">
+          <li (click)="goTo('Treemaster')" [class.active-link]="isActive('/Treemaster')">
+            <svg class="item-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+              <circle cx="12" cy="7" r="4" />
+            </svg>
+            <span>Tree master</span>
+          </li>
+          <li (click)="goTo('Plantationproject')" [class.active-link]="isActive('/Plantationproject')">
+            <svg class="item-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2C8 6 6 9 6 12a6 6 0 0 0 12 0c0-3-2-6-6-10z" />
+            </svg>
+            <span>Plantation Project</span>
+          </li>
+          <li (click)="goTo('Ngoentryform')" [class.active-link]="isActive('/Ngoentryform')">
+            <svg class="item-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12" />
+              <polyline points="14 2 14 8 20 8" />
+            </svg>
+            <span>Report</span>
+          </li>
+        </ul>
+        }
+      </li>
+      }
 
       }
     </ul>
   </aside>
-
 
   <!-- ================= MAIN SECTION ================= -->
   <div class="main-section">
@@ -486,63 +457,35 @@
             </div>
             <div>
               <h2 class="banner-title">Emission &amp; Consumption Overview</h2>
-              <p class="banner-sub">Viewing data for <strong>{{ selectedYear() }}</strong></p>
+              <p class="banner-sub">
+                @if (startDate() && endDate()) {
+                {{ startDate() | date:'dd MMM yyyy' }} &mdash; {{ endDate() | date:'dd MMM yyyy' }}
+                } @else {
+                Year to date
+                }
+              </p>
             </div>
           </div>
+
           <div class="banner-right">
-           <a class="gov-sync-btn">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <path d="M4 4v6h6"></path>
-      <path d="M20 20v-6h-6"></path>
-      <path d="M5 19a9 9 0 0 0 14-7"></path>
-      <path d="M19 5a9 9 0 0 0-14 7"></path>
-    </svg>
-    <span>Sync with Government</span>
-  </a>
-  
-          <div class="year-picker-wrap">
-            <button class="year-picker-btn" (click)="toggleYearPicker($event)">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                <line x1="16" y1="2" x2="16" y2="6" />
-                <line x1="8" y1="2" x2="8" y2="6" />
-                <line x1="3" y1="10" x2="21" y2="10" />
+            <!-- ── Date Range Picker ── -->
+            <app-date-range-picker-component pickerId="dashboardRange"
+              [startDate]="startDate() ? startDate()!.toISOString() : null"
+              [endDate]="endDate() ? endDate()!.toISOString() : null" (rangeSelected)="onDateRangeSelected($event)">
+            </app-date-range-picker-component>
+
+            <a class="gov-sync-btn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M4 4v6h6"></path>
+                <path d="M20 20v-6h-6"></path>
+                <path d="M5 19a9 9 0 0 0 14-7"></path>
+                <path d="M19 5a9 9 0 0 0-14 7"></path>
               </svg>
-              <span>{{ selectedYear() }}</span>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-                [class.rotate]="showYearPicker()">
-                <polyline points="6 9 12 15 18 9" />
-              </svg>
-            </button>
-            @if (showYearPicker()) {
-            <div class="year-dropdown" (click)="$event.stopPropagation()">
-              <div class="year-dropdown-header">
-                <button class="yd-nav" (click)="shiftDecade(-1)">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                    <polyline points="15 18 9 12 15 6" />
-                  </svg>
-                </button>
-                <span class="yd-range">{{ decadeStart() }} — {{ decadeStart() + 11 }}</span>
-                <button class="yd-nav" (click)="shiftDecade(1)" [disabled]="decadeStart() + 12 > currentYear()">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                    <polyline points="9 18 15 12 9 6" />
-                  </svg>
-                </button>
-              </div>
-              <div class="year-grid">
-                @for (y of decadeYears(); track y) {
-                <button class="year-cell" [class.active]="y === selectedYear()" [class.future]="y > currentYear()"
-                  [disabled]="y > currentYear()" (click)="selectYear(y)">
-                  {{ y }}
-                </button>
-                }
-              </div>
-            </div>
-            }
-          </div> 
+              <span>Sync with Government</span>
+            </a>
           </div>
         </div>
+        <!-- ── Banner ends ── -->
 
         <!-- ── Module Tab Bar ── -->
         <div class="module-tab-bar">
@@ -565,10 +508,8 @@
           </button>
         </div>
 
-        <!-- KPI ROW 1 — Emissions -->
+        <!-- ── KPI ROW 1 — Emissions ── -->
         <div class="kpi-row">
-
-          <!-- CO₂e -->
           <div class="kpi-card kpi-co2e">
             <div class="kpi-top">
               <span class="kpi-label">CO₂e</span>
@@ -583,7 +524,6 @@
             <span class="kpi-unit">kg CO₂ equivalent</span>
           </div>
 
-          <!-- CO₂ -->
           <div class="kpi-card kpi-co2">
             <div class="kpi-top">
               <span class="kpi-label">CO₂</span>
@@ -600,7 +540,6 @@
             <span class="kpi-unit">kg carbon dioxide</span>
           </div>
 
-          <!-- NO₂ -->
           <div class="kpi-card kpi-no2">
             <div class="kpi-top">
               <span class="kpi-label">NO₂</span>
@@ -618,7 +557,6 @@
             <span class="kpi-unit">kg nitrogen dioxide</span>
           </div>
 
-          <!-- CH₄ -->
           <div class="kpi-card kpi-ch4">
             <div class="kpi-top">
               <span class="kpi-label">CH₄</span>
@@ -632,13 +570,10 @@
             <div class="kpi-value">{{ formatNum(activeTabCH4()) }}</div>
             <span class="kpi-unit">kg methane</span>
           </div>
-
         </div>
 
-        <!-- KPI ROW 2 — Operational (always 2 columns, each card fills full half-width) -->
+        <!-- ── KPI ROW 2 — Operational ── -->
         <div class="kpi-row kpi-row-2">
-
-          <!-- Fuel — always visible -->
           <div class="kpi-card kpi-fuel">
             <div class="kpi-top">
               <span class="kpi-label">Fuel consumed</span>
@@ -654,7 +589,6 @@
             <span class="kpi-unit">litres</span>
           </div>
 
-          <!-- Distance — vehicle tab -->
           <div class="kpi-card kpi-dist" [class.hidden]="activeTab() === 'generator'">
             <div class="kpi-top">
               <span class="kpi-label">Distance</span>
@@ -670,7 +604,6 @@
             <span class="kpi-unit">kilometres</span>
           </div>
 
-          <!-- Power output — generator tab -->
           <div class="kpi-card kpi-power" [class.hidden]="activeTab() === 'vehicle'">
             <div class="kpi-top">
               <span class="kpi-label">Power output</span>
@@ -684,20 +617,25 @@
             <div class="kpi-value">{{ formatNum(activeTabPower()) }}</div>
             <span class="kpi-unit">kilowatt-hours</span>
           </div>
-
         </div>
-        <!-- ── Chart Sections ── -->
+
+        <!-- ── Charts ── -->
         <div [class.hidden]="activeTab() !== 'vehicle'">
-          <app-vehicle-charts [year]="selectedYear()" (gridRowClick)="onVehicleGridClick($event)"></app-vehicle-charts>
+          <app-vehicle-charts [year]="selectedYear()" [fromDate]="toDateStr(startDate())"
+            [toDate]="toDateStr(endDate())" (gridRowClick)="onVehicleGridClick($event)">
+          </app-vehicle-charts>
         </div>
         <div [class.hidden]="activeTab() !== 'generator'">
-          <app-generator-charts [year]="selectedYear()"
-            (gridRowClick)="onGeneratorGridClick($event)"></app-generator-charts>
+          <app-generator-charts [year]="selectedYear()" [fromDate]="toDateStr(startDate())"
+            [toDate]="toDateStr(endDate())" (gridRowClick)="onGeneratorGridClick($event)">
+          </app-generator-charts>
         </div>
 
       </div>
+      <!-- ── dash-chart-section ends ── -->
 
       <router-outlet></router-outlet>
     </div>
   </div>
+
 </div>

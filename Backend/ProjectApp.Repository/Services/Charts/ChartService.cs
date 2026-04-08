@@ -76,50 +76,32 @@ namespace ProjectApp.Repository.Services.Charts
         /// into the standard 4-dataset line chart response (Total, CO2, NO2, CH4).
         /// Months with no data default to 0.
         /// </summary>
-        private MonthlyEmissionChartResponseDto BuildEmissionChart(List<MonthlyEmissionRawDto> rawRows)
+        private MonthlyEmissionChartResponseDto BuildEmissionChart(
+    List<MonthlyEmissionRawDto> rawRows, DateTime from, DateTime to)
         {
-            // Helper: build 12-element array filling 0 for missing months
+            var slots = BuildMonthSlots(from, to);
+
             List<decimal> Monthly(Func<MonthlyEmissionRawDto, decimal> selector) =>
-                Enumerable.Range(1, 12).Select(m =>
+                slots.Select(s =>
                 {
-                    var row = rawRows.FirstOrDefault(r => r.MonthNumber == m);
+                    var row = rawRows.FirstOrDefault(r => r.YearNumber == s.Year && r.MonthNumber == s.Month);
                     return row != null ? selector(row) : 0m;
                 }).ToList();
 
             return new MonthlyEmissionChartResponseDto
             {
-                Labels = _monthNames.ToList(),
+                Labels = slots.Select(s => s.Label).ToList(),
                 Datasets = new List<EmissionLineDataset>
-                {
-                    new EmissionLineDataset
-                    {
-                        Label        = "Total CO2e (kg)",
-                        EmissionType = "Total",
-                        Color        = _emissionColors["Total"],
-                        Data         = Monthly(r => r.TotalEmission)
-                    },
-                    new EmissionLineDataset
-                    {
-                        Label        = "CO2 (kg)",
-                        EmissionType = "CO2",
-                        Color        = _emissionColors["CO2"],
-                        Data         = Monthly(r => r.TotalCO2)
-                    },
-                    new EmissionLineDataset
-                    {
-                        Label        = "NO2 (kg)",
-                        EmissionType = "NO2",
-                        Color        = _emissionColors["NO2"],
-                        Data         = Monthly(r => r.TotalNO2)
-                    },
-                    new EmissionLineDataset
-                    {
-                        Label        = "CH4 (kg)",
-                        EmissionType = "CH4",
-                        Color        = _emissionColors["CH4"],
-                        Data         = Monthly(r => r.TotalCH4)
-                    },
-                }
+        {
+            new() { Label="Total CO2e (kg)", EmissionType="Total",
+                    Color=_emissionColors["Total"], Data=Monthly(r=>r.TotalEmission) },
+            new() { Label="CO2 (kg)",        EmissionType="CO2",
+                    Color=_emissionColors["CO2"],   Data=Monthly(r=>r.TotalCO2) },
+            new() { Label="NO2 (kg)",        EmissionType="NO2",
+                    Color=_emissionColors["NO2"],   Data=Monthly(r=>r.TotalNO2) },
+            new() { Label="CH4 (kg)",        EmissionType="CH4",
+                    Color=_emissionColors["CH4"],   Data=Monthly(r=>r.TotalCH4) },
+        }
             };
         }
 
@@ -144,10 +126,12 @@ namespace ProjectApp.Repository.Services.Charts
         /// Returns fuel consumption per fuel type per month for vehicles.
         /// Columns: FuelType, Source='Vehicle', MonthNumber, MonthName, TotalFuelConsumed
         /// </summary>
-        public async Task<List<FuelTypeMonthlyConsumptionDto>> GetVehicleFuelMonthlyConsumptionAsync(int year)
-            => await _context.Set<FuelTypeMonthlyConsumptionDto>()
-                .FromSqlInterpolated($"EXEC USP_CB_VehicleFuelMonthlyConsumption {year}")
-                .ToListAsync();
+        public async Task<List<FuelTypeMonthlyConsumptionDto>> GetVehicleFuelMonthlyConsumptionAsync(
+    DateTime fromDate, DateTime toDate)
+    => await _context.Set<FuelTypeMonthlyConsumptionDto>()
+        .FromSqlInterpolated(
+            $"EXEC USP_CB_VehicleFuelMonthlyConsumption {fromDate:yyyy-MM-dd}, {toDate:yyyy-MM-dd}")
+        .ToListAsync();
 
         /// <summary>
         /// GET /api/Chart/GeneratorMonthly
@@ -155,10 +139,12 @@ namespace ProjectApp.Repository.Services.Charts
         /// Returns fuel consumption per fuel type per month for generators.
         /// Columns: FuelType, Source='Generator', MonthNumber, MonthName, TotalFuelConsumed
         /// </summary>
-        public async Task<List<FuelTypeMonthlyConsumptionDto>> GetGeneratorFuelMonthlyConsumptionAsync(int year)
-            => await _context.Set<FuelTypeMonthlyConsumptionDto>()
-                .FromSqlInterpolated($"EXEC USP_CB_GeneratorFuelMonthlyConsumption {year}")
-                .ToListAsync();
+        public async Task<List<FuelTypeMonthlyConsumptionDto>> GetGeneratorFuelMonthlyConsumptionAsync(
+    DateTime fromDate, DateTime toDate)
+    => await _context.Set<FuelTypeMonthlyConsumptionDto>()
+        .FromSqlInterpolated(
+            $"EXEC USP_CB_GeneratorFuelMonthlyConsumption {fromDate:yyyy-MM-dd}, {toDate:yyyy-MM-dd}")
+        .ToListAsync();
 
         /// <summary>
         /// GET /api/Chart/CombinedFuelChart
@@ -166,23 +152,24 @@ namespace ProjectApp.Repository.Services.Charts
         /// Combines vehicle + generator fuel consumption into a stacked bar chart.
         /// Solid color = Vehicle, 50% transparent (hex + "80") = Generator.
         /// </summary>
-        public async Task<FuelCombinedChartResponseDto> GetCombinedFuelChartAsync(int year)
+        public async Task<FuelCombinedChartResponseDto> GetCombinedFuelChartAsync(
+    DateTime fromDate, DateTime toDate)
         {
             var allRows = await _context.Set<FuelTypeMonthlyConsumptionDto>()
-                .FromSqlInterpolated($"EXEC USP_CB_CombinedFuelMonthlyConsumption {year}")
+                .FromSqlInterpolated(
+                    $"EXEC USP_CB_CombinedFuelMonthlyConsumption {fromDate:yyyy-MM-dd}, {toDate:yyyy-MM-dd}")
                 .ToListAsync();
 
+            var slots = BuildMonthSlots(fromDate, toDate);
             var groups = allRows
                 .Select(r => new { r.FuelType, r.Source })
                 .Distinct()
-                .OrderBy(g => g.FuelType)
-                .ThenBy(g => g.Source)
+                .OrderBy(g => g.FuelType).ThenBy(g => g.Source)
                 .ToList();
 
             var datasets = groups.Select(g =>
             {
-                var baseColor = _fuelColors.ContainsKey(g.FuelType) ? _fuelColors[g.FuelType] : _defaultColor;
-                // Vehicle = solid color, Generator = semi-transparent (append "80" = 50% alpha)
+                var baseColor = _fuelColors.GetValueOrDefault(g.FuelType, _defaultColor);
                 var color = g.Source == "Vehicle" ? baseColor : baseColor + "80";
 
                 return new FuelStackDataset
@@ -191,19 +178,19 @@ namespace ProjectApp.Repository.Services.Charts
                     FuelType = g.FuelType,
                     Source = g.Source,
                     Color = color,
-                    Data = Enumerable.Range(1, 12).Select(m =>
+                    Data = slots.Select(s =>
                         allRows.FirstOrDefault(r =>
                             r.FuelType == g.FuelType &&
                             r.Source == g.Source &&
-                            r.MonthNumber == m)
-                        ?.TotalFuelConsumed ?? 0m
-                    ).ToList()
+                            r.YearNumber == s.Year &&
+                            r.MonthNumber == s.Month)
+                        ?.TotalFuelConsumed ?? 0m).ToList()
                 };
             }).ToList();
 
             return new FuelCombinedChartResponseDto
             {
-                Labels = _monthNames.ToList(),
+                Labels = slots.Select(s => s.Label).ToList(),
                 Datasets = datasets
             };
         }
@@ -218,12 +205,14 @@ namespace ProjectApp.Repository.Services.Charts
         /// 4 line datasets (TotalCO2e, CO2, NO2, CH4) per month for vehicles.
         /// Columns: MonthNumber, TotalCO2, TotalNO2, TotalCH4, TotalEmission
         /// </summary>
-        public async Task<MonthlyEmissionChartResponseDto> GetVehicleEmissionChartAsync(int year)
+        public async Task<MonthlyEmissionChartResponseDto> GetVehicleEmissionChartAsync(
+    DateTime fromDate, DateTime toDate)
         {
             var rows = await _context.Set<MonthlyEmissionRawDto>()
-                .FromSqlInterpolated($"EXEC USP_CB_VehicleEmissionMonthlyChart {year}")
+                .FromSqlInterpolated(
+                    $"EXEC USP_CB_VehicleEmissionMonthlyChart {fromDate:yyyy-MM-dd}, {toDate:yyyy-MM-dd}")
                 .ToListAsync();
-            return BuildEmissionChart(rows);
+            return BuildEmissionChart(rows, fromDate, toDate);
         }
 
         /// <summary>
@@ -232,12 +221,14 @@ namespace ProjectApp.Repository.Services.Charts
         /// 4 line datasets (TotalCO2e, CO2, NO2, CH4) per month for generators.
         /// Columns: MonthNumber, TotalCO2, TotalNO2, TotalCH4, TotalEmission
         /// </summary>
-        public async Task<MonthlyEmissionChartResponseDto> GetGeneratorEmissionChartAsync(int year)
+        public async Task<MonthlyEmissionChartResponseDto> GetGeneratorEmissionChartAsync(
+    DateTime fromDate, DateTime toDate)
         {
             var rows = await _context.Set<MonthlyEmissionRawDto>()
-                .FromSqlInterpolated($"EXEC USP_CB_GeneratorEmissionMonthlyChart {year}")
+                .FromSqlInterpolated(
+                    $"EXEC USP_CB_GeneratorEmissionMonthlyChart {fromDate:yyyy-MM-dd}, {toDate:yyyy-MM-dd}")
                 .ToListAsync();
-            return BuildEmissionChart(rows);
+            return BuildEmissionChart(rows, fromDate, toDate);
         }
 
         // ─────────────────────────────────────────────────────────────────
@@ -250,10 +241,10 @@ namespace ProjectApp.Repository.Services.Charts
         /// Pie chart — one slice per generator showing total run hours for the year.
         /// Columns: GeneratorName, SiteName, TotalRunHours, TotalFuelConsumed, TotalPowerOutputKWH
         /// </summary>
-        public async Task<GeneratorRunHoursChartResponseDto> GetGeneratorRunHoursByBaseAsync(int year)
+        public async Task<GeneratorRunHoursChartResponseDto> GetGeneratorRunHoursByBaseAsync(DateTime fromDate, DateTime toDate)
         {
             var rows = await _context.Set<GeneratorRunHoursRawDto>()
-                .FromSqlInterpolated($"EXEC USP_CB_GeneratorRunHoursByBase {year}")
+                .FromSqlInterpolated($"EXEC USP_CB_GeneratorRunHoursByBase {fromDate:yyyy-MM-dd}, {toDate:yyyy-MM-dd}")
                 .ToListAsync();
 
             return new GeneratorRunHoursChartResponseDto
@@ -267,6 +258,7 @@ namespace ProjectApp.Repository.Services.Charts
             };
         }
 
+
         /// <summary>
         /// GET /api/Chart/GeneratorRunHoursMonthly
         /// SP : USP_CB_GeneratorRunHoursMonthly
@@ -275,10 +267,10 @@ namespace ProjectApp.Repository.Services.Charts
         ///          TotalPowerOutputKWH, OperationCount
         /// Pivot: rows = 12 months, columns = generators
         /// </summary>
-        public async Task<GeneratorRunHoursMonthlyPivotDto> GetGeneratorRunHoursMonthlyAsync(int year)
+        public async Task<GeneratorRunHoursMonthlyPivotDto> GetGeneratorRunHoursMonthlyAsync(DateTime fromDate, DateTime toDate)
         {
             var rows = await _context.Set<GeneratorRunHoursMonthlyRawDto>()
-                .FromSqlInterpolated($"EXEC USP_CB_GeneratorRunHoursMonthly {year}")
+                .FromSqlInterpolated($"EXEC USP_CB_GeneratorRunHoursMonthly {fromDate:yyyy-MM-dd}, {toDate:yyyy-MM-dd}")
                 .ToListAsync();
 
             var generators = rows.Select(r => r.GeneratorName).Distinct().OrderBy(n => n).ToList();
@@ -309,7 +301,6 @@ namespace ProjectApp.Repository.Services.Charts
                 monthTotals.Add(rhRow.Sum());
             }
 
-            // Column totals — sum of each generator across all 12 months
             var generatorTotals = generators
                 .Select((_, gi) => rhMatrix.Sum(row => row[gi]))
                 .ToList();
@@ -339,10 +330,10 @@ namespace ProjectApp.Repository.Services.Charts
         /// Columns: GeneratorName, MonthNumber, AvgLoadFactor, MaxLoadFactor,
         ///          MinLoadFactor, OperationCount
         /// </summary>
-        public async Task<GeneratorLoadFactorChartResponseDto> GetGeneratorLoadFactorMonthlyAsync(int year)
+        public async Task<GeneratorLoadFactorChartResponseDto> GetGeneratorLoadFactorMonthlyAsync(DateTime fromDate, DateTime toDate)
         {
             var rows = await _context.Set<GeneratorLoadFactorRawDto>()
-                .FromSqlInterpolated($"EXEC USP_CB_GeneratorLoadFactorMonthly {year}")
+                .FromSqlInterpolated($"EXEC USP_CB_GeneratorLoadFactorMonthly {fromDate:yyyy-MM-dd}, {toDate:yyyy-MM-dd}")
                 .ToListAsync();
 
             var generators = rows.Select(r => r.GeneratorName).Distinct().OrderBy(n => n).ToList();
@@ -392,28 +383,22 @@ namespace ProjectApp.Repository.Services.Charts
         /// Single-series bar chart — total distance driven per month.
         /// Columns: MonthNumber, MonthName, TotalDistanceKM, TotalTrips, TotalFuelConsumed
         /// </summary>
-        public async Task<VehicleDistanceChartResponseDto> GetVehicleTotalDistanceMonthlyAsync(int year)
+        public async Task<VehicleDistanceChartResponseDto> GetVehicleTotalDistanceMonthlyAsync(
+    DateTime fromDate, DateTime toDate)
         {
             var rows = await _context.Set<VehicleDistanceMonthlyRawDto>()
-                .FromSqlInterpolated($"EXEC USP_CB_VehicleTotalDistanceMonthly {year}")
+                .FromSqlInterpolated(
+                    $"EXEC USP_CB_VehicleTotalDistanceMonthly {fromDate:yyyy-MM-dd}, {toDate:yyyy-MM-dd}")
                 .ToListAsync();
 
-            // Pre-fill 12 slots with zeros; overwrite with actual data
-            var distance = new List<decimal>(new decimal[12]);
-            var trips = new List<int>(new int[12]);
-            var fuel = new List<decimal>(new decimal[12]);
-
-            foreach (var row in rows)
-            {
-                int idx = row.MonthNumber - 1;
-                distance[idx] = row.TotalDistanceKM;
-                trips[idx] = row.TotalTrips;
-                fuel[idx] = row.TotalFuelConsumed;
-            }
+            var slots = BuildMonthSlots(fromDate, toDate);
+            var distance = slots.Select(s => rows.FirstOrDefault(r => r.YearNumber == s.Year && r.MonthNumber == s.Month)?.TotalDistanceKM ?? 0m).ToList();
+            var trips = slots.Select(s => rows.FirstOrDefault(r => r.YearNumber == s.Year && r.MonthNumber == s.Month)?.TotalTrips ?? 0).ToList();
+            var fuel = slots.Select(s => rows.FirstOrDefault(r => r.YearNumber == s.Year && r.MonthNumber == s.Month)?.TotalFuelConsumed ?? 0m).ToList();
 
             return new VehicleDistanceChartResponseDto
             {
-                Labels = _monthNames.ToList(),
+                Labels = slots.Select(s => s.Label).ToList(),
                 DistanceData = distance,
                 TripData = trips,
                 FuelData = fuel,
@@ -428,12 +413,15 @@ namespace ProjectApp.Repository.Services.Charts
         ///          TotalTrips, TotalFuelConsumed
         /// Pivot: rows = 12 months, columns = vehicle types
         /// </summary>
-        public async Task<VehicleTypeDistancePivotDto> GetVehicleTypeWiseDistanceAsync(int year)
+        public async Task<VehicleTypeDistancePivotDto> GetVehicleTypeWiseDistanceAsync(
+    DateTime fromDate, DateTime toDate)
         {
             var rows = await _context.Set<VehicleTypeDistanceRawDto>()
-                .FromSqlInterpolated($"EXEC USP_CB_VehicleTypeWiseDistance {year}")
+                .FromSqlInterpolated(
+                    $"EXEC USP_CB_VehicleTypeWiseDistance {fromDate:yyyy-MM-dd}, {toDate:yyyy-MM-dd}")
                 .ToListAsync();
 
+            var slots = BuildMonthSlots(fromDate, toDate);
             var vehicleTypes = rows.Select(r => r.VehicleTypeName).Distinct().OrderBy(n => n).ToList();
             var colors = vehicleTypes.Select((_, i) => _vehicleTypeColors[i % _vehicleTypeColors.Length]).ToList();
 
@@ -442,19 +430,17 @@ namespace ProjectApp.Repository.Services.Charts
             var fuelMatrix = new List<List<decimal>>();
             var monthTotals = new List<decimal>();
 
-            for (int m = 1; m <= 12; m++)
+            foreach (var s in slots)
             {
-                var distRow = new List<decimal>();
-                var tripsRow = new List<int>();
-                var fuelRow = new List<decimal>();
-
-                foreach (var vt in vehicleTypes)
-                {
-                    var cell = rows.FirstOrDefault(r => r.MonthNumber == m && r.VehicleTypeName == vt);
-                    distRow.Add(cell?.TotalDistanceKM ?? 0m);
-                    tripsRow.Add(cell?.TotalTrips ?? 0);
-                    fuelRow.Add(cell?.TotalFuelConsumed ?? 0m);
-                }
+                var distRow = vehicleTypes.Select(vt =>
+                    rows.FirstOrDefault(r => r.YearNumber == s.Year && r.MonthNumber == s.Month && r.VehicleTypeName == vt)
+                        ?.TotalDistanceKM ?? 0m).ToList();
+                var tripsRow = vehicleTypes.Select(vt =>
+                    rows.FirstOrDefault(r => r.YearNumber == s.Year && r.MonthNumber == s.Month && r.VehicleTypeName == vt)
+                        ?.TotalTrips ?? 0).ToList();
+                var fuelRow = vehicleTypes.Select(vt =>
+                    rows.FirstOrDefault(r => r.YearNumber == s.Year && r.MonthNumber == s.Month && r.VehicleTypeName == vt)
+                        ?.TotalFuelConsumed ?? 0m).ToList();
 
                 distMatrix.Add(distRow);
                 tripsMatrix.Add(tripsRow);
@@ -462,14 +448,13 @@ namespace ProjectApp.Repository.Services.Charts
                 monthTotals.Add(distRow.Sum());
             }
 
-            // Column totals — sum each vehicle type across 12 months
             var typeTotals = vehicleTypes
                 .Select((_, ti) => distMatrix.Sum(row => row[ti]))
                 .ToList();
 
             return new VehicleTypeDistancePivotDto
             {
-                MonthLabels = _monthNames.ToList(),
+                MonthLabels = slots.Select(s => s.Label).ToList(),
                 VehicleTypes = vehicleTypes,
                 Colors = colors,
                 DistanceMatrix = distMatrix,
@@ -491,10 +476,12 @@ namespace ProjectApp.Repository.Services.Charts
         /// Bar / donut chart — vehicle emissions grouped by departure city.
         /// Columns: CityName, TotalCO2, TotalNO2, TotalCH4, TotalCO2e
         /// </summary>
-        public async Task<List<CityEmissionDto>> GetVehicleCityWiseEmissionsAsync(int year)
-            => await _context.Set<CityEmissionDto>()
-                .FromSqlInterpolated($"EXEC USP_CB_VehicleCityWiseEmissions {year}")
-                .ToListAsync();
+        public async Task<List<CityEmissionDto>> GetVehicleCityWiseEmissionsAsync(
+    DateTime fromDate, DateTime toDate)
+    => await _context.Set<CityEmissionDto>()
+        .FromSqlInterpolated(
+            $"EXEC USP_CB_VehicleCityWiseEmissions {fromDate:yyyy-MM-dd}, {toDate:yyyy-MM-dd}")
+        .ToListAsync();
 
         /// <summary>
         /// GET /api/Chart/GeneratorSiteEmissions
@@ -502,10 +489,12 @@ namespace ProjectApp.Repository.Services.Charts
         /// Bar / donut chart — generator emissions grouped by site location.
         /// Columns: SiteName, TotalCO2, TotalNO2, TotalCH4, TotalCO2e
         /// </summary>
-        public async Task<List<SiteEmissionDto>> GetGeneratorSiteWiseEmissionsAsync(int year)
-            => await _context.Set<SiteEmissionDto>()
-                .FromSqlInterpolated($"EXEC USP_CB_GeneratorSiteWiseEmissions {year}")
-                .ToListAsync();
+        public async Task<List<SiteEmissionDto>> GetGeneratorSiteWiseEmissionsAsync(
+    DateTime fromDate, DateTime toDate)
+    => await _context.Set<SiteEmissionDto>()
+        .FromSqlInterpolated(
+            $"EXEC USP_CB_GeneratorSiteWiseEmissions {fromDate:yyyy-MM-dd}, {toDate:yyyy-MM-dd}")
+        .ToListAsync();
 
         // ─────────────────────────────────────────────────────────────────
         // DASHBOARD SUMMARIES
@@ -516,10 +505,12 @@ namespace ProjectApp.Repository.Services.Charts
         /// SP : USP_CB_VehicleSummary
         /// KPI cards — vehicle totals for the year (CO2e, fuel, distance, trips).
         /// </summary>
-        public async Task<VehicleSummaryDto> GetVehicleSummaryAsync(int year)
+        public async Task<VehicleSummaryDto> GetVehicleSummaryAsync(
+    DateTime fromDate, DateTime toDate)
         {
             var result = await _context.Set<VehicleSummaryDto>()
-                .FromSqlInterpolated($"EXEC USP_CB_VehicleSummary {year}")
+                .FromSqlInterpolated(
+                    $"EXEC USP_CB_VehicleSummary {fromDate:yyyy-MM-dd}, {toDate:yyyy-MM-dd}")
                 .ToListAsync();
             return result.FirstOrDefault() ?? new VehicleSummaryDto();
         }
@@ -529,18 +520,20 @@ namespace ProjectApp.Repository.Services.Charts
         /// SP : USP_CB_GeneratorSummary
         /// KPI cards — generator totals for the year (CO2e, fuel, run hours, power).
         /// </summary>
-        public async Task<GeneratorSummaryDto> GetGeneratorSummaryAsync(int year)
+        public async Task<GeneratorSummaryDto> GetGeneratorSummaryAsync(
+    DateTime fromDate, DateTime toDate)
         {
             var result = await _context.Set<GeneratorSummaryDto>()
-                .FromSqlInterpolated($"EXEC USP_CB_GeneratorSummary {year}")
+                .FromSqlInterpolated(
+                    $"EXEC USP_CB_GeneratorSummary {fromDate:yyyy-MM-dd}, {toDate:yyyy-MM-dd}")
                 .ToListAsync();
             return result.FirstOrDefault() ?? new GeneratorSummaryDto();
         }
 
 
-        public async Task<byte[]> ExportVehicleFuelExcelAsync(int year)
+        public async Task<byte[]> ExportVehicleFuelExcelAsync(DateTime fromDate, DateTime toDate)
         {
-            var data = await GetVehicleFuelMonthlyConsumptionAsync(year);
+            var data = await GetVehicleFuelMonthlyConsumptionAsync(fromDate, toDate);
 
             var rows = Enumerable.Range(1, 12).Select(m =>
             {
@@ -581,15 +574,15 @@ namespace ProjectApp.Repository.Services.Charts
                 rows,
                 columns,
                 "Fuel Report",
-                $"Vehicle Fuel Report - {year}"
+                $"Vehicle Fuel Report - {fromDate:yyyy-MM-dd}_to_{toDate:yyyy-MM-dd}"
             );
         }
 
 
-        public async Task<byte[]> ExportVehicleEmissionExcelAsync(int year)
+        public async Task<byte[]> ExportVehicleEmissionExcelAsync(DateTime fromDate, DateTime toDate)
         {
             var raw = await _context.Set<MonthlyEmissionRawDto>()
-                .FromSqlInterpolated($"EXEC USP_CB_VehicleEmissionMonthlyChart {year}")
+                .FromSqlInterpolated($"EXEC USP_CB_VehicleEmissionMonthlyChart {fromDate:yyyy-MM-dd} ,  {toDate:yyyy-MM-dd}")
                 .ToListAsync();
 
             var rows = Enumerable.Range(1, 12).Select(m =>
@@ -619,13 +612,13 @@ namespace ProjectApp.Repository.Services.Charts
                 rows,
                 columns,
                 "Emission Report",
-                $"Vehicle Emission Report - {year}"
+                $"Vehicle Emission Report - {fromDate:yyyy-MM-dd} ,  {toDate:yyyy-MM-dd}"
             );
         }
 
-        public async Task<byte[]> ExportVehicleDistanceExcelAsync(int year)
+        public async Task<byte[]> ExportVehicleDistanceExcelAsync(DateTime fromDate, DateTime toDate)
         {
-            var data = await GetVehicleTotalDistanceMonthlyAsync(year);
+            var data = await GetVehicleTotalDistanceMonthlyAsync(fromDate, toDate);
 
             var rows = Enumerable.Range(1, 12).Select(m =>
             {
@@ -643,13 +636,13 @@ namespace ProjectApp.Repository.Services.Charts
             return await ExcelExportHelper.ExportExcelWithComboChartAsync(
                 rows,
                 "Distance Report",
-                $"Vehicle Distance Report - {year}"
+                $"Vehicle Distance Report - {fromDate:yyyy-MM-dd}  ,   {toDate:yyyy-MM-dd}"
             );
         }
 
-        public async Task<byte[]> ExportVehicleTypeDistanceExcelAsync(int year)
+        public async Task<byte[]> ExportVehicleTypeDistanceExcelAsync(DateTime fromDate, DateTime toDate)
         {
-            var data = await GetVehicleTypeWiseDistanceAsync(year);
+            var data = await GetVehicleTypeWiseDistanceAsync(fromDate, toDate);
 
             //var rows = new List<dynamic>();
             var rows = new List<Dictionary<string, object>>();
@@ -673,7 +666,7 @@ namespace ProjectApp.Repository.Services.Charts
             return await ExcelExportHelper.ExportDynamicPivotExcelWithChartAsync(
             rows,
             "Vehicle Type Distance",
-            $"Vehicle Type Distance Report - {year}"
+            $"Vehicle Type Distance Report - {fromDate:yyyy-MM-dd}  ,   {toDate:yyyy-MM-dd}"
         );
         }
 
@@ -752,22 +745,22 @@ namespace ProjectApp.Repository.Services.Charts
             return stream.ToArray();
         }
 
-        public async Task<byte[]> ExportVehicleTypeDistancePieExcelAsync(int year)
+        public async Task<byte[]> ExportVehicleTypeDistancePieExcelAsync(DateTime fromDate, DateTime toDate)
         {
-            var data = await GetVehicleTypeWiseDistanceAsync(year);
+            var data = await GetVehicleTypeWiseDistanceAsync(fromDate, toDate);
 
             return await ExcelExportHelper.ExportVehicleTypePieChartAsync(
             data.VehicleTypes, // labels
                     data.TypeTotals, // values
                     "Vehicle Type Report",
-            $"Vehicle Type Distance - {year}"
+            $"Vehicle Type Distance - {fromDate:yyyy-MM-dd}  ,   {toDate:yyyy-MM-dd}"
             );
         }
 
 
-        public async Task<byte[]> ExportCityWiseEmissionExcelAsync(int year)
+        public async Task<byte[]> ExportCityWiseEmissionExcelAsync(DateTime fromDate, DateTime toDate)
         {
-            var data = await GetVehicleCityWiseEmissionsAsync(year);
+            var data = await GetVehicleCityWiseEmissionsAsync(fromDate, toDate);
             if (data == null || !data.Any())
                 return Array.Empty<byte>();
 
@@ -782,31 +775,24 @@ namespace ProjectApp.Repository.Services.Charts
                 no2Values: no2Values,
                 ch4Values: ch4Values,
                 sheetName: "City Emission Report",
-                chartTitle: $"City Wise Emission Profile - {year}"
+                chartTitle: $"City Wise Emission Profile - {fromDate:yyyy-MM-dd} ,  {toDate:yyyy-MM-dd}"
             );
         }
 
-        public async Task<VehicleCategoryChartResponseDto> GetVehicleCategoryWiseEmissionAsync(int year)
+        public async Task<VehicleCategoryChartResponseDto> GetVehicleCategoryWiseEmissionAsync(
+    DateTime fromDate, DateTime toDate)
         {
             var rows = await _context.Set<VehicleCategoryEmissionRawDto>()
-                .FromSqlInterpolated($"EXEC USP_CB_VehicleCategoryWiseEmission {year}")
+                .FromSqlInterpolated(
+                    $"EXEC USP_CB_VehicleCategoryWiseEmission {fromDate:yyyy-MM-dd}, {toDate:yyyy-MM-dd}")
                 .ToListAsync();
-
-            var labels = rows.Select(r => r.CategoryName).ToList();
-            var distanceData = rows.Select(r => r.TotalDistanceKm).ToList();
-            var emissionData = rows.Select(r => r.TotalEmission).ToList();
-
-            // Assign colors by index — same pattern as vehicleType / generator charts
-            var colors = labels
-                .Select((_, i) => _pieColors[i % _pieColors.Length])
-                .ToList();
 
             return new VehicleCategoryChartResponseDto
             {
-                Labels = labels,
-                DistanceData = distanceData,
-                EmissionData = emissionData,
-                Colors = colors
+                Labels = rows.Select(r => r.CategoryName).ToList(),
+                DistanceData = rows.Select(r => r.TotalDistanceKm).ToList(),
+                EmissionData = rows.Select(r => r.TotalEmission).ToList(),
+                Colors = rows.Select((_, i) => _pieColors[i % _pieColors.Length]).ToList()
             };
         }
 
@@ -850,10 +836,10 @@ namespace ProjectApp.Repository.Services.Charts
         //    );
         //}
 
-        public async Task<byte[]> ExportCityWiseEmissionExcelGeneratorAsync(int year)
+        public async Task<byte[]> ExportCityWiseEmissionExcelGeneratorAsync(DateTime fromDate, DateTime toDate)
         {
             // Generator SP call karo (already exist karta hai)
-            var data = await GetGeneratorFuelMonthlyConsumptionAsync(year);
+            var data = await GetGeneratorFuelMonthlyConsumptionAsync(fromDate, toDate);
 
             var rows = Enumerable.Range(1, 12).Select(m =>
             {
@@ -882,52 +868,44 @@ namespace ProjectApp.Repository.Services.Charts
                 rows,
                 columns,
                 "Generator Fuel Report",
-                $"Generator Fuel Report - {year}"
+                $"Generator Fuel Report - {fromDate:yyyy-MM-dd}   ,    {toDate:yyyy-MM-dd}"
             );
         }
 
-        public async Task<byte[]> ExportGeneratorEmissionExcelLineChartAsync(int year)
+        public async Task<byte[]> ExportGeneratorEmissionExcelLineChartAsync(DateTime fromDate, DateTime toDate)
         {
             var raw = await _context.Set<MonthlyEmissionRawDto>()
-                .FromSqlInterpolated($"EXEC USP_CB_GeneratorEmissionMonthlyChart {year}")
+                .FromSqlInterpolated($"EXEC USP_CB_GeneratorEmissionMonthlyChart {fromDate:yyyy-MM-dd}, {toDate:yyyy-MM-dd}")
                 .ToListAsync();
 
-            var rows = Enumerable.Range(1, 12).Select(m =>
+            var slots = BuildMonthSlots(fromDate, toDate);
+
+            var rows = slots.Select(s =>
             {
-                var row = raw.FirstOrDefault(r => r.MonthNumber == m);
-                return new VehicleEmissionExportDto  // same DTO reuse kar sakte ho
-                {
-                    Month = _monthNames[m - 1],
-                    TotalCO2e = (double)(row?.TotalEmission ?? 0m),
-                    TotalCO2 = (double)(row?.TotalCO2 ?? 0m),
-                    TotalNO2 = (double)(row?.TotalNO2 ?? 0m),
-                    TotalCH4 = (double)(row?.TotalCH4 ?? 0m),
-                };
+                var row = raw.FirstOrDefault(r => r.YearNumber == s.Year && r.MonthNumber == s.Month);
+
+                var dict = new Dictionary<string, object>();
+                dict["Month"] = s.Label;
+                dict["Total CO2e (kg)"] = (double)(row?.TotalEmission ?? 0m);
+                dict["CO2 (kg)"] = (double)(row?.TotalCO2 ?? 0m);
+                dict["NO2 (kg)"] = (double)(row?.TotalNO2 ?? 0m);
+                dict["CH4 (kg)"] = (double)(row?.TotalCH4 ?? 0m);
+
+                return dict;
             }).ToList();
 
-            var columns = new Dictionary<string, string>
-    {
-        { "Month",           "Month"     },
-        { "Total CO2e (kg)", "TotalCO2e" },
-        { "CO2 (kg)",        "TotalCO2"  },
-        { "NO2 (kg)",        "TotalNO2"  },
-        { "CH4 (kg)",        "TotalCH4"  },
-    };
-
-            // ✅ Same line chart method jo Vehicle emission mein use hua
-            return await ExcelExportHelper.ExportExcelWithLineChartAsync<VehicleEmissionExportDto>(
+            return await ExcelExportHelper.ExportDynamicPivotExcelWithChartAsync(
                 rows,
-                columns,
                 "Generator Emission Report",
-                $"Generator Emission Report - {year}"
+                $"Generator Emission Report - {fromDate:yyyy-MM-dd}_to_{toDate:yyyy-MM-dd}"
             );
         }
 
-        public async Task<byte[]> ExportGeneratorRunHoursMonthlyExcelAsync(int year)
-        {
-            var data = await GetGeneratorRunHoursMonthlyAsync(year);
 
-            // ✅ UI jaisa structure:
+        public async Task<byte[]> ExportGeneratorRunHoursMonthlyExcelAsync(DateTime fromDate, DateTime toDate)
+        {
+            var data = await GetGeneratorRunHoursMonthlyAsync(fromDate, toDate);
+
             // Rows    = Generators (+ Total row at bottom)
             // Columns = Month + Jan + Feb + ... + Dec + Total (Hrs)
 
@@ -942,7 +920,7 @@ namespace ProjectApp.Repository.Services.Charts
                 for (int mi = 0; mi < data.MonthLabels.Count; mi++)
                 {
                     var val = data.RunHoursMatrix[mi][gi];
-                    // ✅ UI mein 0 ki jagah "—" dikhta hai
+                    
                     row[data.MonthLabels[mi]] = val == 0 ? "—" : (object)val;
                     generatorTotal += val;
                 }
@@ -951,7 +929,7 @@ namespace ProjectApp.Repository.Services.Charts
                 rows.Add(row);
             }
 
-            // ✅ Total row at bottom — UI jaisa
+            // ✅ Total row at bottom 
             var totalRow = new Dictionary<string, object>();
             totalRow["Generator"] = "Total (hrs)";
 
@@ -969,26 +947,33 @@ namespace ProjectApp.Repository.Services.Charts
                 rows,
                 data.MonthLabels,
                 "Generator Run Hours",
-                $"Generator Run Hours Report - {year}"
+                $"Generator Run Hours Report - {fromDate:yyyy-MM-dd}_to_{toDate:yyyy-MM-dd}"
             );
         }
 
-        public async Task<byte[]> ExportGeneratorRunHoursPieChartAsync(int year)
+        public async Task<byte[]> ExportGeneratorRunHoursPieChartAsync(DateTime fromDate, DateTime toDate)
         {
             var rows = await _context.Set<GeneratorRunHoursRawDto>()
-                .FromSqlInterpolated($"EXEC USP_CB_GeneratorRunHoursByBase {year}")
+                .FromSqlInterpolated($"EXEC USP_CB_GeneratorRunHoursByBase {fromDate:yyyy-MM-dd}, {toDate:yyyy-MM-dd}")
                 .ToListAsync();
 
-            var labels = rows.Select(x => x.GeneratorName).ToList();
-            var values = rows.Select(x => x.TotalRunHours).ToList();
+            var exportRows = rows.Select(r =>
+            {
+                var dict = new Dictionary<string, object>();
 
-            return await ExcelExportHelper.ExportGeneratorDonutChartAsync(
-                labels,
-                values,
-                "Generator Report",
-                "Generator Run Hours Distribution"
+                dict["Generator"] = r.GeneratorName;
+                dict["Run Hours"] = (double)r.TotalRunHours;
+
+                return dict;
+            }).ToList();
+
+            return await ExcelExportHelper.ExportDynamicPivotExcelWithChartAsync(
+                exportRows,
+                "Generator Run Hours",
+                $"Generator Run Hours Pie Chart - {fromDate:yyyy-MM-dd}_to_{toDate:yyyy-MM-dd}"
             );
         }
+
 
         //public async Task<byte[]> ExportSiteEmissionChartAsync(int year)
         //{
@@ -1012,10 +997,10 @@ namespace ProjectApp.Repository.Services.Charts
         //        )
         //    );
         //}
-        public async Task<byte[]> ExportSiteEmissionChartAsync(int year)
+        public async Task<byte[]> ExportSiteEmissionChartAsync(DateTime fromDate, DateTime toDate)
         {
             // ✅ Direct list aa rahi hai
-            var rows = await GetGeneratorSiteWiseEmissionsAsync(year)
+            var rows = await GetGeneratorSiteWiseEmissionsAsync(fromDate, toDate)
                        ?? new List<SiteEmissionDto>();
 
             // ✅ Mapping
@@ -1031,9 +1016,9 @@ namespace ProjectApp.Repository.Services.Charts
             );
         }
 
-        public async Task<byte[]> ExportVehicleCategoryEmissionExcelAsync(int year)
+        public async Task<byte[]> ExportVehicleCategoryEmissionExcelAsync(DateTime fromDate, DateTime toDate)
         {
-            var data = await GetVehicleCategoryWiseEmissionAsync(year);
+            var data = await GetVehicleCategoryWiseEmissionAsync(fromDate, toDate);
 
             if (!data.Labels.Any())
                 return Array.Empty<byte>();
@@ -1047,8 +1032,27 @@ namespace ProjectApp.Repository.Services.Charts
                 distanceVals,
                 emissionVals,
                 "Category Report",
-                $"Vehicle Category Wise Distance & Emission - {year}"
+                $"Vehicle Category Wise Distance & Emission - {fromDate:yyyy-MM-dd}_to_{toDate:yyyy-MM-dd}"
             );
+        }
+
+      
+         //Builds an ordered list of (year, month, label) tuples covering every
+         //month from fromDate to toDate, inclusive. Used for all monthly charts.
+ 
+        private static List<(int Year, int Month, string Label)> BuildMonthSlots(DateTime from, DateTime to)
+        {
+            var slots = new List<(int, int, string)>();
+            var cursor = new DateTime(from.Year, from.Month, 1);
+            var end = new DateTime(to.Year, to.Month, 1);
+
+            while (cursor <= end)
+            {
+                slots.Add((cursor.Year, cursor.Month,
+                           cursor.ToString("MMM yy"))); // e.g. "Apr 24"
+                cursor = cursor.AddMonths(1);
+            }
+            return slots;
         }
     }
 }

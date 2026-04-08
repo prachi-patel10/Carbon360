@@ -35,6 +35,8 @@ interface LoadFactorLegendItem { name: string; color: string; }
 export class GeneratorCharts implements OnInit, AfterViewInit, OnChanges, OnDestroy {
 
   @Input() year: number = new Date().getFullYear();
+  @Input() fromDate?: string;
+  @Input() toDate?: string;
   @Output() gridRowClick = new EventEmitter<Record<string, any>>();
 
   @ViewChild('generatorFuelCanvas') fuelCanvasRef!: ElementRef<HTMLCanvasElement>;
@@ -107,11 +109,6 @@ export class GeneratorCharts implements OnInit, AfterViewInit, OnChanges, OnDest
   ) { }
 
   ngOnInit(): void { this.loadAll(); }
-
-  ngOnChanges(c: SimpleChanges): void {
-    if (c['year'] && !c['year'].firstChange) this.loadAll();
-  }
-
   ngOnDestroy(): void {
     this.destroy$.next(); this.destroy$.complete();
     this.fuelChart?.destroy();
@@ -119,6 +116,13 @@ export class GeneratorCharts implements OnInit, AfterViewInit, OnChanges, OnDest
     this.runHoursChart?.destroy();
     this.loadFactorChart?.destroy();
     this.siteEmissionChart?.destroy();
+  }
+
+  ngOnChanges(c: SimpleChanges): void {
+    const yearChanged = c['year'] && !c['year'].firstChange;
+    const fromChanged = c['fromDate'] && !c['fromDate'].firstChange;
+    const toChanged = c['toDate'] && !c['toDate'].firstChange;
+    if (yearChanged || fromChanged || toChanged) this.loadAll();
   }
 
   ngAfterViewInit(): void {
@@ -138,74 +142,164 @@ export class GeneratorCharts implements OnInit, AfterViewInit, OnChanges, OnDest
   }
 
   // ═══════════════════════════════════════════════════════════════
-  //  HELPER: 12 month labels
+  //  HELPER: month labels — no UTC timezone shift
   // ═══════════════════════════════════════════════════════════════
   private getMonthLabels(): string[] {
-    return ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    if (this.fromDate && this.toDate) {
+      const labels: string[] = [];
+      // Split string directly — avoids new Date("yyyy-MM-dd") UTC shift
+      const [fy, fm] = this.fromDate.split('-').map(Number);
+      const [ty, tm] = this.toDate.split('-').map(Number);
+      let curYear = fy, curMonth = fm; // curMonth is 1-based
+      while (curYear < ty || (curYear === ty && curMonth <= tm)) {
+        // new Date(y, m-1, 1) = local midnight — no UTC shift
+        const d = new Date(curYear, curMonth - 1, 1);
+        labels.push(d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' }));
+        curMonth++;
+        if (curMonth > 12) { curMonth = 1; curYear++; }
+      }
+      return labels;
+    }
+    return ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   }
 
   // ═══════════════════════════════════════════════════════════════
-  //  NAVIGATION
+  //  NAVIGATION — label-based (no slot-index bugs)
   // ═══════════════════════════════════════════════════════════════
+
+  /**
+   * Parse "Apr 26" → { year: 2026, month: 4 }
+   * Single source of truth for all month drill-downs.
+   */
+  private parseLabelToYearMonth(label: string): { year: number; month: number } | null {
+    if (!label) return null;
+
+    const monthMap: Record<string, number> = {
+      Jan: 1, Feb: 2, Mar: 3, Apr: 4, May: 5, Jun: 6,
+      Jul: 7, Aug: 8, Sep: 9, Oct: 10, Nov: 11, Dec: 12
+    };
+
+    const parts = label.trim().split(' ');
+
+    // ── "Apr 26" format (fromDate/toDate range) ──
+    if (parts.length === 2) {
+      const month = monthMap[parts[0]];
+      const year = 2000 + parseInt(parts[1], 10);
+      if (month && !isNaN(year)) return { year, month };
+    }
+
+    // ── "Apr" format (year-only mode, fallback labels) ──
+    if (parts.length === 1) {
+      const month = monthMap[parts[0]];
+      if (month) return { year: this.year, month };
+    }
+
+    console.warn('[GeneratorCharts] parseLabelToYearMonth: failed for label:', label);
+    return null;
+  }
+
+  /**
+   * Core: build exact startDate/endDate from year+month and navigate.
+   */
+  private navigateByYearMonth(
+    year: number,
+    month: number,
+    extras: { fuelType?: string; generatorName?: string } = {}
+  ): void {
+    // new Date(year, month, 0) = day 0 of next month = last day of THIS month
+    const lastDay = new Date(year, month, 0).getDate();
+    const mm = String(month).padStart(2, '0');
+    const dd = String(lastDay).padStart(2, '0');
+
+    const queryParams: Record<string, any> = {
+      source: 'chart',
+      startDate: `${year}-${mm}-01`,
+      endDate: `${year}-${mm}-${dd}`,
+    };
+
+    if (extras.fuelType) queryParams['fuelType'] = extras.fuelType.trim();
+    if (extras.generatorName) queryParams['generatorName'] = extras.generatorName.trim();
+
+    // ✅ Debug — remove after confirming fix
+    console.log('[GeneratorCharts] navigateByYearMonth →', queryParams);
+
+    this.router.navigate(['/dashboard/searchGenerator'], { queryParams });
+  }
+
+  /** Navigate using chart label string e.g. "Apr 26" */
+  navigateByLabel(label: string, extras: { fuelType?: string; generatorName?: string } = {}): void {
+    const ym = this.parseLabelToYearMonth(label);
+    if (!ym) {
+      console.warn('[GeneratorCharts] navigateByLabel: cannot parse label:', label);
+      return;
+    }
+    this.navigateByYearMonth(ym.year, ym.month, extras);
+  }
+
+  navigateByLabelAndFuel(label: string, fuelType: string): void {
+    this.navigateByLabel(label, { fuelType });
+  }
+
+  /**
+   * Navigate with full selected range — for site/generator/legend
+   * clicks that have no specific month.
+   */
   private navigateToGeneratorSearch(params: {
-    month?: number;
     fuelType?: string;
     generatorName?: string;
     siteNames?: string;
     search?: string;
   }): void {
-    const queryParams: Record<string, any> = {
-      source: 'chart',
-      year: this.year,
-    };
+    const queryParams: Record<string, any> = { source: 'chart' };
 
     if (params.fuelType) queryParams['fuelType'] = params.fuelType.trim();
     if (params.generatorName) queryParams['generatorName'] = params.generatorName.trim();
     if (params.siteNames) queryParams['siteNames'] = params.siteNames.trim();
     if (params.search) queryParams['search'] = params.search.trim();
 
-    const y = this.year;
-
-    if (params.month) {
-      const m = params.month;
-      const lastDay = new Date(y, m, 0).getDate();
-      const start = `${y}-${String(m).padStart(2, '0')}-01`;
-      const end = `${y}-${String(m).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
-      queryParams['startDate'] = start;
-      queryParams['endDate'] = end;
+    if (this.fromDate && this.toDate) {
+      queryParams['startDate'] = this.fromDate; // already "yyyy-MM-dd" — no conversion needed
+      queryParams['endDate'] = this.toDate;
     } else {
-      queryParams['startDate'] = `${y}-01-01`;
-      queryParams['endDate'] = `${y}-12-31`;
+      queryParams['startDate'] = `${this.year}-01-01`;
+      queryParams['endDate'] = `${this.year}-12-31`;
     }
 
+    console.log('[GeneratorCharts] navigateToGeneratorSearch →', queryParams);
     this.router.navigate(['/dashboard/searchGenerator'], { queryParams });
   }
 
-  // ── Bar / Line chart clicks ────────────────────────────────────
-  navigateByGeneratorMonth(chartElementIndex: number): void {
-    this.navigateToGeneratorSearch({ month: chartElementIndex + 1 });
+  // ── Public click handlers ──────────────────────────────────────
+
+  onFuelGridRowClick(label: string, fuelType?: string): void {
+    this.navigateByLabel(label, fuelType ? { fuelType } : {});
   }
 
-  navigateByGeneratorMonthAndFuel(chartElementIndex: number, fuelType: string): void {
-    this.navigateToGeneratorSearch({ month: chartElementIndex + 1, fuelType });
-  }
-
-  onFuelGridRowClick(chartElementIndex: number, fuelType?: string): void {
-    this.navigateToGeneratorSearch({ month: chartElementIndex + 1, fuelType });
-  }
-
-  onEmissionGridRowClick(chartElementIndex: number): void {
-    this.navigateToGeneratorSearch({ month: chartElementIndex + 1 });
+  onEmissionGridRowClick(label: string): void {
+    this.navigateByLabel(label);
   }
 
   // ── Pivot table clicks ─────────────────────────────────────────
+
   onRunHoursGridCellClick(monthIndex: number, generatorName: string): void {
-    const p: { month?: number; generatorName?: string } = {};
-    if (monthIndex >= 0) p.month = monthIndex + 1;
+    const pivotData = this.runHoursMonthlyData();
+    const label = pivotData?.monthLabels?.[monthIndex] ?? '';
+    const ym = this.parseLabelToYearMonth(label);
+    if (!ym) return;
+
+    const lastDay = new Date(ym.year, ym.month, 0).getDate();
+    const mm = String(ym.month).padStart(2, '0');
+
+    const queryParams: Record<string, any> = {
+      source: 'chart',
+      startDate: `${ym.year}-${mm}-01`,
+      endDate: `${ym.year}-${mm}-${String(lastDay).padStart(2, '0')}`,
+    };
+
     if (generatorName && generatorName !== 'Unknown Generator')
-      p.generatorName = generatorName.trim();
-    this.navigateToGeneratorSearch(p);
+      queryParams['generatorName'] = generatorName.trim();
+
+    this.router.navigate(['/dashboard/searchGenerator'], { queryParams });
   }
 
   onRunHoursGeneratorTotalClick(generatorName: string): void {
@@ -217,7 +311,9 @@ export class GeneratorCharts implements OnInit, AfterViewInit, OnChanges, OnDest
   }
 
   onRunHoursMonthTotalClick(monthIndex: number): void {
-    this.navigateToGeneratorSearch({ month: monthIndex + 1 });
+    const pivotData = this.runHoursMonthlyData();
+    const label = pivotData?.monthLabels?.[monthIndex] ?? '';
+    this.navigateByLabel(label);
   }
 
   onRunHoursLegendClick(generatorName: string, fuelType?: string): void {
@@ -272,20 +368,14 @@ export class GeneratorCharts implements OnInit, AfterViewInit, OnChanges, OnDest
     this.fuelChart?.destroy();
     this.fuelChart = null;
 
-    this.svc.getGeneratorFuelMonthly(this.year)
+    this.svc.getGeneratorFuelMonthly(this.year, this.fromDate, this.toDate)
       .pipe(takeUntil(this.destroy$), finalize(() => this.isFuelLoading.set(false)))
       .subscribe({
         next: res => {
           if (!res.status || !res.data) {
-            // ── No data: render empty chart ──
-            const emptyData: FuelCombinedChartResponse = {
-              labels: this.getMonthLabels(),
-              datasets: []
-            };
-            this.generatorTotal.set(0);
-            this.topFuelType.set('-');
-            this.topFuelAmount.set(0);
-            this.fuelLegend.set([]);
+            const emptyData: FuelCombinedChartResponse = { labels: this.getMonthLabels(), datasets: [] };
+            this.generatorTotal.set(0); this.topFuelType.set('-');
+            this.topFuelAmount.set(0); this.fuelLegend.set([]);
             if (this.viewReady) this.deferRender('fuel', emptyData); else this.pendingFuel = emptyData;
             return;
           }
@@ -293,15 +383,10 @@ export class GeneratorCharts implements OnInit, AfterViewInit, OnChanges, OnDest
           this.buildFuelLegend(res.data);
           if (this.viewReady) this.deferRender('fuel', res.data); else this.pendingFuel = res.data;
         },
-        error: err => {
-          const emptyData: FuelCombinedChartResponse = {
-            labels: this.getMonthLabels(),
-            datasets: []
-          };
-          this.generatorTotal.set(0);
-          this.topFuelType.set('-');
-          this.topFuelAmount.set(0);
-          this.fuelLegend.set([]);
+        error: () => {
+          const emptyData: FuelCombinedChartResponse = { labels: this.getMonthLabels(), datasets: [] };
+          this.generatorTotal.set(0); this.topFuelType.set('-');
+          this.topFuelAmount.set(0); this.fuelLegend.set([]);
           if (this.viewReady) this.deferRender('fuel', emptyData); else this.pendingFuel = emptyData;
         }
       });
@@ -316,18 +401,13 @@ export class GeneratorCharts implements OnInit, AfterViewInit, OnChanges, OnDest
     this.emissionChart?.destroy();
     this.emissionChart = null;
 
-    this.svc.getGeneratorEmissionChart(this.year)
+    this.svc.getGeneratorEmissionChart(this.year, this.fromDate, this.toDate)
       .pipe(takeUntil(this.destroy$), finalize(() => this.isEmissionLoading.set(false)))
       .subscribe({
         next: res => {
           if (!res.status || !res.data) {
-            // ── No data: render empty chart ──
-            const emptyData: MonthlyEmissionChartResponse = {
-              labels: this.getMonthLabels(),
-              datasets: []
-            };
-            this.totalCO2e.set(0);
-            this.emissionLegend.set([]);
+            const emptyData: MonthlyEmissionChartResponse = { labels: this.getMonthLabels(), datasets: [] };
+            this.totalCO2e.set(0); this.emissionLegend.set([]);
             if (this.viewReady) this.deferRender('emission', emptyData); else this.pendingEmission = emptyData;
             return;
           }
@@ -335,20 +415,16 @@ export class GeneratorCharts implements OnInit, AfterViewInit, OnChanges, OnDest
           this.buildEmissionLegend(res.data);
           if (this.viewReady) this.deferRender('emission', res.data); else this.pendingEmission = res.data;
         },
-        error: err => {
-          const emptyData: MonthlyEmissionChartResponse = {
-            labels: this.getMonthLabels(),
-            datasets: []
-          };
-          this.totalCO2e.set(0);
-          this.emissionLegend.set([]);
+        error: () => {
+          const emptyData: MonthlyEmissionChartResponse = { labels: this.getMonthLabels(), datasets: [] };
+          this.totalCO2e.set(0); this.emissionLegend.set([]);
           if (this.viewReady) this.deferRender('emission', emptyData); else this.pendingEmission = emptyData;
         }
       });
   }
 
   // ═══════════════════════════════════════════════════════════════
-  //  LOAD: Run Hours
+  //  LOAD: Run Hours (Doughnut)
   // ═══════════════════════════════════════════════════════════════
   loadRunHoursChart(): void {
     this.isRunHoursLoading.set(true);
@@ -356,24 +432,16 @@ export class GeneratorCharts implements OnInit, AfterViewInit, OnChanges, OnDest
     this.runHoursChart?.destroy();
     this.runHoursChart = null;
 
-    this.svc.getGeneratorRunHours(this.year)
+    this.svc.getGeneratorRunHours(this.year, this.fromDate, this.toDate)
       .pipe(takeUntil(this.destroy$), finalize(() => this.isRunHoursLoading.set(false)))
       .subscribe({
         next: res => {
           if (!res.status || !res.data) {
-            // ── No data: render empty doughnut ──
             const emptyData: GeneratorRunHoursChartResponse = {
-              labels: [],
-              data: [],
-              colors: [],
-              siteNames: [],
-              fuelTypes: [],
-              fuelConsumed: [],
-              powerOutput: []
+              labels: [], data: [], colors: [],
+              siteNames: [], fuelTypes: [], fuelConsumed: [], powerOutput: []
             };
-            this.totalRunHours.set(0);
-            this.totalPowerOutput.set(0);
-            this.runHoursLegend.set([]);
+            this.totalRunHours.set(0); this.totalPowerOutput.set(0); this.runHoursLegend.set([]);
             if (this.viewReady) this.deferRender('runHours', emptyData); else this.pendingRunHours = emptyData;
             return;
           }
@@ -381,19 +449,12 @@ export class GeneratorCharts implements OnInit, AfterViewInit, OnChanges, OnDest
           this.buildRunHoursLegend(res.data);
           if (this.viewReady) this.deferRender('runHours', res.data); else this.pendingRunHours = res.data;
         },
-        error: err => {
+        error: () => {
           const emptyData: GeneratorRunHoursChartResponse = {
-            labels: [],
-            data: [],
-            colors: [],
-            siteNames: [],
-            fuelTypes: [],
-            fuelConsumed: [],
-            powerOutput: []
+            labels: [], data: [], colors: [],
+            siteNames: [], fuelTypes: [], fuelConsumed: [], powerOutput: []
           };
-          this.totalRunHours.set(0);
-          this.totalPowerOutput.set(0);
-          this.runHoursLegend.set([]);
+          this.totalRunHours.set(0); this.totalPowerOutput.set(0); this.runHoursLegend.set([]);
           if (this.viewReady) this.deferRender('runHours', emptyData); else this.pendingRunHours = emptyData;
         }
       });
@@ -407,20 +468,14 @@ export class GeneratorCharts implements OnInit, AfterViewInit, OnChanges, OnDest
     this.runHoursMonthlyError.set('');
     this.runHoursMonthlyData.set(null);
 
-    this.svc.getGeneratorRunHoursMonthly(this.year)
+    this.svc.getGeneratorRunHoursMonthly(this.year, this.fromDate, this.toDate)
       .pipe(takeUntil(this.destroy$), finalize(() => this.isRunHoursMonthlyLoading.set(false)))
       .subscribe({
         next: res => {
-          if (!res.status || !res.data) {
-            // ── No data: set empty pivot ──
-            this.runHoursMonthlyData.set(null);
-            return;
-          }
+          if (!res.status || !res.data) { this.runHoursMonthlyData.set(null); return; }
           this.runHoursMonthlyData.set(res.data);
         },
-        error: err => {
-          this.runHoursMonthlyData.set(null);
-        }
+        error: () => { this.runHoursMonthlyData.set(null); }
       });
   }
 
@@ -433,18 +488,17 @@ export class GeneratorCharts implements OnInit, AfterViewInit, OnChanges, OnDest
     this.siteEmissionChart?.destroy();
     this.siteEmissionChart = null;
 
-    this.svc.getGeneratorSiteEmissions(this.year)
+    this.svc.getGeneratorSiteEmissions(this.year, this.fromDate, this.toDate)
       .pipe(takeUntil(this.destroy$), finalize(() => this.isSiteEmissionLoading.set(false)))
       .subscribe({
         next: res => {
           if (!res.status || !res.data?.length) {
-            // ── No data: render empty chart ──
             if (this.viewReady) this.deferRender('siteEmission', []); else this.pendingSiteEmission = [];
             return;
           }
           if (this.viewReady) this.deferRender('siteEmission', res.data); else this.pendingSiteEmission = res.data;
         },
-        error: err => {
+        error: () => {
           if (this.viewReady) this.deferRender('siteEmission', []); else this.pendingSiteEmission = [];
         }
       });
@@ -514,26 +568,46 @@ export class GeneratorCharts implements OnInit, AfterViewInit, OnChanges, OnDest
 
     const ds = data?.datasets ?? [];
 
-    // ── Always render the chart, even with empty datasets ──
     this.fuelChart = new Chart(canvas, {
       type: 'bar',
       data: {
         labels: data.labels ?? this.getMonthLabels(),
         datasets: ds.map(d => ({
-          label: d.label, data: d.data,
+          label: d.label,
+          data: d.data,
           backgroundColor: d.color,
           borderColor: d.color.length > 7 ? d.color.substring(0, 7) : d.color,
-          borderWidth: 1, borderRadius: 5, borderSkipped: false as const, stack: d.fuelType
+          borderWidth: 1, borderRadius: 5,
+          borderSkipped: false as const,
+          stack: d.fuelType
         }))
       },
       options: {
         responsive: true, maintainAspectRatio: false,
-        onClick: (_e: any, elements: any[]) => {
-          if (!elements.length) return;
-          const el = elements[0];
-          const ds2 = data.datasets[el.datasetIndex];
-          if ((ds2?.data?.[el.index] ?? 0) > 0)
-            this.navigateByGeneratorMonthAndFuel(el.index, ds2.fuelType);
+        onClick: (nativeEvent: any, _elements: any[], chart: Chart) => {
+          const pts = chart.getElementsAtEventForMode(
+            nativeEvent.native ?? nativeEvent,
+            'nearest',
+            { intersect: true },
+            false
+          );
+
+          console.log('[FuelChart] getElementsAtEventForMode pts:', pts);
+
+          if (!pts.length) {
+            console.warn('[FuelChart] No elements hit at click point');
+            return;
+          }
+
+          const { datasetIndex, index } = pts[0];
+          const dataset = data.datasets[datasetIndex];
+          const label = (data.labels ?? [])[index] ?? '';
+
+          console.log('[FuelChart] label:', label, '| fuelType:', dataset?.fuelType);
+
+          if (label && dataset?.fuelType) {
+            this.navigateByLabelAndFuel(label, dataset.fuelType);
+          }
         },
         onHover: (_e: any, elements: any[]) => {
           if (canvas) canvas.style.cursor = elements.length ? 'pointer' : 'default';
@@ -560,10 +634,12 @@ export class GeneratorCharts implements OnInit, AfterViewInit, OnChanges, OnDest
           }
         },
         scales: {
-          x: { stacked: true, grid: { display: false }, ticks: { color: '#64748b', font: { size: 10 }, maxRotation: 0 } },
+          x: {
+            stacked: true, grid: { display: false },
+            ticks: { color: '#64748b', font: { size: 10 }, maxRotation: 0 }
+          },
           y: {
-            stacked: true, grid: { color: '#fff7ed' },
-            min: 0,
+            stacked: true, grid: { color: '#fff7ed' }, min: 0,
             ticks: { color: '#64748b', font: { size: 10 }, callback: (v: any) => `${Number(v).toLocaleString()} L` },
             title: { display: true, text: 'Litres', color: '#94a3b8', font: { size: 10 } }
           }
@@ -586,14 +662,15 @@ export class GeneratorCharts implements OnInit, AfterViewInit, OnChanges, OnDest
 
     const ds = data?.datasets ?? [];
 
-    // ── Always render the chart, even with empty datasets ──
     this.emissionChart = new Chart(canvas, {
       type: 'line',
       data: {
         labels: data.labels ?? this.getMonthLabels(),
         datasets: ds.map(d => ({
-          label: d.label, data: d.data,
-          borderColor: d.color, backgroundColor: d.color + '22',
+          label: d.label,
+          data: d.data,
+          borderColor: d.color,
+          backgroundColor: d.color + '22',
           borderWidth: 2, pointRadius: 3, pointHoverRadius: 5,
           tension: 0.4, fill: false as const
         }))
@@ -601,8 +678,11 @@ export class GeneratorCharts implements OnInit, AfterViewInit, OnChanges, OnDest
       options: {
         responsive: true, maintainAspectRatio: false,
         onClick: (_e: any, elements: any[]) => {
+          console.log('[EmissionChart] onClick elements:', elements);
           if (!elements.length) return;
-          this.navigateByGeneratorMonth(elements[0].index);
+          const label = (data.labels ?? [])[elements[0].index] ?? '';
+          console.log('[EmissionChart] label:', label);
+          this.navigateByLabel(label);
         },
         onHover: (_e: any, elements: any[]) => {
           if (canvas) canvas.style.cursor = elements.length ? 'pointer' : 'default';
@@ -622,8 +702,7 @@ export class GeneratorCharts implements OnInit, AfterViewInit, OnChanges, OnDest
         scales: {
           x: { grid: { display: false }, ticks: { color: '#64748b', font: { size: 10 } } },
           y: {
-            grid: { color: '#fff7ed' },
-            min: 0,
+            grid: { color: '#fff7ed' }, min: 0,
             ticks: { color: '#64748b', font: { size: 10 }, callback: (v: any) => `${Number(v).toLocaleString()}` },
             title: { display: true, text: 'kg', color: '#94a3b8', font: { size: 10 } }
           }
@@ -648,8 +727,6 @@ export class GeneratorCharts implements OnInit, AfterViewInit, OnChanges, OnDest
     if (oldTip) oldTip.remove();
 
     const hasData = (data?.data ?? []).some(v => v > 0);
-
-    // ── If no run hours, render empty doughnut with placeholder ──
     const chartLabels = hasData ? (data.labels ?? []) : ['No Data'];
     const chartValues = hasData ? (data.data ?? []) : [1];
     const chartColors = hasData ? (data.colors ?? []) : ['#e2e8f0'];
@@ -758,55 +835,35 @@ export class GeneratorCharts implements OnInit, AfterViewInit, OnChanges, OnDest
     const hasData = data?.length > 0;
     const sorted = hasData ? [...data].sort((a, b) => b.totalCO2e - a.totalCO2e) : [];
 
-    // ── Always render chart; show empty axes if no data ──
     this.siteEmissionChart = new Chart(canvas, {
       type: 'bar',
       data: {
         labels: hasData ? sorted.map(d => d.siteName) : [],
         datasets: [
           {
-            label: 'CO₂e (kg)',
-            data: hasData ? sorted.map(d => d.totalCO2e) : [],
-            backgroundColor: '#6366F1CC',
-            borderColor: '#6366F1',
-            borderWidth: 1,
-            borderRadius: 4,
-            borderSkipped: false as const,
+            label: 'CO₂e (kg)', data: hasData ? sorted.map(d => d.totalCO2e) : [],
+            backgroundColor: '#6366F1CC', borderColor: '#6366F1',
+            borderWidth: 1, borderRadius: 4, borderSkipped: false as const,
           },
           {
-            label: 'CO₂ (kg)',
-            data: hasData ? sorted.map(d => d.totalCO2) : [],
-            backgroundColor: '#1D9E75CC',
-            borderColor: '#1D9E75',
-            borderWidth: 1,
-            borderRadius: 4,
-            borderSkipped: false as const,
+            label: 'CO₂ (kg)', data: hasData ? sorted.map(d => d.totalCO2) : [],
+            backgroundColor: '#1D9E75CC', borderColor: '#1D9E75',
+            borderWidth: 1, borderRadius: 4, borderSkipped: false as const,
           },
           {
-            label: 'NO₂ (kg)',
-            data: hasData ? sorted.map(d => d.totalNO2) : [],
-            backgroundColor: '#EF9F27CC',
-            borderColor: '#EF9F27',
-            borderWidth: 1,
-            borderRadius: 4,
-            borderSkipped: false as const,
-            //stack: 'emission'
+            label: 'NO₂ (kg)', data: hasData ? sorted.map(d => d.totalNO2) : [],
+            backgroundColor: '#EF9F27CC', borderColor: '#EF9F27',
+            borderWidth: 1, borderRadius: 4, borderSkipped: false as const,
           },
           {
-            label: 'CH₄ (kg)',
-            data: hasData ? sorted.map(d => d.totalCH4) : [],
-            backgroundColor: '#D4537ECC',
-            borderColor: '#D4537E',
-            borderWidth: 1,
-            borderRadius: 4,
-            borderSkipped: false as const,
-            //stack: 'emission'
+            label: 'CH₄ (kg)', data: hasData ? sorted.map(d => d.totalCH4) : [],
+            backgroundColor: '#D4537ECC', borderColor: '#D4537E',
+            borderWidth: 1, borderRadius: 4, borderSkipped: false as const,
           }
         ]
       },
       options: {
-        responsive: true,
-        maintainAspectRatio: false,
+        responsive: true, maintainAspectRatio: false,
         onClick: (_e: any, elements: any[]) => {
           if (!elements.length || !hasData) return;
           const site = sorted[elements[0].index]?.siteName;
@@ -818,28 +875,21 @@ export class GeneratorCharts implements OnInit, AfterViewInit, OnChanges, OnDest
         plugins: {
           legend: { display: false },
           tooltip: {
-            mode: 'index',
-            intersect: false,
-            backgroundColor: '#0f172a',
-            titleColor: '#94a3b8',
-            bodyColor: '#e2e8f0',
-            borderColor: '#d97706',
-            borderWidth: 1,
-            padding: 12,
+            mode: 'index', intersect: false,
+            backgroundColor: '#0f172a', titleColor: '#94a3b8', bodyColor: '#e2e8f0',
+            borderColor: '#d97706', borderWidth: 1, padding: 12,
             callbacks: {
               title: (items: TooltipItem<'bar'>[]) => {
                 const total = sorted[items[0]?.dataIndex ?? 0]?.totalCO2e ?? 0;
                 return `${items[0]?.label}   —   CO₂e: ${total.toLocaleString('en-IN', {
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 5
+                  minimumFractionDigits: 2, maximumFractionDigits: 5
                 })} kg`;
               },
               label: (ctx: TooltipItem<'bar'>) => {
                 const val = ctx.parsed.y as number;
                 if (val === 0) return '';
                 return ` ${ctx.dataset.label}: ${val.toLocaleString('en-IN', {
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 5
+                  minimumFractionDigits: 2, maximumFractionDigits: 5
                 })} kg`;
               }
             }
@@ -848,44 +898,17 @@ export class GeneratorCharts implements OnInit, AfterViewInit, OnChanges, OnDest
         scales: {
           x: {
             grid: { display: false },
-            ticks: {
-              color: '#64748b',
-              font: { size: 11 },
-              maxRotation: 35,
-              minRotation: 0
-            }
+            ticks: { color: '#64748b', font: { size: 11 }, maxRotation: 35, minRotation: 0 }
           },
           y: {
-            position: 'left' as const,
-            grid: { color: '#fff7ed' },
-            min: 0,
-            ticks: {
-              color: '#64748b',
-              font: { size: 11 },
-              callback: (v: any) => `${Number(v).toLocaleString('en-IN')}`
-            },
-            title: {
-              display: true,
-              text: 'CO₂e (kg)',
-              color: '#94a3b8',
-              font: { size: 11 }
-            }
+            position: 'left' as const, grid: { color: '#fff7ed' }, min: 0,
+            ticks: { color: '#64748b', font: { size: 11 }, callback: (v: any) => `${Number(v).toLocaleString('en-IN')}` },
+            title: { display: true, text: 'CO₂e (kg)', color: '#94a3b8', font: { size: 11 } }
           },
           y1: {
-            position: 'right' as const,
-            grid: { drawOnChartArea: false },
-            min: 0,
-            ticks: {
-              color: '#94a3b8',
-              font: { size: 10 },
-              callback: (v: any) => `${Number(v).toFixed(5)}`
-            },
-            title: {
-              display: true,
-              text: 'CO₂ / NO₂ / CH₄ (kg)',
-              color: '#94a3b8',
-              font: { size: 10 }
-            }
+            position: 'right' as const, grid: { drawOnChartArea: false }, min: 0,
+            ticks: { color: '#94a3b8', font: { size: 10 }, callback: (v: any) => `${Number(v).toFixed(5)}` },
+            title: { display: true, text: 'CO₂ / NO₂ / CH₄ (kg)', color: '#94a3b8', font: { size: 10 } }
           }
         },
         animation: { duration: 500, easing: 'easeInOutQuart' }
@@ -893,6 +916,9 @@ export class GeneratorCharts implements OnInit, AfterViewInit, OnChanges, OnDest
     });
   }
 
+  // ═══════════════════════════════════════════════════════════════
+  //  LOAD FACTOR ZONE PLUGIN
+  // ═══════════════════════════════════════════════════════════════
   private loadFactorZonePlugin() {
     return {
       id: 'loadFactorZones',
@@ -915,49 +941,58 @@ export class GeneratorCharts implements OnInit, AfterViewInit, OnChanges, OnDest
     };
   }
 
+  // ═══════════════════════════════════════════════════════════════
+  //  UTILS
+  // ═══════════════════════════════════════════════════════════════
   formatNum(value: number): string {
     return Math.round(value).toLocaleString('en-IN');
   }
 
-  //NEW METHOD ADD
-  //1st chart
-  exportfueltypewiseMonthlyConsumptionFirstChart() {
-      this.svc.ExportGeneratorFuelTypeWiseMonthlyConsumptionFirstChart(this.year).subscribe({
-        next: blob => { saveAs(blob, `GeneratorFuelWiseMonthlyConsumption_${this.year}.xlsx`); },
-        error: err => { console.error('Export failed', err); }
-      });
-    }
+  // ═══════════════════════════════════════════════════════════════
+  //  EXPORTS
+  // ═══════════════════════════════════════════════════════════════
+  exportfueltypewiseMonthlyConsumptionFirstChart(): void {
+    this.svc.ExportGeneratorFuelTypeWiseMonthlyConsumptionFirstChart(
+      this.year, this.fromDate, this.toDate
+    ).subscribe({
+      next: blob => saveAs(blob, `GeneratorFuelWiseMonthlyConsumption_${this.fromDate}_${this.toDate}.xlsx`),
+      error: err => console.error('Export failed', err)
+    });
+  }
 
-    //2nd chart
-    exportMonthlyEmissionTrendSecondChart() {
-      this.svc.ExportGeneratorMonthlyEmissionTrend(this.year).subscribe({
-        next: blob => { saveAs(blob, `GeneratorMonthlyEmissionTrend_${this.year}.xlsx`); },
-        error: err => { console.error('Export failed', err); }
-      });
-    }
+  exportMonthlyEmissionTrendSecondChart(): void {
+    this.svc.ExportGeneratorMonthlyEmissionTrend(
+      this.year, this.fromDate, this.toDate
+    ).subscribe({
+      next: blob => saveAs(blob, `GeneratorMonthlyEmissionTrend_${this.fromDate}_${this.toDate}.xlsx`),
+      error: err => console.error('Export failed', err)
+    });
+  }
 
-    //3rd chart
-    ExportGeneratorRunHoursMonthWisePivotTbl() {
-      this.svc.ExportGeneratorRunHoursMonthWisePivotTbl(this.year).subscribe({
-        next: blob => { saveAs(blob, `GeneratorRunHoursMonthWisePivotTbl_${this.year}.xlsx`); },
-        error: err => { console.error('Export failed', err); }
-      });
-    }
+  ExportGeneratorRunHoursMonthWisePivotTbl(): void {
+    this.svc.ExportGeneratorRunHoursMonthWisePivotTbl(
+      this.year, this.fromDate, this.toDate
+    ).subscribe({
+      next: blob => saveAs(blob, `GeneratorRunHoursMonthWisePivotTbl_${this.fromDate}_${this.toDate}.xlsx`),
+      error: err => console.error('Export failed', err)
+    });
+  }
 
+  exportGeneratorRunHoursDistributionChart(): void {
+    this.svc.ExportGeneratorRunHoursDistribution(
+      this.year, this.fromDate, this.toDate
+    ).subscribe({
+      next: blob => saveAs(blob, `GeneratorRunHoursDistribution_${this.fromDate}_${this.toDate}.xlsx`),
+      error: err => console.error('Export failed', err)
+    });
+  }
 
-    //4th chart
-    exportGeneratorRunHoursDistributionChart() {
-      this.svc.ExportGeneratorRunHoursDistribution(this.year).subscribe({
-        next: blob => { saveAs(blob, `GeneratorRunHoursDistribution_${this.year}.xlsx`); },
-        error: err => { console.error('Export failed', err); }
-      });
-    }
-
-    //5th chart
-    exportGeneratorSiteWiseEmissionProfile() {
-      this.svc.ExportGeneratorSiteWiseEmissionProfile(this.year).subscribe({
-        next: blob => { saveAs(blob, `GeneratorSiteWiseEmissionProfile_${this.year}.xlsx`); },
-        error: err => { console.error('Export failed', err); }
-      });
-    }
+  exportGeneratorSiteWiseEmissionProfile(): void {
+    this.svc.ExportGeneratorSiteWiseEmissionProfile(
+      this.year, this.fromDate, this.toDate
+    ).subscribe({
+      next: blob => saveAs(blob, `GeneratorSiteWiseEmissionProfile_${this.fromDate}_${this.toDate}.xlsx`),
+      error: err => console.error('Export failed', err)
+    });
+  }
 }

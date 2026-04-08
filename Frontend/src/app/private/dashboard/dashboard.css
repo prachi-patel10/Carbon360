@@ -575,12 +575,23 @@ ul.deep-submenu > li:hover {
   overflow: visible;
 }
 
-.banner-right {
+/* .banner-right {
   display: flex;
   align-items: center;
   gap: 10px;
   flex-wrap: wrap;
   max-width: 100%;
+} */
+
+.banner-right {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: nowrap;
+  overflow: visible;
+  position: relative;
+  z-index: 10;
 }
 
 .gov-sync-btn {
@@ -1044,3 +1055,64 @@ ul.deep-submenu > li:hover {
   .module-tab span { display: none; }
   .module-tab { padding: 10px; }
 }
+
+
+/* date-range picker */
+
+.range-popup {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  background: #f9fafb; /* softer gray background */
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  width: 320px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  z-index: 9999; /* ✅ ensures popup floats above dashboard panels */
+  overflow: hidden;
+}
+
+
+.range-popup {
+  background: #f9fafb; /* light gray background */
+}
+
+.date-field input {
+  background: #fefefe; /* slightly off‑white */
+  color: #374151;
+}
+
+.qr-btn:hover {
+  background: #e8f5e9; /* light green hover */
+  border-color: #1b5e20;
+  color: #1b5e20;
+}
+
+.qr-btn.active {
+  background: #1b5e20; /* dark green active */
+  border-color: #1b5e20;
+  color: #fff;
+  font-weight: 500;
+}
+
+/* Allow date-range popup to show fully */
+.main-section {
+  overflow: visible !important; /* instead of hidden */
+}
+
+.dash-banner {
+  overflow: visible !important; /* instead of hidden */
+}
+
+/* Ensure popup floats above dashboard panels */
+.range-wrapper {
+  overflow: visible !important;
+}
+
+.range-popup {
+  z-index: 2000 !important; /* higher than sidebar/topbar */
+  background: #f0fdf4;       /* light mint green to match dashboard theme */
+  border: 1px solid #bbf7d0;
+}
+
+

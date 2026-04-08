@@ -8,6 +8,7 @@ namespace ProjectApp.Core.DTOs.Charts
 {
     public class MonthlyEmissionRawDto
     {
+        public int YearNumber { get; set; }
         public int MonthNumber { get; set; }
         public decimal TotalCO2 { get; set; }
         public decimal TotalNO2 { get; set; }

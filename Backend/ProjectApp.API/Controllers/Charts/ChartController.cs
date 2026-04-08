@@ -11,323 +11,300 @@ namespace ProjectApp.API.Controllers.Charts
     {
         private readonly IChartService _service;
 
-        public ChartController(IChartService service)
+        public ChartController(IChartService service) => _service = service;
+
+        // ── Helper: parse & validate date range from query ────────────────────
+        private bool TryGetDateRange(
+    string? from, string? to,
+    out DateTime fromDate, out DateTime toDate, out IActionResult? error)
         {
-            _service = service;
+            fromDate = default;
+            toDate = default;
+            error = null;
+
+            if (!DateTime.TryParse(from, out fromDate) || !DateTime.TryParse(to, out toDate))
+            {
+                error = BadRequest(new { status = false, message = "Invalid date range. Use yyyy-MM-dd." });
+                return false;
+            }
+
+            if (fromDate > toDate)
+            {
+                error = BadRequest(new { status = false, message = "fromDate must be <= toDate." });
+                return false;
+            }
+
+            return true;
         }
 
-        // ── Fuel Consumption Charts ───────────────────────────────────────
-        // SP: USP_CB_VehicleFuelMonthlyConsumption
-        // Returns: List<FuelTypeMonthlyConsumptionDto>
-        // Shows:   Stacked/grouped bar — vehicle fuel usage by fuel type per month
+        // ── Fuel ─────────────────────────────────────────────────────────────
         [HttpGet("VehicleMonthly")]
-        public async Task<IActionResult> VehicleMonthly([FromQuery] int year)
+        public async Task<IActionResult> VehicleMonthly(
+            [FromQuery] string fromDate, [FromQuery] string toDate)
         {
-            var data = await _service.GetVehicleFuelMonthlyConsumptionAsync(year);
+            if (!TryGetDateRange(fromDate, toDate, out var from, out var to, out var err)) return err!;
+            var data = await _service.GetVehicleFuelMonthlyConsumptionAsync(from, to);
             return Ok(new { status = true, data });
         }
 
-        // SP: USP_CB_GeneratorFuelMonthlyConsumption
-        // Returns: List<FuelTypeMonthlyConsumptionDto>
-        // Shows:   Stacked/grouped bar — generator fuel usage by fuel type per month
         [HttpGet("GeneratorMonthly")]
-        public async Task<IActionResult> GeneratorMonthly([FromQuery] int year)
+        public async Task<IActionResult> GeneratorMonthly(
+            [FromQuery] string fromDate, [FromQuery] string toDate)
         {
-            var data = await _service.GetGeneratorFuelMonthlyConsumptionAsync(year);
+            if (!TryGetDateRange(fromDate, toDate, out var from, out var to, out var err)) return err!;
+            var data = await _service.GetGeneratorFuelMonthlyConsumptionAsync(from, to);
             return Ok(new { status = true, data });
         }
 
-        // SP: USP_CB_CombinedFuelMonthlyConsumption
-        // Returns: FuelCombinedChartResponseDto  (labels + stacked datasets)
-        // Shows:   Stacked bar — both vehicle & generator fuel side-by-side per month
         [HttpGet("CombinedFuelChart")]
-        public async Task<IActionResult> CombinedFuelChart([FromQuery] int year)
+        public async Task<IActionResult> CombinedFuelChart(
+            [FromQuery] string fromDate, [FromQuery] string toDate)
         {
-            var data = await _service.GetCombinedFuelChartAsync(year);
+            if (!TryGetDateRange(fromDate, toDate, out var from, out var to, out var err)) return err!;
+            var data = await _service.GetCombinedFuelChartAsync(from, to);
             return Ok(new { status = true, data });
         }
 
-        // ── Emission Charts ───────────────────────────────────────────────
-        // SP: USP_CB_VehicleEmissionMonthlyChart
-        // Returns: MonthlyEmissionChartResponseDto  (4 line datasets)
-        // Shows:   Multi-line chart — TotalCO2e, CO2, NO2, CH4 per month for vehicles
+        // ── Emissions ─────────────────────────────────────────────────────────
         [HttpGet("VehicleEmissionChart")]
-        public async Task<IActionResult> VehicleEmissionChart([FromQuery] int year)
+        public async Task<IActionResult> VehicleEmissionChart(
+            [FromQuery] string fromDate, [FromQuery] string toDate)
         {
-            var data = await _service.GetVehicleEmissionChartAsync(year);
+            if (!TryGetDateRange(fromDate, toDate, out var from, out var to, out var err)) return err!;
+            var data = await _service.GetVehicleEmissionChartAsync(from, to);
             return Ok(new { status = true, data });
         }
 
-        // SP: USP_CB_GeneratorEmissionMonthlyChart
-        // Returns: MonthlyEmissionChartResponseDto  (4 line datasets)
-        // Shows:   Multi-line chart — TotalCO2e, CO2, NO2, CH4 per month for generators
         [HttpGet("GeneratorEmissionChart")]
-        public async Task<IActionResult> GeneratorEmissionChart([FromQuery] int year)
+        public async Task<IActionResult> GeneratorEmissionChart(
+            [FromQuery] string fromDate, [FromQuery] string toDate)
         {
-            var data = await _service.GetGeneratorEmissionChartAsync(year);
+            if (!TryGetDateRange(fromDate, toDate, out var from, out var to, out var err)) return err!;
+            var data = await _service.GetGeneratorEmissionChartAsync(from, to);
             return Ok(new { status = true, data });
         }
 
-        // ── Generator Run Hours ───────────────────────────────────────────
-        // SP: USP_CB_GeneratorRunHoursByBase
-        // Returns: GeneratorRunHoursChartResponseDto
-        // Shows:   Pie/donut chart — share of run hours per generator for the year
+        // ── Generator Run Hours ───────────────────────────────────────────────
         [HttpGet("GeneratorRunHours")]
-        public async Task<IActionResult> GeneratorRunHours([FromQuery] int year)
+        public async Task<IActionResult> GeneratorRunHours(
+            [FromQuery] string fromDate, [FromQuery] string toDate)
         {
-            var data = await _service.GetGeneratorRunHoursByBaseAsync(year);
+            if (!TryGetDateRange(fromDate, toDate, out var from, out var to, out var err)) return err!;
+            var data = await _service.GetGeneratorRunHoursByBaseAsync(from, to);
             return Ok(new { status = true, data });
         }
 
-        // SP: USP_CB_GeneratorRunHoursMonthly
-        // Returns: GeneratorRunHoursMonthlyPivotDto
-        // Shows:   Grouped bar / pivot table — run hours per generator per month
-        //          Also carries fuel consumed & power output per generator per month
         [HttpGet("GeneratorRunHoursMonthly")]
-        public async Task<IActionResult> GeneratorRunHoursMonthly([FromQuery] int year)
+        public async Task<IActionResult> GeneratorRunHoursMonthly(
+            [FromQuery] string fromDate, [FromQuery] string toDate)
         {
-            var data = await _service.GetGeneratorRunHoursMonthlyAsync(year);
+            if (!TryGetDateRange(fromDate, toDate, out var from, out var to, out var err)) return err!;
+            var data = await _service.GetGeneratorRunHoursMonthlyAsync(from, to);
             return Ok(new { status = true, data });
         }
 
-        // ── Generator Load Factor ─────────────────────────────────────────
-        // SP: USP_CB_GeneratorLoadFactorMonthly
-        // Returns: GeneratorLoadFactorChartResponseDto
-        // Shows:   Multi-line chart — Avg/Max/Min load factor per generator per month
-        [HttpGet("GeneratorLoadFactor")]
-        public async Task<IActionResult> GeneratorLoadFactor([FromQuery] int year)
-        {
-            var data = await _service.GetGeneratorLoadFactorMonthlyAsync(year);
-            return Ok(new { status = true, data });
-        }
-
-        // ── Vehicle Distance Charts ───────────────────────────────────────
-        // SP: USP_CB_VehicleTotalDistanceMonthly
-        // Returns: VehicleDistanceChartResponseDto
-        // Shows:   Bar chart — total KM driven per month (also carries trips & fuel)
+        // ── Vehicle Distance ──────────────────────────────────────────────────
         [HttpGet("VehicleDistanceMonthly")]
-        public async Task<IActionResult> VehicleDistanceMonthly([FromQuery] int year)
+        public async Task<IActionResult> VehicleDistanceMonthly(
+            [FromQuery] string fromDate, [FromQuery] string toDate)
         {
-            var data = await _service.GetVehicleTotalDistanceMonthlyAsync(year);
+            if (!TryGetDateRange(fromDate, toDate, out var from, out var to, out var err)) return err!;
+            var data = await _service.GetVehicleTotalDistanceMonthlyAsync(from, to);
             return Ok(new { status = true, data });
         }
 
-        // SP: USP_CB_VehicleTypeWiseDistance
-        // Returns: VehicleTypeDistancePivotDto
-        // Shows:   Stacked bar / pivot — distance per vehicle type per month
-        //          Also carries trips & fuel consumed per type per month
         [HttpGet("VehicleTypeDistance")]
-        public async Task<IActionResult> VehicleTypeDistance([FromQuery] int year)
+        public async Task<IActionResult> VehicleTypeDistance(
+            [FromQuery] string fromDate, [FromQuery] string toDate)
         {
-            var data = await _service.GetVehicleTypeWiseDistanceAsync(year);
+            if (!TryGetDateRange(fromDate, toDate, out var from, out var to, out var err)) return err!;
+            var data = await _service.GetVehicleTypeWiseDistanceAsync(from, to);
             return Ok(new { status = true, data });
         }
 
-        // ── City / Site Emission Charts ───────────────────────────────────
-        // SP: USP_CB_VehicleCityWiseEmissions
-        // Returns: List<CityEmissionDto>
-        // Shows:   Horizontal bar / map chart — vehicle emissions per departure city
+        // ── City / Site ───────────────────────────────────────────────────────
         [HttpGet("VehicleCityEmissions")]
-        public async Task<IActionResult> VehicleCityEmissions([FromQuery] int year)
+        public async Task<IActionResult> VehicleCityEmissions(
+            [FromQuery] string fromDate, [FromQuery] string toDate)
         {
-            var data = await _service.GetVehicleCityWiseEmissionsAsync(year);
+            if (!TryGetDateRange(fromDate, toDate, out var from, out var to, out var err)) return err!;
+            var data = await _service.GetVehicleCityWiseEmissionsAsync(from, to);
             return Ok(new { status = true, data });
         }
 
-        // SP: USP_CB_GeneratorSiteWiseEmissions
-        // Returns: List<SiteEmissionDto>
-        // Shows:   Horizontal bar / map chart — generator emissions per site
         [HttpGet("GeneratorSiteEmissions")]
-        public async Task<IActionResult> GeneratorSiteEmissions([FromQuery] int year)
+        public async Task<IActionResult> GeneratorSiteEmissions(
+            [FromQuery] string fromDate, [FromQuery] string toDate)
         {
-            var data = await _service.GetGeneratorSiteWiseEmissionsAsync(year);
+            if (!TryGetDateRange(fromDate, toDate, out var from, out var to, out var err)) return err!;
+            var data = await _service.GetGeneratorSiteWiseEmissionsAsync(from, to);
             return Ok(new { status = true, data });
         }
 
-        // ── Dashboard KPI Summaries ───────────────────────────────────────
-        // SP: USP_CB_VehicleSummary
-        // Returns: VehicleSummaryDto  (single row)
-        // Shows:   KPI cards — total CO2e, fuel consumed, distance, trips for the year
+        // ── Summaries ─────────────────────────────────────────────────────────
         [HttpGet("VehicleSummary")]
-        public async Task<IActionResult> VehicleSummary([FromQuery] int year)
+        public async Task<IActionResult> VehicleSummary(
+            [FromQuery] string fromDate, [FromQuery] string toDate)
         {
-            var data = await _service.GetVehicleSummaryAsync(year);
+            if (!TryGetDateRange(fromDate, toDate, out var from, out var to, out var err)) return err!;
+            var data = await _service.GetVehicleSummaryAsync(from, to);
             return Ok(new { status = true, data });
         }
 
-        // SP: USP_CB_GeneratorSummary
-        // Returns: GeneratorSummaryDto  (single row)
-        // Shows:   KPI cards — total CO2e, fuel consumed, run hours, power output for the year
         [HttpGet("GeneratorSummary")]
-        public async Task<IActionResult> GeneratorSummary([FromQuery] int year)
+        public async Task<IActionResult> GeneratorSummary(
+            [FromQuery] string fromDate, [FromQuery] string toDate)
         {
-            var data = await _service.GetGeneratorSummaryAsync(year);
+            if (!TryGetDateRange(fromDate, toDate, out var from, out var to, out var err)) return err!;
+            var data = await _service.GetGeneratorSummaryAsync(from, to);
             return Ok(new { status = true, data });
         }
 
-        [HttpGet("ExportVehicleFuel")]
-        public async Task<IActionResult> ExportVehicleFuel([FromQuery] int year)
+        // ── Category ──────────────────────────────────────────────────────────
+        [HttpGet("VehicleCategoryEmission")]
+        public async Task<IActionResult> VehicleCategoryEmission(
+            [FromQuery] string fromDate, [FromQuery] string toDate)
         {
-            var fileBytes = await _service.ExportVehicleFuelExcelAsync(year);
+            if (!TryGetDateRange(fromDate, toDate, out var from, out var to, out var err)) return err!;
+            var data = await _service.GetVehicleCategoryWiseEmissionAsync(from, to);
+            return Ok(new { status = true, data });
+        }
 
-            return File(
-                fileBytes,
+        // ── Exports ───────────────────────────────────────────────────────────
+        [HttpGet("ExportVehicleFuel")]
+        public async Task<IActionResult> ExportVehicleFuel(
+            [FromQuery] string fromDate, [FromQuery] string toDate)
+        {
+            if (!TryGetDateRange(fromDate, toDate, out var from, out var to, out var err)) return err!;
+            var fileBytes = await _service.ExportVehicleFuelExcelAsync(from, to);
+            return File(fileBytes,
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                $"VehicleFuel_{year}.xlsx"
-            );
+                $"VehicleFuel_{from:yyyy-MM-dd}_to_{to:yyyy-MM-dd}.xlsx");
         }
 
         [HttpGet("ExportVehicleEmission")]
-        public async Task<IActionResult> ExportVehicleEmission([FromQuery] int year)
+        public async Task<IActionResult> ExportVehicleEmission(
+            [FromQuery] string fromDate, [FromQuery] string toDate)
         {
-            var fileBytes = await _service.ExportVehicleEmissionExcelAsync(year);
-            return File(
-                fileBytes,
+            if (!TryGetDateRange(fromDate, toDate, out var from, out var to, out var err)) return err!;
+            var fileBytes = await _service.ExportVehicleEmissionExcelAsync(from, to);
+            return File(fileBytes,
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                $"VehicleEmission_{year}.xlsx"
-            );
+                $"VehicleEmission_{from:yyyy-MM-dd}_to_{to:yyyy-MM-dd}.xlsx");
         }
 
         [HttpGet("ExportVehicleDistance")]
-        public async Task<IActionResult> ExportVehicleDistance([FromQuery] int year)
+        public async Task<IActionResult> ExportVehicleDistance(
+            [FromQuery] string fromDate, [FromQuery] string toDate)
         {
-            var fileBytes = await _service.ExportVehicleDistanceExcelAsync(year);
-            return File(
-                fileBytes,
+            if (!TryGetDateRange(fromDate, toDate, out var from, out var to, out var err)) return err!;
+            var fileBytes = await _service.ExportVehicleDistanceExcelAsync(from, to);
+            return File(fileBytes,
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                $"VehicleDistance_{year}.xlsx"
-            );
+                $"VehicleDistance_{from:yyyy-MM-dd}_to_{to:yyyy-MM-dd}.xlsx");
         }
 
         [HttpGet("ExportVehicleTypeDistance")]
-        public async Task<IActionResult> ExportVehicleTypeDistance([FromQuery] int year)
+        public async Task<IActionResult> ExportVehicleTypeDistance(
+            [FromQuery] string fromDate, [FromQuery] string toDate)
         {
-            var fileBytes = await _service.ExportVehicleTypeDistanceExcelAsync(year);
-
-            return File(
-                fileBytes,
+            if (!TryGetDateRange(fromDate, toDate, out var from, out var to, out var err)) return err!;
+            var fileBytes = await _service.ExportVehicleTypeDistanceExcelAsync(from, to);
+            return File(fileBytes,
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                $"VehicleTypeDistance_{year}.xlsx"
-            );
+                $"VehicleTypeDistance_{from:yyyy-MM-dd}_to_{to:yyyy-MM-dd}.xlsx");
         }
 
         [HttpGet("ExportVehicleTypeDistancePieChart")]
-        public async Task<IActionResult> ExportVehicleTypeDistancePie([FromQuery] int year)
+        public async Task<IActionResult> ExportVehicleTypeDistancePie(
+            [FromQuery] string fromDate, [FromQuery] string toDate)
         {
-            var fileBytes = await _service.ExportVehicleTypeDistancePieExcelAsync(year);
-
-            return File(
-            fileBytes,
-            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            $"VehicleTypeDistancePie_{year}.xlsx"
-            );
+            if (!TryGetDateRange(fromDate, toDate, out var from, out var to, out var err)) return err!;
+            var fileBytes = await _service.ExportVehicleTypeDistancePieExcelAsync(from, to);
+            return File(fileBytes,
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                $"VehicleTypeDistancePie_{from:yyyy-MM-dd}_to_{to:yyyy-MM-dd}.xlsx");
         }
 
         [HttpGet("ExportCityWiseEmissionChart")]
-        public async Task<IActionResult> ExportCityWiseEmissionChart([FromQuery] int year)
+        public async Task<IActionResult> ExportCityWiseEmissionChart(
+            [FromQuery] string fromDate, [FromQuery] string toDate)
         {
-            var fileBytes = await _service.ExportCityWiseEmissionExcelAsync(year);
-
+            if (!TryGetDateRange(fromDate, toDate, out var from, out var to, out var err)) return err!;
+            var fileBytes = await _service.ExportCityWiseEmissionExcelAsync(from, to);
             if (fileBytes == null || fileBytes.Length == 0)
-                return NotFound("No data found for the given year.");
-
-            return File(
-                fileBytes,
+                return NotFound("No data found for the given range.");
+            return File(fileBytes,
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                $"CityWiseEmission_{year}.xlsx"
-            );
+                $"CityWiseEmission_{from:yyyy-MM-dd}_to_{to:yyyy-MM-dd}.xlsx");
         }
-
-        // ── Category endpoints (unchanged from before) ──
-        [HttpGet("VehicleCategoryEmission")]
-        public async Task<IActionResult> VehicleCategoryEmission([FromQuery] int year)
-        {
-            var data = await _service.GetVehicleCategoryWiseEmissionAsync(year);
-            return Ok(new { status = true, data });
-        }
-
-        //[HttpGet("ExportVehicleCategoryEmission")]
-        //public async Task<IActionResult> ExportVehicleCategoryEmission([FromQuery] int year)
-        //{
-        //    var fileBytes = await _service.ExportVehicleCategoryEmissionExcelAsync(year);
-        //    if (fileBytes == null || fileBytes.Length == 0)
-        //        return NotFound("No data found for the given year.");
-
-        //    return File(
-        //        fileBytes,
-        //        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        //        $"VehicleCategoryEmission_{year}.xlsx"
-        //    );
-        //}
 
         [HttpGet("ExportGeneratorFuel")]
-        public async Task<IActionResult> ExportGeneratorFuel([FromQuery] int year)
+        public async Task<IActionResult> ExportGeneratorFuel(
+            [FromQuery] string fromDate, [FromQuery] string toDate)
         {
-            var fileBytes = await _service.ExportCityWiseEmissionExcelGeneratorAsync(year);
-
-            return File(
-                fileBytes,
+            if (!TryGetDateRange(fromDate, toDate, out var from, out var to, out var err)) return err!;
+            var fileBytes = await _service.ExportCityWiseEmissionExcelGeneratorAsync(from, to);
+            return File(fileBytes,
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                $"GeneratorFuel_{year}.xlsx"
-            );
+                $"GeneratorFuel_{from:yyyy-MM-dd}_to_{to:yyyy-MM-dd}.xlsx");
         }
 
         [HttpGet("ExportGeneratorEmissionLineChart")]
-        public async Task<IActionResult> ExportGeneratorEmission([FromQuery] int year)
+        public async Task<IActionResult> ExportGeneratorEmission(
+            [FromQuery] string fromDate, [FromQuery] string toDate)
         {
-            var fileBytes = await _service.ExportGeneratorEmissionExcelLineChartAsync(year);
-
-            return File(
-                fileBytes,
+            if (!TryGetDateRange(fromDate, toDate, out var from, out var to, out var err)) return err!;
+            var fileBytes = await _service.ExportGeneratorEmissionExcelLineChartAsync(from, to);
+            return File(fileBytes,
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                $"GeneratorEmission_{year}.xlsx"
-            );
+                $"GeneratorEmission_{from:yyyy-MM-dd}_to_{to:yyyy-MM-dd}.xlsx");
         }
 
         [HttpGet("ExportGeneratorPie")]
-        public async Task<IActionResult> ExportGeneratorPie(int year)
+        public async Task<IActionResult> ExportGeneratorPie(
+            [FromQuery] string fromDate, [FromQuery] string toDate)
         {
-            var file = await _service.ExportGeneratorRunHoursPieChartAsync(year);
-
+            if (!TryGetDateRange(fromDate, toDate, out var from, out var to, out var err)) return err!;
+            var file = await _service.ExportGeneratorRunHoursPieChartAsync(from, to);
             return File(file,
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 "GeneratorPieChart.xlsx");
         }
 
-
         [HttpGet("ExportGeneratorRunHoursMonthWisePivotTbl")]
-        public async Task<IActionResult> ExportGeneratorRunHoursMonthWisePivotTbl(int year)
+        public async Task<IActionResult> ExportGeneratorRunHoursMonthWisePivotTbl(
+            [FromQuery] string fromDate, [FromQuery] string toDate)
         {
-            var file = await _service.ExportGeneratorRunHoursMonthlyExcelAsync(year);
-
+            if (!TryGetDateRange(fromDate, toDate, out var from, out var to, out var err)) return err!;
+            var file = await _service.ExportGeneratorRunHoursMonthlyExcelAsync(from, to);
             return File(file,
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 "GeneratorRunHoursMonthWise.xlsx");
         }
 
         [HttpGet("export-site-emission-chart")]
-        public async Task<IActionResult> ExportSiteEmissionChart(int year)
+        public async Task<IActionResult> ExportSiteEmissionChart(
+            [FromQuery] string fromDate, [FromQuery] string toDate)
         {
-            var file = await _service.ExportSiteEmissionChartAsync(year);
-
+            if (!TryGetDateRange(fromDate, toDate, out var from, out var to, out var err)) return err!;
+            var file = await _service.ExportSiteEmissionChartAsync(from, to);
             return File(file,
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 "SiteEmissionChart.xlsx");
         }
 
         [HttpGet("ExportVehicleCategoryEmission")]
-        public async Task<IActionResult> ExportVehicleCategoryEmission([FromQuery] int year)
+        public async Task<IActionResult> ExportVehicleCategoryEmission(
+            [FromQuery] string fromDate, [FromQuery] string toDate)
         {
-            var fileBytes = await _service.ExportVehicleCategoryEmissionExcelAsync(year);
-
+            if (!TryGetDateRange(fromDate, toDate, out var from, out var to, out var err)) return err!;
+            var fileBytes = await _service.ExportVehicleCategoryEmissionExcelAsync(from, to);
             if (fileBytes == null || fileBytes.Length == 0)
-                return NotFound("No data found for the given year.");
-
-            return File(
-                fileBytes,
+                return NotFound("No data found for the given range.");
+            return File(fileBytes,
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                $"VehicleCategoryEmission_{year}.xlsx"
-            );
+                $"VehicleCategoryEmission_{from:yyyy-MM-dd}_to_{to:yyyy-MM-dd}.xlsx");
         }
     }
 }

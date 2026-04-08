@@ -109,10 +109,8 @@ export class SearchGenerator implements OnInit, AfterViewInit {
 
     const toIsoDate = (raw: string | null): string | null => {
       if (!raw) return null;
-      const d = new Date(raw);
-      if (isNaN(d.getTime())) return null;
-      d.setHours(0, 0, 0, 0);
-      return d.toISOString();
+      const clean = raw.trim().substring(0, 10); // just "2026-03-01"
+      return /^\d{4}-\d{2}-\d{2}$/.test(clean) ? clean : null;
     };
 
     this.route.queryParams.subscribe(params => {
@@ -142,18 +140,18 @@ export class SearchGenerator implements OnInit, AfterViewInit {
 
       if (params['source'] === 'chart') {
 
-        if (params['fuelType'])      this.selectedFuels   = [params['fuelType'].trim()];
+        if (params['fuelType']) this.selectedFuels = [params['fuelType'].trim()];
         if (params['generatorName']) this.selectedGenTypes = [params['generatorName'].trim()];
 
         // ✅ Use signal .set()
-        if (params['siteNames'])     this.chartSiteName.set(params['siteNames'].trim());
+        if (params['siteNames']) this.chartSiteName.set(params['siteNames'].trim());
 
         this.searchText.set('');
 
-        const opStart = toIsoDate(params['startDate']);
-        const opEnd   = toIsoDate(params['endDate']);
+        const opStart = toIsoDate(params['startDate']); // now returns "2026-03-01"
+        const opEnd = toIsoDate(params['endDate']);   // now returns "2026-03-31"
         if (opStart) this.operationStartDate.set(opStart);
-        if (opEnd)   this.operationEndDate.set(opEnd);
+        if (opEnd) this.operationEndDate.set(opEnd);
 
         this.applyPickersIfReady();
 
@@ -250,10 +248,10 @@ export class SearchGenerator implements OnInit, AfterViewInit {
       ? undefined
       : (this.searchText()?.trim() || undefined);
 
-    const opStart    = this.operationStartDate() || undefined;
-    const opEnd      = this.operationEndDate()   || undefined;
-    const entryStart = this.entryStartDate()     || undefined;
-    const entryEnd   = this.entryEndDate()       || undefined;
+    const opStart = this.operationStartDate()?.substring(0, 10) || undefined;
+    const opEnd = this.operationEndDate()?.substring(0, 10) || undefined;
+    const entryStart = this.entryStartDate() || undefined;
+    const entryEnd = this.entryEndDate() || undefined;
 
     this.service.searchEmissions(
       this.currentPage(), this.pageSize,
@@ -265,13 +263,13 @@ export class SearchGenerator implements OnInit, AfterViewInit {
     ).subscribe({
       next: (res: any) => {
         const records = res.data ?? [];
-        const total   = res.totalRecords ?? 0;
+        const total = res.totalRecords ?? 0;
 
         const mapped = records.map((e: any) => ({
           ...e,
           generatorName: e.generatorName ?? 'Unknown Generator',
-          fuelType:      e.fuelType      ?? 'Unknown',
-          status:        e.statusName    ?? (e.statusId === 1 ? 'Completed' : 'Pending'),
+          fuelType: e.fuelType ?? 'Unknown',
+          status: e.statusName ?? (e.statusId === 1 ? 'Completed' : 'Pending'),
           totalEmission: e.totalEmission ?? 0,
         }));
 
@@ -411,7 +409,7 @@ export class SearchGenerator implements OnInit, AfterViewInit {
     const t = e.target as HTMLElement;
     if (!t.closest('.fuel-multiselect')) this.fuelDropdownOpen = false;
     if (!t.closest('.site-multiselect')) this.SiteDropdownOpen = false;
-    if (!t.closest('.gen-multiselect'))  this.genDropdownOpen  = false;
+    if (!t.closest('.gen-multiselect')) this.genDropdownOpen = false;
   }
 
   // ── Search ─────────────────────────────────────────────────────
@@ -426,10 +424,10 @@ export class SearchGenerator implements OnInit, AfterViewInit {
 
   onDateRangeSelected(range: { startDate: Date | null; endDate: Date | null }): void {
     this.operationStartDate.set(
-      range.startDate ? range.startDate.toISOString().substring(0, 10) : null
+      range.startDate ? this.toLocalDateString(range.startDate) : null
     );
     this.operationEndDate.set(
-      range.endDate ? range.endDate.toISOString().substring(0, 10) : null
+      range.endDate ? this.toLocalDateString(range.endDate) : null
     );
     this.applyFilters();
   }
@@ -438,10 +436,10 @@ export class SearchGenerator implements OnInit, AfterViewInit {
 
   onEntryDateRangeSelected(range: { startDate: Date | null; endDate: Date | null }): void {
     this.entryStartDate.set(
-      range.startDate ? range.startDate.toISOString().substring(0, 10) : null
+      range.startDate ? this.toLocalDateString(range.startDate) : null
     );
     this.entryEndDate.set(
-      range.endDate ? range.endDate.toISOString().substring(0, 10) : null
+      range.endDate ? this.toLocalDateString(range.endDate) : null
     );
     this.applyFilters();
   }
@@ -449,14 +447,14 @@ export class SearchGenerator implements OnInit, AfterViewInit {
   // ── Reset ──────────────────────────────────────────────────────
 
   resetFilters(): void {
-    this.selectedFuels    = []; this.fuelDropdownOpen = false;
-    this.selectedSite     = []; this.SiteDropdownOpen = false;
-    this.selectedGenTypes = []; this.genDropdownOpen  = false;
+    this.selectedFuels = []; this.fuelDropdownOpen = false;
+    this.selectedSite = []; this.SiteDropdownOpen = false;
+    this.selectedGenTypes = []; this.genDropdownOpen = false;
     this.chartSiteName.set(null);                          // ✅ signal
     this.searchText.set('');
     this.operationStartDate.set(null); this.operationEndDate.set(null);
-    this.entryStartDate.set(null);     this.entryEndDate.set(null);
-    this._pendingOpStart = null;       this._pendingOpEnd = null;
+    this.entryStartDate.set(null); this.entryEndDate.set(null);
+    this._pendingOpStart = null; this._pendingOpEnd = null;
     this.currentPage.set(1);
     this.opDatePicker?.reset();
     this.entryDatePicker?.reset();
@@ -470,8 +468,8 @@ export class SearchGenerator implements OnInit, AfterViewInit {
   // ── Pagination ─────────────────────────────────────────────────
 
   paginatedData() { return this.filteredData(); }
-  totalRecords()  { return this.totalRecordsCount(); }
-  totalPages()    { return this.totalPagesCount(); }
+  totalRecords() { return this.totalRecordsCount(); }
+  totalPages() { return this.totalPagesCount(); }
 
   goToPage(page: number): void {
     if (page < 1 || page > this.totalPages()) return;
@@ -531,13 +529,13 @@ export class SearchGenerator implements OnInit, AfterViewInit {
       })
       .then((blob: any) => {
         const now = new Date();
-        const ts  = now.getFullYear()
+        const ts = now.getFullYear()
           + String(now.getMonth() + 1).padStart(2, '0')
           + String(now.getDate()).padStart(2, '0') + '_'
           + String(now.getHours()).padStart(2, '0')
           + String(now.getMinutes()).padStart(2, '0')
           + String(now.getSeconds()).padStart(2, '0');
-        const url  = URL.createObjectURL(blob);
+        const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url; link.download = `Search_PowerGenerator_${ts}.pdf`;
         document.body.appendChild(link); link.click();
@@ -562,10 +560,10 @@ export class SearchGenerator implements OnInit, AfterViewInit {
       params.siteNames = this.chartSiteName();
     else if (this.selectedSite.length > 0)
       params.siteNames = this.selectedSite.join(',');
-    if (this.operationStartDate()) params.startDate    = this.operationStartDate();
-    if (this.operationEndDate())   params.endDate      = this.operationEndDate();
-    if (this.entryStartDate())     params.entryStartDate = this.entryStartDate();
-    if (this.entryEndDate())       params.entryEndDate   = this.entryEndDate();
+    if (this.operationStartDate()) params.startDate = this.operationStartDate();
+    if (this.operationEndDate()) params.endDate = this.operationEndDate();
+    if (this.entryStartDate()) params.entryStartDate = this.entryStartDate();
+    if (this.entryEndDate()) params.entryEndDate = this.entryEndDate();
     params.isExport = true;
 
     this.service.exportExcel(params).subscribe(blob => {
@@ -573,9 +571,9 @@ export class SearchGenerator implements OnInit, AfterViewInit {
         type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
       });
       const url = URL.createObjectURL(file);
-      const a   = document.createElement('a');
+      const a = document.createElement('a');
       const now = new Date();
-      const ts  = ('0' + now.getDate()).slice(-2)
+      const ts = ('0' + now.getDate()).slice(-2)
         + ('0' + (now.getMonth() + 1)).slice(-2) + now.getFullYear() + '_'
         + ('0' + now.getHours()).slice(-2)
         + ('0' + now.getMinutes()).slice(-2)
@@ -584,4 +582,12 @@ export class SearchGenerator implements OnInit, AfterViewInit {
       a.href = url; a.click(); URL.revokeObjectURL(url);
     });
   }
+
+  private toLocalDateString(date: Date): string {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`; // "2026-03-01" — no UTC shift
+  }
+
 }

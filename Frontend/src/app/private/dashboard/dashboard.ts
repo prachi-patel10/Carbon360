@@ -12,6 +12,7 @@ import { Subject, forkJoin } from 'rxjs';
 import { VehicleCharts } from '../vehicle-charts/vehicle-charts';
 import { GeneratorCharts } from '../generator-charts/generator-charts';
 import { DashboardService, DashboardSummaryResponse } from './dashboard-service';
+import { DateRangePickerComponent } from '../../public/date-range-picker-component/date-range-picker-component';
 
 // ── Extended summary that tracks vehicle vs generator separately ──────────────
 export interface SplitSummary {
@@ -23,7 +24,7 @@ export interface SplitSummary {
   selector: 'app-dashboard',
   templateUrl: './dashboard.html',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterOutlet, VehicleCharts, GeneratorCharts],
+  imports: [CommonModule, FormsModule, RouterOutlet, VehicleCharts, GeneratorCharts, DateRangePickerComponent],
   styleUrls: ['./dashboard.css']
 })
 export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
@@ -38,6 +39,9 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   openedSubMenu: string | null = null;
   openedMainMenu: string | null = null;
   firstName: string = '';
+
+  startDate = signal<Date | null>(null);
+  endDate = signal<Date | null>(null);
 
   @ViewChild(VehicleCharts) vehicleChartsRef!: VehicleCharts;
   @ViewChild(GeneratorCharts) generatorChartsRef!: GeneratorCharts;
@@ -100,7 +104,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     const user = this.authService.getLoggedInUser();
     if (!user) { this.router.navigate(['/login']); return; }
     // const user = JSON.parse(localStorage.getItem('user') || '{}');
-  this.firstName = user.firstName || user.name || 'User';
+    this.firstName = user.firstName || user.name || 'User';
 
     this.loggedInUser = user.name;
     this.roles = user.roles ?? [];
@@ -283,25 +287,25 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
   handleSidebarNavigation(menu: string, route: string): void {
 
-  if (!this.sidebarOpen) {
-    // ✅ Step 1: Open sidebar
-    this.sidebarOpen = true;
+    if (!this.sidebarOpen) {
+      // ✅ Step 1: Open sidebar
+      this.sidebarOpen = true;
 
-    // ✅ Step 2: Navigate
-    this.goTo(route);
+      // ✅ Step 2: Navigate
+      this.goTo(route);
 
-    // ✅ Step 3: Optional → open that menu automatically
-    this.openedMainMenu = menu;
-    this.openedConfigMenu = menu === 'configuration' ? menu : null;
-  } else {
-    // 👉 Normal behavior when sidebar already open
-    if (menu === 'configuration') {
-      this.toggleConfigMenu(menu);
+      // ✅ Step 3: Optional → open that menu automatically
+      this.openedMainMenu = menu;
+      this.openedConfigMenu = menu === 'configuration' ? menu : null;
     } else {
-      this.toggleMainMenu(menu);
+      // 👉 Normal behavior when sidebar already open
+      if (menu === 'configuration') {
+        this.toggleConfigMenu(menu);
+      } else {
+        this.toggleMainMenu(menu);
+      }
     }
   }
-}
 
   toggleConfigMenu(menu: string): void {
     this.openedConfigMenu = this.openedConfigMenu === menu ? null : menu;
@@ -343,58 +347,63 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
 
-// Active check
-isAnyCarbonActive(): boolean {
-  return this.router.url.includes('NgoMaster') ||
-         this.router.url.includes('Plantationproject') ||
-         this.router.url.includes('Ngoentryform');
-}
+  // Active check
+  isAnyCarbonActive(): boolean {
+    return this.router.url.includes('NgoMaster') ||
+      this.router.url.includes('Plantationproject') ||
+      this.router.url.includes('Ngoentryform');
+  }
 
-// Label for tooltip
-getActiveCarbonLabel(): string {
-  if (this.router.url.includes('NgoMaster')) return 'NGO Master';
-  if (this.router.url.includes('Plantationproject')) return 'Plantation Project';
-  if (this.router.url.includes('Ngoentryform')) return 'Report';
-  return 'Carbon Offset';
-}
+  // Label for tooltip
+  getActiveCarbonLabel(): string {
+    if (this.router.url.includes('NgoMaster')) return 'NGO Master';
+    if (this.router.url.includes('Plantationproject')) return 'Plantation Project';
+    if (this.router.url.includes('Ngoentryform')) return 'Report';
+    return 'Carbon Offset';
+  }
 
 
   // ── Load split summaries (vehicle + generator separately) ────────────────────
   loadSummaries(): void {
-  this.isSummaryLoading.set(true);
+    this.isSummaryLoading.set(true);
+    this.vehicleSummary.set(null);
+    this.generatorSummary.set(null);
 
-  // Reset to zero immediately when year changes
-  this.vehicleSummary.set(null);
-  this.generatorSummary.set(null);
+    const from = this.startDate() ?? new Date(new Date().getFullYear(), 0, 1);
+    const to = this.endDate() ?? new Date();
 
-  forkJoin({
-    vehicle:   this.svc.getVehicleSummary(this.selectedYear()),
-    generator: this.svc.getGeneratorSummary(this.selectedYear()),
-  })
-    .pipe(takeUntil(this.destroy$), finalize(() => this.isSummaryLoading.set(false)))
-    .subscribe({
-      next: ({ vehicle, generator }) => {
-        this.vehicleSummary.set(vehicle.status && vehicle.data ? vehicle.data : {
-          totalCO2e: 0, totalCO2: 0, totalNO2: 0, totalCH4: 0,
-          totalFuelConsumed: 0, totalDistanceKM: 0, totalPowerOutputKWH: 0
-        });
-        this.generatorSummary.set(generator.status && generator.data ? generator.data : {
-          totalCO2e: 0, totalCO2: 0, totalNO2: 0, totalCH4: 0,
-          totalFuelConsumed: 0, totalDistanceKM: 0, totalPowerOutputKWH: 0
-        });
-      },
-      error: () => {
-        // On error also reset to zero
-        const zero = {
-          totalCO2e: 0, totalCO2: 0, totalNO2: 0, totalCH4: 0,
-          totalFuelConsumed: 0, totalDistanceKM: 0, totalPowerOutputKWH: 0
-        };
-        this.vehicleSummary.set(zero);
-        this.generatorSummary.set(zero);
-      }
-    });
-}
+    // keep selectedYear in sync so chart components receive the correct year
+    this.selectedYear.set(from.getFullYear());
 
+    forkJoin({
+      vehicle: this.svc.getVehicleSummary(from, to),
+      generator: this.svc.getGeneratorSummary(from, to),
+    })
+      .pipe(takeUntil(this.destroy$), finalize(() => this.isSummaryLoading.set(false)))
+      .subscribe({
+        next: ({ vehicle, generator }) => {
+          const zero: DashboardSummaryResponse = {
+            totalCO2e: 0, totalCO2: 0, totalNO2: 0, totalCH4: 0,
+            totalFuelConsumed: 0, totalDistanceKM: 0, totalPowerOutputKWH: 0
+          };
+
+          this.vehicleSummary.set(
+            vehicle.status && vehicle.data ? vehicle.data : zero
+          );
+          this.generatorSummary.set(
+            generator.status && generator.data ? generator.data : zero
+          );
+        },
+        error: () => {
+          const zero: DashboardSummaryResponse = {
+            totalCO2e: 0, totalCO2: 0, totalNO2: 0, totalCH4: 0,
+            totalFuelConsumed: 0, totalDistanceKM: 0, totalPowerOutputKWH: 0
+          };
+          this.vehicleSummary.set(zero);
+          this.generatorSummary.set(zero);
+        }
+      });
+  }
   // ── Grid click handlers — navigate to search with query params ────────────────
 
   /**
@@ -421,6 +430,28 @@ getActiveCarbonLabel(): string {
 
   //GOV LINK
   openGovSync(): void {
-  this.router.navigate(['govSync'], { relativeTo: this.route });
-}
+    this.router.navigate(['govSync'], { relativeTo: this.route });
+  }
+
+  onDateRangeSelected(range: { startDate: Date | null; endDate: Date | null } | null): void {
+    if (range?.startDate && range?.endDate) {
+      this.startDate.set(range.startDate);
+      this.endDate.set(range.endDate);
+    } else {
+      this.startDate.set(null);
+      this.endDate.set(null);
+    }
+    // Reload KPI cards
+    this.loadSummaries();
+    // Reload charts after a tick so @Input bindings update first
+    setTimeout(() => {
+      this.vehicleChartsRef?.loadAll();
+      this.generatorChartsRef?.loadAll();
+    }, 50);
+  }
+
+  toDateStr(date: Date | null | undefined): string | undefined {
+    if (!date) return undefined;
+    return date.toISOString().split('T')[0];
+  }
 }

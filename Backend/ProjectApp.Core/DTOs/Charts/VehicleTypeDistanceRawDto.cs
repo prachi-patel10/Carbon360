@@ -8,6 +8,7 @@ namespace ProjectApp.Core.DTOs.Charts
 {
     public class VehicleTypeDistanceRawDto
     {
+        public int YearNumber { get; set; }
         public int MonthNumber { get; set; }
         public string MonthName { get; set; }
         public string VehicleTypeName { get; set; }

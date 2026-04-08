@@ -30,6 +30,8 @@ Chart.register(...registerables);
 export class VehicleCharts implements OnInit, AfterViewInit, OnChanges, OnDestroy {
 
   @Input() year: number = new Date().getFullYear();
+  @Input() fromDate?: string;
+  @Input() toDate?: string;
   @Output() gridRowClick = new EventEmitter<Record<string, any>>();
 
   @ViewChild('vehicleFuelCanvas') fuelCanvasRef!: ElementRef<HTMLCanvasElement>;
@@ -129,8 +131,13 @@ export class VehicleCharts implements OnInit, AfterViewInit, OnChanges, OnDestro
   }
 
   ngOnChanges(c: SimpleChanges): void {
-    if (c['year'] && !c['year'].firstChange) this.loadAll();
+  const yearChanged = c['year'] && !c['year'].firstChange;
+  const fromChanged = c['fromDate'] && !c['fromDate'].firstChange;
+  const toChanged = c['toDate'] && !c['toDate'].firstChange;
+  if (yearChanged || fromChanged || toChanged) {
+    this.loadAll();
   }
+}
 
   loadAll(): void {
     this.loadFuelChart();
@@ -248,7 +255,7 @@ export class VehicleCharts implements OnInit, AfterViewInit, OnChanges, OnDestro
     this.isFuelLoading.set(true); this.fuelError.set('');
     this.fuelChart?.destroy(); this.fuelChart = undefined;
     const empty: FuelCombinedChartResponse = { labels: this.getMonthLabels(), datasets: [] };
-    this.svc.getVehicleFuelMonthly(this.year)
+    this.svc.getVehicleFuelMonthly(this.year, this.fromDate, this.toDate)
       .pipe(takeUntil(this.destroy$), finalize(() => this.isFuelLoading.set(false)))
       .subscribe({
         next: res => {
@@ -275,7 +282,7 @@ export class VehicleCharts implements OnInit, AfterViewInit, OnChanges, OnDestro
     this.isEmissionLoading.set(true); this.emissionError.set('');
     this.emissionChart?.destroy(); this.emissionChart = undefined;
     const empty: MonthlyEmissionChartResponse = { labels: this.getMonthLabels(), datasets: [] };
-    this.svc.getVehicleEmissionChart(this.year)
+    this.svc.getVehicleEmissionChart(this.year, this.fromDate, this.toDate)
       .pipe(takeUntil(this.destroy$), finalize(() => this.isEmissionLoading.set(false)))
       .subscribe({
         next: res => {
@@ -305,7 +312,7 @@ export class VehicleCharts implements OnInit, AfterViewInit, OnChanges, OnDestro
       tripData: new Array(12).fill(0),
       fuelData: new Array(12).fill(0)
     };
-    this.svc.getVehicleDistanceMonthly(this.year)
+    this.svc.getVehicleDistanceMonthly(this.year, this.fromDate, this.toDate)
       .pipe(takeUntil(this.destroy$), finalize(() => this.isDistanceLoading.set(false)))
       .subscribe({
         next: res => {
@@ -322,7 +329,6 @@ export class VehicleCharts implements OnInit, AfterViewInit, OnChanges, OnDestro
         }
       });
   }
-
   // ═══════════════════════════════════════════════════════════════
   //  LOAD: Vehicle Type Wise
   // ═══════════════════════════════════════════════════════════════
@@ -334,7 +340,7 @@ export class VehicleCharts implements OnInit, AfterViewInit, OnChanges, OnDestro
       distanceMatrix: [], tripsMatrix: [], fuelMatrix: [],
       typeTotals: [], monthTotals: new Array(12).fill(0), grandTotal: 0, colors: []
     };
-    this.svc.getVehicleTypeWiseDistance(this.year)
+    this.svc.getVehicleTypeWiseDistance(this.year, this.fromDate, this.toDate)
       .pipe(takeUntil(this.destroy$), finalize(() => this.isVtypeLoading.set(false)))
       .subscribe({
         next: res => {
@@ -361,7 +367,7 @@ export class VehicleCharts implements OnInit, AfterViewInit, OnChanges, OnDestro
     this.categoryChart?.destroy();
     this.categoryChart = undefined;
 
-    this.svc.getVehicleCategoryEmission(this.year)
+    this.svc.getVehicleCategoryEmission(this.year, this.fromDate, this.toDate)
       .pipe(takeUntil(this.destroy$), finalize(() => this.isCategoryLoading.set(false)))
       .subscribe({
         next: res => {
@@ -371,22 +377,16 @@ export class VehicleCharts implements OnInit, AfterViewInit, OnChanges, OnDestro
             this.categoryLegend.set([]);
             return;
           }
-
           const labels: string[] = d.labels ?? [];
           const distanceData: number[] = (d.distanceData ?? []).map(Number);
           const emissionData: number[] = (d.emissionData ?? []).map(Number);
           const colors: string[] = d.colors ?? [];
-
           if (!labels.length) {
-            this.categoryError.set('No category data found for this year.');
+            this.categoryError.set('No category data found for this period.');
             this.categoryLegend.set([]);
             return;
           }
-
-          const mapped: VehicleCategoryChartResponse = {
-            labels, distanceData, emissionData, colors
-          };
-
+          const mapped: VehicleCategoryChartResponse = { labels, distanceData, emissionData, colors };
           this.categoryLegend.set(
             labels.map((cat, i) => ({
               category: cat,
@@ -395,19 +395,15 @@ export class VehicleCharts implements OnInit, AfterViewInit, OnChanges, OnDestro
               emission: emissionData[i] ?? 0,
             }))
           );
-
           if (this.viewReady) this.deferRenderCategory(mapped);
           else this.pendingCategory = mapped;
         },
         error: err => {
           this.categoryLegend.set([]);
-          this.categoryError.set(
-            err?.error?.message ?? err?.message ?? 'Failed to load category data.'
-          );
+          this.categoryError.set(err?.error?.message ?? err?.message ?? 'Failed to load category data.');
         }
       });
   }
-
   // ═══════════════════════════════════════════════════════════════
   //  DEFERRED RENDERS
   // ═══════════════════════════════════════════════════════════════
