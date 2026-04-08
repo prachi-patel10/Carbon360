@@ -85,7 +85,6 @@ export const routes: Routes = [
             { path: 'Vehiclechart', component: VehicleCharts },
             { path: 'Generatorchart', component: GeneratorCharts },
 
-
             { path: 'Ngoentryform', component: EntryFormComponent },
             { path: 'Treemaster', component: MasterTreeComponent },
             { path: 'Plantationproject', component: ProjectComponent },
@@ -96,22 +95,10 @@ export const routes: Routes = [
                 path: 'dashboard/generator-review/:id',
                 component: GeneratorOperationComponent
             },
-           
-
         ]
     },
 
-    // Protected Routes with Layout
-    // {
-    //   path: '',
-    //   component: Layout,
-    //   children: [
-    //     { path: 'home', component: Home },
-    //     { path: 'section', component: Section },
-    //     // Add more protected routes here if needed
-    //   ]
-    // },
-
+   
     // Wildcard route (redirect unknown paths to login or 404)
     {
         path: '**',
