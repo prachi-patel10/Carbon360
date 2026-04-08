@@ -25,7 +25,7 @@ namespace ProjectApp.Repository.Interfaces.OffSet
 
         Task<OffsetEntrySaveDraftResponseDTO> SaveDraftAsync(OffsetEntrySaveDraftRequestDTO request);
 
-        Task<OffsetEntryResponseDTO> InsertOffsetEntry(OffsetEntryDto model);
+        Task<OffsetEntryResponseDTO> InsertOffsetEntry(OffsetEntryDto model, int currentUserId);
         Task<object> GetAll(
     int pageNumber,
     int pageSize,

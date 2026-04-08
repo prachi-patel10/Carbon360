@@ -13,27 +13,34 @@ import { ReportService } from './entryformservice';
 })
 export class EntryFormComponent implements OnInit {
   form!: FormGroup;
-
+financialYearRange: string = '';
 years: number[] = [];
   projects: any[] = [];
 
   treeInputs: any[] = [];
 
+
+treeMaster: any[] = [];
+
+selectedTreeId: any = '';
+treeCount: number = 0;
+totalOffset :number = 0;
+addedTrees = signal<any[]>([]);
+
   // ✅ LIST
   entries = signal<any[]>([]);
   treeInputsSignal = signal<any[]>([]);
-  totalOffset = signal(0);
   remainingEmission = signal(0);
   status = signal('');
   totalRecords = signal(0);
 
   // ✅ SUMMARY
-  summary = {
-    totalEmission: 0,
-    totalOffset: 0,
-    remainingEmission: 0,
-    status: '',
-  };
+summary = signal({
+  previousYearEmission: 0,
+  totalTreeCount: 0,
+  totalCo2Absorption: 0,
+  actualAchievement: 0
+});
 
   constructor(
     private fb: FormBuilder,
@@ -41,163 +48,405 @@ years: number[] = [];
   ) {}
 
   ngOnInit(): void {
-    this.form = this.fb.group({
-      year: [''],
-      projectId: [''],
-    });
+  this.form = this.fb.group({
+    year: [''],
+    projectId: [''],
+  });
+
   this.generateYears();
-    this.loadTreeMaster();
-    this.loadEntries();
-  }
+
+
+
+  this.loadTreeMaster(); // ✅ first load data
+
+  this.onYearChange();
+
+  
+}
 
   // ================= PROJECT =================
- onYearChange() {
+onYearChange() {
   const year = Number(this.form.value.year);
 
-  if (!year) return;
+  if (!year) {
+    this.projects = [];
+    this.summary.set({
+      previousYearEmission: 0,
+      totalTreeCount: 0,
+      totalCo2Absorption: 0,
+      actualAchievement: 0
+    });
+    return;
+  }
+
+  // Reset emission immediately so UI shows 0 while API loads
+  this.summary.set({
+    ...this.summary(),
+    previousYearEmission: 0
+  });
 
   this.service.getProjectsByYear(year).subscribe({
     next: (res: any) => {
-      console.log('Projects API:', res);
+      this.projects = res || [];
 
-      const data = Array.isArray(res) ? res : (res?.data || []);
+      // ✅ Take first project emission as default
+      const emission = this.projects[0]?.previousYearEmission ?? 0;
 
-      // ✅ NORMALIZE KEYS
-      this.projects = data.map((p: any) => ({
-        ProjectId: p.ProjectId ?? p.projectId,
-        ProjectName: p.ProjectName ?? p.projectName
-      }));
+      this.summary.set({
+        ...this.summary(),
+        previousYearEmission: emission
+      });
 
-      console.log('Normalized Projects:', this.projects);
+      // Reset project selection in form
+      this.form.patchValue({ projectId: '' });
+
+      this.calculateSummary();
     },
     error: () => {
+      this.projects = [];
+      this.summary.set({
+        ...this.summary(),
+        previousYearEmission: 0
+      });
       Swal.fire('Error', 'Projects not loading', 'error');
     }
   });
 }
-  // ================= TREE MASTER =================
-  loadTreeMaster() {
-    this.service.getTreeMaster().subscribe({
-      next: (res: any) => {
-        const trees = res?.data || [];
+onProjectChange() {
+  const selectedId = this.form.value.projectId;
 
-        this.treeInputsSignal.set(
-          trees.map((t: any) => ({
-            treeId: t.TreeId,
-            treeName: t.treeName,
-            co2: t.co2AbsorptionPerYear,
-            count: 0,
-            total: 0,
-          })),
-        );
-      },
-      error: () => Swal.fire('Error', 'Tree not loading', 'error'),
+  const project = this.projects.find(p => p.projectId == selectedId);
+  if (project) {
+    this.summary.set({
+      ...this.summary(),
+      previousYearEmission: project.previousYearEmission || 0
     });
-  }
- // ================= YEARS =================
-  generateYears() {
-  const currentYear = new Date().getFullYear();
-
-  for (let i = 0; i < 10; i++) {
-    this.years.push(currentYear - i);
+    this.calculateSummary();
   }
 }
-  // ================= SAVE =================
- saveAll() {
 
-  const projectId = this.form.value.projectId;
+calculateSummary() {
+  const trees = this.addedTrees();
 
-  if (!projectId) {
-    Swal.fire('Error', 'Select project first', 'error');
+  const totalOffset = trees.reduce((sum, t) => sum + t.total, 0);
+  const totalTreeCount = trees.reduce((sum, t) => sum + t.count, 0);
+
+  this.summary.update(s => ({
+    ...s,
+    totalTreeCount: totalTreeCount,
+    totalCo2Absorption: totalOffset,
+    actualAchievement:
+      s.previousYearEmission > 0
+        ? Math.round((totalOffset / s.previousYearEmission) * 100)
+        : 0
+  }));
+
+  this.totalOffset = totalOffset;
+}
+
+loadEntriesByYear(year: number) {
+  this.service.getEntries(1, 10, '', year).subscribe((res: any) => {
+
+    this.entries.set(res.data || []);
+    this.totalRecords.set(res.totalRecords || 0);
+
+    if (res.summary()) {
+      this.summary().previousYearEmission = res.summary().previousYearEmission || 0;
+      this.summary().totalTreeCount = res.summary().totalTreeCount || 0;
+      this.summary().totalCo2Absorption = res.summary().totalCo2Absorption || 0;
+      this.summary().actualAchievement = res.summary().actualAchievement || 0;
+
+      // Optional (for your existing logic)
+      this.remainingEmission.set(this.summary().previousYearEmission);
+      this.status.set('Pending');
+    }
+  });
+}
+  // ================= TREE MASTER =================
+ loadTreeMaster() {
+  this.service.getTreeMaster().subscribe({
+    next: (res: any) => {
+      const trees = res?.data || [];
+
+      this.treeMaster = trees.map((t: any) => ({
+  treeId: t.treeId || t.TreeId,   // 🔥 keep encrypted
+  rawId: t.id || t.treeIdRaw || t.TreeIdRaw, // if available
+  treeName: t.treeName,
+  co2: t.co2AbsorptionPerYear
+}));
+    },
+    error: () => Swal.fire('Error', 'Tree not loading', 'error'),
+  });
+}
+
+addTree() {
+  console.log('CLICKED', this.selectedTreeId, this.treeCount);
+
+  if (!this.selectedTreeId || !this.treeCount) {
+    Swal.fire('Error', 'Select tree and enter count', 'error');
+    return;
+  }
+const exists = this.addedTrees().find(
+  t => t.treeId === this.selectedTreeId
+);
+
+  if (exists) {
+    Swal.fire('Error', 'Tree already added', 'error');
     return;
   }
 
-  const selectedTrees = this.treeInputsSignal()
-    .filter(t => t.count > 0)
-    .map(t => ({
-      treeId: t.treeId,
-      treeCount: Number(t.count)
-    }));
+  this.service.getTreeDetails(this.selectedTreeId, this.treeCount)
+    .subscribe({
+      next: (res: any) => {
+        console.log('API RESPONSE', res); // 🔥 debug
 
-  if (selectedTrees.length === 0) {
-    Swal.fire('Error', 'Enter at least one tree count', 'error');
+       this.addedTrees.update(list => [
+  ...list,
+  {
+    treeId: res.treeId,
+    treeName: res.treeName,
+    co2: res.co2PerTree,
+    count: res.treeCount,
+    total: res.totalCo2
+  }
+]);
+      Swal.fire({
+        icon: 'success',
+        title: 'Added successfully',
+        timer: 1200,
+        showConfirmButton: false
+      });
+
+this.totalOffset = this.addedTrees()
+  .reduce((sum, t) => sum + t.total, 0);
+
+      this.summary().totalTreeCount = this.addedTrees()
+  .reduce((sum, t) => sum + t.count, 0);
+        this.summary().totalCo2Absorption = this.totalOffset;
+
+        this.summary().actualAchievement =
+          this.summary().previousYearEmission > 0
+            ? Math.round((this.totalOffset / this.summary().previousYearEmission) * 100)
+            : 0;
+
+        this.selectedTreeId = null;
+        this.treeCount = 0;
+      },
+      error: (err) => {
+        console.error('API ERROR', err);
+        Swal.fire('Error', 'Failed to get tree details', 'error');
+      }
+    });
+    this.calculateSummary();
+}
+ // ================= YEARS =================
+generateYears() {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = today.getMonth() + 1;
+
+  // ✅ Current Financial Year End
+  const currentFYEnd = month >= 4 ? year + 1 : year;
+
+  this.years = [];
+
+  for (let i = 0; i < 10; i++) {
+    this.years.push(currentFYEnd + i); // ✅ only 2027, 2028...
+  }
+}
+  // ================= SAVE =================
+ finalSave() {
+  const projectId = this.form.value.projectId;
+  const year = this.form.value.year;
+
+  if (!projectId || !year) {
+    Swal.fire('Error', 'Select Year & Project', 'error');
+    return;
+  }
+
+  if (this.addedTrees().length === 0) {
+    Swal.fire('Error', 'Add at least one tree', 'error');
     return;
   }
 
   const payload = {
     projectId: projectId,
-    trees: selectedTrees
+    entryBy: 'CurrentUser', // 🔹 replace with actual logged-in user
+    financialYear: year,
+    trees: this.addedTrees().map(t => ({
+      treeId: t.treeId,
+      treeCount: t.count
+    }))
   };
 
   this.service.saveOffsetEntry(payload).subscribe({
-    next: () => {
-      Swal.fire('Success', 'Saved successfully', 'success');
+    next: (res: any) => {
+      Swal.fire('Success', `Saved Successfully. Total Offset: ${res.totalOffset}`, 'success');
 
       // reset
-      this.treeInputsSignal.update(trees =>
-        trees.map(t => ({ ...t, count: 0, total: 0 }))
-      );
-
-      this.totalOffset.set(0);
-      this.remainingEmission.set(this.summary.totalEmission);
-      this.status.set('Pending');
-
-      this.loadEntries();
+      this.addedTrees.set([]);
+      this.totalOffset = 0;
+      this.summary.set({
+        previousYearEmission: 0,
+        totalTreeCount: 0,
+        totalCo2Absorption: 0,
+        actualAchievement: 0
+      });
     },
     error: () => Swal.fire('Error', 'Save failed', 'error')
   });
 }
-  // ================= LOAD LIST + SUMMARY =================
-  loadEntries() {
-    this.service.getEntries(1, 10, '').subscribe((res: any) => {
-      this.entries.set(res.data || []);
-      this.totalRecords.set(res.totalRecords || 0);
+// saveAll() {
+//     console.log('counts:', this.treeInputsSignal().map(t => t.count));
 
-      // ✅ SUMMARY FIX
-      if (res.summary) {
-        this.summary.totalEmission = res.summary.totalEmission || 0;
-        this.summary.totalOffset = res.summary.totalOffset || 0;
-        this.summary.remainingEmission = res.summary.remainingEmission || 0;
-        this.summary.status = res.summary.status || '';
-      }
-    });
+//   const projectId = this.form.value.projectId;
+
+//   if (!projectId) {
+//     Swal.fire('Error', 'Select project first', 'error');
+//     return;
+//   }
+
+//   const selectedTrees = this.treeInputsSignal()
+//     .filter(t => t.count > 0)
+//     .map(t => ({
+//       treeId: t.treeId,
+//       treeCount: Number(t.count),
+//       totalOffset: Number(t.count) * t.co2   // ✅ ADD THIS
+//     }));
+
+//   if (selectedTrees.length === 0) {
+//     Swal.fire('Error', 'Enter at least one tree count', 'error');
+//     return;
+//   }
+
+//   const grandTotalOffset = this.totalOffset();  // ✅ already calculated
+
+//   const payload = {
+//     projectId: projectId,
+//       totalOffset: this.totalOffset(),              // ✅ ADD THIS (grand total)
+//     trees: selectedTrees
+//   };
+
+//   this.service.saveOffsetEntry(payload).subscribe({
+//   next: () => {
+//     Swal.fire('Success', 'Saved successfully', 'success');
+
+//     // ✅ reset tree counts only
+//     this.treeInputsSignal.update(trees =>
+//       trees.map(t => ({ ...t, count: 0, total: 0 }))
+//     );
+
+   
+//     // ✅ recalc remainingEmission after adding this save
+//     const newRemaining = this.summary().totalEmission - this.totalOffset();
+//     this.remainingEmission.set(newRemaining);
+//     this.status.set(newRemaining <= 0 ? 'Achieved' : 'Pending');
+
+//     this.loadEntriesByYear(Number(this.form.value.year)); // reload entries for selected year
+//   },
+//   error: () => Swal.fire('Error', 'Save failed', 'error')
+// });
+// }
+
+
+saveDraft() {
+  const projectId = this.form.value.projectId;
+  const year = this.form.value.year;
+
+  if (!projectId || !year) {
+    Swal.fire('Error', 'Select Year & Project', 'error');
+    return;
   }
 
-  onCountChange(index: number) {
+  if (this.addedTrees().length === 0) {
+    Swal.fire('Error', 'Add at least one tree', 'error');
+    return;
+  }
 
+  const payload = {
+    projectId: projectId,
+    entryBy: 'CurrentUser', // 🔹 replace with actual user
+    trees: this.addedTrees().map(t => ({
+      treeId: t.treeId,
+      treeCount: t.count
+    }))
+  };
+
+  this.service.saveDraft(payload).subscribe({
+    next: (res: any) => {
+      Swal.fire('Draft Saved', `Draft ID: ${res.offsetEntryId || 'N/A'}`, 'success');
+    },
+    error: () => Swal.fire('Error', 'Draft save failed', 'error')
+  });
+}
+  // ================= LOAD LIST + SUMMARY =================
+  // loadEntries() {
+  //   this.service.getEntries(1, 10, '').subscribe((res: any) => {
+  //     this.entries.set(res.data || []);
+  //     this.totalRecords.set(res.totalRecords || 0);
+
+  //     // ✅ SUMMARY FIX
+  //     if (res.summary()) {
+  //       this.summary().totalEmission = res.summary().totalEmission || 0;
+  //       this.summary().totalOffset = res.summary().totalOffset || 0;
+  //       this.summary().remainingEmission = res.summary().remainingEmission || 0;
+  //       this.summary().status = res.summary().status || '';
+  //     }
+  //   });
+  // }
+
+  onCountChange(index: number, event: any) {
   const trees = [...this.treeInputsSignal()];
+  const item = { ...trees[index] };           // ✅ spread — never mutate directly
 
-  const item = trees[index];
-
-  // ✅ calculate row total
+  item.count = Number(event.target.value) || 0; // ✅ read from DOM event
   item.total = item.count * item.co2;
 
-  this.treeInputsSignal.set(trees);
+  trees[index] = item;                          // ✅ replace object in array
+  this.treeInputsSignal.set(trees);             // ✅ signal now has real count
 
-  // ✅ calculate grand total offset
   const totalOffset = trees.reduce((sum, t) => sum + (t.total || 0), 0);
-  this.totalOffset.set(totalOffset);
+  // this.totalOffset.set(totalOffset);
 
-  // ✅ remaining emission
-  const remaining = this.summary.totalEmission - totalOffset;
-  this.remainingEmission.set(remaining);
-
-  // ✅ status
-  this.status.set(remaining <= 0 ? 'Achieved' : 'Pending');
 }
 
-  // ================= RESET =================
-  reset() {
-    this.form.reset();
-    this.projects = [];
-    this.treeInputs.forEach((t) => (t.count = 0));
-    this.entries.set([]);
+removeTree(index: number) {
+this.addedTrees.update(list => {
+  const updated = [...list];
+  updated.splice(index, 1);
+  return updated;
+});
+  // Recalculate total
+ this.totalOffset = this.addedTrees()
+  .reduce((sum, t) => sum + t.total, 0);
 
-    this.summary = {
-      totalEmission: 0,
-      totalOffset: 0,
-      remainingEmission: 0,
-      status: '',
-    };
-  }
+this.summary().totalTreeCount = this.addedTrees()
+  .reduce((sum, t) => sum + t.count, 0);
+
+  this.summary().totalCo2Absorption = this.totalOffset;
+
+  this.summary().actualAchievement =
+    this.summary().previousYearEmission > 0
+      ? Math.round((this.totalOffset / this.summary().previousYearEmission) * 100)
+      : 0;
+      this.calculateSummary();
+}
+  // ================= RESET =================
+ reset() {
+  this.form.reset();
+  this.projects = [];
+
+this.addedTrees.set([]);
+  this.totalOffset = 0;
+
+  this.remainingEmission.set(0);
+  this.status.set('');
+this.summary.set({
+  previousYearEmission: 0,
+  totalTreeCount: 0,
+  totalCo2Absorption: 0,
+  actualAchievement: 0
+});
+  
+}
 }

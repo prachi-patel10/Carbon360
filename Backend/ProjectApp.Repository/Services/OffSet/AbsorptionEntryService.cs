@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using ProjectApp.Core.DTOs.Account.OffSet;
 using ProjectApp.Core.Models;
 using ProjectApp.Repository.Interfaces.OffSet;
+using ProjectApp.Repository.Utilities.Auth;
 using System.Data;
 
 namespace ProjectApp.Repository.Services.OffSet
@@ -12,11 +13,12 @@ namespace ProjectApp.Repository.Services.OffSet
     {
         private readonly CBContext _context;
         private readonly IConfiguration _config;
-
+        private readonly IdEncoder _encoder;
         public AbsorptionEntryService(CBContext context, IConfiguration config)
         {
             _context = context;
             _config = config;
+            _encoder = new IdEncoder();
         }
 
        
@@ -108,7 +110,7 @@ namespace ProjectApp.Repository.Services.OffSet
             cmd.Parameters.Add(new SqlParameter("@FinancialYear", financialYear));
 
             int totalRecords = 0;
-            var data = new List<object>();
+            var data = new List<object>();  
             object summary = null;
 
             using var reader = await cmd.ExecuteReaderAsync();
@@ -176,7 +178,7 @@ namespace ProjectApp.Repository.Services.OffSet
             var projectParam = cmd.CreateParameter();
             projectParam.ParameterName = "@ProjectId";
             projectParam.DbType = DbType.Int32;
-            projectParam.Value = request.ProjectId;
+            projectParam.Value = _encoder.Decode(request.ProjectId); // decode string to int
             cmd.Parameters.Add(projectParam);
 
             var entryByParam = cmd.CreateParameter();
@@ -184,15 +186,15 @@ namespace ProjectApp.Repository.Services.OffSet
             entryByParam.DbType = DbType.String;
             entryByParam.Value = request.EntryBy;
             cmd.Parameters.Add(entryByParam);
+            // Prepare Tree TVP
             var table = new DataTable();
             table.Columns.Add("TreeId", typeof(int));
             table.Columns.Add("TreeCount", typeof(int));
 
             foreach (var item in request.Trees)
             {
-                table.Rows.Add(item.TreeId, item.TreeCount);
+                table.Rows.Add(_encoder.Decode(item.TreeId), item.TreeCount);
             }
-
             //TABLE TYPE PARAMETER
             var treeParam = new SqlParameter("@TreeData", SqlDbType.Structured)
             {
@@ -213,49 +215,66 @@ namespace ProjectApp.Repository.Services.OffSet
             return result;
         }
 
-     
-           public async Task<OffsetEntryResponseDTO> InsertOffsetEntry(OffsetEntryDto model)
+
+        public async Task<OffsetEntryResponseDTO> InsertOffsetEntry(OffsetEntryDto model, int currentUserId)
         {
+            if (string.IsNullOrEmpty(model.ProjectId))
+                throw new ArgumentException("ProjectId is required.");
+
             var response = new OffsetEntryResponseDTO();
 
+            // Decode ProjectId
+            int decodedProjectId = _encoder.Decode(model.ProjectId);
+            if (decodedProjectId <= 0)
+                throw new Exception("Invalid ProjectId. Cannot insert OffsetEntry.");
+
+            // Validate Trees
+            if (model.Trees == null || !model.Trees.Any())
+                throw new Exception("At least one Tree entry is required.");
+
             using var con = new SqlConnection(_config.GetConnectionString("DbString"));
-            using var cmd = new SqlCommand("USP_CB_OffsetEntry_Insert", con);
+            using var cmd = new SqlCommand("USP_CB_OffsetEntry_Insert", con)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
 
-            cmd.CommandType = CommandType.StoredProcedure;
-
-            // ✅ NORMAL PARAMETERS
+            // Add ProjectId
             cmd.Parameters.Add(new SqlParameter("@ProjectId", SqlDbType.Int)
             {
-                Value = model.ProjectId
+                Value = decodedProjectId
             });
 
-            cmd.Parameters.Add(new SqlParameter("@EntryBy", SqlDbType.NVarChar)
+            // Add EntryBy (logged-in user)
+            cmd.Parameters.Add(new SqlParameter("@EntryBy", SqlDbType.Int)
             {
-                Value = (object?)model.EntryBy ?? DBNull.Value
+                Value = currentUserId
             });
 
+            // Add FinancialYear
             cmd.Parameters.Add(new SqlParameter("@FinancialYear", SqlDbType.NVarChar)
             {
-                Value = model.FinancialYear   // 🔥 NEW
+                Value = model.FinancialYear ?? throw new Exception("FinancialYear is required.")
             });
 
-            // 🔥 TABLE TYPE (VERY IMPORTANT)
-            DataTable dt = new DataTable();
-            dt.Columns.Add("TreeId", typeof(int));
-            dt.Columns.Add("TreeCount", typeof(int));
+            // Prepare TreeData TVP
+            var table = new DataTable();
+            table.Columns.Add("TreeId", typeof(int));
+            table.Columns.Add("TreeCount", typeof(int));
 
             foreach (var item in model.Trees)
             {
-                dt.Rows.Add(item.TreeId, item.TreeCount);
+                int decodedTreeId = _encoder.Decode(item.TreeId);
+                if (decodedTreeId <= 0)
+                    throw new Exception($"Invalid TreeId '{item.TreeId}' detected.");
+
+                table.Rows.Add(decodedTreeId, item.TreeCount);
             }
 
-            var tvpParam = new SqlParameter("@TreeData", SqlDbType.Structured)
+            cmd.Parameters.Add(new SqlParameter("@TreeData", SqlDbType.Structured)
             {
-                TypeName = "dbo.TreeType",   // ⚠️ MUST MATCH SQL TYPE
-                Value = dt
-            };
-
-            cmd.Parameters.Add(tvpParam);
+                TypeName = "dbo.TreeType",
+                Value = table
+            });
 
             await con.OpenAsync();
 
@@ -270,6 +289,7 @@ namespace ProjectApp.Repository.Services.OffSet
 
             return response;
         }
-    
+
+
     }
 }

@@ -211,6 +211,8 @@ namespace ProjectApp.Repository.Services.Masters.Tree
 
         public async Task<TreeDetailsDTO> GetTreeDetailsAsync(TreeRequestDTO request)
         {
+            int decodedTreeId = _idEncoder.Decode(request.TreeId); // ✅ decode here
+
             TreeDetailsDTO result = null;
 
             using var conn = _context.Database.GetDbConnection();
@@ -220,11 +222,10 @@ namespace ProjectApp.Repository.Services.Masters.Tree
             cmd.CommandText = "USP_CB_GetTreeDetailsSummary";
             cmd.CommandType = CommandType.StoredProcedure;
 
-            // ✅ SQL PARAMETERS (NEW SqlParameter)
             var treeIdParam = cmd.CreateParameter();
             treeIdParam.ParameterName = "@TreeId";
             treeIdParam.DbType = DbType.Int32;
-            treeIdParam.Value = request.TreeId;
+            treeIdParam.Value = decodedTreeId; // ✅ FIX
             cmd.Parameters.Add(treeIdParam);
 
             var treeCountParam = cmd.CreateParameter();
@@ -239,7 +240,7 @@ namespace ProjectApp.Repository.Services.Masters.Tree
             {
                 result = new TreeDetailsDTO
                 {
-                    TreeId = Convert.ToInt32(reader["TreeId"]),
+                    TreeId = _idEncoder.Encode(Convert.ToInt32(reader["TreeId"])),
                     TreeName = reader["TreeName"].ToString(),
                     Co2PerTree = Convert.ToDecimal(reader["Co2PerTree"]),
                     TreeCount = Convert.ToInt32(reader["TreeCount"]),

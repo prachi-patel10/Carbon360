@@ -13,7 +13,6 @@ public class OffsetEntryController : ControllerBase
         _service = service;
     }
 
-    // INSERT
     [HttpPost("insert")]
     public async Task<IActionResult> Insert([FromBody] OffsetEntryDto model)
     {
@@ -26,9 +25,8 @@ public class OffsetEntryController : ControllerBase
 
             int userId = Convert.ToInt32(userIdClaim);
 
-            model.EntryBy = userId;
-
-            var result = await _service.InsertOffsetEntry(model);
+            // Pass userId directly to service
+            var result = await _service.InsertOffsetEntry(model, userId);
 
             return Ok(new
             {

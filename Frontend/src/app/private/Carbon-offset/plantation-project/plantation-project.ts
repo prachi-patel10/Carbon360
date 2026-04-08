@@ -23,6 +23,10 @@ export class ProjectComponent implements OnInit {
   projectForm!: FormGroup;
   searchForm!: FormGroup;
 
+  years: number[] = [];
+currentYear = new Date().getFullYear();
+financialYearRange: string = '';
+
   projects = signal<Project[]>([]);
   searchText = signal('');
   currentPage = signal(1);
@@ -41,6 +45,18 @@ totalPages = signal(1);
   ngOnInit() {
     this.initForms();
     this.loadProjects();
+     const currentFYEnd = this.getCurrentFinancialYearEnd();
+
+  for (let i = 0; i < 10; i++) {
+    this.years.push(currentFYEnd + i); // ✅ start from FY, not calendar
+  }
+
+  // ✅ auto-select current FY
+  this.projectForm.patchValue({
+    FinancialYear: currentFYEnd
+  });
+
+  this.onYearChange();
   }
 
   initForms() {
@@ -116,17 +132,19 @@ totalPages = signal(1);
     });
   }
 
-  edit(p: Project) {
-    this.projectForm.patchValue(p);
-  }
-
+edit(p: Project) {
+  this.projectForm.patchValue(p);
+  this.onYearChange(); // 🔥 must call
+}
   resetForm() {
     this.projectForm.reset({
       ProjectId: '',
       ProjectName: '',
       FinancialYear: '',
       IsActive: true
+      
     });
+     this.financialYearRange = ''; 
   }
 
  deleteUI(p: Project) {
@@ -213,5 +231,30 @@ sort(column: string) {
     this.currentPage.set(1);
     this.loadProjects();
   }
+
+
+  getCurrentFinancialYearEnd(): number {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = today.getMonth() + 1; // Jan = 1
+
+  // If month >= April → next year is FY end
+  return month >= 4 ? year + 1 : year;
+}
+
+ onYearChange() {
+  const selectedYear = +this.projectForm.get('FinancialYear')?.value;
+
+  if (!selectedYear) {
+    this.financialYearRange = '';
+    return;
+  }
+
+  const startYear = selectedYear - 1;
+  const shortYear = selectedYear.toString().slice(-2);
+
+  this.financialYearRange =
+    `FY ${startYear}-${shortYear} (1-Apr-${startYear} to 31-Mar-${selectedYear})`;
+}
 
 }

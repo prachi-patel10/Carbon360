@@ -187,6 +187,96 @@ td[colspan] {
   padding: 15px;
 }
 
+
+/* SUMMARY CARD CONTAINER */
+.summary-card {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); /* ✅ 4 cards in one row */
+  gap: 16px;
+  margin: 20px 0;
+}
+
+/* CARD BOX */
+.summary-box {
+border: 2px solid #15803d;
+background-color: white;
+  color: #0f5132;
+  padding: 18px;
+  border-radius: 12px;
+  text-align: center;
+  transition: all 0.3s ease;
+  min-height: 100px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* TEXT */
+.summary-box p {
+  margin: 0;
+  font-size: 13px;
+  opacity: 0.8;
+}
+
+.summary-box h3 {
+  margin-top: 8px;
+  font-size: 22px;
+  font-weight: 600;
+}
+
+/* HOVER */
+.summary-box:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 18px rgba(0,0,0,0.2);
+}
+
+.tree-table {
+  width: 100%;
+  margin-top: 20px;
+  border-collapse: collapse;
+}
+
+.tree-table th,
+.tree-table td {
+  border: 1px solid #ddd;
+  padding: 10px;
+  text-align: center;
+}
+
+.tree-table th {
+  background: #0f5132;
+}
+
+.buttons {
+  margin-top: 20px;
+  display: flex;
+  gap: 10px;
+}
+
+.btn {
+  padding: 10px 20px;
+  border: none;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+.btn.save {
+  background-color: #28a745;
+  color: white;
+}
+
+.no-data {
+  text-align: center;
+  padding: 20px;
+  color: gray;
+  font-weight: 500;
+}
+
+.btn.draft {
+  background-color: #ffc107;
+  color: black;
+}
 /* ================= RESPONSIVE ================= */
 @media (max-width: 768px) {
 

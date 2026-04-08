@@ -8,7 +8,7 @@ namespace ProjectApp.Core.DTOs.Masters.Tree
 {
     public class TreeDetailsDTO
     {
-        public int TreeId { get; set; }
+        public string TreeId { get; set; }
         public string TreeName { get; set; }
         public decimal Co2PerTree { get; set; }
         public int TreeCount { get; set; }

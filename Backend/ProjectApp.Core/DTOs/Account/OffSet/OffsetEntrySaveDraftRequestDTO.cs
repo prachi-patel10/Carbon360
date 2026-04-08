@@ -8,7 +8,7 @@ namespace ProjectApp.Core.DTOs.Account.OffSet
 {
     public class OffsetEntrySaveDraftRequestDTO
     {
-        public int ProjectId { get; set; }
+        public string ProjectId { get; set; }  
         public string EntryBy { get; set; }
 
         public List<TreeItemDto> Trees { get; set; }
@@ -16,7 +16,7 @@ namespace ProjectApp.Core.DTOs.Account.OffSet
     }
     public class TreeItemDto
     {
-        public int TreeId { get; set; }
+        public string TreeId { get; set; }
         public int TreeCount { get; set; }
     }
 }

@@ -17,10 +17,18 @@
 
       <!-- Financial Year -->
       <div class="form-group">
-        <label>Financial Year <span class="required">*</span></label>
-        <input type="text" formControlName="FinancialYear" placeholder="e.g. 2025-26">
-      </div>
+  <label>FY <span class="required">*</span></label>
 
+  <select formControlName="FinancialYear" (change)="onYearChange()">
+    <option value="">Select</option>
+    <option *ngFor="let y of years" [value]="y">{{ y }}</option>
+  </select>
+</div>
+
+<!-- Show FY Range -->
+<div *ngIf="financialYearRange">
+  <strong>{{ financialYearRange }}</strong>
+</div>
       <!-- Status -->
       <div class="form-actions">
         <div class="status-toggle">

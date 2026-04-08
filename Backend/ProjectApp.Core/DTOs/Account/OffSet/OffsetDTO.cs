@@ -8,14 +8,14 @@ namespace ProjectApp.Core.DTOs.Account.OffSet
 {
     public class TreeDto
     {
-        public int TreeId { get; set; }
+        public string TreeId { get; set; }
         public int TreeCount { get; set; }
     }
 
     public class OffsetEntryDto
     {
-        public int ProjectId { get; set; }
-        public int? EntryBy { get; set; }
+        public string ProjectId { get; set; } 
+        //public int? EntryBy { get; set; }
         public string FinancialYear { get; set; }
         public List<TreeItemDto> Trees { get; set; }
       
