@@ -19,7 +19,6 @@ public class OffsetEntryController : ControllerBase
     {
         try
         {
-            // 🔥 Extract UserId from JWT
             var userIdClaim = User.FindFirst("UserId")?.Value;
 
             if (string.IsNullOrEmpty(userIdClaim))
@@ -27,12 +26,15 @@ public class OffsetEntryController : ControllerBase
 
             int userId = Convert.ToInt32(userIdClaim);
 
-            // ✅ Set EntryBy here
             model.EntryBy = userId;
 
             var result = await _service.InsertOffsetEntry(model);
 
-            return Ok(new { message = "Inserted successfully", id = result });
+            return Ok(new
+            {
+                message = "Inserted successfully",
+                data = result
+            });
         }
         catch (Exception ex)
         {
@@ -45,7 +47,7 @@ public class OffsetEntryController : ControllerBase
     public async Task<IActionResult> GetAll(
        int pageNumber = 1,
        int pageSize = 10,
-       string? search = null,          // ✅ MAKE NULLABLE
+       string? search = null,        
        int? projectId = null,
        int? financialYear = null
    )

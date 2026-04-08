@@ -16,7 +16,8 @@ namespace ProjectApp.Core.DTOs.Account.OffSet
     {
         public int ProjectId { get; set; }
         public int? EntryBy { get; set; }
-
-        public List<TreeDto> Trees { get; set; }
+        public string FinancialYear { get; set; }
+        public List<TreeItemDto> Trees { get; set; }
+      
     }
 }

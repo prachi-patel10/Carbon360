@@ -12,6 +12,9 @@ namespace ProjectApp.Core.DTOs.Account.OffSet
         [Required(ErrorMessage = "ProjectId is required")]
         public int ProjectId { get; set; }
 
+        [Required]
+        public string FinancialYear { get; set; }
+
         [Required(ErrorMessage = "TreeId is required")]
         public int TreeId { get; set; }
 
@@ -21,5 +24,12 @@ namespace ProjectApp.Core.DTOs.Account.OffSet
 
         public bool IsActive { get; set; } = true;
         public int? EntryBy { get; set; }
+        public List<TreeItemDto> Trees { get; set; }
     }
+
+    //public class TreeItemDto
+    //{
+    //    public int TreeId { get; set; }
+    //    public int TreeCount { get; set; }
+    //}
 }

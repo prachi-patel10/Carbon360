@@ -19,37 +19,7 @@ namespace ProjectApp.Repository.Services.OffSet
             _config = config;
         }
 
-        // ================= INSERT =================
-        public async Task<int> InsertOffsetEntry(OffsetEntryDto model)
-        {
-            using var con = new SqlConnection(_config.GetConnectionString("DbString"));
-            using var cmd = new SqlCommand("USP_CB_OffsetEntry_Insert", con);
-
-            cmd.CommandType = CommandType.StoredProcedure;
-
-            cmd.Parameters.AddWithValue("@ProjectId", model.ProjectId);
-            cmd.Parameters.AddWithValue("@EntryBy", model.EntryBy ?? (object)DBNull.Value);
-
-            // 🔥 Convert List → DataTable (TVP)
-            DataTable dt = new DataTable();
-            dt.Columns.Add("TreeId", typeof(int));
-            dt.Columns.Add("TreeCount", typeof(int));
-
-            foreach (var item in model.Trees)
-            {
-                dt.Rows.Add(item.TreeId, item.TreeCount);
-            }
-
-            var tvpParam = cmd.Parameters.AddWithValue("@TreeData", dt);
-            tvpParam.SqlDbType = SqlDbType.Structured;
-            tvpParam.TypeName = "TreeType";
-
-            await con.OpenAsync();
-            var result = await cmd.ExecuteScalarAsync();
-
-            return Convert.ToInt32(result);
-        }
-
+       
     
 
         // ================= GET BY ID =================
@@ -113,8 +83,9 @@ namespace ProjectApp.Repository.Services.OffSet
 
             return true;
         }
-        // ================= GET ALL =================
 
+
+        // ================= GET ALL =================
         public async Task<object> GetAll(
        int pageNumber,
        int pageSize,
@@ -130,7 +101,6 @@ namespace ProjectApp.Repository.Services.OffSet
             cmd.CommandText = "USP_CB_OffsetEntry_GetAll";
             cmd.CommandType = CommandType.StoredProcedure;
 
-            // 🔥 SIMPLE PARAMS (NO EXTRA VALIDATION)
             cmd.Parameters.Add(new SqlParameter("@PageNumber", pageNumber));
             cmd.Parameters.Add(new SqlParameter("@PageSize", pageSize));
             cmd.Parameters.Add(new SqlParameter("@Search", search));
@@ -143,7 +113,7 @@ namespace ProjectApp.Repository.Services.OffSet
 
             using var reader = await cmd.ExecuteReaderAsync();
 
-            // ================= DATA =================
+            //DATA
             while (await reader.ReadAsync())
             {
                 data.Add(new
@@ -158,7 +128,7 @@ namespace ProjectApp.Repository.Services.OffSet
                 });
             }
 
-            // ================= TOTAL COUNT =================
+            //TOTAL COUNT
             await reader.NextResultAsync();
 
             if (await reader.ReadAsync())
@@ -166,7 +136,7 @@ namespace ProjectApp.Repository.Services.OffSet
                 totalRecords = Convert.ToInt32(reader["TotalRecords"]);
             }
 
-            // ================= SUMMARY =================
+            //SUMMARY 
             await reader.NextResultAsync();
 
             if (await reader.ReadAsync())
@@ -203,22 +173,17 @@ namespace ProjectApp.Repository.Services.OffSet
             using var cmd = conn.CreateCommand();
             cmd.CommandText = "USP_CB_OffsetEntrySaveDraft";
             cmd.CommandType = CommandType.StoredProcedure;
-
-            // ✅ ProjectId
             var projectParam = cmd.CreateParameter();
             projectParam.ParameterName = "@ProjectId";
             projectParam.DbType = DbType.Int32;
             projectParam.Value = request.ProjectId;
             cmd.Parameters.Add(projectParam);
 
-            // ✅ EntryBy
             var entryByParam = cmd.CreateParameter();
             entryByParam.ParameterName = "@EntryBy";
             entryByParam.DbType = DbType.String;
             entryByParam.Value = request.EntryBy;
             cmd.Parameters.Add(entryByParam);
-
-            // 🔥 CREATE DATATABLE (FOR TABLE TYPE)
             var table = new DataTable();
             table.Columns.Add("TreeId", typeof(int));
             table.Columns.Add("TreeCount", typeof(int));
@@ -228,16 +193,15 @@ namespace ProjectApp.Repository.Services.OffSet
                 table.Rows.Add(item.TreeId, item.TreeCount);
             }
 
-            // 🔥 TABLE TYPE PARAMETER
+            //TABLE TYPE PARAMETER
             var treeParam = new SqlParameter("@TreeData", SqlDbType.Structured)
             {
-                TypeName = "dbo.TreeTypes",   // ⚠️ MUST MATCH SQL TYPE NAME
+                TypeName = "dbo.TreeTypes",  
                 Value = table
             };
 
             cmd.Parameters.Add(treeParam);
 
-            // 🔥 EXECUTE
             using var reader = await cmd.ExecuteReaderAsync();
 
             if (await reader.ReadAsync())
@@ -247,6 +211,64 @@ namespace ProjectApp.Repository.Services.OffSet
             }
 
             return result;
+        }
+
+     
+           public async Task<OffsetEntryResponseDTO> InsertOffsetEntry(OffsetEntryDto model)
+        {
+            var response = new OffsetEntryResponseDTO();
+
+            using var con = new SqlConnection(_config.GetConnectionString("DbString"));
+            using var cmd = new SqlCommand("USP_CB_OffsetEntry_Insert", con);
+
+            cmd.CommandType = CommandType.StoredProcedure;
+
+            // ✅ NORMAL PARAMETERS
+            cmd.Parameters.Add(new SqlParameter("@ProjectId", SqlDbType.Int)
+            {
+                Value = model.ProjectId
+            });
+
+            cmd.Parameters.Add(new SqlParameter("@EntryBy", SqlDbType.NVarChar)
+            {
+                Value = (object?)model.EntryBy ?? DBNull.Value
+            });
+
+            cmd.Parameters.Add(new SqlParameter("@FinancialYear", SqlDbType.NVarChar)
+            {
+                Value = model.FinancialYear   // 🔥 NEW
+            });
+
+            // 🔥 TABLE TYPE (VERY IMPORTANT)
+            DataTable dt = new DataTable();
+            dt.Columns.Add("TreeId", typeof(int));
+            dt.Columns.Add("TreeCount", typeof(int));
+
+            foreach (var item in model.Trees)
+            {
+                dt.Rows.Add(item.TreeId, item.TreeCount);
+            }
+
+            var tvpParam = new SqlParameter("@TreeData", SqlDbType.Structured)
+            {
+                TypeName = "dbo.TreeType",   // ⚠️ MUST MATCH SQL TYPE
+                Value = dt
+            };
+
+            cmd.Parameters.Add(tvpParam);
+
+            await con.OpenAsync();
+
+            using var reader = await cmd.ExecuteReaderAsync();
+
+            if (await reader.ReadAsync())
+            {
+                response.OffsetEntryId = Convert.ToInt32(reader["OffsetEntryId"]);
+                response.PreviousYearEmission = Convert.ToDecimal(reader["PreviousYearEmission"]);
+                response.TotalOffset = Convert.ToDecimal(reader["TotalOffset"]);
+            }
+
+            return response;
         }
     
     }
