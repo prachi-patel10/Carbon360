@@ -45,6 +45,7 @@ summary = signal({
   constructor(
     private fb: FormBuilder,
     private service: ReportService,
+    
   ) {}
 
   ngOnInit(): void {
@@ -114,7 +115,7 @@ onYearChange() {
 }
 onProjectChange() {
   const selectedId = this.form.value.projectId;
-
+  console.log("Selected ProjectId:", selectedId);
   const project = this.projects.find(p => p.projectId == selectedId);
   if (project) {
     this.summary.set({
@@ -258,11 +259,12 @@ generateYears() {
  finalSave() {
   const projectId = this.form.value.projectId;
   const year = this.form.value.year;
-
-  if (!projectId || !year) {
-    Swal.fire('Error', 'Select Year & Project', 'error');
-    return;
-  }
+console.log("FORM VALUE:", this.form.value);
+console.log("PROJECT ID:", projectId);
+  if (!projectId || projectId === '' || !year) {
+  Swal.fire('Error', 'Select Year & Project', 'error');
+  return;
+}
 
   if (this.addedTrees().length === 0) {
     Swal.fire('Error', 'Add at least one tree', 'error');
@@ -270,7 +272,7 @@ generateYears() {
   }
 
   const payload = {
-    projectId: projectId,
+   projectId: String(this.form.value.projectId),
     entryBy: 'CurrentUser', // 🔹 replace with actual logged-in user
     financialYear: year,
     trees: this.addedTrees().map(t => ({
@@ -353,18 +355,17 @@ saveDraft() {
   const projectId = this.form.value.projectId;
   const year = this.form.value.year;
 
-  if (!projectId || !year) {
-    Swal.fire('Error', 'Select Year & Project', 'error');
-    return;
-  }
-
+ if (!projectId || projectId === '' || !year) {
+  Swal.fire('Error', 'Select Year & Project', 'error');
+  return;
+}
   if (this.addedTrees().length === 0) {
     Swal.fire('Error', 'Add at least one tree', 'error');
     return;
   }
 
   const payload = {
-    projectId: projectId,
+    projectId: String(this.form.value.projectId),
     entryBy: 'CurrentUser', // 🔹 replace with actual user
     trees: this.addedTrees().map(t => ({
       treeId: t.treeId,

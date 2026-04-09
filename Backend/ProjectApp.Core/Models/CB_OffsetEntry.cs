@@ -25,6 +25,8 @@ public partial class CB_OffsetEntry
 
     public DateTime? UpdateDate { get; set; }
 
+    public bool? IsDraft { get; set; }
+
     public virtual ICollection<CB_OffsetEntryDetail> CB_OffsetEntryDetails { get; set; } = new List<CB_OffsetEntryDetail>();
 
     public virtual CB_PlantationProject Project { get; set; }

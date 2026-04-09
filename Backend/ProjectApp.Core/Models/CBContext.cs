@@ -63,8 +63,6 @@ public partial class CBContext : DbContext
     public virtual DbSet<CB_VehicleTripEmissionHistory> CB_VehicleTripEmissionHistories { get; set; }
 
     public virtual DbSet<CB_VehicleTypeCategory> CB_VehicleTypeCategories { get; set; }
-
-
     public virtual DbSet<SiteEmissionDto> SiteEmissionDtos { get; set; }
 
     public virtual DbSet<FuelTypeMonthlyConsumptionDto> FuelTypeMonthlyConsumptionDtos { get; set; }
@@ -84,8 +82,6 @@ public partial class CBContext : DbContext
     public virtual DbSet<VehicleSummaryDto> VehicleSummaryDtos { get; set; }
 
     public virtual DbSet<GeneratorSummaryDto> GeneratorSummaryDtos { get; set; }
-
-
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -446,6 +442,7 @@ public partial class CBContext : DbContext
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
             entity.Property(e => e.IsActive).HasDefaultValue(true);
+            entity.Property(e => e.IsDraft).HasDefaultValue(true);
             entity.Property(e => e.PreviousYearEmission)
                 .HasDefaultValue(0m)
                 .HasColumnType("decimal(18, 2)");
@@ -676,7 +673,6 @@ public partial class CBContext : DbContext
             entity.Property(e => e.UpdateDate).HasColumnType("datetime");
         });
 
-
         modelBuilder.Entity<SiteEmissionDto>(entity =>
         {
             entity.HasNoKey(); // IMPORTANT
@@ -742,7 +738,6 @@ public partial class CBContext : DbContext
 
         OnModelCreatingPartial(modelBuilder);
 
-        OnModelCreatingPartial(modelBuilder);
     }
 
     partial void OnModelCreatingPartial(ModelBuilder modelBuilder);

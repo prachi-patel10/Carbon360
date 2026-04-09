@@ -2,120 +2,121 @@
   <!-- FILTER -->
   <div class="card">
     <form [formGroup]="form" class="form-grid">
-     <div class="form-group">
-  <label>FY <span class="required">*</span></label>
+      <div class="form-group">
+        <label>FY <span class="required">*</span></label>
 
-  <select formControlName="year" (change)="onYearChange()">
-    <option value="">Select</option>
-    <option *ngFor="let y of years" [value]="y">{{ y }}</option>
-  </select>
-</div>
+        <select formControlName="year" (change)="onYearChange()">
+          <option value="">Select</option>
+          <option *ngFor="let y of years" [value]="y">{{ y }}</option>
+        </select>
+      </div>
 
       <div class="form-group">
         <label>Project</label>
-<select formControlName="projectId" (change)="onProjectChange()">
-  <option value="">Select</option>
-  <option *ngFor="let p of projects" [value]="p.ProjectId">
-    {{ p.projectName }}
-  </option>
-</select>
+        <select formControlName="projectId" (change)="onProjectChange()">
+          <option [ngValue]="''">-- Select Project --</option>
+          <option *ngFor="let p of projects" [ngValue]="p.projectId">
+            {{ p.projectName }}
+          </option>
+        </select>
       </div>
     </form>
   </div>
 
-<!-- ✅ SUMMARY CARD HERE -->
- 
-<div class="summary-card" *ngIf="summary">
-  <div class="summary-box">
-    <p>Previous CO₂</p>
-    <h3>{{ summary().previousYearEmission || 0 }}</h3>
-  </div>
+  <!-- ✅ SUMMARY CARD HERE -->
 
-  <div class="summary-box">
-    <p>Total Trees</p>
-    <h3>{{ summary().totalTreeCount || 0 }}</h3>
-  </div>
-
-  <div class="summary-box">
-    <p>CO₂ Absorption</p>
-    <h3>{{ summary().totalCo2Absorption || 0 }}</h3>
-  </div>
-
-  <div class="summary-box">
-    <p>Achievement</p>
-    <h3>{{ summary().actualAchievement || 0 }}%</h3>
-  </div>
-</div>
-
- <!-- TREE INPUT -->
-<div class="card">
-  <div class="form-grid">
-
-    <!-- Tree Dropdown -->
-    <div class="form-group">
-      <label>Tree</label>
-      <select [(ngModel)]="selectedTreeId" [ngModelOptions]="{ standalone: true }">
-  <option [ngValue]="null">Select Tree</option>
-  <option *ngFor="let t of treeMaster" [ngValue]="t.treeId">
-    {{ t.treeName }}
-  </option>
-</select>
+  <div class="summary-card" *ngIf="summary">
+    <div class="summary-box">
+      <p>Previous CO₂</p>
+      <h3>{{ summary().previousYearEmission || 0 }}</h3>
     </div>
 
-    <!-- Count -->
-    <div class="form-group">
-      <label>Count</label>
-      <input type="number" [(ngModel)]="treeCount" min="1" placeholder="Enter count">
+    <div class="summary-box">
+      <p>Total Trees</p>
+      <h3>{{ summary().totalTreeCount || 0 }}</h3>
     </div>
 
-    <!-- Add Button -->
-    <div class="form-group">
-<button type="button" (click)="addTree()">Add</button>    </div>
+    <div class="summary-box">
+      <p>CO₂ Absorption</p>
+      <h3>{{ summary().totalCo2Absorption || 0 }}</h3>
+    </div>
 
+    <div class="summary-box">
+      <p>Achievement</p>
+      <h3>{{ summary().actualAchievement || 0 }}%</h3>
+    </div>
   </div>
 
-<!-- ADDED TREE TABLE -->
-<table class="tree-table">
+  <!-- TREE INPUT -->
+  <div class="card">
+    <div class="form-grid">
 
-  <thead>
-    <tr>
-      <th>Tree</th>
-      <th>CO₂ / Year</th>
-      <th>Count</th>
-      <th>Total</th>
-      <th>Action</th>
-    </tr>
-  </thead>
+      <!-- Tree Dropdown -->
+      <div class="form-group">
+        <label>Tree</label>
+        <select [(ngModel)]="selectedTreeId" [ngModelOptions]="{ standalone: true }">
+          <option [ngValue]="null">Select Tree</option>
+          <option *ngFor="let t of treeMaster" [ngValue]="t.treeId">
+            {{ t.treeName }}
+          </option>
+        </select>
+      </div>
 
-  <tbody>
+      <!-- Count -->
+      <div class="form-group">
+        <label>Count</label>
+        <input type="number" [(ngModel)]="treeCount" min="1" placeholder="Enter count">
+      </div>
 
-    <!-- DATA -->
-    <tr *ngFor="let t of addedTrees(); let i = index">
-      <td>{{ t.treeName }}</td>
-      <td>{{ t.co2 }}</td>
-      <td>{{ t.count }}</td>
-      <td>{{ t.total }}</td>
-      <td>
-        <button type="button" (click)="removeTree(i)">❌</button>
-      </td>
-    </tr>
+      <!-- Add Button -->
+      <div class="form-group">
+        <button type="button" (click)="addTree()">Add</button>
+      </div>
 
-    <!-- NO DATA -->
-    <tr *ngIf="addedTrees().length === 0">
-      <td colspan="5" class="no-data">No Records Found</td>
-    </tr>
+    </div>
 
-  </tbody>
-</table>
+    <!-- ADDED TREE TABLE -->
+    <table class="tree-table">
+
+      <thead>
+        <tr>
+          <th>Tree</th>
+          <th>CO₂ / Year</th>
+          <th>Count</th>
+          <th>Total</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+
+      <tbody>
+
+        <!-- DATA -->
+        <tr *ngFor="let t of addedTrees(); let i = index">
+          <td>{{ t.treeName }}</td>
+          <td>{{ t.co2 }}</td>
+          <td>{{ t.count }}</td>
+          <td>{{ t.total }}</td>
+          <td>
+            <button type="button" (click)="removeTree(i)">❌</button>
+          </td>
+        </tr>
+
+        <!-- NO DATA -->
+        <tr *ngIf="addedTrees().length === 0">
+          <td colspan="5" class="no-data">No Records Found</td>
+        </tr>
+
+      </tbody>
+    </table>
 
 
-<div class="buttons" *ngIf="addedTrees().length > 0">
-  <button class="btn draft" (click)="saveDraft()">Save Draft</button>
-  <button class="btn save" (click)="finalSave()">Final Save</button>
-</div>
-</div>
+    <div class="buttons" *ngIf="addedTrees().length > 0">
+      <button class="btn draft" (click)="saveDraft()">Save Draft</button>
+      <button class="btn save" (click)="finalSave()">Final Save</button>
+    </div>
+  </div>
 
-<!-- SUMMARY -->
+  <!-- SUMMARY -->
 
   <!-- LIST -->
   <!-- <h3>Saved Entries</h3>

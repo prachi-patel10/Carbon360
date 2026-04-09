@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ProjectApp.Core.DTOs.Account.OffSet
 {
-    public class TreeDto
+    public class TreeItemDto
     {
         public string TreeId { get; set; }
         public int TreeCount { get; set; }

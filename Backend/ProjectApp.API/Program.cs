@@ -83,6 +83,8 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
+Console.WriteLine(builder.Configuration.GetConnectionString("DbString"));
+
 builder.Services.AddHttpContextAccessor();
 
 //Mapper

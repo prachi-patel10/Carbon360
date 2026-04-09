@@ -14,9 +14,5 @@ namespace ProjectApp.Core.DTOs.Account.OffSet
         public List<TreeItemDto> Trees { get; set; }
 
     }
-    public class TreeItemDto
-    {
-        public string TreeId { get; set; }
-        public int TreeCount { get; set; }
-    }
+   
 }

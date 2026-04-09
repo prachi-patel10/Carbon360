@@ -16,28 +16,16 @@ public class OffsetEntryController : ControllerBase
     [HttpPost("insert")]
     public async Task<IActionResult> Insert([FromBody] OffsetEntryDto model)
     {
-        try
-        {
-            var userIdClaim = User.FindFirst("UserId")?.Value;
+        var userIdClaim = User.FindFirst("UserId")?.Value;
 
-            if (string.IsNullOrEmpty(userIdClaim))
-                return Unauthorized("UserId not found in token");
+        if (string.IsNullOrEmpty(userIdClaim))
+            return Unauthorized();
 
-            int userId = Convert.ToInt32(userIdClaim);
+        int userId = Convert.ToInt32(userIdClaim);
 
-            // Pass userId directly to service
-            var result = await _service.InsertOffsetEntry(model, userId);
+        var result = await _service.InsertOffsetEntry(model, userId);
 
-            return Ok(new
-            {
-                message = "Inserted successfully",
-                data = result
-            });
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(ex.Message);
-        }
+        return Ok(result);
     }
 
     // GET ALL
@@ -69,10 +57,12 @@ public class OffsetEntryController : ControllerBase
         await _service.Delete(id);
         return Ok(new { Message = "Deleted Successfully" });
     }
-
     [HttpPost("save-draft")]
     public async Task<IActionResult> SaveDraft([FromBody] OffsetEntrySaveDraftRequestDTO request)
     {
+        if (request == null)
+            return BadRequest("Request body is null");
+
         var result = await _service.SaveDraftAsync(request);
 
         return Ok(result);
