@@ -1,33 +1,77 @@
 .container {
   padding: 20px;
-  font-family: Arial;
 }
 
-.tree-box {
-  margin: 20px 0;
+.card {
+  background: #fff;
+  padding: 15px;
+  margin-bottom: 15px;
+  border-radius: 8px;
 }
 
-select, input {
+.form-grid {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  min-width: 150px;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.summary-card {
+  display: flex;
+  gap: 15px;
+  margin: 15px 0;
+}
+
+.summary-box {
+  flex: 1;
+  background: #f4f6f9;
+  padding: 10px;
+  text-align: center;
+  border-radius: 6px;
+}
+
+.tree-table {
+  width: 100%;
+  margin-top: 10px;
+  border-collapse: collapse;
+}
+
+.tree-table th,
+.tree-table td {
+  border: 1px solid #ddd;
   padding: 8px;
-  margin-right: 10px;
 }
 
-button {
+.no-data {
+  text-align: center;
+}
+
+.buttons {
+  margin-top: 15px;
+}
+
+.btn {
   padding: 8px 15px;
-  background: green;
-  color: white;
+  margin-right: 10px;
   border: none;
   cursor: pointer;
 }
 
-table {
-  width: 100%;
-  margin-top: 20px;
-  border-collapse: collapse;
+.draft {
+  background: gray;
+  color: #fff;
 }
 
-th, td {
-  border: 1px solid #ccc;
-  padding: 10px;
-  text-align: center;
+.save {
+  background: green;
+  color: #fff;
 }

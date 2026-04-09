@@ -32,6 +32,7 @@ import { ResetPasswordComponent } from './public/account/reset-password/reset-pa
 import { EntryFormComponent } from './private/Carbon-offset/entryform/entryform';
 import { MasterTreeComponent } from './private/Carbon-offset/tree-master/tree-master';
 import { ProjectComponent } from './private/Carbon-offset/plantation-project/plantation-project';
+import { FinalEntryComponent } from './private/Carbon-offset/finalform/finalform';
 
 export const routes: Routes = [
 
@@ -88,6 +89,8 @@ export const routes: Routes = [
             { path: 'Ngoentryform', component: EntryFormComponent },
             { path: 'Treemaster', component: MasterTreeComponent },
             { path: 'Plantationproject', component: ProjectComponent },
+            { path: 'Finalform', component: FinalEntryComponent },
+
 
             // { path: 'generator-review/:id', component: GeneratorReviewComponent },
             { path: 'vehicle-ec/:id', component: TripComponent },

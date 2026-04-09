@@ -1,1 +1,119 @@
-<p>finalform works!</p>
+<div class="container">
+
+  <form [formGroup]="form">
+
+    <!-- FILTER -->
+    <div class="card">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>FY <span class="required">*</span></label>
+          <select formControlName="year" (change)="loadPlannedData()">
+            <option value="">Select</option>
+            <option *ngFor="let y of years" [value]="y">{{ y }}</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Project <span class="required">*</span></label>
+          <select formControlName="projectId" (change)="loadPlannedData()">
+            <option value="">Select</option>
+            <option *ngFor="let p of projects" [value]="p.ProjectId">
+              {{ p.projectName }}
+            </option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- PLANNED SUMMARY -->
+    <div class="summary-card" *ngIf="plannedSummary">
+      <div class="summary-box">
+        <p>Planned CO₂</p>
+        <h3>{{ plannedSummary.totalCO2 }}</h3>
+      </div>
+      <div class="summary-box">
+        <p>Planned Trees</p>
+        <h3>{{ plannedSummary.totalTrees }}</h3>
+      </div>
+    </div>
+
+    <!-- TREE ENTRY -->
+    <div class="card">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Tree <span class="required">*</span></label>
+          <select formControlName="treeId">
+            <option value="">Select Tree</option>
+            <option *ngFor="let t of treeMaster" [value]="t.treeId">
+              {{ t.treeName }}
+            </option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Count <span class="required">*</span></label>
+          <input type="number" formControlName="count" min="1">
+        </div>
+
+        <div class="form-group">
+          <button type="button" (click)="addTree()">Add</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADDED TREES TABLE -->
+    <div class="card">
+      <table class="tree-table">
+        <thead>
+          <tr>
+            <th>Tree</th>
+            <th>CO₂</th>
+            <th>Count</th>
+            <th>Total</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let t of addedTrees; let i = index">
+            <td>{{ t.treeName }}</td>
+            <td>{{ t.co2 }}</td>
+            <td>{{ t.count }}</td>
+            <td>{{ t.total }}</td>
+            <td><button (click)="removeTree(i)">❌</button></td>
+          </tr>
+          <tr *ngIf="addedTrees.length === 0">
+            <td colspan="5" class="no-data">No Records Found</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- FINAL SUMMARY -->
+    <div class="summary-card" *ngIf="addedTrees.length > 0">
+      <div class="summary-box">
+        <p>Actual CO₂</p>
+        <h3>{{ totalCO2 }}</h3>
+      </div>
+      <div class="summary-box">
+        <p>Achievement</p>
+        <h3>{{ achievement }}%</h3>
+      </div>
+    </div>
+
+    <!-- REMARKS -->
+    <div class="card">
+      <div class="form-group full-width">
+        <label>Remarks</label>
+        <textarea formControlName="remarks"></textarea>
+      </div>
+    </div>
+
+    <!-- BUTTONS -->
+    <div class="buttons" *ngIf="addedTrees.length > 0">
+      <button type="button" class="btn draft" (click)="saveDraft()">Save Draft</button>
+      <button type="button" class="btn save" (click)="finalSubmit()">Final Submit</button>
+    </div>
+
+  </form>
+
+</div>

@@ -1,80 +1,121 @@
-import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { Component, OnInit } from '@angular/core';
+import { FormBuilder, FormGroup ,ReactiveFormsModule } from '@angular/forms';
+import { FinalformService } from './finalform-service';
 
 @Component({
-  selector: 'app-finalform',
-  imports: [CommonModule,ReactiveFormsModule,FormsModule],
+  selector: 'app-final-entry',
   templateUrl: './finalform.html',
-  styleUrl: './finalform.css',
+  styleUrls: ['./finalform.css'],
+   imports: [
+    ReactiveFormsModule
+  ]
 })
-export class Finalform {
-projects: any[] = [];
-treeList: any[] = [];   // from planner
-addedTrees: any[] = [];
+export class FinalEntryComponent implements OnInit {
 
-selectedProjectId: number = 0;
-selectedTreeId: number = 0;
-treeCount: number = 0;
+  form!: FormGroup;
 
-totalOffset: number = 0;
+  years = ['2024-25', '2025-26'];
+  projects: any[] = [];
+  treeMaster: any[] = [];
 
+  selectedTreeId: number | null = null;
+  treeCount: number = 0;
 
-onProjectChange() {
-//   this.http.get(`api/projectTrees/${this.selectedProjectId}`)
-//     .subscribe((res: any) => {
-//       this.treeList = res;
-//     });
-}
+  addedTrees: any[] = [];
 
-addTree() {
+  plannedSummary: any;
+  totalCO2 = 0;
+  achievement = 0;
 
-  let tree = this.treeList.find(t => t.treeId == this.selectedTreeId);
+  constructor(private fb: FormBuilder, private service: FinalformService) {}
 
-  if (!tree) return;
+  ngOnInit() {
+    this.form = this.fb.group({
+      year: [''],
+      projectId: [''],
+      remarks: ['']
+    });
 
-  // 🔥 VALIDATION
-  if (this.treeCount > tree.totalTrees) {
-    alert("Cannot select more than available trees");
-    return;
+    this.loadProjects();
+    this.loadTreeMaster();
   }
 
-  let existing = this.addedTrees.find(t => t.treeId == tree.treeId);
+  loadProjects() {
+    this.service.getProjects().subscribe(res => this.projects = res);
+  }
 
-  if (existing) {
-    existing.selected += this.treeCount;
-  } else {
-    this.addedTrees.push({
-      treeId: tree.treeId,
-      treeName: tree.treeName,
-      co2: tree.co2,
-      totalTrees: tree.totalTrees,
-      selected: this.treeCount,
-      remaining: tree.totalTrees - this.treeCount,
-      totalCo2: this.treeCount * tree.co2
+  loadTreeMaster() {
+    this.service.getTrees().subscribe(res => this.treeMaster = res);
+  }
+
+  loadPlannedData() {
+    const { year, projectId } = this.form.value;
+    if (!year || !projectId) return;
+
+    this.service.getPlannedSummary(year, projectId).subscribe(res => {
+      this.plannedSummary = res;
+      this.calculateAchievement();
     });
   }
 
-  // 🔥 UPDATE REMAINING IN MASTER LIST
-  tree.totalTrees -= this.treeCount;
+  addTree() {
+  if (!this.selectedTreeId || this.treeCount <= 0) return;
 
-  this.calculateTotal();
+  const tree = this.treeMaster.find(t => t.treeId === this.selectedTreeId);
 
-  // RESET
-  this.treeCount = 0;
-  this.selectedTreeId = 0;
-}
+  if (!tree) return; // ✅ IMPORTANT FIX
 
+  const total = tree.co2 * this.treeCount;
 
-calculateTotal() {
-  this.totalOffset = 0;
-
-  this.addedTrees.forEach(t => {
-    t.totalCo2 = t.selected * t.co2;
-    t.remaining = t.totalTrees - t.selected;
-
-    this.totalOffset += t.totalCo2;
+  this.addedTrees.push({
+    treeName: tree.treeName,
+    co2: tree.co2,
+    count: this.treeCount,
+    total
   });
 
+  this.selectedTreeId = null;
+  this.treeCount = 0;
+
+  this.calculateTotals();
 }
+
+  removeTree(index: number) {
+    this.addedTrees.splice(index, 1);
+    this.calculateTotals();
+  }
+
+  calculateTotals() {
+    this.totalCO2 = this.addedTrees.reduce((sum, t) => sum + t.total, 0);
+    this.calculateAchievement();
+  }
+
+  calculateAchievement() {
+    if (!this.plannedSummary) return;
+
+    const planned = this.plannedSummary.totalCO2 || 1;
+    this.achievement = Math.round((this.totalCO2 / planned) * 100);
+  }
+
+  saveDraft() {
+    const payload = this.getPayload('Draft');
+    this.service.saveEntry(payload).subscribe();
+  }
+
+  finalSubmit() {
+    const payload = this.getPayload('Final');
+    this.service.saveEntry(payload).subscribe();
+  }
+
+  getPayload(status: string) {
+    return {
+      ...this.form.value,
+      trees: this.addedTrees,
+      totalCO2: this.totalCO2,
+      achievement: this.achievement,
+      status
+    };
+  }
+
+  
 }
