@@ -1,0 +1,33 @@
+.container {
+  padding: 20px;
+  font-family: Arial;
+}
+
+.tree-box {
+  margin: 20px 0;
+}
+
+select, input {
+  padding: 8px;
+  margin-right: 10px;
+}
+
+button {
+  padding: 8px 15px;
+  background: green;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+table {
+  width: 100%;
+  margin-top: 20px;
+  border-collapse: collapse;
+}
+
+th, td {
+  border: 1px solid #ccc;
+  padding: 10px;
+  text-align: center;
+}
