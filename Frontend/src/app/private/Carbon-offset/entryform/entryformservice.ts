@@ -49,8 +49,8 @@ getTreeDetails(treeId: string, treeCount: number) {
   return this.http.post<any>(
     `${environment.apiBaseUrl}/Tree/get-tree-details`,
     {
-      treeId: treeId,      // ✅ DIRECT
-      treeCount: treeCount // ✅ DIRECT
+      treeId: treeId,     
+      treeCount: treeCount 
     }
   );
 }

@@ -16,7 +16,7 @@ export class EntryFormComponent implements OnInit {
 financialYearRange: string = '';
 years: number[] = [];
   projects: any[] = [];
-
+draftId: number = 0;
   treeInputs: any[] = [];
 
 
@@ -259,12 +259,11 @@ generateYears() {
  finalSave() {
   const projectId = this.form.value.projectId;
   const year = this.form.value.year;
-console.log("FORM VALUE:", this.form.value);
-console.log("PROJECT ID:", projectId);
-  if (!projectId || projectId === '' || !year) {
-  Swal.fire('Error', 'Select Year & Project', 'error');
-  return;
-}
+
+  if (!projectId || !year) {
+    Swal.fire('Error', 'Select Year & Project', 'error');
+    return;
+  }
 
   if (this.addedTrees().length === 0) {
     Swal.fire('Error', 'Add at least one tree', 'error');
@@ -272,8 +271,8 @@ console.log("PROJECT ID:", projectId);
   }
 
   const payload = {
-   projectId: String(this.form.value.projectId),
-    entryBy: 'CurrentUser', // 🔹 replace with actual logged-in user
+    offsetEntryId: this.draftId || 0,   // ✅ allow direct save
+    projectId: String(projectId),
     financialYear: year,
     trees: this.addedTrees().map(t => ({
       treeId: t.treeId,
@@ -281,13 +280,17 @@ console.log("PROJECT ID:", projectId);
     }))
   };
 
+  console.log("FINAL PAYLOAD:", payload);
+
   this.service.saveOffsetEntry(payload).subscribe({
     next: (res: any) => {
       Swal.fire('Success', `Saved Successfully. Total Offset: ${res.totalOffset}`, 'success');
 
-      // reset
+      // ✅ RESET
+      this.draftId = 0;
       this.addedTrees.set([]);
       this.totalOffset = 0;
+
       this.summary.set({
         previousYearEmission: 0,
         totalTreeCount: 0,
@@ -295,7 +298,7 @@ console.log("PROJECT ID:", projectId);
         actualAchievement: 0
       });
     },
-    error: () => Swal.fire('Error', 'Save failed', 'error')
+    error: () => Swal.fire('Error', 'Final save failed', 'error')
   });
 }
 // saveAll() {
@@ -350,23 +353,25 @@ console.log("PROJECT ID:", projectId);
 // });
 // }
 
-
 saveDraft() {
   const projectId = this.form.value.projectId;
   const year = this.form.value.year;
 
- if (!projectId || projectId === '' || !year) {
-  Swal.fire('Error', 'Select Year & Project', 'error');
-  return;
-}
+  if (!projectId || !year) {
+    Swal.fire('Error', 'Select Year & Project', 'error');
+    return;
+  }
+
   if (this.addedTrees().length === 0) {
     Swal.fire('Error', 'Add at least one tree', 'error');
     return;
   }
 
   const payload = {
-    projectId: String(this.form.value.projectId),
-    entryBy: 'CurrentUser', // 🔹 replace with actual user
+    offsetEntryId: 0, // no dependency
+    projectId: String(projectId),
+    entryBy: 'CurrentUser',
+    financialYear: year,   // ✅ ADD THIS
     trees: this.addedTrees().map(t => ({
       treeId: t.treeId,
       treeCount: t.count
@@ -375,7 +380,11 @@ saveDraft() {
 
   this.service.saveDraft(payload).subscribe({
     next: (res: any) => {
-      Swal.fire('Draft Saved', `Draft ID: ${res.offsetEntryId || 'N/A'}`, 'success');
+
+      // ✅ OPTIONAL: store draft id (only if you want edit later)
+      this.draftId = res.offsetEntryId;
+
+      Swal.fire('Draft Saved', `Draft ID: ${this.draftId}`, 'success');
     },
     error: () => Swal.fire('Error', 'Draft save failed', 'error')
   });

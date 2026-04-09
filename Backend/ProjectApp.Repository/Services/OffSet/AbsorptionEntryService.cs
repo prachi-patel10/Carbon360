@@ -166,110 +166,112 @@ namespace ProjectApp.Repository.Services.OffSet
             };
         }
 
-        public async Task<OffsetEntrySaveDraftResponseDTO> SaveDraftAsync(OffsetEntrySaveDraftRequestDTO request)
+        //public async Task<OffsetEntrySaveDraftResponseDTO> SaveDraftAsync(OffsetEntrySaveDraftRequestDTO request)
+        //{
+        //    var result = new OffsetEntrySaveDraftResponseDTO();
+
+        //    //--------------------------------------------
+        //    // ✅ STEP 1: VALIDATE INPUT
+        //    //--------------------------------------------
+        //    if (string.IsNullOrEmpty(request.ProjectId))
+        //        throw new Exception("ProjectId is required.");
+
+        //    //--------------------------------------------
+        //    // ✅ STEP 2: PARSE OR DECODE
+        //    //--------------------------------------------
+        //    int decodedProjectId;
+
+        //    // Try normal int (like 10)
+        //    if (!int.TryParse(request.ProjectId, out decodedProjectId))
+        //    {
+        //        // fallback decode (like "YvnOD6Ao")
+        //        decodedProjectId = _encoder.Decode(request.ProjectId);
+        //    }
+
+        //    if (decodedProjectId <= 0)
+        //        throw new Exception("Invalid ProjectId.");
+
+        //    //--------------------------------------------
+        //    // ✅ STEP 3: CHECK PROJECT EXISTS
+        //    //--------------------------------------------
+        //    using (var checkConn = _context.Database.GetDbConnection())
+        //    {
+        //        await checkConn.OpenAsync();
+
+        //        using var checkCmd = checkConn.CreateCommand();
+        //        checkCmd.CommandText = @"SELECT COUNT(1) 
+        //                        FROM CB_PlantationProject 
+        //                        WHERE ProjectId = @ProjectId AND IsActive = 1";
+
+        //        checkCmd.Parameters.Add(new SqlParameter("@ProjectId", decodedProjectId));
+
+        //        var exists = Convert.ToInt32(await checkCmd.ExecuteScalarAsync());
+
+        //        if (exists == 0)
+        //            throw new Exception($"ProjectId {decodedProjectId} does not exist in DB.");
+        //    }
+
+        //    //--------------------------------------------
+        //    // ✅ STEP 4: MAIN INSERT
+        //    //--------------------------------------------
+        //    using var conn = new SqlConnection(_config.GetConnectionString("DbString"));
+        //    await conn.OpenAsync();
+
+        //    using var cmd = conn.CreateCommand();
+        //    cmd.CommandText = "USP_CB_OffsetEntrySaveDraft";
+        //    cmd.CommandType = CommandType.StoredProcedure;
+
+        //    cmd.Parameters.Add(new SqlParameter("@ProjectId", SqlDbType.Int)
+        //    {
+        //        Value = decodedProjectId
+        //    });
+
+        //    cmd.Parameters.Add(new SqlParameter("@EntryBy", SqlDbType.NVarChar)
+        //    {
+        //        Value = request.EntryBy ?? (object)DBNull.Value
+        //    });
+
+        //    //--------------------------------------------
+        //    // ✅ TREE VALIDATION
+        //    //--------------------------------------------
+        //    if (request.Trees == null || !request.Trees.Any())
+        //        throw new Exception("Tree data is empty.");
+
+        //    var table = new DataTable();
+        //    table.Columns.Add("TreeId", typeof(int));
+        //    table.Columns.Add("TreeCount", typeof(int));
+
+        //    foreach (var item in request.Trees)
+        //    {
+        //        int decodedTreeId = _encoder.Decode(item.TreeId);
+
+        //        if (decodedTreeId <= 0)
+        //            throw new Exception($"Invalid TreeId: {item.TreeId}");
+
+        //        table.Rows.Add(decodedTreeId, item.TreeCount);
+        //    }
+
+        //    cmd.Parameters.Add(new SqlParameter("@TreeData", SqlDbType.Structured)
+        //    {
+        //        TypeName = "dbo.TreeType",
+        //        Value = table
+        //    });
+
+        //    using var reader = await cmd.ExecuteReaderAsync();
+
+        //    if (await reader.ReadAsync())
+        //    {
+        //        result.OffsetEntryId = Convert.ToInt32(reader["OffsetEntryId"]);
+        //        result.TotalOffset = Convert.ToDecimal(reader["TotalOffset"]);
+        //    }
+
+        //    return result;
+        //}
+
+        public async Task<OffsetEntryResponseDTO> InsertOffsetEntry(OffsetEntryDto model, string currentUsername, bool isDraft)
         {
-            var result = new OffsetEntrySaveDraftResponseDTO();
+          
 
-            //--------------------------------------------
-            // ✅ STEP 1: VALIDATE INPUT
-            //--------------------------------------------
-            if (string.IsNullOrEmpty(request.ProjectId))
-                throw new Exception("ProjectId is required.");
-
-            //--------------------------------------------
-            // ✅ STEP 2: PARSE OR DECODE
-            //--------------------------------------------
-            int decodedProjectId;
-
-            // Try normal int (like 10)
-            if (!int.TryParse(request.ProjectId, out decodedProjectId))
-            {
-                // fallback decode (like "YvnOD6Ao")
-                decodedProjectId = _encoder.Decode(request.ProjectId);
-            }
-
-            if (decodedProjectId <= 0)
-                throw new Exception("Invalid ProjectId.");
-
-            //--------------------------------------------
-            // ✅ STEP 3: CHECK PROJECT EXISTS
-            //--------------------------------------------
-            using (var checkConn = _context.Database.GetDbConnection())
-            {
-                await checkConn.OpenAsync();
-
-                using var checkCmd = checkConn.CreateCommand();
-                checkCmd.CommandText = @"SELECT COUNT(1) 
-                                FROM CB_PlantationProject 
-                                WHERE ProjectId = @ProjectId AND IsActive = 1";
-
-                checkCmd.Parameters.Add(new SqlParameter("@ProjectId", decodedProjectId));
-
-                var exists = Convert.ToInt32(await checkCmd.ExecuteScalarAsync());
-
-                if (exists == 0)
-                    throw new Exception($"ProjectId {decodedProjectId} does not exist in DB.");
-            }
-
-            //--------------------------------------------
-            // ✅ STEP 4: MAIN INSERT
-            //--------------------------------------------
-            using var conn = new SqlConnection(_config.GetConnectionString("DbString"));
-            await conn.OpenAsync();
-
-            using var cmd = conn.CreateCommand();
-            cmd.CommandText = "USP_CB_OffsetEntrySaveDraft";
-            cmd.CommandType = CommandType.StoredProcedure;
-
-            cmd.Parameters.Add(new SqlParameter("@ProjectId", SqlDbType.Int)
-            {
-                Value = decodedProjectId
-            });
-
-            cmd.Parameters.Add(new SqlParameter("@EntryBy", SqlDbType.NVarChar)
-            {
-                Value = request.EntryBy ?? (object)DBNull.Value
-            });
-
-            //--------------------------------------------
-            // ✅ TREE VALIDATION
-            //--------------------------------------------
-            if (request.Trees == null || !request.Trees.Any())
-                throw new Exception("Tree data is empty.");
-
-            var table = new DataTable();
-            table.Columns.Add("TreeId", typeof(int));
-            table.Columns.Add("TreeCount", typeof(int));
-
-            foreach (var item in request.Trees)
-            {
-                int decodedTreeId = _encoder.Decode(item.TreeId);
-
-                if (decodedTreeId <= 0)
-                    throw new Exception($"Invalid TreeId: {item.TreeId}");
-
-                table.Rows.Add(decodedTreeId, item.TreeCount);
-            }
-
-            cmd.Parameters.Add(new SqlParameter("@TreeData", SqlDbType.Structured)
-            {
-                TypeName = "dbo.TreeType",
-                Value = table
-            });
-
-            using var reader = await cmd.ExecuteReaderAsync();
-
-            if (await reader.ReadAsync())
-            {
-                result.OffsetEntryId = Convert.ToInt32(reader["OffsetEntryId"]);
-                result.TotalOffset = Convert.ToDecimal(reader["TotalOffset"]);
-            }
-
-            return result;
-        }
-
-        public async Task<OffsetEntryResponseDTO> InsertOffsetEntry(OffsetEntryDto model, int currentUserId)
-        {
             if (string.IsNullOrEmpty(model.ProjectId))
                 throw new ArgumentException("ProjectId is required.");
 
@@ -295,10 +297,19 @@ namespace ProjectApp.Repository.Services.OffSet
             cmd.CommandText = "USP_CB_OffsetEntry_Insert";
             cmd.CommandType = CommandType.StoredProcedure;
 
-            cmd.Parameters.Add(new SqlParameter("@ProjectId", decodedProjectId));
-            cmd.Parameters.Add(new SqlParameter("@EntryBy", currentUserId));
-            cmd.Parameters.Add(new SqlParameter("@FinancialYear", model.FinancialYear));
+            // 🔥 ADD THIS (MOST IMPORTANT FIX)
+            cmd.Parameters.Add(new SqlParameter("@OffsetEntryId", SqlDbType.Int)
+            {
+                Value = model.OffsetEntryId > 0 ? model.OffsetEntryId : (object)DBNull.Value
+            });
 
+            cmd.Parameters.Add(new SqlParameter("@ProjectId", decodedProjectId));
+            cmd.Parameters.Add(new SqlParameter("@EntryBy", SqlDbType.NVarChar)
+            {
+                Value = currentUsername ?? (object)DBNull.Value
+            });
+            cmd.Parameters.Add(new SqlParameter("@FinancialYear", model.FinancialYear));
+            cmd.Parameters.Add(new SqlParameter("@IsDraft", isDraft));
             var table = new DataTable();
             table.Columns.Add("TreeId", typeof(int));
             table.Columns.Add("TreeCount", typeof(int));

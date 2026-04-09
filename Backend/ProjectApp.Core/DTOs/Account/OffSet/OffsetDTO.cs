@@ -14,6 +14,7 @@ namespace ProjectApp.Core.DTOs.Account.OffSet
 
     public class OffsetEntryDto
     {
+        public int OffsetEntryId { get; set; }
         public string ProjectId { get; set; } 
         //public int? EntryBy { get; set; }
         public string FinancialYear { get; set; }

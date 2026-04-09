@@ -16,14 +16,9 @@ public class OffsetEntryController : ControllerBase
     [HttpPost("insert")]
     public async Task<IActionResult> Insert([FromBody] OffsetEntryDto model)
     {
-        var userIdClaim = User.FindFirst("UserId")?.Value;
+        var username = User.Identity?.Name;
 
-        if (string.IsNullOrEmpty(userIdClaim))
-            return Unauthorized();
-
-        int userId = Convert.ToInt32(userIdClaim);
-
-        var result = await _service.InsertOffsetEntry(model, userId);
+        var result = await _service.InsertOffsetEntry(model, username, false); // ✅ FINAL
 
         return Ok(result);
     }
@@ -58,12 +53,11 @@ public class OffsetEntryController : ControllerBase
         return Ok(new { Message = "Deleted Successfully" });
     }
     [HttpPost("save-draft")]
-    public async Task<IActionResult> SaveDraft([FromBody] OffsetEntrySaveDraftRequestDTO request)
+    public async Task<IActionResult> SaveDraft([FromBody] OffsetEntryDto model)
     {
-        if (request == null)
-            return BadRequest("Request body is null");
+        var username = User.Identity?.Name;
 
-        var result = await _service.SaveDraftAsync(request);
+        var result = await _service.InsertOffsetEntry(model, username, true); // ✅ DRAFT
 
         return Ok(result);
     }
