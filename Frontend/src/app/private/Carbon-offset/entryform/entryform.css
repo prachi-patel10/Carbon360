@@ -48,7 +48,7 @@
 /* ================= GRID FIX ================= */
 .form-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(3, 1fr); /* ✅ 3 equal fields */
   gap: 16px;
 }
 

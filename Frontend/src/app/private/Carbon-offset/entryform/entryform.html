@@ -27,24 +27,21 @@
 
   <div class="summary-card" *ngIf="summary">
     <div class="summary-box">
-      <p>Previous CO₂</p>
+      <p>Previous CO₂e</p>
       <h3>{{ summary().previousYearEmission || 0 }}</h3>
     </div>
 
     <div class="summary-box">
-      <p>Total Trees</p>
+      <p>Target Trees</p>
       <h3>{{ summary().totalTreeCount || 0 }}</h3>
     </div>
 
     <div class="summary-box">
-      <p>CO₂ Absorption</p>
+      <p>Target CO₂e Absorption</p>
       <h3>{{ summary().totalCo2Absorption || 0 }}</h3>
     </div>
 
-    <div class="summary-box">
-      <p>Achievement</p>
-      <h3>{{ summary().actualAchievement || 0 }}%</h3>
-    </div>
+    
   </div>
 
   <!-- TREE INPUT -->
