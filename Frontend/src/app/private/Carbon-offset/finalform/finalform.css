@@ -1,77 +1,298 @@
-.container {
-  padding: 20px;
-}
-
-.card {
-  background: #fff;
-  padding: 15px;
-  margin-bottom: 15px;
-  border-radius: 8px;
-}
-
-.form-grid {
-  display: flex;
-  gap: 15px;
-  flex-wrap: wrap;
-}
-
+/* ================= CONTAINER ================= */
+/* ================= FORM GROUP FIX ================= */
 .form-group {
   display: flex;
   flex-direction: column;
-  min-width: 150px;
 }
 
-.full-width {
+/* Label */
+.form-group label {
+  margin-bottom: 6px;
+  font-weight: 500;
+  font-size: 14px;
+  color: #374151;
+}
+
+/* ================= SELECT DROPDOWN ================= */
+.form-group select {
   width: 100%;
-}
-
-.summary-card {
-  display: flex;
-  gap: 15px;
-  margin: 15px 0;
-}
-
-.summary-box {
-  flex: 1;
-  background: #f4f6f9;
-  padding: 10px;
-  text-align: center;
+  padding: 8px 10px;
   border-radius: 6px;
+  border: 1px solid #d1d5db;
+  background-color: #f9fafb;
+  font-size: 14px;
+  color: #111827;
+
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+/* Hover */
+.form-group select:hover {
+  border-color: #9ca3af;
+}
+
+/* Focus (IMPORTANT for UI look) */
+.form-group select:focus {
+  border-color: #1b5e20;
+  background-color: #fff;
+  box-shadow: 0 0 0 2px rgba(27, 94, 32, 0.15);
+}
+
+/* Disabled */
+.form-group select:disabled {
+  background-color: #e5e7eb;
+  cursor: not-allowed;
+}
+
+/* ================= GRID FIX ================= */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* ✅ 3 equal fields */
+  gap: 16px;
+}
+
+/* ================= CARD IMPROVEMENT ================= */
+.card {
+  background-color: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 15px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+/* ================= TITLE ================= */
+h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #1b5e20;
+  font-weight: 600;
+}
+
+
+
+/* ================= INFO BOX ================= */
+.info-box {
+  background: #ecfdf5;
+  border: 1px solid #bbf7d0;
+  padding: 12px 15px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-weight: 600;
+  color: #065f46;
+}
+
+/* ================= TABLE ================= */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 16px;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+thead {
+  background-color: #0f5132;
+  color: white;
+}
+
+th {
+  padding: 12px;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+td {
+  padding: 10px;
+  border-bottom: 1px solid #f1f5f9;
+  text-align: center;
+}
+
+tbody tr:hover td {
+  background: #f0fdf4;
+}
+
+/* ================= INPUT (IF EDITABLE FUTURE) ================= */
+input[type="number"] {
+  width: 70px;
+  padding: 5px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+/* ================= SUMMARY ================= */
+.summary {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.summary p {
+  margin: 5px 0;
+  font-weight: 500;
+}
+
+/* Status Colors */
+.status-ok {
+  color: #15803d;
+  font-weight: 600;
+}
+
+.status-pending {
+  color: #dc2626;
+  font-weight: 600;
+}
+
+/* ================= BUTTONS ================= */
+.buttons {
+  text-align: center;
+  margin-top: 10px;
+}
+
+button {
+  padding: 10px 18px;
+  margin: 5px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+/* Save Button */
+.save {
+  background: #1b5e20;
+  color: white;
+}
+
+.save:hover {
+  background: #166534;
+}
+
+/* Cancel Button */
+.cancel {
+  background: #dc2626;
+  color: white;
+}
+
+.cancel:hover {
+  background: #b91c1c;
+}
+
+/* ================= EMPTY STATE ================= */
+td[colspan] {
+  color: #6b7280;
+  padding: 15px;
+}
+
+
+/* SUMMARY CARD CONTAINER */
+.summary-card {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); /* ✅ 4 cards in one row */
+  gap: 16px;
+  margin: 20px 0;
+}
+
+/* CARD BOX */
+.summary-box {
+border: 2px solid #15803d;
+background-color: white;
+  color: #0f5132;
+  padding: 18px;
+  border-radius: 12px;
+  text-align: center;
+  transition: all 0.3s ease;
+  min-height: 100px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* TEXT */
+.summary-box p {
+  margin: 0;
+  font-size: 13px;
+  opacity: 0.8;
+}
+
+.summary-box h3 {
+  margin-top: 8px;
+  font-size: 22px;
+  font-weight: 600;
+}
+
+/* HOVER */
+.summary-box:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 18px rgba(0,0,0,0.2);
 }
 
 .tree-table {
   width: 100%;
-  margin-top: 10px;
+  margin-top: 20px;
   border-collapse: collapse;
 }
 
 .tree-table th,
 .tree-table td {
   border: 1px solid #ddd;
-  padding: 8px;
+  padding: 10px;
+  text-align: center;
+}
+
+.tree-table th {
+  background: #0f5132;
+}
+
+.buttons {
+  margin-top: 20px;
+  display: flex;
+  gap: 10px;
+}
+
+.btn {
+  padding: 10px 20px;
+  border: none;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+.btn.save {
+  background-color: #28a745;
+  color: white;
 }
 
 .no-data {
   text-align: center;
+  padding: 20px;
+  color: gray;
+  font-weight: 500;
 }
 
-.buttons {
-  margin-top: 15px;
+.btn.draft {
+  background-color: #ffc107;
+  color: black;
 }
+/* ================= RESPONSIVE ================= */
+@media (max-width: 768px) {
 
-.btn {
-  padding: 8px 15px;
-  margin-right: 10px;
-  border: none;
-  cursor: pointer;
-}
+  .row {
+    flex-direction: column;
+  }
 
-.draft {
-  background: gray;
-  color: #fff;
-}
+  table {
+    font-size: 13px;
+  }
 
-.save {
-  background: green;
-  color: #fff;
+  th, td {
+    padding: 8px;
+  }
+
+  button {
+    width: 100%;
+  }
 }

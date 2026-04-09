@@ -77,6 +77,8 @@ namespace ProjectApp.API.Extentions
             services.AddScoped<ITreeService, TreeService>();
             services.AddScoped<IPlantationProject, PlantationProjectService>();
             services.AddScoped<IAbsorptionEntry, AbsorptionEntryService>();
+
+            services.AddScoped<IFinalService, FinalService>();
             return services;
         }
     }

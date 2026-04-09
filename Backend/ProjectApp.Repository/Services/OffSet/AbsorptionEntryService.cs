@@ -343,5 +343,68 @@ namespace ProjectApp.Repository.Services.OffSet
         }
 
 
+
+        public async Task<object> GetPlannedData(string projectId)
+        {
+            int decodedProjectId = _encoder.Decode(projectId);
+            using (var conn = _context.Database.GetDbConnection())
+            {
+                await conn.OpenAsync();
+                using (var cmd = conn.CreateCommand())
+                {
+                    cmd.CommandText = "USP_CB_OffsetEntry_GetByProject";
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.Add(new SqlParameter("@ProjectId", decodedProjectId));
+                    using (var reader = await cmd.ExecuteReaderAsync())
+                    {
+                        var result = new
+                        {
+                            totalOffset = 0m,   // :white_check_mark: decimal
+                            trees = new List<object>()
+                        };
+                        // :small_blue_diamond: First result (header)
+                       if (await reader.ReadAsync())
+                        {
+                            result = new
+                            {
+                                totalOffset = Convert.ToDecimal(reader["TotalOffset"]),
+                                trees = new List<object>()
+                            };
+                        }
+                        // :small_blue_diamond: Second result (trees)
+
+                        if (await reader.NextResultAsync())
+                        {
+                            var treeList = new List<object>();
+                          while (await reader.ReadAsync())
+                            {
+                                treeList.Add(new
+
+                                {
+                                    treeId = _encoder.Encode(Convert.ToInt32(reader["TreeId"])), // :white_check_mark: FIXED
+                                    treeName = reader["TreeName"].ToString(),
+                                    co2PerTree = Convert.ToDecimal(reader["Co2PerTree"]),
+                                    treeCount = Convert.ToInt32(reader["TreeCount"])
+
+                                });
+                            }
+                            return new
+                            {
+                                totalOffset = result.totalOffset,
+                                trees = treeList
+                            };
+
+                        }
+                        return result;
+
+                    }
+
+                }
+
+            }
+
+        }
+
+
     }
 }

@@ -35,5 +35,7 @@ namespace ProjectApp.Repository.Interfaces.OffSet
 );
         Task<object> GetById(int offsetEntryId);
         Task<bool> Delete(int offsetEntryId);
+
+        Task<object> GetPlannedData(string projectId);
     }
 }
