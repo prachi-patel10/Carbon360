@@ -80,14 +80,15 @@ console.log("API RESPONSE:", res);
 
       // ✅ LOAD PLANNED TREES
       this.addedTrees.set(
-        (res.trees || []).map((t: any) => ({
-          treeId: t.treeId,
-          treeName: t.treeName,
-          co2: t.co2PerTree,
-          count: t.treeCount,
-          total: t.co2PerTree * t.treeCount
-        }))
-      );
+  (res.trees || []).map((t: any) => ({
+    treeId: t.treeId,
+    treeName: t.treeName,
+    co2: t.co2PerTree,
+plannedCount: t.treeCount ?? 0,
+    finalCount: t.treeCount, // default
+    total: t.co2PerTree * t.treeCount
+  }))
+);
 
       this.calculateSummary();
     },
@@ -95,11 +96,34 @@ console.log("API RESPONSE:", res);
   });
 }
 
+updateTree(index: number) {
+  const trees = [...this.addedTrees()];
+  const item = { ...trees[index] };
+
+  // fallback safety
+  if (!item.finalCount) {
+    item.finalCount = item.plannedCount;
+  }
+
+  // prevent exceeding planned
+  if (item.finalCount > item.plannedCount) {
+    item.finalCount = item.plannedCount;
+    Swal.fire('Warning', 'Cannot exceed planned count');
+  }
+
+  item.total = item.finalCount * item.co2;
+
+  trees[index] = item;
+  this.addedTrees.set(trees);
+
+  this.calculateSummary();
+}
+
 calculateSummary() {
   const trees = this.addedTrees();
 
   const totalActual = trees.reduce((sum, t) => sum + t.total, 0);
-  const totalTreeCount = trees.reduce((sum, t) => sum + t.count, 0);
+  const totalTreeCount = trees.reduce((sum, t) => sum + t.finalCount, 0);
 
   this.summary.update(s => ({
     ...s,
@@ -154,32 +178,40 @@ addTree() {
     .subscribe({
       next: (res: any) => {
 
-        // ✅ Add to list
-        this.addedTrees.update(list => [
-          ...list,
-          {
-            treeId: res.treeId,
-            treeName: res.treeName,
-            co2: res.co2PerTree,
-            count: res.treeCount,
-            total: res.totalCo2
-          }
-        ]);
+  const newTree = {
+    treeId: res.treeId,
+    treeName: res.treeName,
+    co2: res.co2PerTree,
+    plannedCount: res.treeCount ?? 0,
+    finalCount: res.treeCount,
+    total: res.totalCo2
+  };
 
-        Swal.fire({
-          icon: 'success',
-          title: 'Tree added',
-          timer: 1200,
-          showConfirmButton: false
-        });
+  const tempList = [...this.addedTrees(), newTree];
 
-        // ✅ Recalculate summary (IMPORTANT 🔥)
-        this.calculateSummary();
+  const totalActual = tempList.reduce((sum, t) => sum + t.total, 0);
 
-        // ✅ Reset input
-        this.selectedTreeId = null;
-        this.treeCount = 0;
-      },
+  // ✅ CHECK TARGET LIMIT
+  if (!this.isWithinTarget(totalActual)) {
+    Swal.fire('Error', 'Adding this tree exceeds target CO₂e limit');
+    return;
+  }
+
+  // ✅ allow add
+  this.addedTrees.set(tempList);
+
+  Swal.fire({
+    icon: 'success',
+    title: 'Tree added',
+    timer: 1200,
+    showConfirmButton: false
+  });
+
+  this.calculateSummary();
+
+  this.selectedTreeId = null;
+  this.treeCount = 0;
+},
       error: (err) => {
         console.error('API ERROR', err);
         Swal.fire('Error', 'Failed to get tree details', 'error');
@@ -187,55 +219,68 @@ addTree() {
     });
 }
  
+isWithinTarget(newTotal: number): boolean {
+  const target = this.summary().targetCo2;
+  return target === 0 || newTotal <= target;
+}
   // ================= SAVE =================
  finalSave() {
   const projectId = this.form.value.projectId;
 
-  if (!projectId) {
-    Swal.fire('Error', 'Select Project', 'error');
-    return;
-  }
-
-  if (this.addedTrees().length === 0) {
-    Swal.fire('Error', 'Add at least one tree', 'error');
-    return;
-  }
-
   const payload = {
     projectId: String(projectId),
-    entryBy: 16, // 🔥 replace with logged-in user
+    entryBy: 16,
     trees: this.addedTrees().map(t => ({
       treeId: t.treeId,
-      treeCount: t.count
+      treeCount: t.finalCount // ✅ FINAL VALUE
     }))
   };
 
   this.service.saveFinalEntry(payload).subscribe({
-    next: (res: any) => {
+    next: () => {
       Swal.fire('Success', 'Final Entry Saved', 'success');
-
       this.reset();
     },
     error: () => Swal.fire('Error', 'Save failed', 'error')
   });
 }
 
+ onCountChange(index: number, value: number) {
+  const trees = [...this.addedTrees()];
+  const item = { ...trees[index] };
 
-  onCountChange(index: number, event: any) {
-  const trees = [...this.treeInputsSignal()];
-  const item = { ...trees[index] };           // ✅ spread — never mutate directly
+  const newCount = Number(value) || 0;
 
-  item.count = Number(event.target.value) || 0; // ✅ read from DOM event
-  item.total = item.count * item.co2;
+  // prevent exceeding planned count
+  if (newCount > item.plannedCount) {
+    Swal.fire('Warning', 'Cannot exceed planned count');
+    return;
+  }
 
-  trees[index] = item;                          // ✅ replace object in array
-  this.treeInputsSignal.set(trees);             // ✅ signal now has real count
+  // calculate new total for this item
+  const newItemTotal = newCount * item.co2;
 
-  const totalOffset = trees.reduce((sum, t) => sum + (t.total || 0), 0);
-  // this.totalOffset.set(totalOffset);
+  // calculate total if this update is applied
+  const tempTrees = [...trees];
+  tempTrees[index] = { ...item, finalCount: newCount, total: newItemTotal };
 
+  const totalActual = tempTrees.reduce((sum, t) => sum + (t.finalCount * t.co2), 0);
+
+  // ✅ CHECK TARGET LIMIT
+  if (!this.isWithinTarget(totalActual)) {
+    Swal.fire('Error', 'Achievement exceeds target CO₂e limit');
+    return; // ❌ block update
+  }
+
+  // ✅ apply update
+  item.finalCount = newCount;
+  item.total = newItemTotal;
+
+  trees[index] = item;
+  this.addedTrees.set(trees);
+
+  this.calculateSummary();
 }
-
 removeTree(index: number) {
   this.addedTrees.update(list => {
     const updated = [...list];

@@ -21,7 +21,7 @@
   <div class="summary-card" *ngIf="summary">
     <div class="summary-box">
       <p>Target CO₂e Absorption</p>
-      <h3>{{ summary().totalCo2Absorption || 0 }}</h3>
+      <h3>{{ summary().targetCo2 }}</h3>
     </div>
 
     <div class="summary-box">
@@ -74,8 +74,8 @@
       <thead>
         <tr>
           <th>Tree</th>
-          <th>CO₂ / Year</th>
-          <th>Count</th>
+          <th>Planned Tree</th>
+          <th>Actual Tree</th>
           <th>Total</th>
           <th>Action</th>
         </tr>
@@ -85,10 +85,17 @@
 
         <!-- DATA -->
         <tr *ngFor="let t of addedTrees(); let i = index">
-          <td>{{ t.treeName }}</td>
-          <td>{{ t.co2 }}</td>
-          <td>{{ t.count }}</td>
-          <td>{{ t.total }}</td>
+  <td>{{ t.treeName }}</td>
+
+  <td>{{ t.plannedCount }}</td>
+
+  <td>
+    <input type="number"
+           [(ngModel)]="t.finalCount"
+           (change)="updateTree(i)" />
+  </td>
+
+  <td>{{ t.total }}</td>
           <td>
             <button type="button" (click)="removeTree(i)">❌</button>
           </td>

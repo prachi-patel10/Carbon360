@@ -61,4 +61,16 @@ public class OffsetEntryController : ControllerBase
 
         return Ok(result);
     }
+
+    [HttpGet("get-by-project/{projectId}")]
+
+    public async Task<IActionResult> GetByProject(string projectId)
+
+    {
+
+        var result = await _service.GetPlannedData(projectId);
+
+        return Ok(result);
+
+    }
 }

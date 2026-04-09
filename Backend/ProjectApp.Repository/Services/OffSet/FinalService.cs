@@ -52,68 +52,57 @@ public class FinalService : IFinalService
 
     public async Task<object> SaveFinalEntry(FinalEntryDTO model)
     {
-        try
+        int projectId = _idEncoder.Decode(model.ProjectId);
+
+        DataTable dt = new DataTable();
+        dt.Columns.Add("TreeId", typeof(int));
+        dt.Columns.Add("TreeCount", typeof(int));
+
+        foreach (var item in model.Trees)
         {
-            // 🔹 Decode ProjectId
-            int projectId = _idEncoder.Decode(model.ProjectId);
+            dt.Rows.Add(
+                _idEncoder.Decode(item.TreeId),
+                item.TreeCount // ✅ FINAL COUNT FROM UI
+            );
+        }
 
-            // 🔹 Create DataTable for TVP
-            DataTable dt = new DataTable();
-            dt.Columns.Add("TreeId", typeof(int));
-            dt.Columns.Add("TreeCount", typeof(int));
+        using (var conn = _context.Database.GetDbConnection())
+        {
+            await conn.OpenAsync();
 
-            foreach (var item in model.Trees)
+            using (var cmd = conn.CreateCommand())
             {
-                dt.Rows.Add(
-                    _idEncoder.Decode(item.TreeId), // decode treeId
-                    item.TreeCount
-                );
-            }
+                cmd.CommandText = "USP_CB_SaveFinalEntry";
+                cmd.CommandType = CommandType.StoredProcedure;
 
-            using (var conn = _context.Database.GetDbConnection())
-            {
-                await conn.OpenAsync();
+                cmd.Parameters.Add(new SqlParameter("@ProjectId", projectId));
+                cmd.Parameters.Add(new SqlParameter("@EntryBy", model.EntryBy));
 
-                using (var cmd = conn.CreateCommand())
+                var tvpParam = new SqlParameter("@TreeDetails", dt)
                 {
-                    cmd.CommandText = "USP_CB_SaveFinalEntry";
-                    cmd.CommandType = CommandType.StoredProcedure;
+                    SqlDbType = SqlDbType.Structured,
+                    TypeName = "TreeType"
+                };
 
-                    // 🔹 Parameters
-                    cmd.Parameters.Add(new SqlParameter("@ProjectId", projectId));
-                    cmd.Parameters.Add(new SqlParameter("@EntryBy", model.EntryBy));
+                cmd.Parameters.Add(tvpParam);
 
-                    var tvpParam = new SqlParameter("@TreeDetails", dt)
+                using (var reader = await cmd.ExecuteReaderAsync())
+                {
+                    if (await reader.ReadAsync())
                     {
-                        SqlDbType = SqlDbType.Structured,
-                        TypeName = "TreeType" // 🔥 CHANGE if your type name is different
-                    };
-
-                    cmd.Parameters.Add(tvpParam);
-
-                    using (var reader = await cmd.ExecuteReaderAsync())
-                    {
-                        if (await reader.ReadAsync())
+                        return new
                         {
-                            return new
-                            {
-                                FinalEntryId = reader["FinalEntryId"],
-                                TotalTrees = reader["TotalActualTrees"],
-                                TotalCo2 = reader["TotalActualCo2"]
-                            };
-                        }
+                            FinalEntryId = reader["FinalEntryId"],
+                            TotalTrees = reader["TotalActualTrees"],
+                            TotalCo2 = reader["TotalActualCo2"]
+                        };
                     }
                 }
             }
+        }
 
-            return null;
-        }
-        catch (Exception ex)
-        {
-            throw new Exception("Error while saving final entry: " + ex.Message);
-        }
+        return null;
     }
-
 
 
 
