@@ -21,6 +21,7 @@ export interface VehicleTrip {
   statusId:           number;
   entryDate:          string;
   fuelType:           string;
+  blinkFlag : number;
 }
 
 @Injectable({ providedIn: 'root' })

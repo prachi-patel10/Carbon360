@@ -38,7 +38,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let e of trips()">
+          <tr *ngFor="let e of trips()" [class.blink-row]="e.blink">
             <td class="report-color">{{ e.reportId }}</td>
             <td>{{ e.vehicleNumber }}</td>
               <td class="emission-value">{{ e.totalEmission }}</td>

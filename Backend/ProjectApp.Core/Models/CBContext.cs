@@ -63,6 +63,7 @@ public partial class CBContext : DbContext
     public virtual DbSet<CB_VehicleTripEmissionHistory> CB_VehicleTripEmissionHistories { get; set; }
 
     public virtual DbSet<CB_VehicleTypeCategory> CB_VehicleTypeCategories { get; set; }
+
     public virtual DbSet<SiteEmissionDto> SiteEmissionDtos { get; set; }
 
     public virtual DbSet<FuelTypeMonthlyConsumptionDto> FuelTypeMonthlyConsumptionDtos { get; set; }

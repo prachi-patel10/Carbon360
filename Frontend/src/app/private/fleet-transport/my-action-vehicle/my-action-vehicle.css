@@ -188,3 +188,14 @@
   .generator-table td { font-size: 0.70rem; padding: 0.5rem 0.3rem; }
   .pagination button { padding: 4px 8px; font-size: 0.74rem; }
 }
+
+.blink-row {
+  animation: pulseHighlight 1.5s ease-in-out infinite;
+  background-color: #fff3cd; /* soft yellow */
+}
+
+@keyframes pulseHighlight {
+  0%   { background-color: #fff3cd; }
+  50%  { background-color: #ffe8a1; }
+  100% { background-color: #fff3cd; }
+}

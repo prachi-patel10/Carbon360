@@ -8,6 +8,7 @@ import { Router } from '@angular/router';
 interface VehicleTripDisplay extends VehicleTrip {
   runHours: string;
   status: string;
+  blink: boolean;
 }
 
 @Component({
@@ -85,7 +86,8 @@ export class MyActionVehicle implements OnInit {
           status:
             t.statusId === 1 ? 'Reported' :
               t.statusId === 2 ? 'Approved' :
-                'Rejected'
+                'Rejected',
+            blink: t.blinkFlag === 1
         };
       });
 

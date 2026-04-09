@@ -217,6 +217,12 @@ namespace ProjectApp.API.Controllers.Account.VehicleTripEmission
             return Ok(result);
         }
 
+        [HttpGet("corporate-pending-trips")]
+        public async Task<IActionResult> GetCorporatePendingTrips()
+        {
+            var data = await _service.GetCorporatePendingTripsAsync();
+            return Ok(data);
+        }
 
     }
 }

@@ -390,7 +390,8 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
                                 FromCity = reader["FromCity"]?.ToString(),
                                 ToCity = reader["ToCity"]?.ToString(),
 
-                                StatusId = Convert.ToInt32(reader["StatusId"])
+                                StatusId = Convert.ToInt32(reader["StatusId"]),
+                                BlinkFlag = reader["BlinkFlag"] == DBNull.Value ? 0 : Convert.ToInt32(reader["BlinkFlag"])
                             });
                         }
                         if (await reader.NextResultAsync())
@@ -1094,6 +1095,34 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
 
             return result;
 
+        }
+
+        public async Task<List<CorporatePendingTripDTO>> GetCorporatePendingTripsAsync()
+        {
+            var result = new List<CorporatePendingTripDTO>();
+
+            await using var conn = _context.Database.GetDbConnection();
+            await conn.OpenAsync();
+
+            await using var cmd = conn.CreateCommand();
+            cmd.CommandText = "USP_CB_GetCorporatePendingTrips";
+            cmd.CommandType = CommandType.StoredProcedure;
+
+            await using var reader = await cmd.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+            {
+                result.Add(new CorporatePendingTripDTO
+                {
+                    TripId = _idEncoder.Encode(Convert.ToInt32(reader["TripId"])),
+                    ReportId = reader["ReportId"]?.ToString(),
+                    VehicleId = _idEncoder.Encode(Convert.ToInt32(reader["VehicleId"])),
+                    EntryDate = Convert.ToDateTime(reader["EntryDate"]),
+                    StatusId = Convert.ToInt32(reader["StatusId"]),
+                    BlinkFlag = Convert.ToInt32(reader["BlinkFlag"]) // Updated field
+                });
+            }
+
+            return result;
         }
     }
 

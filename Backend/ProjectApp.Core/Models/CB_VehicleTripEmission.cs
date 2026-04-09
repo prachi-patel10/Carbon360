@@ -53,6 +53,8 @@ public partial class CB_VehicleTripEmission
 
     public string reportId { get; set; }
 
+    public bool IsFlag { get; set; }
+
     public virtual CB_MasterStatus Status { get; set; }
 
     public virtual CB_User entrybyNavigation { get; set; }

@@ -67,6 +67,7 @@ namespace ProjectApp.Repository.Interfaces.VehicleTripEmission
 
         Task<byte[]> GenerateVehicleTripPdf(string tripId);
 
+        Task<List<CorporatePendingTripDTO>> GetCorporatePendingTripsAsync();
 
 
     }

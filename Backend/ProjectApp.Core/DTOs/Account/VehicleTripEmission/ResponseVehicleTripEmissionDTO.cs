@@ -37,6 +37,8 @@ namespace ProjectApp.Core.DTOs.Account.VehicleTripEmission
         public int? EntryBy { get; set; }
         public DateTime? EntryDate { get; set; }
 
+        public int BlinkFlag { get; set; }
+
         //public decimal? CO2Factor { get; set; }
 
         //public decimal? NO2Factor { get; set; }
