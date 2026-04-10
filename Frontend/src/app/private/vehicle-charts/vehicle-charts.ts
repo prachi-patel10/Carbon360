@@ -1020,14 +1020,14 @@ export class VehicleCharts implements OnInit, AfterViewInit, OnChanges, OnDestro
     let startYear: number, startMonth: number, endYear: number, endMonth: number;
 
     if (this.fromDate && this.toDate) {
-      const from = new Date(this.fromDate);
-      const to = new Date(this.toDate);
-      startYear = from.getFullYear();
-      startMonth = from.getMonth();       // 0-based
-      endYear = to.getFullYear();
-      endMonth = to.getMonth();         // 0-based
+      // ✅ Split string directly — avoids new Date() UTC/IST timezone shift
+      const [fy, fm] = this.fromDate.split('-').map(Number);
+      const [ty, tm] = this.toDate.split('-').map(Number);
+      startYear = fy;
+      startMonth = fm - 1;  // convert to 0-based
+      endYear = ty;
+      endMonth = tm - 1;  // convert to 0-based
     } else {
-      // Default — full 12 months of selected year
       startYear = this.year;
       startMonth = 0;
       endYear = this.year;
@@ -1038,7 +1038,7 @@ export class VehicleCharts implements OnInit, AfterViewInit, OnChanges, OnDestro
     let y = startYear, m = startMonth;
 
     while (y < endYear || (y === endYear && m <= endMonth)) {
-      labels.push(`${MONTH_SHORT[m]}${String(y).slice(-2)}`);  // "Jan26"
+      labels.push(`${MONTH_SHORT[m]}${String(y).slice(-2)}`);
       m++;
       if (m > 11) { m = 0; y++; }
     }

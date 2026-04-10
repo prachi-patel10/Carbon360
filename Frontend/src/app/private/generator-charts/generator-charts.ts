@@ -145,22 +145,26 @@ export class GeneratorCharts implements OnInit, AfterViewInit, OnChanges, OnDest
   //  HELPER: month labels — no UTC timezone shift
   // ═══════════════════════════════════════════════════════════════
   private getMonthLabels(): string[] {
+    const MONTH_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
     if (this.fromDate && this.toDate) {
       const labels: string[] = [];
-      // Split string directly — avoids new Date("yyyy-MM-dd") UTC shift
+      // ✅ Split string directly — avoids new Date() UTC/IST timezone shift
       const [fy, fm] = this.fromDate.split('-').map(Number);
       const [ty, tm] = this.toDate.split('-').map(Number);
-      let curYear = fy, curMonth = fm; // curMonth is 1-based
+      let curYear = fy, curMonth = fm; // 1-based
+
       while (curYear < ty || (curYear === ty && curMonth <= tm)) {
-        // new Date(y, m-1, 1) = local midnight — no UTC shift
-        const d = new Date(curYear, curMonth - 1, 1);
-        labels.push(d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' }));
+        labels.push(`${MONTH_SHORT[curMonth - 1]}${String(curYear).slice(-2)}`);
         curMonth++;
         if (curMonth > 12) { curMonth = 1; curYear++; }
       }
       return labels;
     }
-    return ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+    return ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   }
 
   // ═══════════════════════════════════════════════════════════════
@@ -319,15 +323,15 @@ export class GeneratorCharts implements OnInit, AfterViewInit, OnChanges, OnDest
   }
 
   onRunHoursMonthTotalClick(monthIndex: number): void {
-  const pivotData = this.runHoursMonthlyData();
-  const rawLabel = pivotData?.monthLabels?.[monthIndex] ?? '';
-  
-  // Normalize "Jan25" → "Jan 25" so parseLabelToYearMonth works
-  const label = rawLabel.replace(/^([A-Za-z]{3})(\d{2})$/, '$1 $2');
-  
-  console.log('[GeneratorCharts] onRunHoursMonthTotalClick label:', label);
-  this.navigateByLabel(label);
-}
+    const pivotData = this.runHoursMonthlyData();
+    const rawLabel = pivotData?.monthLabels?.[monthIndex] ?? '';
+
+    // Normalize "Jan25" → "Jan 25" so parseLabelToYearMonth works
+    const label = rawLabel.replace(/^([A-Za-z]{3})(\d{2})$/, '$1 $2');
+
+    console.log('[GeneratorCharts] onRunHoursMonthTotalClick label:', label);
+    this.navigateByLabel(label);
+  }
 
   onRunHoursLegendClick(generatorName: string, fuelType?: string): void {
     const p: { generatorName?: string; fuelType?: string } = {};

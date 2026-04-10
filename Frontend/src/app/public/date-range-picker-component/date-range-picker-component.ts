@@ -25,19 +25,33 @@ export class DateRangePickerComponent {
   toValue: string = '';
   activeQuick: string = '';
 
+  // ✅ Build local date string without UTC conversion
+  private toLocalDateStr(d: Date): string {
+    const y  = d.getFullYear();
+    const m  = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${dd}`;
+  }
+
+  // ✅ Parse "yyyy-MM-dd" string directly — avoids UTC timezone shift
+  private parseDateStr(str: string): Date {
+    const [y, m, d] = str.split('-').map(Number);
+    return new Date(y, m - 1, d); // local midnight — no UTC shift
+  }
+
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['startDate'] || changes['endDate']) {
       if (this.startDate) {
-        this.selectedStart = new Date(this.startDate);
+        // ✅ Split string directly instead of new Date(this.startDate)
+        this.selectedStart = this.parseDateStr(this.startDate.split('T')[0]);
         this.fromValue = this.startDate.split('T')[0];
       }
       if (this.endDate) {
-        this.selectedEnd = new Date(this.endDate);
+        this.selectedEnd = this.parseDateStr(this.endDate.split('T')[0]);
         this.toValue = this.endDate.split('T')[0];
       }
     }
   }
-
 
   constructor(public pickerState: DatePickerStateServiceTs) { }
 
@@ -49,11 +63,10 @@ export class DateRangePickerComponent {
     if (this.pickerState.isOpen(this.pickerId)) {
       this.pickerState.close();
     } else {
-      // Reset inputs on open
       this.fromValue = '';
       this.toValue = '';
       this.activeQuick = '';
-      this.pickerState.open(this.pickerId); // closes any other open picker
+      this.pickerState.open(this.pickerId);
     }
   }
 
@@ -77,13 +90,18 @@ export class DateRangePickerComponent {
 
   tryEmit() {
     if (!this.fromValue || !this.toValue) return;
-    const start = new Date(this.fromValue);
-    const end = new Date(this.toValue);
+
+    // ✅ Parse directly from string — no new Date("yyyy-MM-dd") UTC shift
+    const start = this.parseDateStr(this.fromValue);
+    const end   = this.parseDateStr(this.toValue);
+
     if (start > end) return;
+
     start.setHours(0, 0, 0, 0);
     end.setHours(23, 59, 59, 999);
+
     this.selectedStart = start;
-    this.selectedEnd = end;
+    this.selectedEnd   = end;
     this.rangeSelected.emit({ startDate: start, endDate: end });
     this.pickerState.close();
   }
@@ -91,10 +109,11 @@ export class DateRangePickerComponent {
   setQuickRange(type: string) {
     const now = new Date();
     let start = new Date();
-    let end = new Date();
+    let end   = new Date();
 
     if (type === 'today') {
-      start = end = new Date();
+      start = new Date();
+      end   = new Date();
     } else if (type === 'week') {
       const day = now.getDay();
       start = new Date(now);
@@ -102,31 +121,37 @@ export class DateRangePickerComponent {
       end = new Date();
     } else if (type === 'month') {
       start = new Date(now.getFullYear(), now.getMonth(), 1);
-      end = new Date();
+      end   = new Date();
     } else if (type === 'quarter') {
       start = new Date();
       start.setMonth(start.getMonth() - 3);
       end = new Date();
     } else if (type === 'year') {
       start = new Date(now.getFullYear(), 0, 1);
-      end = new Date();
+      end   = new Date();
     }
 
     this.activeQuick = type;
     start.setHours(0, 0, 0, 0);
     end.setHours(23, 59, 59, 999);
+
     this.selectedStart = start;
-    this.selectedEnd = end;
+    this.selectedEnd   = end;
+
+    // ✅ Update input values using local date string
+    this.fromValue = this.toLocalDateStr(start);
+    this.toValue   = this.toLocalDateStr(end);
+
     this.rangeSelected.emit({ startDate: start, endDate: end });
     this.pickerState.close();
   }
 
   clearRange() {
     this.selectedStart = null;
-    this.selectedEnd = null;
-    this.fromValue = '';
-    this.toValue = '';
-    this.activeQuick = '';
+    this.selectedEnd   = null;
+    this.fromValue     = '';
+    this.toValue       = '';
+    this.activeQuick   = '';
     this.rangeSelected.emit({ startDate: null, endDate: null });
   }
 
@@ -137,11 +162,11 @@ export class DateRangePickerComponent {
 
   setRange(start: Date, end: Date): void {
     this.selectedStart = start;
-    this.selectedEnd = end;
-    this.fromValue = start.toISOString().split('T')[0];
-    this.toValue = end.toISOString().split('T')[0];
-    this.startDate = start.toISOString();
-    this.endDate = end.toISOString();
+    this.selectedEnd   = end;
+    // ✅ Use local date string instead of toISOString() which shifts to UTC
+    this.fromValue  = this.toLocalDateStr(start);
+    this.toValue    = this.toLocalDateStr(end);
+    this.startDate  = this.fromValue;
+    this.endDate    = this.toValue;
   }
-
 }

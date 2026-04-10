@@ -136,16 +136,17 @@ function buildSlots(
   let startYear: number, startMonth: number, endYear: number, endMonth: number;
 
   if (fromDate && toDate) {
+    // ✅ Split string directly — avoids new Date() UTC/IST timezone shift
     const [fy, fm] = fromDate.split('-').map(Number);
     const [ty, tm] = toDate.split('-').map(Number);
-    startYear = fy;
+    startYear  = fy;
     startMonth = fm;
-    endYear = ty;
-    endMonth = tm;
+    endYear    = ty;
+    endMonth   = tm;
   } else {
-    const y = year ?? new Date().getFullYear();
-    startYear = y; startMonth = 1;
-    endYear = y; endMonth = 12;
+    const y    = year ?? new Date().getFullYear();
+    startYear  = y; startMonth = 1;
+    endYear    = y; endMonth   = 12;
   }
 
   const slots: { month: number; year: number; label: string }[] = [];
@@ -154,8 +155,9 @@ function buildSlots(
   while (y < endYear || (y === endYear && m <= endMonth)) {
     slots.push({
       month: m,
-      year: y,
-      label: `${MONTH_SHORT[m - 1]}${String(y).slice(-2)}`
+      year:  y,
+      // ✅ "Apr 25" with space — matches C# BuildMonthSlots and parseLabelToYearMonth
+      label: `${MONTH_SHORT[m - 1]} ${String(y).slice(-2)}`
     });
     m++;
     if (m > 12) { m = 1; y++; }
@@ -174,8 +176,8 @@ function transformFuelRows(
   toDate?: string
 ): FuelCombinedChartResponse {
 
-  const slots = buildSlots(fromDate, toDate);
-  const labels = slots.map(s => s.label);
+  const slots     = buildSlots(fromDate, toDate);
+  const labels    = slots.map(s => s.label);
   const slotCount = slots.length;
 
   const slotIndex = new Map<string, number>();
@@ -188,7 +190,7 @@ function transformFuelRows(
   const fuelTypes = [...new Set(rows.map(r => r.fuelType))];
 
   const datasets: FuelStackDataset[] = fuelTypes.map(ft => {
-    const data = new Array<number>(slotCount).fill(0);
+    const data        = new Array<number>(slotCount).fill(0);
     const rowsForFuel = rows.filter(r => r.fuelType === ft);
 
     rowsForFuel.forEach(r => {
@@ -208,10 +210,10 @@ function transformFuelRows(
     ];
 
     return {
-      label: ft,
-      fuelType: ft,
+      label:           ft,
+      fuelType:        ft,
       source,
-      color: FUEL_COLORS[ft] ?? DEFAULT_COLOR,
+      color:           FUEL_COLORS[ft] ?? DEFAULT_COLOR,
       data,
       vehicleTypeName: vehicleTypeNames[0] ?? '',
       vehicleTypeNames,
@@ -223,17 +225,15 @@ function transformFuelRows(
 
 // ═══════════════════════════════════════════════════════════════
 //  normalizeVehicleMonthLabels
-//  Vehicle API returns "Mar 25" — convert to "Mar25" (remove space)
+//  ✅ No longer strips spaces — backend returns "Apr 25" which
+//  is already the correct format for parseLabelToYearMonth
 // ═══════════════════════════════════════════════════════════════
 function normalizeVehicleMonthLabels(labels: string[]): string[] {
-  return labels.map(lbl => lbl.replace(' ', ''));
+  return labels; // ✅ return as-is — do NOT remove spaces
 }
 
 // ═══════════════════════════════════════════════════════════════
 //  reorderGeneratorPivot
-//  Generator API always returns 12 fixed rows (Jan=0...Dec=11)
-//  regardless of date range. This reorders all matrix rows to
-//  match the correct chronological slot order from the date range.
 // ═══════════════════════════════════════════════════════════════
 function reorderGeneratorPivot(
   data: GeneratorRunHoursMonthlyPivotResponse,
@@ -242,41 +242,32 @@ function reorderGeneratorPivot(
   year?: number
 ): GeneratorRunHoursMonthlyPivotResponse {
 
-  const slots = buildSlots(fromDate, toDate, year);
+  const slots    = buildSlots(fromDate, toDate, year);
   const genCount = data.generatorNames.length;
 
-  const newMonthLabels: string[] = [];
-  const newMonthTotals: number[] = [];
+  const newMonthLabels:    string[]   = [];
+  const newMonthTotals:    number[]   = [];
   const newRunHoursMatrix: number[][] = [];
-  const newFuelMatrix: number[][] = [];
-  const newPowerMatrix: number[][] = [];
+  const newFuelMatrix:     number[][] = [];
+  const newPowerMatrix:    number[][] = [];
 
   slots.forEach(slot => {
-    // API row index: Jan=0, Feb=1 ... Dec=11
-    const apiRowIndex = slot.month - 1;
+    const apiRowIndex = slot.month - 1; // Jan=0, Feb=1 ... Dec=11
 
     newMonthLabels.push(slot.label);
-    newMonthTotals.push(
-      data.monthTotals[apiRowIndex] ?? 0
-    );
-    newRunHoursMatrix.push(
-      data.runHoursMatrix[apiRowIndex] ?? new Array(genCount).fill(0)
-    );
-    newFuelMatrix.push(
-      data.fuelMatrix[apiRowIndex] ?? new Array(genCount).fill(0)
-    );
-    newPowerMatrix.push(
-      data.powerMatrix[apiRowIndex] ?? new Array(genCount).fill(0)
-    );
+    newMonthTotals.push(data.monthTotals[apiRowIndex] ?? 0);
+    newRunHoursMatrix.push(data.runHoursMatrix[apiRowIndex] ?? new Array(genCount).fill(0));
+    newFuelMatrix.push(data.fuelMatrix[apiRowIndex] ?? new Array(genCount).fill(0));
+    newPowerMatrix.push(data.powerMatrix[apiRowIndex] ?? new Array(genCount).fill(0));
   });
 
   return {
     ...data,
-    monthLabels: newMonthLabels,
-    monthTotals: newMonthTotals,
+    monthLabels:    newMonthLabels,
+    monthTotals:    newMonthTotals,
     runHoursMatrix: newRunHoursMatrix,
-    fuelMatrix: newFuelMatrix,
-    powerMatrix: newPowerMatrix,
+    fuelMatrix:     newFuelMatrix,
+    powerMatrix:    newPowerMatrix,
   };
 }
 
@@ -287,6 +278,14 @@ function reorderGeneratorPivot(
 export class DashboardService {
   private base = environment.apiBaseUrl;
   constructor(private http: HttpClient) { }
+
+  // ✅ Single local-date helper — no toISOString() UTC shift
+  private toLocalStr(d: Date): string {
+    const y  = d.getFullYear();
+    const m  = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${dd}`;
+  }
 
   // ── Vehicle Fuel ───────────────────────────────────────────────
   getVehicleFuelMonthly(year: number, fromDate?: string, toDate?: string): Observable<ApiResponse<FuelCombinedChartResponse>> {
@@ -365,6 +364,7 @@ export class DashboardService {
       `${this.base}/Chart/VehicleTypeDistance?${dateParams(range.fromDate, range.toDate)}`
     ).pipe(map(res => {
       if (res.status && res.data) {
+        // ✅ no-op — backend already returns "Apr 25" format
         res.data.monthLabels = normalizeVehicleMonthLabels(res.data.monthLabels);
       }
       return res;
@@ -401,18 +401,20 @@ export class DashboardService {
   }
 
   // ── Vehicle Summary ────────────────────────────────────────────
+  // ✅ Uses toLocalStr() instead of toISOString() — no UTC shift
   getVehicleSummary(fromDate: Date, toDate: Date): Observable<ApiResponse<DashboardSummaryResponse>> {
-    const from = fromDate.toISOString().split('T')[0];
-    const to = toDate.toISOString().split('T')[0];
+    const from = this.toLocalStr(fromDate);
+    const to   = this.toLocalStr(toDate);
     return this.http.get<ApiResponse<DashboardSummaryResponse>>(
       `${this.base}/Chart/VehicleSummary?${dateParams(from, to)}`
     );
   }
 
   // ── Generator Summary ──────────────────────────────────────────
+  // ✅ Uses toLocalStr() instead of toISOString() — no UTC shift
   getGeneratorSummary(fromDate: Date, toDate: Date): Observable<ApiResponse<DashboardSummaryResponse>> {
-    const from = fromDate.toISOString().split('T')[0];
-    const to = toDate.toISOString().split('T')[0];
+    const from = this.toLocalStr(fromDate);
+    const to   = this.toLocalStr(toDate);
     return this.http.get<ApiResponse<DashboardSummaryResponse>>(
       `${this.base}/Chart/GeneratorSummary?${dateParams(from, to)}`
     );

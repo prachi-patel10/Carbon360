@@ -196,7 +196,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     else if (url.includes('MyActionVehicle')) this.pageTitle = 'Actions Fleet & Transport';
     else if (url.includes('searchVehicle')) this.pageTitle = 'Search Fleet & Transport';
     else if (url.includes('Vehicletype')) this.pageTitle = 'Vehicle Type';
-    
+
     else if (url.includes('Treemaster')) this.pageTitle = 'Tree';
     else if (url.includes('Plantationproject')) this.pageTitle = 'Plantation Project';
     else if (url.includes('Ngoentryform')) this.pageTitle = 'Initiative Planner';
@@ -376,10 +376,18 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     this.vehicleSummary.set(null);
     this.generatorSummary.set(null);
 
-    const from = this.startDate() ?? new Date(new Date().getFullYear(), 0, 1);
-    const to = this.endDate() ?? new Date();
+    // ✅ Build local-date Date objects using local parts — avoids midnight UTC shift
+    const fromDate = this.startDate();
+    const toDate = this.endDate();
 
-    // keep selectedYear in sync so chart components receive the correct year
+    const from = fromDate
+      ? new Date(fromDate.getFullYear(), fromDate.getMonth(), fromDate.getDate(), 0, 0, 0)
+      : new Date(new Date().getFullYear(), 0, 1, 0, 0, 0);
+
+    const to = toDate
+      ? new Date(toDate.getFullYear(), toDate.getMonth(), toDate.getDate(), 23, 59, 59)
+      : new Date();
+
     this.selectedYear.set(from.getFullYear());
 
     forkJoin({
@@ -393,13 +401,8 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
             totalCO2e: 0, totalCO2: 0, totalNO2: 0, totalCH4: 0,
             totalFuelConsumed: 0, totalDistanceKM: 0, totalPowerOutputKWH: 0
           };
-
-          this.vehicleSummary.set(
-            vehicle.status && vehicle.data ? vehicle.data : zero
-          );
-          this.generatorSummary.set(
-            generator.status && generator.data ? generator.data : zero
-          );
+          this.vehicleSummary.set(vehicle.status && vehicle.data ? vehicle.data : zero);
+          this.generatorSummary.set(generator.status && generator.data ? generator.data : zero);
         },
         error: () => {
           const zero: DashboardSummaryResponse = {
@@ -459,6 +462,9 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
   toDateStr(date: Date | null | undefined): string | undefined {
     if (!date) return undefined;
-    return date.toISOString().split('T')[0];
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
   }
 }
