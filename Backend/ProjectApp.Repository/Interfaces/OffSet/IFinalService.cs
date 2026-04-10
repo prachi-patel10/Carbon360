@@ -9,7 +9,7 @@ namespace ProjectApp.Repository.Interfaces.OffSet
 {
     public interface IFinalService
     {
-        Task<List<ProjectDropdownDTO>> GetUserProjects(int userId);
+        Task<List<ProjectDropdownDTO>> GetUserProjects();
         Task<object> SaveFinalEntry(FinalEntryDTO model);
     }
 }

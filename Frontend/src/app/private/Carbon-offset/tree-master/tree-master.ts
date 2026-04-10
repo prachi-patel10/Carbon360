@@ -26,15 +26,15 @@ export class MasterTreeComponent implements OnInit {
   searchText = signal('');
 
   sortColumn = 'TreeId';
-sortDirection: 'desc' | 'asc' = 'desc';
+  sortDirection: 'desc' | 'asc' = 'desc';
 
   pageSizeOptions = [5, 10, 20];
-  isUserSorting=false;
+  isUserSorting = false;
 
   constructor(
     private fb: FormBuilder,
     private service: MasterTreeService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.initForms();
@@ -47,6 +47,8 @@ sortDirection: 'desc' | 'asc' = 'desc';
       TreeId: [''],
       TreeName: ['', Validators.required],
       Co2AbsorptionPerYear: [0, Validators.required],
+      Co2AbsorptionPerMonth: [0, Validators.required],
+      Co2AbsorptionPerDaily: [0, Validators.required],
       IsActive: [true],
     });
 
@@ -63,53 +65,55 @@ sortDirection: 'desc' | 'asc' = 'desc';
   }
 
   // ================= LOAD =================
- loadTrees() {
-  this.service.getPaged(
-    this.currentPage(),
-    this.requestedRecords(),
-    this.searchText(),
-    this.onlyActive(),
+  loadTrees() {
+    this.service.getPaged(
+      this.currentPage(),
+      this.requestedRecords(),
+      this.searchText(),
+      this.onlyActive(),
 
-    // ✅ ALWAYS send a sort (default OR user sort)
-    this.sortColumn,
-    this.sortDirection
-  ).subscribe({
-    next: (res: any) => {
+      // ✅ ALWAYS send a sort (default OR user sort)
+      this.sortColumn,
+      this.sortDirection
+    ).subscribe({
+      next: (res: any) => {
 
-      const mapped = res.data.map((t: any) => ({
-        TreeId: t.treeId,
-        TreeName: t.treeName,
-        Co2AbsorptionPerYear: t.co2AbsorptionPerYear,
-        IsActive: t.isActive
-      }));
+        const mapped = res.data.map((t: any) => ({
+          TreeId: t.treeId,
+          TreeName: t.treeName,
+          Co2AbsorptionPerYear: t.co2AbsorptionPerYear,
+          Co2AbsorptionPerMonth:t.co2AbsorptionPerMonth,
+          Co2AbsorptionPerDaily:t.co2AbsorptionPerDaily,
+          IsActive: t.isActive
+        }));
 
-      this.trees.set(mapped);
-      this.totalRecords.set(res.totalRecords);
-      this.totalPages.set(res.totalPages);
-    },
-    error: () => alert('Failed to load trees')
-  });
-}
-  // ================= SORT =================
-sort(column: string) {
-
-  this.isUserSorting = true;
-
-  if (this.sortColumn === column) {
-    this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
-  } else {
-    this.sortColumn = column;
-    this.sortDirection = 'asc';
+        this.trees.set(mapped);
+        this.totalRecords.set(res.totalRecords);
+        this.totalPages.set(res.totalPages);
+      },
+      error: () => alert('Failed to load trees')
+    });
   }
+  // ================= SORT =================
+  sort(column: string) {
 
-  this.currentPage.set(1);
-  this.loadTrees();
-}
+    this.isUserSorting = true;
+
+    if (this.sortColumn === column) {
+      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.sortColumn = column;
+      this.sortDirection = 'asc';
+    }
+
+    this.currentPage.set(1);
+    this.loadTrees();
+  }
   getSortIcon(column: string) {
-  if (!this.isUserSorting) return '';   // ✅ no icon initially
-  if (this.sortColumn !== column) return '↕';
-  return this.sortDirection === 'asc' ? '↑' : '↓';
-}
+    if (!this.isUserSorting) return '';   // ✅ no icon initially
+    if (this.sortColumn !== column) return '↕';
+    return this.sortDirection === 'asc' ? '↑' : '↓';
+  }
   // ================= PAGINATION =================
   previousPage() {
     if (this.currentPage() > 1) {
@@ -139,81 +143,81 @@ sort(column: string) {
   }
 
   // ================= SUBMIT =================
-submitTree() {
+  submitTree() {
 
-  if (this.treeForm.invalid) {
-    this.treeForm.markAllAsTouched();
-    return;
+    if (this.treeForm.invalid) {
+      this.treeForm.markAllAsTouched();
+      return;
+    }
+
+    const data = this.treeForm.value;
+    const isCreate = !data.TreeId;
+
+    const obs = isCreate
+      ? this.service.create(data)
+      : this.service.update(data);
+
+    obs.subscribe({
+      next: () => {
+
+        Swal.fire(
+          'Success',
+          isCreate ? 'Created successfully' : 'Updated successfully',
+          'success'
+        );
+
+
+        this.isUserSorting = false;
+        this.sortColumn = 'TreeId';
+        this.sortDirection = 'desc';
+
+        this.loadTrees();
+        this.resetForm();
+      },
+      error: () => Swal.fire('Error', 'Operation failed', 'error')
+    });
   }
-
-  const data = this.treeForm.value;
-  const isCreate = !data.TreeId;
-
-  const obs = isCreate
-    ? this.service.create(data)
-    : this.service.update(data);
-
-  obs.subscribe({
-    next: () => {
-
-      Swal.fire(
-        'Success',
-        isCreate ? 'Created successfully' : 'Updated successfully',
-        'success'
-      );
-
-      
-      this.isUserSorting = false;
-     this.sortColumn = 'TreeId';
-this.sortDirection = 'desc';
-
-      this.loadTrees();
-      this.resetForm();
-    },
-    error: () => Swal.fire('Error', 'Operation failed', 'error')
-  });
-}
 
   edit(tree: MasterTree) {
     this.treeForm.patchValue(tree);
   }
 
   deleteUI(tree: MasterTree) {
-  Swal.fire({
-    title: 'Are you sure?',
-    icon: 'warning',
-    showCancelButton: true
-  }).then(res => {
+    Swal.fire({
+      title: 'Are you sure?',
+      icon: 'warning',
+      showCancelButton: true
+    }).then(res => {
 
-    if (res.isConfirmed) {
+      if (res.isConfirmed) {
 
-      this.service.delete(tree.TreeId).subscribe({
-        next: () => {
+        this.service.delete(tree.TreeId).subscribe({
+          next: () => {
 
-          // ✅ REMOVE FROM SIGNAL (INSTANT UI UPDATE)
-          this.trees.update(list =>
-            list.filter(t => t.TreeId !== tree.TreeId)
-          );
+            // ✅ REMOVE FROM SIGNAL (INSTANT UI UPDATE)
+            this.trees.update(list =>
+              list.filter(t => t.TreeId !== tree.TreeId)
+            );
 
-          // ✅ OPTIONAL (refresh pagination data)
-          this.totalRecords.update(v => v - 1);
+            // ✅ OPTIONAL (refresh pagination data)
+            this.totalRecords.update(v => v - 1);
 
-          Swal.fire('Deleted!', 'Tree deleted successfully', 'success');
-        },
-        error: () => {
-          Swal.fire('Error', 'Delete failed', 'error');
-        }
-      });
-      this.trees.update(list => {
-  const updated = list.filter(t => t.TreeId !== tree.TreeId);
-  console.log('After delete:', updated);
-  return updated;
-});
+            Swal.fire('Deleted!', 'Tree deleted successfully', 'success');
+          },
+          error: () => {
+            Swal.fire('Error', 'Delete failed', 'error');
+          }
+        });
+        this.trees.update(list => {
+          const updated = list.filter(t => t.TreeId !== tree.TreeId);
+          console.log('After delete:', updated);
+          return updated;
+        });
 
-    }
+      }
 
-  });
-}
+    });
+  }
   toggleActive(tree: MasterTree) {
     this.service.toggleActive(tree.TreeId).subscribe(() => {
       this.loadTrees();

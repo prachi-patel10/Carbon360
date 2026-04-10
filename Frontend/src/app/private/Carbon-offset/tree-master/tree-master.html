@@ -10,8 +10,7 @@
           Tree Name <span class="required">*</span>
         </label>
         <input type="text" formControlName="TreeName" placeholder="Enter Tree Name">
-        <small class="error-text"
-          *ngIf="treeForm.get('TreeName')?.touched && treeForm.get('TreeName')?.invalid">
+        <small class="error-text" *ngIf="treeForm.get('TreeName')?.touched && treeForm.get('TreeName')?.invalid">
           Tree Name is required
         </small>
       </div>
@@ -21,11 +20,32 @@
         <label>
           CO₂ Absorption Per Year (Kg) <span class="required">*</span>
         </label>
-<input type="number"
-       formControlName="Co2AbsorptionPerYear"
-       placeholder="Enter CO2 Absorption">        <small class="error-text"
+        <input type="number" formControlName="Co2AbsorptionPerYear" placeholder="Enter CO2 Absorption"> <small
+          class="error-text"
           *ngIf="treeForm.get('Co2AbsorptionPerYear')?.touched && treeForm.get('co2AbsorptionPerYear')?.invalid">
-          CO₂ Absorption is required
+          CO₂ Absorption Per Year is required
+        </small>
+      </div>
+
+      <div class="form-group">
+        <label>
+          CO₂ Absorption Per Month (Kg) <span class="required">*</span>
+        </label>
+        <input type="number" formControlName="Co2AbsorptionPerMonth" placeholder="Enter CO2 Absorption"> <small
+          class="error-text"
+          *ngIf="treeForm.get('Co2AbsorptionPerMonth')?.touched && treeForm.get('co2AbsorptionPerMonth')?.invalid">
+          CO₂ Absorption Per Month is required
+        </small>
+      </div>
+
+      <div class="form-group">
+        <label>
+          CO₂ Absorption Per Daily (Kg) <span class="required">*</span>
+        </label>
+        <input type="number" formControlName="Co2AbsorptionPerDaily" placeholder="Enter CO2 Absorption"> <small
+          class="error-text"
+          *ngIf="treeForm.get('Co2AbsorptionPerDaily')?.touched && treeForm.get('co2AbsorptionPerDaily')?.invalid">
+          CO₂ Absorption Per Daily is required
         </small>
       </div>
 
@@ -57,10 +77,7 @@
     <!-- Search Row -->
     <div class="search-row">
       <div [formGroup]="searchForm">
-        <input type="text"
-               class="search-input"
-               placeholder="Quick Search"
-               formControlName="searchText">
+        <input type="text" class="search-input" placeholder="Quick Search" formControlName="searchText">
       </div>
 
       <div class="search-right">
@@ -68,9 +85,7 @@
         <div class="status-toggle">
           <span>Active Only</span>
           <label class="switch">
-            <input type="checkbox"
-                   [checked]="onlyActive()"
-                   (change)="onActiveFilterChange($event)">
+            <input type="checkbox" [checked]="onlyActive()" (change)="onActiveFilterChange($event)">
             <span class="slider"></span>
           </label>
         </div>
@@ -83,23 +98,35 @@
         <thead>
           <tr>
             <th (click)="sort('TreeName')">
-        Tree Name 
-        {{getSortIcon('TreeName')}}
-      </th>
+              Tree Name
+              {{getSortIcon('TreeName')}}
+            </th>
 
-      <th (click)="sort('Co2AbsorptionPerYear')">
-  CO₂ Absorption
-  {{getSortIcon('Co2AbsorptionPerYear')}}
-</th>
+            <th (click)="sort('Co2AbsorptionPerYear')">
+              CO₂ Absorption
+              {{getSortIcon('Co2AbsorptionPerYear')}}
+            </th>
+
+            <th (click)="sort('Co2AbsorptionPerMonth')">
+              CO₂ Absorption
+              {{getSortIcon('Co2AbsorptionPerMonth')}}
+            </th>
+
+            <th (click)="sort('Co2AbsorptionPerDaily')">
+              CO₂ Absorption
+              {{getSortIcon('Co2AbsorptionPerDaily')}}
+            </th>
             <th>Status</th>
             <th>Actions</th>
           </tr>
         </thead>
 
         <tbody>
-<tr *ngFor="let t of trees()">
-              <td>{{ t.TreeName }}</td>
+          <tr *ngFor="let t of trees()">
+            <td>{{ t.TreeName }}</td>
             <td>{{ t.Co2AbsorptionPerYear }}</td>
+             <td>{{ t.Co2AbsorptionPerMonth }}</td>
+              <td>{{ t.Co2AbsorptionPerDaily }}</td>
             <td>
               <label class="switch">
                 <input type="checkbox" [checked]="t.IsActive" (change)="toggleActive(t)">

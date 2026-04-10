@@ -6,6 +6,8 @@ export interface MasterTree {
   TreeId: string;
   TreeName: string;
   Co2AbsorptionPerYear: number;
+ Co2AbsorptionPerMonth: number;
+Co2AbsorptionPerDaily: number;
   IsActive: boolean;
 }
 

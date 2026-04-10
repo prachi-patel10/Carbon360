@@ -17,36 +17,28 @@ public class FinalService : IFinalService
         _idEncoder = idEncoder;
     }
 
-    public async Task<List<ProjectDropdownDTO>> GetUserProjects(int userId)
+    public async Task<List<ProjectDropdownDTO>> GetUserProjects()
     {
         var result = new List<ProjectDropdownDTO>();
 
-        using (var conn = _context.Database.GetDbConnection())
+        using var conn = _context.Database.GetDbConnection();
+        await conn.OpenAsync();
+
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "USP_CB_ProjectDropdown_UserWise";
+        cmd.CommandType = CommandType.StoredProcedure;
+
+        using var reader = await cmd.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
         {
-            await conn.OpenAsync();
-
-            using (var cmd = conn.CreateCommand())
+            result.Add(new ProjectDropdownDTO
             {
-                cmd.CommandText = "USP_CB_ProjectDropdown_UserWise";
-                cmd.CommandType = CommandType.StoredProcedure;
-
-                cmd.Parameters.Add(new SqlParameter("@UserId", userId));
-
-                using (var reader = await cmd.ExecuteReaderAsync())
-                {
-                    while (await reader.ReadAsync())
-                    {
-                        int projectId = Convert.ToInt32(reader["ProjectId"]);
-
-                        result.Add(new ProjectDropdownDTO
-                        {
-                            ProjectId = _idEncoder.Encode(projectId),  // 🔥 ENCODE HERE
-                            ProjectName = reader["ProjectName"].ToString()
-                        });
-                    }
-                }
-            }
+                ProjectId = _idEncoder.Encode(Convert.ToInt32(reader["ProjectId"])),
+                ProjectName = reader["ProjectName"].ToString()
+            });
         }
+
         return result;
     }
 
@@ -62,7 +54,7 @@ public class FinalService : IFinalService
         {
             dt.Rows.Add(
                 _idEncoder.Decode(item.TreeId),
-                item.TreeCount // ✅ FINAL COUNT FROM UI
+                item.TreeCount 
             );
         }
 

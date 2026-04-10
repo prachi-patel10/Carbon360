@@ -52,6 +52,8 @@ namespace ProjectApp.Repository.Services.Masters.Tree
                     TreeId = _idEncoder.Encode(Convert.ToInt32(reader["TreeId"])),
                     TreeName = reader["TreeName"].ToString(),
                     Co2AbsorptionPerYear = Convert.ToDecimal(reader["Co2AbsorptionPerYear"]),
+                    Co2AbsorptionPerMonth = Convert.ToDecimal(reader["co2AbsorptionPerMonth"]),
+                    Co2AbsorptionPerDaily = Convert.ToDecimal(reader["co2AbsorptionPerDaily"]),
                     IsActive = Convert.ToBoolean(reader["IsActive"])
                 });
             }
@@ -82,6 +84,8 @@ namespace ProjectApp.Repository.Services.Masters.Tree
                     TreeId = encryptedId,
                     TreeName = reader["TreeName"].ToString(),
                     Co2AbsorptionPerYear = Convert.ToDecimal(reader["Co2AbsorptionPerYear"]),
+                    Co2AbsorptionPerMonth = Convert.ToDecimal(reader["co2AbsorptionPerMonth"]),
+                    Co2AbsorptionPerDaily = Convert.ToDecimal(reader["co2AbsorptionPerDaily"]),
                     IsActive = Convert.ToBoolean(reader["IsActive"])
                 };
             }
@@ -94,9 +98,11 @@ namespace ProjectApp.Repository.Services.Masters.Tree
         {
             var insertedId = _context.Database
                 .SqlQueryRaw<int>(
-                    "EXEC USP_CB_TreeMasterInsert @TreeName, @Co2AbsorptionPerYear, @EntryBy",
+                    "EXEC USP_CB_TreeMasterInsert @TreeName, @Co2AbsorptionPerYear,@Co2AbsorptionPerMonth,@Co2AbsorptionPerDaily, @EntryBy",
                     new SqlParameter("@TreeName", dto.TreeName),
                     new SqlParameter("@Co2AbsorptionPerYear", dto.Co2AbsorptionPerYear),
+                    new SqlParameter("@Co2AbsorptionPerMonth", dto.Co2AbsorptionPerMonth),
+                    new SqlParameter("@Co2AbsorptionPerDaily", dto.Co2AbsorptionPerDaily),
                     new SqlParameter("@EntryBy", GetCurrentUserId())
                 )
                 .AsEnumerable().First();
@@ -106,6 +112,8 @@ namespace ProjectApp.Repository.Services.Masters.Tree
                 TreeId = _idEncoder.Encode(insertedId),
                 TreeName = dto.TreeName,
                 Co2AbsorptionPerYear = dto.Co2AbsorptionPerYear,
+                Co2AbsorptionPerMonth = dto.Co2AbsorptionPerMonth,
+                Co2AbsorptionPerDaily = dto.Co2AbsorptionPerDaily,
                 IsActive = true
             };
         }
@@ -116,12 +124,14 @@ namespace ProjectApp.Repository.Services.Masters.Tree
             int id = _idEncoder.Decode(dto.TreeId);
 
             await _context.Database.ExecuteSqlRawAsync(
-                "EXEC USP_CB_TreeMasterUpdate @TreeId, @TreeName, @Co2AbsorptionPerYear, @IsActive, @UpdatedBy",
-                new SqlParameter("@TreeId", id),
-                new SqlParameter("@TreeName", dto.TreeName),
+                "EXEC USP_CB_TreeMasterUpdate @TreeId, @TreeName, @Co2AbsorptionPerYear, @Co2AbsorptionPerMonth, @Co2AbsorptionPerDaily, @IsActive, @UpdatedBy",
+                 new SqlParameter("@TreeId", id),
+                 new SqlParameter("@TreeName", dto.TreeName),
                 new SqlParameter("@Co2AbsorptionPerYear", dto.Co2AbsorptionPerYear),
-                new SqlParameter("@IsActive", dto.IsActive),
-                new SqlParameter("@UpdatedBy", GetCurrentUserId())
+                 new SqlParameter("@Co2AbsorptionPerMonth", dto.Co2AbsorptionPerMonth),
+                 new SqlParameter("@Co2AbsorptionPerDaily", dto.Co2AbsorptionPerDaily),
+                  new SqlParameter("@IsActive", dto.IsActive),
+             new SqlParameter("@UpdatedBy", GetCurrentUserId())
             );
 
             return true;
@@ -181,6 +191,8 @@ namespace ProjectApp.Repository.Services.Masters.Tree
                     TreeId = _idEncoder.Encode(Convert.ToInt32(reader["TreeId"])),
                     TreeName = reader["TreeName"].ToString(),
                     Co2AbsorptionPerYear = Convert.ToDecimal(reader["Co2AbsorptionPerYear"]),
+                    Co2AbsorptionPerMonth = Convert.ToDecimal(reader["co2AbsorptionPerMonth"]),
+Co2AbsorptionPerDaily = Convert.ToDecimal(reader["co2AbsorptionPerDaily"]),
                     IsActive = Convert.ToBoolean(reader["IsActive"])
                 });
             }
@@ -209,47 +221,47 @@ namespace ProjectApp.Repository.Services.Masters.Tree
             return true;
         }
 
-        public async Task<TreeDetailsDTO> GetTreeDetailsAsync(TreeRequestDTO request)
-        {
-            int decodedTreeId = _idEncoder.Decode(request.TreeId); // ✅ decode here
+        //public async Task<TreeDetailsDTO> GetTreeDetailsAsync(TreeRequestDTO request)
+        //{
+        //    int decodedTreeId = _idEncoder.Decode(request.TreeId); // ✅ decode here
 
-            TreeDetailsDTO result = null;
+        //    TreeDetailsDTO result = null;
 
-            using var conn = _context.Database.GetDbConnection();
-            await conn.OpenAsync();
+        //    using var conn = _context.Database.GetDbConnection();
+        //    await conn.OpenAsync();
 
-            using var cmd = conn.CreateCommand();
-            cmd.CommandText = "USP_CB_GetTreeDetailsSummary";
-            cmd.CommandType = CommandType.StoredProcedure;
+        //    using var cmd = conn.CreateCommand();
+        //    cmd.CommandText = "USP_CB_GetTreeDetailsSummary";
+        //    cmd.CommandType = CommandType.StoredProcedure;
 
-            var treeIdParam = cmd.CreateParameter();
-            treeIdParam.ParameterName = "@TreeId";
-            treeIdParam.DbType = DbType.Int32;
-            treeIdParam.Value = decodedTreeId; // ✅ FIX
-            cmd.Parameters.Add(treeIdParam);
+        //    var treeIdParam = cmd.CreateParameter();
+        //    treeIdParam.ParameterName = "@TreeId";
+        //    treeIdParam.DbType = DbType.Int32;
+        //    treeIdParam.Value = decodedTreeId; // ✅ FIX
+        //    cmd.Parameters.Add(treeIdParam);
 
-            var treeCountParam = cmd.CreateParameter();
-            treeCountParam.ParameterName = "@TreeCount";
-            treeCountParam.DbType = DbType.Int32;
-            treeCountParam.Value = request.TreeCount;
-            cmd.Parameters.Add(treeCountParam);
+        //    var treeCountParam = cmd.CreateParameter();
+        //    treeCountParam.ParameterName = "@TreeCount";
+        //    treeCountParam.DbType = DbType.Int32;
+        //    treeCountParam.Value = request.TreeCount;
+        //    cmd.Parameters.Add(treeCountParam);
 
-            using var reader = await cmd.ExecuteReaderAsync();
+        //    using var reader = await cmd.ExecuteReaderAsync();
 
-            if (await reader.ReadAsync())
-            {
-                result = new TreeDetailsDTO
-                {
-                    TreeId = _idEncoder.Encode(Convert.ToInt32(reader["TreeId"])),
-                    TreeName = reader["TreeName"].ToString(),
-                    Co2PerTree = Convert.ToDecimal(reader["Co2PerTree"]),
-                    TreeCount = Convert.ToInt32(reader["TreeCount"]),
-                    TotalCo2 = Convert.ToDecimal(reader["TotalCo2"])
-                };
-            }
+        //    if (await reader.ReadAsync())
+        //    {
+        //        result = new TreeDetailsDTO
+        //        {
+        //            TreeId = _idEncoder.Encode(Convert.ToInt32(reader["TreeId"])),
+        //            TreeName = reader["TreeName"].ToString(),
+        //            Co2PerTree = Convert.ToDecimal(reader["Co2PerTree"]),
+        //            TreeCount = Convert.ToInt32(reader["TreeCount"]),
+        //            TotalCo2 = Convert.ToDecimal(reader["TotalCo2"])
+        //        };
+        //    }
 
-            return result;
-        }
+        //    return result;
+        //}
     }
     
 

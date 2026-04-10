@@ -19,10 +19,10 @@ namespace ProjectApp.API.Controllers.OffSet
         [HttpGet("dropdown")]
         public async Task<IActionResult> GetUserProjects()
         {
-            // 🔥 Get UserId from JWT / Logged-in user
+      
             var userId = Convert.ToInt32(User.FindFirst("UserId")?.Value);
 
-            var data = await _finalService.GetUserProjects(userId);
+            var data = await _finalService.GetUserProjects();
 
             return Ok(data);
         }

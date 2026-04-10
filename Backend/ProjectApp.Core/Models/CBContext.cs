@@ -67,7 +67,6 @@ public partial class CBContext : DbContext
     public virtual DbSet<CB_VehicleTripEmissionHistory> CB_VehicleTripEmissionHistories { get; set; }
 
     public virtual DbSet<CB_VehicleTypeCategory> CB_VehicleTypeCategories { get; set; }
-
     public virtual DbSet<SiteEmissionDto> SiteEmissionDtos { get; set; }
 
     public virtual DbSet<FuelTypeMonthlyConsumptionDto> FuelTypeMonthlyConsumptionDtos { get; set; }
@@ -86,8 +85,7 @@ public partial class CBContext : DbContext
 
     public virtual DbSet<VehicleSummaryDto> VehicleSummaryDtos { get; set; }
 
-    public virtual DbSet<GeneratorSummaryDto> GeneratorSummaryDtos { get; set; }
-
+    public virtual DbSet<GeneratorSummaryDto> GeneratorSummaryDtos { get; set; }    
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<CB_AbsorptionEntry>(entity =>
@@ -380,6 +378,8 @@ public partial class CBContext : DbContext
                 .HasMaxLength(100)
                 .IsUnicode(false);
             entity.Property(e => e.UpdateDate).HasColumnType("datetime");
+            entity.Property(e => e.co2AbsorptionPerDaily).HasColumnType("decimal(10, 2)");
+            entity.Property(e => e.co2AbsorptionPerMonth).HasColumnType("decimal(10, 2)");
             entity.Property(e => e.co2AbsorptionPerYear).HasColumnType("decimal(10, 2)");
         });
 
@@ -779,6 +779,7 @@ public partial class CBContext : DbContext
 
 
         OnModelCreatingPartial(modelBuilder);
+
     }
 
     partial void OnModelCreatingPartial(ModelBuilder modelBuilder);

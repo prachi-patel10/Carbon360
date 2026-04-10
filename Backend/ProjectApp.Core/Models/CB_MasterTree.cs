@@ -23,6 +23,10 @@ public partial class CB_MasterTree
 
     public DateTime? UpdateDate { get; set; }
 
+    public decimal? co2AbsorptionPerMonth { get; set; }
+
+    public decimal? co2AbsorptionPerDaily { get; set; }
+
     public virtual ICollection<CB_AbsorptionEntry> CB_AbsorptionEntries { get; set; } = new List<CB_AbsorptionEntry>();
 
     public virtual ICollection<CB_OffsetEntryDetail> CB_OffsetEntryDetails { get; set; } = new List<CB_OffsetEntryDetail>();

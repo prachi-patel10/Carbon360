@@ -20,7 +20,7 @@
 
   <div class="summary-card" *ngIf="summary">
     <div class="summary-box">
-      <p>Target CO₂e Absorption</p>
+      <p>Target CO₂ Absorption</p>
       <h3>{{ summary().targetCo2 }}</h3>
     </div>
 
@@ -30,7 +30,7 @@
     </div>
 
     <div class="summary-box">
-      <p>Actual CO₂e Absorption</p>
+      <p>Actual CO₂ Absorption</p>
       <h3>{{ summary().totalCo2Absorption || 0 }}</h3>
     </div>
 
@@ -42,14 +42,14 @@
 
   <!-- TREE INPUT -->
   <div class="card">
-    <div class="form-grid">
+    <!-- <div class="form-grid">
      <div *ngIf="isEditMode()" class="edit-badge">
   ✏️ Editing Existing Entry
 </div>
-</div>
-    <div class="form-grid">
+</div> -->
+    <!-- <div class="form-grid">
 
-      <!-- Tree Dropdown -->
+      Tree Dropdown 
       <div class="form-group">
         <label>Tree</label>
         <select [(ngModel)]="selectedTreeId" [ngModelOptions]="{ standalone: true }">
@@ -60,18 +60,18 @@
         </select>
       </div>
 
-      <!-- Count -->
+       Count 
       <div class="form-group">
         <label>Count</label>
         <input type="number" [(ngModel)]="treeCount" min="1" placeholder="Enter count">
       </div>
 
-      <!-- Add Button -->
+      Add Button 
       <div class="form-group">
         <button type="button" (click)="addTree()">Add</button>
       </div>
 
-    </div>
+    </div> -->
 
    
     <!-- ADDED TREE TABLE -->
