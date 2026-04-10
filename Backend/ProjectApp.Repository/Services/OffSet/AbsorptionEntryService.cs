@@ -354,31 +354,32 @@ namespace ProjectApp.Repository.Services.OffSet
 
                 using (var cmd = conn.CreateCommand())
                 {
-                    cmd.CommandText = "USP_CB_OffsetEntry_GetByProject";
+                    cmd.CommandText = "USP_CB_FinalEntry_GetByProject";
                     cmd.CommandType = CommandType.StoredProcedure;
                     cmd.Parameters.Add(new SqlParameter("@ProjectId", decodedProjectId));
 
                     using (var reader = await cmd.ExecuteReaderAsync())
                     {
-                        var result = new
-                        {
-                            totalOffset = 0m,
-                            trees = new List<object>()
-                        };
+                        decimal targetCo2 = 0;
+                        decimal actualCo2 = 0;
 
+                        // 🔹 HEADER (UPDATED)
                         if (await reader.ReadAsync())
                         {
-                            result = new
-                            {
-                                totalOffset = Convert.ToDecimal(reader["TotalOffset"]),
-                                trees = new List<object>()
-                            };
+                            targetCo2 = reader["TargetCo2"] != DBNull.Value
+                                ? Convert.ToDecimal(reader["TargetCo2"])
+                                : 0;
+
+                            actualCo2 = reader["ActualCo2"] != DBNull.Value
+                                ? Convert.ToDecimal(reader["ActualCo2"])
+                                : 0;
                         }
+
+                        // 🔹 DETAILS
+                        var treeList = new List<object>();
 
                         if (await reader.NextResultAsync())
                         {
-                            var treeList = new List<object>();
-
                             while (await reader.ReadAsync())
                             {
                                 treeList.Add(new
@@ -389,21 +390,48 @@ namespace ProjectApp.Repository.Services.OffSet
                                     treeCount = Convert.ToInt32(reader["TreeCount"])
                                 });
                             }
-
-                            return new
-                            {
-                                totalOffset = result.totalOffset,
-                                trees = treeList
-                            };
                         }
 
-                        return result;
+                        // 🔥 FINAL RESPONSE (UPDATED STRUCTURE)
+                        return new
+                        {
+                            targetCo2,
+                            actualCo2,
+                            trees = treeList
+                        };
                     }
                 }
             }
-        
+         }
 
-    }
+
+
+        public async Task<object> CheckByProject(string projectId)
+        {
+            int decodedProjectId = _encoder.Decode(projectId);
+
+            using var conn = _context.Database.GetDbConnection();
+            await conn.OpenAsync();
+
+            using var cmd = conn.CreateCommand();
+            cmd.CommandText = "USP_CB_OffsetEntry_CheckByProject";
+            cmd.CommandType = CommandType.StoredProcedure;
+
+            cmd.Parameters.Add(new SqlParameter("@ProjectId", decodedProjectId));
+
+            using var reader = await cmd.ExecuteReaderAsync();
+
+            if (await reader.ReadAsync())
+            {
+                return new
+                {
+                    OffsetEntryId = Convert.ToInt32(reader["OffsetEntryId"]),
+                    IsDraft = Convert.ToBoolean(reader["IsDraft"])
+                };
+            }
+
+            return null;
+        }
 
 
     }

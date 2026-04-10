@@ -26,16 +26,7 @@ namespace ProjectApp.API.Controllers.Masters.Tree
             return Ok(result);
         }
 
-        [HttpPost("get-tree-details")]
-        public async Task<IActionResult> GetTreeDetails([FromBody] TreeRequestDTO request)
-        {
-            var result = await _treeService.GetTreeDetailsAsync(request);
-
-            if (result == null)
-                return NotFound("Tree not found");
-
-            return Ok(result);
-        }
+      
 
 
         [HttpGet("{id}")]

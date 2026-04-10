@@ -37,5 +37,7 @@ namespace ProjectApp.Repository.Interfaces.OffSet
         Task<bool> Delete(int offsetEntryId);
 
         Task<object> GetPlannedData(string projectId);
+
+        Task<object> CheckByProject(string projectId);
     }
 }

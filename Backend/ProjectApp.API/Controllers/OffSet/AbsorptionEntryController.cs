@@ -73,4 +73,12 @@ public class OffsetEntryController : ControllerBase
         return Ok(result);
 
     }
+
+
+    [HttpGet("check/{projectId}")]
+    public async Task<IActionResult> Check(string projectId)
+    {
+        var result = await _service.CheckByProject(projectId);
+        return Ok(result);
+    }
 }

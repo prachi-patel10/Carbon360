@@ -181,64 +181,57 @@ loadEntriesByYear(year: number) {
 }
 
 addTree() {
-  console.log('CLICKED', this.selectedTreeId, this.treeCount);
-
   if (!this.selectedTreeId || !this.treeCount) {
     Swal.fire('Error', 'Select tree and enter count', 'error');
     return;
   }
-const exists = this.addedTrees().find(
-  t => t.treeId === this.selectedTreeId
-);
+
+  const exists = this.addedTrees().find(
+    t => t.treeId === this.selectedTreeId
+  );
 
   if (exists) {
     Swal.fire('Error', 'Tree already added', 'error');
     return;
   }
 
-  this.service.getTreeDetails(this.selectedTreeId, this.treeCount)
-    .subscribe({
-      next: (res: any) => {
-        console.log('API RESPONSE', res); // 🔥 debug
+  // ✅ GET TREE FROM MASTER (NO API)
+  const selectedTree = this.treeMaster.find(
+    t => t.treeId === this.selectedTreeId
+  );
 
-       this.addedTrees.update(list => [
-  ...list,
-  {
-    treeId: res.treeId,
-    treeName: res.treeName,
-    co2: res.co2PerTree,
-    count: res.treeCount,
-    total: res.totalCo2
+  if (!selectedTree) {
+    Swal.fire('Error', 'Tree not found', 'error');
+    return;
   }
-]);
-      Swal.fire({
-        icon: 'success',
-        title: 'Added successfully',
-        timer: 1200,
-        showConfirmButton: false
-      });
 
-this.totalOffset = this.addedTrees()
-  .reduce((sum, t) => sum + t.total, 0);
+  const total = selectedTree.co2 * this.treeCount;
 
-      this.summary().totalTreeCount = this.addedTrees()
-  .reduce((sum, t) => sum + t.count, 0);
-        this.summary().totalCo2Absorption = this.totalOffset;
+  // ✅ STORE LOCALLY ONLY
+  this.addedTrees.update(list => [
+    ...list,
+    {
+      treeId: selectedTree.treeId,
+      treeName: selectedTree.treeName,
+      co2: selectedTree.co2,
+      count: this.treeCount,
+      total: total
+    }
+  ]);
 
-        this.summary().actualAchievement =
-          this.summary().previousYearEmission > 0
-            ? Math.round((this.totalOffset / this.summary().previousYearEmission) * 100)
-            : 0;
+  // ✅ UPDATE SUMMARY
+  this.calculateSummary();
 
-        this.selectedTreeId = null;
-        this.treeCount = 0;
-      },
-      error: (err) => {
-        console.error('API ERROR', err);
-        Swal.fire('Error', 'Failed to get tree details', 'error');
-      }
-    });
-    this.calculateSummary();
+  // RESET INPUT
+  this.selectedTreeId = null;
+  this.treeCount = 0;
+
+  Swal.fire({
+    icon: 'success',
+    title: 'Added successfully',
+    timer: 1200,
+    showConfirmButton: false
+  });
 }
  // ================= YEARS =================
 generateYears() {

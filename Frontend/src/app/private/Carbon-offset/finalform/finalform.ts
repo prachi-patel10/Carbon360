@@ -16,7 +16,7 @@ export class FinalEntryComponent implements OnInit {
 financialYearRange: string = '';
 years: number[] = [];
   projects: any[] = [];
-
+isEditMode = signal(false);
   treeInputs: any[] = [];
 
 
@@ -69,29 +69,31 @@ onProjectChange() {
 
   if (!projectId) return;
 
-  this.service.getPlannedData(projectId).subscribe({
-    next: (res: any) => {
-console.log("API RESPONSE:", res);
-      // ✅ SET TARGET
-      this.summary.set({
-        ...this.summary(),
-        targetCo2: res.totalOffset || 0
-      });
+ this.service.getPlannedData(projectId).subscribe({
+  next: (res: any) => {
 
-      // ✅ LOAD PLANNED TREES
-      this.addedTrees.set(
-  (res.trees || []).map((t: any) => ({
-    treeId: t.treeId,
-    treeName: t.treeName,
-    co2: t.co2PerTree,
-plannedCount: t.treeCount ?? 0,
-    finalCount: t.treeCount, // default
-    total: t.co2PerTree * t.treeCount
-  }))
-);
+    this.summary.set({
+      ...this.summary(),
+     targetCo2: res.targetCo2,
+actualAchievement: res.actualCo2
+    });
 
-      this.calculateSummary();
-    },
+    const trees = (res.trees || []).map((t: any) => ({
+      treeId: t.treeId,
+      treeName: t.treeName,
+      co2: t.co2PerTree,
+      plannedCount: t.treeCount ?? 0,
+      finalCount: t.treeCount,
+      total: t.co2PerTree * t.treeCount
+    }));
+
+    this.addedTrees.set(trees);
+
+    // 🔥 IMPORTANT: SET EDIT MODE
+    this.isEditMode.set(trees.length > 0);
+
+    this.calculateSummary();
+  },
     error: () => Swal.fire('Error', 'Planned data not found', 'error')
   });
 }
@@ -238,8 +240,7 @@ isWithinTarget(newTotal: number): boolean {
 
   this.service.saveFinalEntry(payload).subscribe({
     next: () => {
-      Swal.fire('Success', 'Final Entry Saved', 'success');
-      this.reset();
+    Swal.fire('Success', this.isEditMode() ? 'Updated Successfully' : 'Saved Successfully', 'success');
     },
     error: () => Swal.fire('Error', 'Save failed', 'error')
   });

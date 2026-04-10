@@ -145,6 +145,10 @@ input[type="number"] {
   font-weight: 600;
 }
 
+.changed {
+  border: 2px solid orange;
+  background-color: #fff7e6;
+}
 /* ================= BUTTONS ================= */
 .buttons {
   text-align: center;
@@ -181,13 +185,36 @@ button {
   background: #b91c1c;
 }
 
+.btn-save{
+  width: 300px;
+}
 /* ================= EMPTY STATE ================= */
 td[colspan] {
   color: #6b7280;
   padding: 15px;
 }
 
+.edit-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 
+  background: linear-gradient(135deg, #fff3cd, #ffeeba);
+  color: #856404;
+
+  padding: 8px 14px;
+  border-radius: 20px;
+
+  font-size: 14px;
+  font-weight: 500;
+
+  border: 1px solid #ffeeba;
+
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+
+  margin-bottom: 12px;
+  width: fit-content;
+}
 /* SUMMARY CARD CONTAINER */
 .summary-card {
   display: grid;
@@ -264,6 +291,7 @@ background-color: white;
 .btn.save {
   background-color: #28a745;
   color: white;
+  width: 200px;
 }
 
 .no-data {

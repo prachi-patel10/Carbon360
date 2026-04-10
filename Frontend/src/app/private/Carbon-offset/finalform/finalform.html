@@ -43,6 +43,11 @@
   <!-- TREE INPUT -->
   <div class="card">
     <div class="form-grid">
+     <div *ngIf="isEditMode()" class="edit-badge">
+  ✏️ Editing Existing Entry
+</div>
+</div>
+    <div class="form-grid">
 
       <!-- Tree Dropdown -->
       <div class="form-group">
@@ -68,6 +73,7 @@
 
     </div>
 
+   
     <!-- ADDED TREE TABLE -->
     <table class="tree-table">
 
@@ -90,9 +96,10 @@
   <td>{{ t.plannedCount }}</td>
 
   <td>
-    <input type="number"
-           [(ngModel)]="t.finalCount"
-           (change)="updateTree(i)" />
+ <input type="number"
+       [(ngModel)]="t.finalCount"
+       (change)="updateTree(i)"
+       [class.changed]="t.finalCount !== t.plannedCount" />
   </td>
 
   <td>{{ t.total }}</td>
@@ -110,9 +117,9 @@
     </table>
 
 
-    <div class="buttons" *ngIf="addedTrees().length > 0">
-      <button class="btn save" (click)="finalSave()">Final Save</button>
-    </div>
+   <button class="btn save" (click)="finalSave()">
+  {{ isEditMode() ? 'Update Entry' : 'Save Entry' }}
+</button>
   </div>
 
   <!-- SUMMARY -->
