@@ -844,3 +844,14 @@ app-date-range-picker-component {
 .col-action .btn-pdf-download {
   margin-left: 6px; /* space only to the left of PDF button */
 }
+
+/* 🔥 BLINK EFFECT */
+.blink-row td {
+  animation: blink 1s infinite;
+}
+
+@keyframes blink {
+  0%   { background-color: #fff3cd; }
+  50%  { background-color: #ffe8a1; }
+  100% { background-color: #fff3cd; }
+}

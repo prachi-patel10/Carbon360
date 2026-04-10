@@ -494,6 +494,9 @@ namespace ProjectApp.Repository.Services.VehicleTripEmission
                         ? DateTime.MinValue
                         : reader.GetDateTime(reader.GetOrdinal("EntryDate")),
 
+                    BlinkFlag = reader.IsDBNull(reader.GetOrdinal("BlinkFlag"))
+    ? 0 : (reader.GetBoolean(reader.GetOrdinal("BlinkFlag")) ? 1 : 0),
+
                     DistanceKm = reader.IsDBNull(reader.GetOrdinal("DistanceKm"))
                         ? 0 : reader.GetDecimal(reader.GetOrdinal("DistanceKm")),
 

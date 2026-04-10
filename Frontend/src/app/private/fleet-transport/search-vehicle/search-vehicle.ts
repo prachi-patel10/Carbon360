@@ -24,6 +24,7 @@ interface VehicleEmissionDisplay {
   totalNO2: number;
   totalCH4: number;
   totalEmission: number;
+  blinkFlag: boolean;
 }
 
 @Component({
@@ -270,7 +271,8 @@ export class SearchVehicle implements OnInit {
           totalCO2: e.totalCO2 ?? 0,
           totalNO2: e.totalNO2 ?? 0,
           totalCH4: e.totalCH4 ?? 0,
-          totalEmission: e.totalEmission ?? 0
+          totalEmission: e.totalEmission ?? 0,
+          blinkFlag: e.blinkFlag === 1
         }));
 
         this.emissions.set(mapped);

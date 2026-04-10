@@ -908,3 +908,13 @@ app-date-range-picker-component {
         justify-content: center;
     }
 }
+
+@keyframes blinkRow {
+  0%   { background-color: #fff3cd; }
+  50%  { background-color: #ffeeba; }
+  100% { background-color: transparent; }
+}
+
+.blink-row td {
+  animation: blinkRow 1s infinite;
+}

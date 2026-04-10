@@ -13,6 +13,7 @@ interface GeneratorOperationDisplay extends GeneratorOperation {
   status: string;
   totalEmission: number;
   fuelType: string;
+  blinkFlag: boolean;
 }
 
 @Component({
@@ -271,6 +272,7 @@ export class SearchGenerator implements OnInit, AfterViewInit {
           fuelType: e.fuelType ?? 'Unknown',
           status: e.statusName ?? (e.statusId === 1 ? 'Completed' : 'Pending'),
           totalEmission: e.totalEmission ?? 0,
+          blinkFlag: e.blinkFlag === 1
         }));
 
         this.filteredData.set(mapped);
