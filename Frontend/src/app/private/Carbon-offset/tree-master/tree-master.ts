@@ -29,6 +29,7 @@ export class MasterTreeComponent implements OnInit {
   sortDirection: 'asc' | 'desc' = 'asc';
 
   pageSizeOptions = [5, 10, 20];
+  isUserSorting=false;
 
   constructor(
     private fb: FormBuilder,
@@ -62,18 +63,16 @@ export class MasterTreeComponent implements OnInit {
   }
 
   // ================= LOAD =================
-  loadTrees() {
+ loadTrees() {
   this.service.getPaged(
     this.currentPage(),
     this.requestedRecords(),
     this.searchText(),
     this.onlyActive(),
-    this.sortColumn,
-    this.sortDirection
+    this.isUserSorting ? this.sortColumn : '',     // ✅ apply only if user sorts
+    this.isUserSorting ? this.sortDirection : ''   // ✅ else no sorting
   ).subscribe({
     next: (res: any) => {
-
-      console.log('API Response:', res); // DEBUG
 
       const mapped = res.data.map((t: any) => ({
         TreeId: t.treeId,
@@ -90,22 +89,24 @@ export class MasterTreeComponent implements OnInit {
   });
 }
   // ================= SORT =================
-  sort(column: string) {
-    if (this.sortColumn === column)
-      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
-    else {
-      this.sortColumn = column;
-      this.sortDirection = 'asc';
-    }
+sort(column: string) {
 
-    this.loadTrees(); // ✅ backend sorting
+  this.isUserSorting = true;  // ✅ IMPORTANT
+
+  if (this.sortColumn === column)
+    this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+  else {
+    this.sortColumn = column;
+    this.sortDirection = 'asc';
   }
 
+  this.loadTrees();
+}
   getSortIcon(column: string) {
-    if (this.sortColumn !== column) return '↕';
-    return this.sortDirection === 'asc' ? '↑' : '↓';
-  }
-
+  if (!this.isUserSorting) return '';   // ✅ no icon initially
+  if (this.sortColumn !== column) return '↕';
+  return this.sortDirection === 'asc' ? '↑' : '↓';
+}
   // ================= PAGINATION =================
   previousPage() {
     if (this.currentPage() > 1) {
@@ -135,42 +136,40 @@ export class MasterTreeComponent implements OnInit {
   }
 
   // ================= SUBMIT =================
-  submitTree() {
+submitTree() {
 
-    if (this.treeForm.invalid) {
-      this.treeForm.markAllAsTouched();
-      return;
-    }
-
-    const data = this.treeForm.value;
-    const isCreate = !data.TreeId;
-
-    const obs = isCreate
-      ? this.service.create(data)
-      : this.service.update(data);
-
-   obs.subscribe({
-  next: (res: any) => {
-
-    console.log('API Success Response:', res);
-
-    Swal.fire(
-      'Success',
-      isCreate ? 'Created successfully' : 'Updated successfully',
-      'success'
-    );
-
-    this.loadTrees();
-    this.resetForm();
-  },
-  error: (err) => {
-
-    console.error('API Error:', err);
-
-    Swal.fire('Error', 'Operation failed', 'error');
+  if (this.treeForm.invalid) {
+    this.treeForm.markAllAsTouched();
+    return;
   }
-});
-  }
+
+  const data = this.treeForm.value;
+  const isCreate = !data.TreeId;
+
+  const obs = isCreate
+    ? this.service.create(data)
+    : this.service.update(data);
+
+  obs.subscribe({
+    next: () => {
+
+      Swal.fire(
+        'Success',
+        isCreate ? 'Created successfully' : 'Updated successfully',
+        'success'
+      );
+
+      // ✅ RESET SORTING
+      this.isUserSorting = false;
+      this.sortColumn = '';
+      this.sortDirection = 'desc';
+
+      this.loadTrees();
+      this.resetForm();
+    },
+    error: () => Swal.fire('Error', 'Operation failed', 'error')
+  });
+}
 
   edit(tree: MasterTree) {
     this.treeForm.patchValue(tree);

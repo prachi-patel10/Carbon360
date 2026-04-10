@@ -36,7 +36,7 @@ totalRecords = signal(0);
 totalPages = signal(1);
 
   onlyActive = signal<boolean>(true);
-
+isUserSorting = false;
   sortColumn = 'ProjectName';
   sortDirection: 'asc' | 'desc' = 'asc';
 
@@ -78,20 +78,16 @@ totalPages = signal(1);
 });
   }
 
-  loadProjects() {
+ loadProjects() {
   this.service.getPaged(
     this.currentPage(),
     this.requestedRecords(),
     this.searchText(),
-    this.sortColumn,
-    this.sortDirection
+    this.isUserSorting ? this.sortColumn : '',   // ✅ only if user sorts
+    this.isUserSorting ? this.sortDirection : '' // ✅ else no sorting
   ).subscribe((res: any) => {
 
-    console.log('API RESPONSE:', res);
-
-    // ✅ HANDLE BOTH STRUCTURES
     const dataBlock = res.data?.data ? res.data : res;
-
     const list = dataBlock.data || [];
 
     const mapped = list.map((p: any) => ({
@@ -103,15 +99,12 @@ totalPages = signal(1);
 
     this.projects.set(mapped);
 
-    // ✅ SAFE SET
-      this.totalRecords.set(res.totalCount);
-     this.totalPages.set(
+    this.totalRecords.set(res.totalCount);
+    this.totalPages.set(
       Math.ceil(res.totalCount / this.requestedRecords())
     );
-  
   });
 }
-
   submitProject() {
     if (this.projectForm.invalid) {
       this.projectForm.markAllAsTouched();
@@ -189,6 +182,8 @@ edit(p: Project) {
   });
 }
 sort(column: string) {
+  this.isUserSorting = true;  // ✅ IMPORTANT
+
   if (this.sortColumn === column)
     this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
   else {
@@ -196,7 +191,7 @@ sort(column: string) {
     this.sortDirection = 'asc';
   }
 
-  this.loadProjects(); // ✅ backend sorting
+  this.loadProjects();
 }
  getSortIcon(column: string) {
   if (this.sortColumn !== column) return '↕';
