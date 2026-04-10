@@ -18,6 +18,8 @@ namespace ProjectApp.Core.DTOs.Account.VehicleTripEmission
         public DateTime? TripStartDateTime { get; set; }
         public DateTime? TripEndDateTime { get; set; }
         public DateTime? EntryDate { get; set; }
+
+        public int BlinkFlag { get; set; }
         public decimal? TotalCO2 { get; set; }
         public decimal? TotalNO2 { get; set; }
         public decimal? TotalCH4 { get; set; }

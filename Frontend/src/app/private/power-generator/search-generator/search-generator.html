@@ -241,7 +241,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let e of paginatedData()">
+            <tr *ngFor="let e of paginatedData()" [ngClass]="{'blink-row': e.blinkFlag}">
               <td class="col-action">
                 <button class="btn-open" (click)="goToDetail(e.operationId)">
                   <i class="fas fa-eye"></i>

@@ -378,7 +378,9 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
                     TotalEmission = reader.IsDBNull(reader.GetOrdinal("Total_CO2E_KG")) ? 0 : reader.GetDecimal(reader.GetOrdinal("Total_CO2E_KG")),
                     StatusId = reader.IsDBNull(reader.GetOrdinal("StatusId")) ? 0 : reader.GetInt32(reader.GetOrdinal("StatusId")),
                     EntryBy = reader.IsDBNull(reader.GetOrdinal("EntryBy")) ? 0 : reader.GetInt32(reader.GetOrdinal("EntryBy")),
-                    EntryDate = reader.IsDBNull(reader.GetOrdinal("EntryDate")) ? DateTime.MinValue : reader.GetDateTime(reader.GetOrdinal("EntryDate"))
+                    EntryDate = reader.IsDBNull(reader.GetOrdinal("EntryDate")) ? DateTime.MinValue : reader.GetDateTime(reader.GetOrdinal("EntryDate")),
+                    BlinkFlag = reader.IsDBNull(reader.GetOrdinal("BlinkFlag"))
+    ? 0 : (reader.GetBoolean(reader.GetOrdinal("BlinkFlag")) ? 1 : 0),
                 });
             }
 

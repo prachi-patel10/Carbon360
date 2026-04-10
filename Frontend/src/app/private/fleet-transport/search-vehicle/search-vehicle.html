@@ -257,7 +257,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let e of paginatedData()">
+            <tr *ngFor="let e of paginatedData()" [class.blink-row]="e.blinkFlag">
               <td class="col-actions">
                 <div class="action-btns">
                   <button class="btn-open" (click)="openTrip(e.tripId)" title="View Details">
