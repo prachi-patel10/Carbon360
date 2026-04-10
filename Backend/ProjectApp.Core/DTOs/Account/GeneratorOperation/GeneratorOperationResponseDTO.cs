@@ -41,6 +41,8 @@ namespace ProjectApp.Core.DTOs.Account.GeneratorOperation
 
         public string GeneratorName { get; set; }   
         public string FuelType { get; set; }
+
+        public int BlinkFlag { get; set; }
     }
 }
 

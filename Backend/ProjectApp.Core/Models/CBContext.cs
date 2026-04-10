@@ -20,6 +20,10 @@ public partial class CBContext : DbContext
 
     public virtual DbSet<CB_EmissionFactor> CB_EmissionFactors { get; set; }
 
+    public virtual DbSet<CB_FinalEntry> CB_FinalEntries { get; set; }
+
+    public virtual DbSet<CB_FinalEntryDetail> CB_FinalEntryDetails { get; set; }
+
     public virtual DbSet<CB_GeneratorOperation> CB_GeneratorOperations { get; set; }
 
     public virtual DbSet<CB_GeneratorOperationHistory> CB_GeneratorOperationHistories { get; set; }
@@ -139,6 +143,36 @@ public partial class CBContext : DbContext
                 .HasConstraintName("FK_EmissionFactor_Fuel");
         });
 
+        modelBuilder.Entity<CB_FinalEntry>(entity =>
+        {
+            entity.HasKey(e => e.FinalEntryId).HasName("PK__CB_Final__D192CA9C770B6ACE");
+
+            entity.ToTable("CB_FinalEntry");
+
+            entity.Property(e => e.EntryDate)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+            entity.Property(e => e.TotalActualCo2).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.UpdateDate).HasColumnType("datetime");
+        });
+
+        modelBuilder.Entity<CB_FinalEntryDetail>(entity =>
+        {
+            entity.HasKey(e => e.FinalEntryDetailId).HasName("PK__CB_Final__5129B1E2A23566B9");
+
+            entity.Property(e => e.Co2Total).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.EntryDate)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+            entity.Property(e => e.UpdateDate).HasColumnType("datetime");
+
+            entity.HasOne(d => d.FinalEntry).WithMany(p => p.CB_FinalEntryDetails)
+                .HasForeignKey(d => d.FinalEntryId)
+                .HasConstraintName("FK_FinalEntry");
+        });
+
         modelBuilder.Entity<CB_GeneratorOperation>(entity =>
         {
             entity.HasKey(e => e.OperationId).HasName("PK__CB_Gener__A4F5FC44E0AD9E3B");
@@ -148,13 +182,20 @@ public partial class CBContext : DbContext
             entity.Property(e => e.EndTime).HasColumnType("datetime");
             entity.Property(e => e.EntryDate)
                 .HasDefaultValueSql("(getdate())")
+                .HasAnnotation("Relational:DefaultConstraintName", "DF__CB_Genera__Entry__71B2B7D7")
                 .HasColumnType("datetime");
             entity.Property(e => e.FuelConsumedLiters).HasColumnType("decimal(16, 8)");
+            entity.Property(e => e.IsDeleted).HasAnnotation("Relational:DefaultConstraintName", "DF__CB_Genera__IsDel__72A6DC10");
+            entity.Property(e => e.IsFlag)
+                .HasDefaultValue(false)
+                .HasAnnotation("Relational:DefaultConstraintName", "DF__CB_Genera__IsFla__1E063B61");
             entity.Property(e => e.LoadFactor).HasColumnType("decimal(16, 8)");
             entity.Property(e => e.PowerOutputKWH).HasColumnType("decimal(16, 8)");
             entity.Property(e => e.RunHours).HasColumnType("decimal(16, 8)");
             entity.Property(e => e.StartTime).HasColumnType("datetime");
-            entity.Property(e => e.StatusId).HasDefaultValue(1);
+            entity.Property(e => e.StatusId)
+                .HasDefaultValue(1)
+                .HasAnnotation("Relational:DefaultConstraintName", "DF__CB_Genera__Statu__3AEC92D2");
             entity.Property(e => e.UpdateDate).HasColumnType("datetime");
             entity.Property(e => e.ch4_kg).HasColumnType("decimal(16, 8)");
             entity.Property(e => e.co2_kg).HasColumnType("decimal(16, 8)");
@@ -738,7 +779,6 @@ public partial class CBContext : DbContext
 
 
         OnModelCreatingPartial(modelBuilder);
-
     }
 
     partial void OnModelCreatingPartial(ModelBuilder modelBuilder);

@@ -310,5 +310,12 @@ namespace ProjectApp.API.Controllers.Account.GeneratorOperation
                 "GeneratorOperations.xlsx"
             );
         }
+
+        [HttpGet("corporate-pending-generator")]
+        public async Task<IActionResult> GetCorporatePendingGenerator()
+        {
+            var data = await _service.GetCorporatePendingGeneratorAsync();
+            return Ok(data);
+        }
     }
 }

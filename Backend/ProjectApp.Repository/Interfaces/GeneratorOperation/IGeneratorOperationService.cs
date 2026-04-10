@@ -58,6 +58,7 @@ namespace ProjectApp.Repository.Interfaces.GenerationOperation
         DateTime? entryEndDate,
         int? statusId);
 
+        Task<List<GeneratorOperationResponseDTO>> GetCorporatePendingGeneratorAsync();
     }
 }
 

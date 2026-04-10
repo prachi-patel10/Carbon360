@@ -6,9 +6,11 @@ using ProjectApp.API.Extentions;
 using ProjectApp.Core.Context;
 using ProjectApp.Core.Models;
 using ProjectApp.Repository.Interfaces.User;
+using ProjectApp.Repository.Services.Permit;
 using ProjectApp.Repository.Services.User;
-using System.Text;
+using ProjectApp.Repository.Utilities.SP;
 using PuppeteerSharp;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,6 +24,10 @@ builder.Services.AddDbContext<CBContext>(op =>
 
 builder.Services.Configure<EmailSettings>(
     builder.Configuration.GetSection("EmailSettings"));
+
+builder.Services.AddHostedService<CorporatePendingGeneratorService>();
+
+builder.Services.AddHostedService<CorporatePendingTripBackgroundService>();
 
 //JWT
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

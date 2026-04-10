@@ -55,6 +55,8 @@ public partial class CB_GeneratorOperation
 
     public string reportId { get; set; }
 
+    public bool? IsFlag { get; set; }
+
     public virtual CB_MasterGenerator Generator { get; set; }
 
     public virtual CB_MasterSiteLocation Site { get; set; }

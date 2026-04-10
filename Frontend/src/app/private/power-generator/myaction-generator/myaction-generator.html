@@ -34,7 +34,7 @@
       </thead>
 
       <tbody>
-        <tr *ngFor="let item of data()">
+        <tr *ngFor="let item of data()" [class.blink-row]="item.blink">
           <td class="report-color">{{ item.reportId }}</td>
           <td>{{ item.generatorName }}</td>
           <td class="emission-value">{{ item.totalEmission }}</td>

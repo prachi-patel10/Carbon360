@@ -31,6 +31,14 @@
          "ObjectType": 0
       },
       {
+         "Name": "[dbo].[CB_FinalEntry]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[CB_FinalEntryDetails]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[dbo].[CB_GeneratorOperation]",
          "ObjectType": 0
       },

@@ -264,4 +264,17 @@
     font-size: 0.70rem;
     padding: 0.5rem 0.3rem;
   }
+
+/* 🔥 ALWAYS APPLY */
+
+}
+
+.blink-row td {
+  animation: blinkSoft 1s infinite;
+}
+
+@keyframes blinkSoft {
+  0%   { background-color: #fff3cd; }
+  50%  { background-color: #ffe8a1; }
+  100% { background-color: #fff3cd; }
 }

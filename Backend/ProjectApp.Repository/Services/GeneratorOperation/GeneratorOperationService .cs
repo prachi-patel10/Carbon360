@@ -629,7 +629,9 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
 
                     StatusId = reader.GetInt32(reader.GetOrdinal("StatusId")),
                     EntryBy = reader.GetInt32(reader.GetOrdinal("EntryBy")),
-                    EntryDate = reader.GetDateTime(reader.GetOrdinal("EntryDate"))
+                    EntryDate = reader.GetDateTime(reader.GetOrdinal("EntryDate")),
+
+                    BlinkFlag = reader["BlinkFlag"] == DBNull.Value ? 0 : Convert.ToInt32(reader["BlinkFlag"])
                 });
             }
 
@@ -1018,5 +1020,33 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
             return list;
         }
 
+        public async Task<List<GeneratorOperationResponseDTO>> GetCorporatePendingGeneratorAsync()
+        {
+            var result = new List<GeneratorOperationResponseDTO>();
+
+            await using var conn = _context.Database.GetDbConnection();
+            await conn.OpenAsync();
+
+            await using var cmd = conn.CreateCommand();
+            cmd.CommandText = "USP_CB_GetCorporatePendingGenerator"; // ✅ NEW SP
+            cmd.CommandType = CommandType.StoredProcedure;
+
+            await using var reader = await cmd.ExecuteReaderAsync();
+
+            while (await reader.ReadAsync())
+            {
+                result.Add(new GeneratorOperationResponseDTO
+                {
+                    OperationId = _idEncoder.Encode(Convert.ToInt32(reader["OperationId"])),
+                    ReportId = reader["ReportId"]?.ToString(),
+                    GeneratorId = _idEncoder.Encode(Convert.ToInt32(reader["GeneratorId"])),
+                    EntryDate = Convert.ToDateTime(reader["EntryDate"]),
+                    StatusId = Convert.ToInt32(reader["StatusId"]),
+                    BlinkFlag = Convert.ToInt32(reader["BlinkFlag"]) // ✅ IMPORTANT
+                });
+            }
+
+            return result;
+        }
     }
 }

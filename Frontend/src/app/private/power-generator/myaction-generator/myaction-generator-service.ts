@@ -15,6 +15,7 @@ export interface GeneratorOp {
   totalEmission: number;
    statusId: number; 
   status: number;
+   blink:number;
 }
 
 export interface GeneratorOpResponse {
@@ -153,7 +154,8 @@ getMyActions(
       const data = res.data ?? res; // handle both wrapped and unwrapped
       const records = (data.records ?? data).map((r: any) => ({
         ...r,
-        status: Number(r.statusId) // map statusId → status for HTML
+        status: Number(r.statusId), // map statusId → status for HTML
+        blink: r.blinkFlag === 1
       }));
       return {
         records,
