@@ -283,9 +283,16 @@ export class GeneratorCharts implements OnInit, AfterViewInit, OnChanges, OnDest
 
   onRunHoursGridCellClick(monthIndex: number, generatorName: string): void {
     const pivotData = this.runHoursMonthlyData();
-    const label = pivotData?.monthLabels?.[monthIndex] ?? '';
+    const rawLabel = pivotData?.monthLabels?.[monthIndex] ?? '';
+
+    // Normalize "Jan25" → "Jan 25" so parseLabelToYearMonth works
+    const label = rawLabel.replace(/^([A-Za-z]{3})(\d{2})$/, '$1 $2');
+
     const ym = this.parseLabelToYearMonth(label);
-    if (!ym) return;
+    if (!ym) {
+      console.warn('[GeneratorCharts] onRunHoursGridCellClick: cannot parse label:', rawLabel);
+      return;
+    }
 
     const lastDay = new Date(ym.year, ym.month, 0).getDate();
     const mm = String(ym.month).padStart(2, '0');
@@ -299,6 +306,7 @@ export class GeneratorCharts implements OnInit, AfterViewInit, OnChanges, OnDest
     if (generatorName && generatorName !== 'Unknown Generator')
       queryParams['generatorName'] = generatorName.trim();
 
+    console.log('[GeneratorCharts] onRunHoursGridCellClick →', queryParams);
     this.router.navigate(['/dashboard/searchGenerator'], { queryParams });
   }
 
@@ -311,10 +319,15 @@ export class GeneratorCharts implements OnInit, AfterViewInit, OnChanges, OnDest
   }
 
   onRunHoursMonthTotalClick(monthIndex: number): void {
-    const pivotData = this.runHoursMonthlyData();
-    const label = pivotData?.monthLabels?.[monthIndex] ?? '';
-    this.navigateByLabel(label);
-  }
+  const pivotData = this.runHoursMonthlyData();
+  const rawLabel = pivotData?.monthLabels?.[monthIndex] ?? '';
+  
+  // Normalize "Jan25" → "Jan 25" so parseLabelToYearMonth works
+  const label = rawLabel.replace(/^([A-Za-z]{3})(\d{2})$/, '$1 $2');
+  
+  console.log('[GeneratorCharts] onRunHoursMonthTotalClick label:', label);
+  this.navigateByLabel(label);
+}
 
   onRunHoursLegendClick(generatorName: string, fuelType?: string): void {
     const p: { generatorName?: string; fuelType?: string } = {};
@@ -584,26 +597,17 @@ export class GeneratorCharts implements OnInit, AfterViewInit, OnChanges, OnDest
       },
       options: {
         responsive: true, maintainAspectRatio: false,
-        onClick: (nativeEvent: any, _elements: any[], chart: Chart) => {
-          const pts = chart.getElementsAtEventForMode(
-            nativeEvent.native ?? nativeEvent,
-            'nearest',
-            { intersect: true },
-            false
-          );
+        onClick: (_e: any, elements: any[]) => {
+          if (!elements.length) return;
 
-          console.log('[FuelChart] getElementsAtEventForMode pts:', pts);
-
-          if (!pts.length) {
-            console.warn('[FuelChart] No elements hit at click point');
-            return;
-          }
-
-          const { datasetIndex, index } = pts[0];
+          const { datasetIndex, index } = elements[0];
           const dataset = data.datasets[datasetIndex];
-          const label = (data.labels ?? [])[index] ?? '';
+          const rawLabel = (data.labels ?? [])[index] ?? '';
 
-          console.log('[FuelChart] label:', label, '| fuelType:', dataset?.fuelType);
+          // Normalize "Jan26" → "Jan 26" so parseLabelToYearMonth works
+          const label = rawLabel.replace(/^([A-Za-z]{3})(\d{2})$/, '$1 $2');
+
+          console.log('[FuelChart] onClick label:', label, '| fuelType:', dataset?.fuelType);
 
           if (label && dataset?.fuelType) {
             this.navigateByLabelAndFuel(label, dataset.fuelType);
@@ -624,7 +628,10 @@ export class GeneratorCharts implements OnInit, AfterViewInit, OnChanges, OnDest
                 if (!items.length) return '';
                 const ft = (items[0].dataset as any).stack;
                 const total = items.reduce((s, i) => s + (i.parsed.y ?? 0), 0);
-                return `${items[0].label} — ${ft}: ${total.toLocaleString()} L`;
+                // Normalize label in tooltip title too
+                const rawLbl = items[0].label ?? '';
+                const lbl = rawLbl.replace(/^([A-Za-z]{3})(\d{2})$/, '$1 $2');
+                return `${lbl} — ${ft}: ${total.toLocaleString()} L`;
               },
               label: (ctx: TooltipItem<'bar'>) => {
                 const val = ctx.parsed.y as number;
@@ -636,12 +643,26 @@ export class GeneratorCharts implements OnInit, AfterViewInit, OnChanges, OnDest
         scales: {
           x: {
             stacked: true, grid: { display: false },
-            ticks: { color: '#64748b', font: { size: 10 }, maxRotation: 0 }
+            ticks: {
+              color: '#64748b',
+              font: { size: 11 },
+              maxRotation: 35,
+              minRotation: 35,
+              autoSkip: false,
+              callback: (_val: any, index: number) => {
+                const raw = (data.labels ?? this.getMonthLabels())[index] ?? '';
+                return raw.replace(/^([A-Za-z]{3})(\d{2})$/, '$1 $2');
+              }
+            }
           },
           y: {
             stacked: true, grid: { color: '#fff7ed' }, min: 0,
-            ticks: { color: '#64748b', font: { size: 10 }, callback: (v: any) => `${Number(v).toLocaleString()} L` },
-            title: { display: true, text: 'Litres', color: '#94a3b8', font: { size: 10 } }
+            ticks: {
+              color: '#64748b',
+              font: { size: 11 },
+              callback: (v: any) => `${Number(v).toLocaleString()} L`
+            },
+            title: { display: true, text: 'Litres', color: '#94a3b8', font: { size: 11 } }
           }
         },
         animation: { duration: 400, easing: 'easeInOutQuart' }

@@ -131,13 +131,13 @@ export class VehicleCharts implements OnInit, AfterViewInit, OnChanges, OnDestro
   }
 
   ngOnChanges(c: SimpleChanges): void {
-  const yearChanged = c['year'] && !c['year'].firstChange;
-  const fromChanged = c['fromDate'] && !c['fromDate'].firstChange;
-  const toChanged = c['toDate'] && !c['toDate'].firstChange;
-  if (yearChanged || fromChanged || toChanged) {
-    this.loadAll();
+    const yearChanged = c['year'] && !c['year'].firstChange;
+    const fromChanged = c['fromDate'] && !c['fromDate'].firstChange;
+    const toChanged = c['toDate'] && !c['toDate'].firstChange;
+    if (yearChanged || fromChanged || toChanged) {
+      this.loadAll();
+    }
   }
-}
 
   loadAll(): void {
     this.loadFuelChart();
@@ -147,19 +147,45 @@ export class VehicleCharts implements OnInit, AfterViewInit, OnChanges, OnDestro
     this.loadCategoryChart();
   }
 
+  // private getMonthLabels(): string[] {
+  //   return ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+  //     'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  // }
+
   private getMonthLabels(): string[] {
-    return ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return this.buildRangeLabels();
   }
 
   // ── Date helpers ──────────────────────────────────────────────
-  private buildMonthRange(mi: number): { start: string; end: string } {
-    const y = this.year, m = mi + 1, mm = String(m).padStart(2, '0');
-    const lastDay = new Date(y, m, 0).getDate();
-    return { start: `${y}-${mm}-01`, end: `${y}-${mm}-${String(lastDay).padStart(2, '0')}` };
+  private buildMonthRangeFromLabel(label: string): { start: string; end: string } {
+    // Normalize "Jan26" → "Jan 26"  |  "Jan 26" passes through as-is
+    const normalized = label.replace(/^([A-Za-z]{3})(\d{2})$/, '$1 $2');
+    const parts = normalized.trim().split(' ');
+
+    const monthMap: Record<string, number> = {
+      Jan: 1, Feb: 2, Mar: 3, Apr: 4, May: 5, Jun: 6,
+      Jul: 7, Aug: 8, Sep: 9, Oct: 10, Nov: 11, Dec: 12
+    };
+
+    const month = monthMap[parts[0]];
+    const year = parts[1] ? 2000 + parseInt(parts[1], 10) : this.year;
+
+    // fallback: use this.year + month index 1 if parse fails
+    const resolvedMonth = month ?? 1;
+    const resolvedYear = month ? year : this.year;
+
+    const mm = String(resolvedMonth).padStart(2, '0');
+    const lastDay = new Date(resolvedYear, resolvedMonth, 0).getDate();
+    return {
+      start: `${resolvedYear}-${mm}-01`,
+      end: `${resolvedYear}-${mm}-${String(lastDay).padStart(2, '0')}`
+    };
   }
 
   private buildYearRange(): { start: string; end: string } {
+    if (this.fromDate && this.toDate) {
+      return { start: this.fromDate, end: this.toDate };
+    }
     return { start: `${this.year}-01-01`, end: `${this.year}-12-31` };
   }
 
@@ -190,9 +216,30 @@ export class VehicleCharts implements OnInit, AfterViewInit, OnChanges, OnDestro
       qp['vehicleType'] = params.vehicleType;
 
     if (params.monthIndex !== undefined && params.monthIndex >= 0) {
-      const { start, end } = this.buildMonthRange(params.monthIndex);
-      qp['opStart'] = start; qp['opEnd'] = end;
-      qp['reportedStart'] = start; qp['reportedEnd'] = end;
+      // Resolve actual year+month from the label at this slot index
+      const labels = this._lastFuelData?.labels
+        ?? this._lastEmissionData?.labels
+        ?? this._lastDistanceData?.labels
+        ?? [];
+      const label = labels[params.monthIndex] ?? '';
+
+      const { start, end } = label
+        ? this.buildMonthRangeFromLabel(label)
+        : (() => {
+          // hard fallback: build from year + index
+          const m = params.monthIndex! + 1;
+          const mm = String(m).padStart(2, '0');
+          const lastDay = new Date(this.year, m, 0).getDate();
+          return {
+            start: `${this.year}-${mm}-01`,
+            end: `${this.year}-${mm}-${String(lastDay).padStart(2, '0')}`
+          };
+        })();
+
+      qp['opStart'] = start;
+      qp['opEnd'] = end;
+      qp['reportedStart'] = start;
+      qp['reportedEnd'] = end;
     } else {
       const yr = this.buildYearRange();
       qp['opStart'] = params.opStart ?? yr.start;
@@ -254,7 +301,11 @@ export class VehicleCharts implements OnInit, AfterViewInit, OnChanges, OnDestro
   loadFuelChart(): void {
     this.isFuelLoading.set(true); this.fuelError.set('');
     this.fuelChart?.destroy(); this.fuelChart = undefined;
-    const empty: FuelCombinedChartResponse = { labels: this.getMonthLabels(), datasets: [] };
+
+    // Build all month labels for the selected range
+    const emptyLabels = this.buildRangeLabels();
+    const empty: FuelCombinedChartResponse = { labels: emptyLabels, datasets: [] };
+
     this.svc.getVehicleFuelMonthly(this.year, this.fromDate, this.toDate)
       .pipe(takeUntil(this.destroy$), finalize(() => this.isFuelLoading.set(false)))
       .subscribe({
@@ -533,14 +584,39 @@ export class VehicleCharts implements OnInit, AfterViewInit, OnChanges, OnDestro
           }
         },
         scales: {
-          x: { stacked: true, grid: { display: false }, ticks: { color: '#64748b', font: { size: 11 }, maxRotation: 0 } },
+          x: {                                           // ← x opens
+            stacked: true,
+            grid: { display: false },
+            ticks: {
+              color: '#64748b',
+              font: { size: 10 },
+              maxRotation: 35,
+              minRotation: 35,
+              autoSkip: false,
+              callback: (_val: any, index: number) => {
+                const raw = (data.labels ?? this.getMonthLabels())[index] ?? '';
+                return raw.replace(/^([A-Za-z]{3})(\d{2})$/, '$1 $2');
+              }
+            }
+          },
           y: {
-            stacked: true, grid: { color: '#f0fdf4' }, min: 0,
-            ticks: { color: '#64748b', font: { size: 11 }, callback: (v: any) => `${Number(v).toLocaleString()} L` },
-            title: { display: true, text: 'Fuel Consumed (Litres)', color: '#94a3b8', font: { size: 11 } }
-          }
+            stacked: true,
+            grid: { color: '#f0fdf4' },
+            min: 0,
+            ticks: {
+              color: '#64748b',
+              font: { size: 11 },
+              callback: (v: any) => `${Number(v).toLocaleString()} L`
+            },
+            title: {
+              display: true,
+              text: 'Fuel Consumed (Litres)',
+              color: '#94a3b8',
+              font: { size: 11 }
+            }
+          }                                              // ← y closes ✅
         },
-        animation: { duration: 400, easing: 'easeInOutQuart' }
+        animation: { duration: 400, easing: 'easeInOutQuart' }  // ← sibling of scales ✅
       }
     });
   }
@@ -934,5 +1010,39 @@ export class VehicleCharts implements OnInit, AfterViewInit, OnChanges, OnDestro
   exportCategoryEmission(): void {
     this.svc.ExportVehicleCategoryEmission(this.year)
       .subscribe({ next: blob => saveAs(blob, `CategoryEmission_${this.year}.xlsx`), error: err => console.error(err) });
+  }
+
+
+  private buildRangeLabels(): string[] {
+    const MONTH_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+    let startYear: number, startMonth: number, endYear: number, endMonth: number;
+
+    if (this.fromDate && this.toDate) {
+      const from = new Date(this.fromDate);
+      const to = new Date(this.toDate);
+      startYear = from.getFullYear();
+      startMonth = from.getMonth();       // 0-based
+      endYear = to.getFullYear();
+      endMonth = to.getMonth();         // 0-based
+    } else {
+      // Default — full 12 months of selected year
+      startYear = this.year;
+      startMonth = 0;
+      endYear = this.year;
+      endMonth = 11;
+    }
+
+    const labels: string[] = [];
+    let y = startYear, m = startMonth;
+
+    while (y < endYear || (y === endYear && m <= endMonth)) {
+      labels.push(`${MONTH_SHORT[m]}${String(y).slice(-2)}`);  // "Jan26"
+      m++;
+      if (m > 11) { m = 0; y++; }
+    }
+
+    return labels;
   }
 }
