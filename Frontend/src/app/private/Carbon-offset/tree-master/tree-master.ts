@@ -25,8 +25,8 @@ export class MasterTreeComponent implements OnInit {
   onlyActive = signal<boolean>(true);
   searchText = signal('');
 
-  sortColumn = 'TreeName';
-  sortDirection: 'asc' | 'desc' = 'asc';
+  sortColumn = 'TreeId';
+sortDirection: 'desc' | 'asc' = 'desc';
 
   pageSizeOptions = [5, 10, 20];
   isUserSorting=false;
@@ -69,8 +69,10 @@ export class MasterTreeComponent implements OnInit {
     this.requestedRecords(),
     this.searchText(),
     this.onlyActive(),
-    this.isUserSorting ? this.sortColumn : '',     // ✅ apply only if user sorts
-    this.isUserSorting ? this.sortDirection : ''   // ✅ else no sorting
+
+    // ✅ ALWAYS send a sort (default OR user sort)
+    this.sortColumn,
+    this.sortDirection
   ).subscribe({
     next: (res: any) => {
 
@@ -91,15 +93,16 @@ export class MasterTreeComponent implements OnInit {
   // ================= SORT =================
 sort(column: string) {
 
-  this.isUserSorting = true;  // ✅ IMPORTANT
+  this.isUserSorting = true;
 
-  if (this.sortColumn === column)
+  if (this.sortColumn === column) {
     this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
-  else {
+  } else {
     this.sortColumn = column;
     this.sortDirection = 'asc';
   }
 
+  this.currentPage.set(1);
   this.loadTrees();
 }
   getSortIcon(column: string) {
@@ -159,10 +162,10 @@ submitTree() {
         'success'
       );
 
-      // ✅ RESET SORTING
+      
       this.isUserSorting = false;
-      this.sortColumn = '';
-      this.sortDirection = 'desc';
+     this.sortColumn = 'TreeId';
+this.sortDirection = 'desc';
 
       this.loadTrees();
       this.resetForm();
