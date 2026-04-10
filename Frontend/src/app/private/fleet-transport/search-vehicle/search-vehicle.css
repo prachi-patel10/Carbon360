@@ -918,3 +918,30 @@ app-date-range-picker-component {
 .blink-row td {
   animation: blinkRow 1s infinite;
 }
+
+.btn-pdf-download {
+    background: #fff0f0;
+    border: 1px solid #f5c6c6;
+    color: #c0392b;
+    border-radius: 6px;
+    padding: 5px 7px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background .2s, color .2s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+}
+
+.btn-pdf-download:hover:not(:disabled) {
+    background: #c0392b;
+    color: #fff;
+    border-color: #c0392b;
+}
+
+.btn-pdf-download:disabled {
+    opacity: .55;
+    cursor: not-allowed;
+}

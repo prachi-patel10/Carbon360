@@ -33,6 +33,7 @@ import { EntryFormComponent } from './private/Carbon-offset/entryform/entryform'
 import { MasterTreeComponent } from './private/Carbon-offset/tree-master/tree-master';
 import { ProjectComponent } from './private/Carbon-offset/plantation-project/plantation-project';
 import { FinalEntryComponent } from './private/Carbon-offset/finalform/finalform';
+import { SearchPlantationProject } from './private/Carbon-offset/search-plantation-project/search-plantation-project';
 
 export const routes: Routes = [
 
@@ -97,6 +98,10 @@ export const routes: Routes = [
             {
                 path: 'dashboard/generator-review/:id',
                 component: GeneratorOperationComponent
+            },
+            {
+                path: 'searchplantationproject',
+                component: SearchPlantationProject
             },
         ]
     },
