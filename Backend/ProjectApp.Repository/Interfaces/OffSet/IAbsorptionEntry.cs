@@ -39,5 +39,12 @@ namespace ProjectApp.Repository.Interfaces.OffSet
         Task<object> GetPlannedData(string projectId);
 
         Task<object> CheckByProject(string projectId);
+        Task<PagedResponse<OffsetEntrySearchDto>> Search(
+    int pageNumber,
+    int pageSize,
+    string search,
+    int? projectId,
+    int? financialYear
+);
     }
 }

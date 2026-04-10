@@ -81,4 +81,27 @@ public class OffsetEntryController : ControllerBase
         var result = await _service.CheckByProject(projectId);
         return Ok(result);
     }
+
+    [HttpGet("search")]
+    public async Task<IActionResult> Search(
+    int pageNumber = 1,
+    int pageSize = 10,
+    string? search = null,
+    int? projectId = null,
+    int? financialYear = null)
+    {
+        var result = await _service.Search(
+            pageNumber,
+            pageSize,
+            search,
+            projectId,
+            financialYear
+        );
+
+        return Ok(new
+        {
+            status = true,
+            data = result
+        });
+    }
 }

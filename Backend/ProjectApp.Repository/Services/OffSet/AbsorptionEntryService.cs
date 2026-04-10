@@ -433,6 +433,64 @@ namespace ProjectApp.Repository.Services.OffSet
             return null;
         }
 
+        public async Task<PagedResponse<OffsetEntrySearchDto>> Search(
+    int pageNumber,
+    int pageSize,
+    string search,
+    int? projectId,
+    int? financialYear)
+        {
+            using var conn = _context.Database.GetDbConnection();
+            await conn.OpenAsync();
+
+            using var cmd = conn.CreateCommand();
+            cmd.CommandText = "USP_CB_OffsetEntrySearch"; 
+            cmd.CommandType = CommandType.StoredProcedure;
+
+            cmd.Parameters.Add(new SqlParameter("@Search", (object?)search ?? DBNull.Value));
+            cmd.Parameters.Add(new SqlParameter("@ProjectId", (object?)projectId ?? DBNull.Value));
+            cmd.Parameters.Add(new SqlParameter("@FinancialYear", (object?)financialYear ?? DBNull.Value));
+            cmd.Parameters.Add(new SqlParameter("@PageNumber", pageNumber));
+            cmd.Parameters.Add(new SqlParameter("@PageSize", pageSize));
+
+            var list = new List<OffsetEntrySearchDto>();
+            int totalRecords = 0;
+
+            using var reader = await cmd.ExecuteReaderAsync();
+
+            // ✅ DATA
+            while (await reader.ReadAsync())
+            {
+                list.Add(new OffsetEntrySearchDto
+                {
+                    OffsetEntryId = Convert.ToInt32(reader["OffsetEntryId"]),
+                    ProjectName = reader["ProjectName"].ToString(),
+                    FinancialYear = reader["FinancialYear"] != DBNull.Value ? Convert.ToInt32(reader["FinancialYear"]) : null,
+                    PreviousYearEmission = reader["PreviousYearEmission"] != DBNull.Value ? Convert.ToDecimal(reader["PreviousYearEmission"]) : 0,
+                    TotalOffset = reader["TotalOffset"] != DBNull.Value ? Convert.ToDecimal(reader["TotalOffset"]) : 0,
+                    RemainingEmission = reader["RemainingEmission"] != DBNull.Value ? Convert.ToDecimal(reader["RemainingEmission"]) : 0,
+                    Status = reader["Status"].ToString(),
+                    EntryBy = reader["EntryBy"].ToString(),
+                    EntryDate = reader["EntryDate"] != DBNull.Value ? Convert.ToDateTime(reader["EntryDate"]) : null
+                });
+            }
+
+            await reader.NextResultAsync();
+
+            if (await reader.ReadAsync())
+            {
+                totalRecords = Convert.ToInt32(reader["TotalRecords"]);
+            }
+
+            return new PagedResponse<OffsetEntrySearchDto>
+            {
+                Data = list,
+                TotalRecords = totalRecords,
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
+        }
+
 
     }
 }
