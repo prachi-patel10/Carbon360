@@ -117,11 +117,11 @@ namespace pr.Repository.Services.Auth
 
         public async Task<ForgotPasswordResDTO> ForgotPasswordAsync(ForgotPasswordDTO dto)
         {
-            // ✅ Direct fast query — no SP overhead
+            // Direct fast query — no SP overhead
             var userExists = await _cbContext.CB_Users
                 .AnyAsync(u => u.Email == dto.Email && u.IsDeleted == false);
 
-            // ✅ Immediately throw if not found
+            // Immediately throw if not found
             if (!userExists)
                 throw new Exception("No account found with this email address.");
 
@@ -147,7 +147,7 @@ namespace pr.Repository.Services.Auth
 
             return new ForgotPasswordResDTO { Message = "Reset link sent to your email." };
         }
-        public async Task<ForgotPasswordResDTO> ResetPasswordAsync(ResetPasswordDTO dto) // ✅ added
+        public async Task<ForgotPasswordResDTO> ResetPasswordAsync(ResetPasswordDTO dto) //  added
         {
             var hashedPassword = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
 

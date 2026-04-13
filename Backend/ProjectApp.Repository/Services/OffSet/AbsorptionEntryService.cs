@@ -23,8 +23,6 @@ namespace ProjectApp.Repository.Services.OffSet
         }
 
        
-    
-
         // ================= GET BY ID =================
         public async Task<object> GetById(int offsetEntryId)
         {

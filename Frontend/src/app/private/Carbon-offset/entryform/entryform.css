@@ -12,7 +12,11 @@
   font-size: 14px;
   color: #374151;
 }
-
+.form-group-btn{
+  display: flex;
+  flex-direction: column;
+  margin-top: 10px;
+}
 /* ================= SELECT DROPDOWN ================= */
 .form-group select {
   width: 100%;

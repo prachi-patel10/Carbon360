@@ -19,7 +19,8 @@ years: number[] = [];
 draftId: number = 0;
   treeInputs: any[] = [];
 
-
+isEditMode: boolean = false;
+editIndex: number = -1;
 treeMaster: any[] = [];
 
 selectedTreeId: any = '';
@@ -216,21 +217,22 @@ loadEntriesByYear(year: number) {
 }
 
 addTree() {
+ 
+
+   const year = this.form.value.year;
+  const projectId = this.form.value.projectId;
+
+  if (!year || !projectId) {
+    Swal.fire('Error', 'Please select Year and Project first', 'error');
+    return;
+  }
+
   if (!this.selectedTreeId || !this.treeCount) {
     Swal.fire('Error', 'Select tree and enter count', 'error');
     return;
   }
 
-  const exists = this.addedTrees().find(
-    t => t.treeId === this.selectedTreeId
-  );
 
-  if (exists) {
-    Swal.fire('Error', 'Tree already added', 'error');
-    return;
-  }
-
-  // ✅ GET TREE FROM MASTER (NO API)
   const selectedTree = this.treeMaster.find(
     t => t.treeId === this.selectedTreeId
   );
@@ -242,31 +244,68 @@ addTree() {
 
   const total = selectedTree.co2 * this.treeCount;
 
-  // ✅ STORE LOCALLY ONLY
- this.addedTrees.update(list => [
-  ...list,
-  {
-    treeId: selectedTree.treeId, // ✅ ALWAYS encoded string
-    treeName: selectedTree.treeName,
-    co2: selectedTree.co2,
-    count: this.treeCount,
-    total: total
-  }
-]);
+  // ✅ EDIT MODE
+  if (this.isEditMode) {
+    this.addedTrees.update(list => {
+      const updated = [...list];
 
-  // ✅ UPDATE SUMMARY
+      updated[this.editIndex] = {
+        treeId: selectedTree.treeId,
+        treeName: selectedTree.treeName,
+        co2: selectedTree.co2,
+        count: this.treeCount,
+        total: total
+      };
+
+      return updated;
+    });
+
+    this.isEditMode = false;
+    this.editIndex = -1;
+
+    Swal.fire({
+      icon: 'success',
+      title: 'Updated successfully',
+      timer: 1200,
+      showConfirmButton: false
+    });
+  }
+  // ✅ ADD MODE
+  else {
+    const exists = this.addedTrees().find(
+      t => t.treeId === this.selectedTreeId
+    );
+
+    if (exists) {
+      Swal.fire('Error', 'Tree already added', 'error');
+      return;
+    }
+
+    this.addedTrees.update(list => [
+      ...list,
+      {
+        treeId: selectedTree.treeId,
+        treeName: selectedTree.treeName,
+        co2: selectedTree.co2,
+        count: this.treeCount,
+        total: total
+      }
+    ]);
+
+    Swal.fire({
+      icon: 'success',
+      title: 'Added successfully',
+      timer: 1200,
+      showConfirmButton: false
+    });
+  }
+
+  // ✅ Recalculate summary
   this.calculateSummary();
 
-  // RESET INPUT
+  // ✅ Reset inputs
   this.selectedTreeId = null;
   this.treeCount = 0;
-
-  Swal.fire({
-    icon: 'success',
-    title: 'Added successfully',
-    timer: 1200,
-    showConfirmButton: false
-  });
 }
  // ================= YEARS =================
 generateYears() {
@@ -468,6 +507,16 @@ this.summary().totalTreeCount = this.addedTrees()
       ? Math.round((this.totalOffset / this.summary().previousYearEmission) * 100)
       : 0;
       this.calculateSummary();
+}
+
+editTree(index: number) {
+  const tree = this.addedTrees()[index];
+
+  this.selectedTreeId = tree.treeId;
+  this.treeCount = tree.count;
+
+  this.isEditMode = true;
+  this.editIndex = index;
 }
   // ================= RESET =================
  reset() {
