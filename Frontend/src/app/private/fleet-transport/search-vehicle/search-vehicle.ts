@@ -27,7 +27,6 @@ interface VehicleEmissionDisplay {
   blinkFlag: boolean;
 }
 
-
 @Component({
   selector: 'app-search-vehicle',
   standalone: true,
