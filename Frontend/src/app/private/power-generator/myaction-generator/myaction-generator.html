@@ -28,70 +28,73 @@
           <th (click)="sortBy('fuelConsumedLiters')" class="sortable">
             Fuel (L) <span class="sort-icon">{{ getSortIcon('fuelConsumedLiters') }}</span>
           </th>
-
           <th class="text-center">Action</th>
         </tr>
       </thead>
 
       <tbody>
-        <tr *ngFor="let item of data()" [class.blink-row]="item.blink">
-          <td class="report-color">{{ item.reportId }}</td>
-          <td>{{ item.generatorName }}</td>
-          <td class="emission-value">{{ item.totalEmission }}</td>
-          <td>{{ item.entryDate | date: 'dd-MMM-yyyy' : 'UTC' }}</td>
-          <td>{{ item.fuelType }}</td>
-          <td>{{ item.runHours }}</td>
-          <td>{{ item.loadFactor }}</td>
-          <td>{{ item.fuelConsumedLiters }}</td>
+        @for (item of data(); track item.reportId) {
+          <tr [class.blink-row]="item.blink">
+            <td class="report-color">{{ item.reportId }}</td>
+            <td>{{ item.generatorName }}</td>
+            <td class="emission-value">{{ item.totalEmission }}</td>
+            <td>{{ item.entryDate | date: 'dd-MMM-yyyy' : 'UTC' }}</td>
+            <td>{{ item.fuelType }}</td>
+            <td>{{ item.runHours }}</td>
+            <td>{{ item.loadFactor }}</td>
+            <td>{{ item.fuelConsumedLiters }}</td>
 
+            <td class="action-btn">
+              <!-- CORPORATE REVIEW -->
+              @if (userRole === 'corporate' && item.status === 1) {
+                <button class="btn-edit" (click)="handleAction(item)">
+                  <i class="fa fa-edit"></i>
+                </button>
+              }
 
-          <td class="action-btn">
-            <!-- CORPORATE REVIEW -->
-            <button *ngIf="userRole === 'corporate' && item.status === 1" class="btn-edit"
-              (click)="handleAction(item)">
-              <i class="fa fa-edit"></i>
-            </button>
-            
-            <!-- ADMIN VIEW -->
-            <!-- Approved -->
-            <i *ngIf="userRole === 'admin' && item.status === 2"
-              class="fa fa-arrow-circle-right text-success action-icon" title="Approved"></i>
+              <!-- ADMIN VIEW -->
+              @if (userRole === 'admin' && item.status === 2) {
+                <i class="fa fa-arrow-circle-right text-success action-icon" title="Approved"></i>
+              }
+              @if (userRole === 'admin' && item.status === 3) {
+                <i class="fa fa-times-circle text-danger action-icon" title="Rejected"></i>
+              }
+              @if (userRole === 'admin' && item.status === 1) {
+                <i class="fa fa-info-circle action-icon" (click)="handleAction(item)" title="Review"></i>
+              }
 
-            <!-- Rejected -->
-            <i *ngIf="userRole === 'admin' && item.status === 3" class="fa fa-times-circle text-danger action-icon"
-              title="Rejected"></i>
+              <!-- REPORTER RESUBMIT -->
+              @if (userRole === 'reporter' && item.status === 3) {
+                <button class="action-btn" (click)="handleAction(item)">
+                  <i class="fa fa-arrow-circle-right"></i>
+                </button>
+              }
 
-            <!-- Review -->
-            <i *ngIf="userRole === 'admin' && item.status === 1" class="fa fa-info-circle action-icon"
-              (click)="handleAction(item)" title="Review"></i>
+              <!-- APPROVED -->
+              @if (item.status === 2) {
+                <button class="action-btn text-success" disabled>
+                  <i class="fa fa-check-circle"></i>
+                </button>
+              }
 
-            <!-- REPORTER RESUBMIT -->
-            <button *ngIf="userRole === 'reporter' && item.status === 3" class="action-btn"
-              (click)="handleAction(item)">
-              <i class="fa fa-arrow-circle-right"></i>
-            </button>
-
-            <!-- APPROVED -->
-            <button *ngIf="item.status === 2" class="action-btn text-success" disabled>
-              <i class="fa fa-check-circle"></i>
-            </button>
-
-            <!-- REJECTED (Corporate view only) -->
-            <button *ngIf="item.status === 3 && userRole === 'corporate'" class="action-btn text-danger" disabled>
-              <i class="fa fa-times-circle"></i>
-            </button>
-          </td>
-        </tr>
-
-        <tr *ngIf="data().length === 0">
-          <td colspan="7" class="text-center no-data">No records found</td>
-        </tr>
+              <!-- REJECTED (Corporate view only) -->
+              @if (item.status === 3 && userRole === 'corporate') {
+                <button class="action-btn text-danger" disabled>
+                  <i class="fa fa-times-circle"></i>
+                </button>
+              }
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="7" class="text-center no-data">No records found</td>
+          </tr>
+        }
       </tbody>
     </table>
   </div>
 
   <!-- Pagination Footer -->
-
   <div class="table-footer">
     <div class="total-records">
       Total Records : <b>{{ totalRecords() }}</b>
@@ -109,12 +112,8 @@
 
     <div class="pagination">
       <button (click)="goToPage(currentPage() - 1)" [disabled]="currentPage() === 1">Prev</button>
-
       <span class="page-info"> Page {{ currentPage() }} of {{ totalPages() }} </span>
-
-      <button (click)="goToPage(currentPage() + 1)" [disabled]="currentPage() === totalPages()">
-        Next
-      </button>
+      <button (click)="goToPage(currentPage() + 1)" [disabled]="currentPage() === totalPages()">Next</button>
     </div>
   </div>
 </div>

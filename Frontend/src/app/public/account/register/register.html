@@ -20,21 +20,19 @@
               <div class="col-md-6 mb-3">
                 <label class="form-label register-label">Full Name<span class="req">*</span></label>
                 <input type="text" formControlName="Name" class="form-control register-input"
-        [ngClass]="{'is-invalid': userData.get('Name')?.touched && userData.get('Name')?.invalid}"
-        placeholder="Enter full name" />
-
-      <small class="text-danger"
-        *ngIf="userData.get('Name')?.touched && userData.get('Name')?.hasError('required')">
-        Name is required
-      </small>
+                  [class.is-invalid]="userData.get('Name')?.touched && userData.get('Name')?.invalid"
+                  placeholder="Enter full name" />
+                @if (userData.get('Name')?.touched && userData.get('Name')?.hasError('required')) {
+                  <small class="text-danger">Name is required</small>
+                }
               </div>
 
               <div class="col-md-6 mb-3">
                 <label class="form-label register-label">Email<span class="req">*</span></label>
                 <input type="email" formControlName="Email" class="form-control register-input" />
-                <div *ngIf="userData.get('Email')?.touched && userData.get('Email')?.invalid" class="text-danger mt-1">
-                  Valid email is required
-                </div>
+                @if (userData.get('Email')?.touched && userData.get('Email')?.invalid) {
+                  <div class="text-danger mt-1">Valid email is required</div>
+                }
               </div>
             </div>
 
@@ -46,17 +44,15 @@
                   <input [type]="showPassword ? 'text' : 'password'" formControlName="Password"
                     class="form-control register-input pe-5" />
                   <span class="password-toggle" (click)="showPassword = !showPassword">
-                    <i class="bi" [ngClass]="showPassword ? 'bi-eye-slash' : 'bi-eye'"></i>
+                    <i class="bi" [class]="showPassword ? 'bi-eye-slash' : 'bi-eye'"></i>
                   </span>
                 </div>
-                <div *ngIf="userData.get('Password')?.touched && userData.get('Password')?.errors?.['required']"
-                  class="text-danger mt-1">
-                  Password is required
-                </div>
-                <div *ngIf="userData.get('Password')?.touched && userData.get('Password')?.errors?.['minlength']"
-                  class="text-danger mt-1">
-                  Minimum 6 characters required
-                </div>
+                @if (userData.get('Password')?.touched && userData.get('Password')?.errors?.['required']) {
+                  <div class="text-danger mt-1">Password is required</div>
+                }
+                @if (userData.get('Password')?.touched && userData.get('Password')?.errors?.['minlength']) {
+                  <div class="text-danger mt-1">Minimum 6 characters required</div>
+                }
               </div>
 
               <div class="col-md-6 mb-3">
@@ -65,16 +61,14 @@
                   <input [type]="showConfirmPassword ? 'text' : 'password'" formControlName="ConfirmPassword"
                     class="form-control register-input pe-5" />
                   <span class="password-toggle" (click)="showConfirmPassword = !showConfirmPassword">
-                    <i class="bi" [ngClass]="showConfirmPassword ? 'bi-eye-slash' : 'bi-eye'"></i>
+                    <i class="bi" [class]="showConfirmPassword ? 'bi-eye-slash' : 'bi-eye'"></i>
                   </span>
                 </div>
-                <div *ngIf="userData.hasError('passwordMismatch') && userData.get('ConfirmPassword')?.touched"
-                  class="text-danger mt-1">
-                  Passwords do not match
-                </div>
+                @if (userData.hasError('passwordMismatch') && userData.get('ConfirmPassword')?.touched) {
+                  <div class="text-danger mt-1">Passwords do not match</div>
+                }
               </div>
             </div>
-
 
             <!-- Row 3: Department & Role -->
             <div class="row">
@@ -82,31 +76,30 @@
                 <label class="form-label register-label">Department<span class="req">*</span></label>
                 <select class="form-select register-input" formControlName="DepartmentId">
                   <option value="">Select Department</option>
-                  <option *ngFor="let dept of departments" [value]="dept.id">{{ dept.departmentName }}</option>
+                  @for (dept of departments; track dept.id) {
+                    <option [value]="dept.id">{{ dept.departmentName }}</option>
+                  }
                 </select>
-                <div *ngIf="userData.get('DepartmentId')?.touched && userData.get('DepartmentId')?.invalid"
-                  class="text-danger mt-1">
-                  Department is required
-                </div>
+                @if (userData.get('DepartmentId')?.touched && userData.get('DepartmentId')?.invalid) {
+                  <div class="text-danger mt-1">Department is required</div>
+                }
               </div>
 
               <div class="col-md-6 mb-3">
                 <label class="form-label register-label">Roles<span class="req">*</span></label>
                 <select class="form-select register-input" formControlName="RoleIds" multiple size="3">
-                  <option *ngFor="let role of roles" [value]="role.roleId">{{ role.roleName }}</option>
+                  @for (role of roles; track role.roleId) {
+                    <option [value]="role.roleId">{{ role.roleName }}</option>
+                  }
                 </select>
-                <div *ngIf="userData.get('RoleIds')?.touched && userData.get('RoleIds')?.invalid"
-                  class="text-danger mt-1">
-                  Please select at least one role
-                </div>
-                <small class="text-muted" *ngIf="userData.get('RoleIds')?.value?.length">
-                  Selected roles: {{ selectedRoleNames }}
-                </small>
-
+                @if (userData.get('RoleIds')?.touched && userData.get('RoleIds')?.invalid) {
+                  <div class="text-danger mt-1">Please select at least one role</div>
+                }
+                @if (userData.get('RoleIds')?.value?.length) {
+                  <small class="text-muted">Selected roles: {{ selectedRoleNames }}</small>
+                }
               </div>
-            </div> <!-- Close Row 3 -->
-
-
+            </div>
 
             <!-- Row 4: Active Status -->
             <div class="row">
@@ -124,8 +117,6 @@
             <button class="btn register-btn w-100 mt-3" type="submit" [disabled]="userData.invalid">
               Register
             </button>
-
-           
 
           </form>
 

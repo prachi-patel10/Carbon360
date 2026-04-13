@@ -10,7 +10,7 @@ import { CityService } from '../../fleet-transport/citymaster/city-service';
   templateUrl: './sitelocationmaster.html',
   styleUrls: ['./sitelocationmaster.css'],
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule],
+  imports: [ReactiveFormsModule, FormsModule],
 })
 export class Sitelocationmaster implements OnInit {
 

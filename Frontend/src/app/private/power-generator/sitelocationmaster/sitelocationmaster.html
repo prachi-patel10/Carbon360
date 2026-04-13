@@ -8,20 +8,10 @@
         <label>Site Name <span class="req">*</span></label>
         <input type="text" formControlName="siteName" placeholder="Enter Site Name"
           [class.input-error]="form.get('siteName')?.invalid && form.get('siteName')?.touched" />
-        <small class="error-text" *ngIf="form.get('siteName')?.invalid && form.get('siteName')?.touched">
-          Site Name is required
-        </small>
+        @if (form.get('siteName')?.invalid && form.get('siteName')?.touched) {
+          <small class="error-text">Site Name is required</small>
+        }
       </div>
-
-      <!-- <div class="form-group">
-        <label>Building Name <span class="req">*</span></label>
-        <input type="text" formControlName="buildingName" placeholder="Enter Building Name"
-               [class.input-error]="form.get('buildingName')?.invalid && form.get('buildingName')?.touched" />
-        <small class="error-text"
-               *ngIf="form.get('buildingName')?.invalid && form.get('buildingName')?.touched">
-          Building Name is required
-        </small>
-      </div> -->
 
       <div class="form-group">
         <label>City <span class="req">*</span></label>
@@ -29,40 +19,38 @@
           [class.input-error]="form.get('city')?.invalid && form.get('city')?.touched"
           [style.color]="!form.get('city')?.value ? '#999' : '#000'">
           <option value="" disabled>Select City</option>
-          <option *ngFor="let c of cityList" [value]="c.cityName" style="color:#000">
-            {{ c.cityName }}
-          </option>
+          @for (c of cityList; track c.cityName) {
+            <option [value]="c.cityName" style="color:#000">{{ c.cityName }}</option>
+          }
         </select>
-        <small class="error-text" *ngIf="form.get('city')?.invalid && form.get('city')?.touched">
-          City is required
-        </small>
+        @if (form.get('city')?.invalid && form.get('city')?.touched) {
+          <small class="error-text">City is required</small>
+        }
       </div>
 
       <div class="form-group">
         <label>State <span class="req">*</span></label>
         <input type="text" formControlName="state" placeholder="State (auto-filled)"
           [class.input-error]="form.get('state')?.invalid && form.get('state')?.touched" />
-        <small class="error-text" *ngIf="form.get('state')?.invalid && form.get('state')?.touched">
-          State is required
-        </small>
+        @if (form.get('state')?.invalid && form.get('state')?.touched) {
+          <small class="error-text">State is required</small>
+        }
       </div>
 
       <div class="form-group">
         <label>Short Code <span class="req">*</span></label>
         <input type="text" formControlName="shortCode" placeholder="2-3 chars" (blur)="validateShortCode()"
           [class.input-error]="form.get('shortCode')?.invalid && form.get('shortCode')?.touched" />
-        <small class="error-text" *ngIf="form.get('shortCode')?.invalid && form.get('shortCode')?.touched">
-          Short Code is required (2-3 characters)
-        </small>
+        @if (form.get('shortCode')?.invalid && form.get('shortCode')?.touched) {
+          <small class="error-text">Short Code is required (2-3 characters)</small>
+        }
       </div>
 
       <div class="form-actions">
         <button type="submit" class="save-btn">
           {{ editingSiteId ? 'Update' : 'Save' }}
         </button>
-        <button type="button" class="btn-reset" (click)="resetForm()">
-          Reset
-        </button>
+        <button type="button" class="btn-reset" (click)="resetForm()">Reset</button>
       </div>
 
     </form>
@@ -85,8 +73,8 @@
           <span>Active Only</span>
           <label class="switch">
             <input type="checkbox"
-       [checked]="isActiveFilter === true"
-       (change)="onToggleActive()" />
+              [checked]="isActiveFilter === true"
+              (change)="onToggleActive()" />
             <span class="slider"></span>
           </label>
         </div>
@@ -94,64 +82,67 @@
         <button type="button" class="filter-btn" (click)="openFilterModal()">
           <i class="bi bi-sliders"></i>
           <span>Filter</span>
-          <span class="filter-badge" *ngIf="totalFilterCount > 0">
-            {{ totalFilterCount }}
-          </span>
+          @if (totalFilterCount > 0) {
+            <span class="filter-badge">{{ totalFilterCount }}</span>
+          }
         </button>
       </div>
     </div>
 
     <!-- Active filter chips row -->
-    <div class="active-chips-row" *ngIf="selectedSiteNames.length > 0 || selectedCityNames.length > 0">
-      <span class="vf-chip" *ngFor="let name of selectedSiteNames">
-        <i class="bi bi-building"></i> {{ name }}
-        <button class="vf-chip-remove" (click)="removeSiteName(name); applySearch()">✕</button>
-      </span>
-      <span class="vf-chip vf-chip-city" *ngFor="let city of selectedCityNames">
-        <i class="bi bi-geo-alt"></i> {{ city }}
-        <button class="vf-chip-remove" (click)="removeCityName(city); applySearch()">✕</button>
-      </span>
-    </div>
+    @if (selectedSiteNames.length > 0 || selectedCityNames.length > 0) {
+      <div class="active-chips-row">
+        @for (name of selectedSiteNames; track name) {
+          <span class="vf-chip">
+            <i class="bi bi-building"></i> {{ name }}
+            <button class="vf-chip-remove" (click)="removeSiteName(name); applySearch()">✕</button>
+          </span>
+        }
+        @for (city of selectedCityNames; track city) {
+          <span class="vf-chip vf-chip-city">
+            <i class="bi bi-geo-alt"></i> {{ city }}
+            <button class="vf-chip-remove" (click)="removeCityName(city); applySearch()">✕</button>
+          </span>
+        }
+      </div>
+    }
 
     <!-- Table -->
     <div class="table-wrapper">
       <table>
         <thead>
           <tr>
-            <th (click)="sort('siteName')" class="sortable">Site Name <span class="sort-icon">{{ getSortIcon('siteName')
-                }}</span></th>
-            <!-- <th (click)="sort('buildingName')" class="sortable">Building      <span class="sort-icon">{{ getSortIcon('buildingName') }}</span></th> -->
-            <th (click)="sort('city')" class="sortable">City <span class="sort-icon">{{ getSortIcon('city') }}</span>
-            </th>
-            <th (click)="sort('state')" class="sortable">State <span class="sort-icon">{{ getSortIcon('state') }}</span>
-            </th>
-            <th (click)="sort('shortCode')" class="sortable">Short Code <span class="sort-icon">{{
-                getSortIcon('shortCode') }}</span></th>
+            <th (click)="sort('siteName')" class="sortable">Site Name <span class="sort-icon">{{ getSortIcon('siteName') }}</span></th>
+            <th (click)="sort('city')" class="sortable">City <span class="sort-icon">{{ getSortIcon('city') }}</span></th>
+            <th (click)="sort('state')" class="sortable">State <span class="sort-icon">{{ getSortIcon('state') }}</span></th>
+            <th (click)="sort('shortCode')" class="sortable">Short Code <span class="sort-icon">{{ getSortIcon('shortCode') }}</span></th>
             <th>Status</th>
             <th>Actions</th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let v of siteList()">
-            <td>{{ v.siteName || '-' }}</td>
-            <!-- <td>{{ v.buildingName || '-' }}</td> -->
-            <td>{{ v.city || '-' }}</td>
-            <td>{{ v.state || '-' }}</td>
-            <td>{{ v.shortCode || '-' }}</td>
-            <td>
-              <label class="switch">
-                <input type="checkbox" [checked]="v.isActive" (click)="confirmToggleStatus(v, $event)" />
-                <span class="slider"></span>
-              </label>
-            </td>
-            <td class="actions">
-              <button class="edit-btn" (click)="edit(v)">Edit</button>
-              <button class="delete-btn" (click)="delete(v)">Delete</button>
-            </td>
-          </tr>
-          <tr *ngIf="siteList().length === 0">
-            <td colspan="7" class="empty-row">No records found</td>
-          </tr>
+          @for (v of siteList(); track v.siteId) {
+            <tr>
+              <td>{{ v.siteName || '-' }}</td>
+              <td>{{ v.city || '-' }}</td>
+              <td>{{ v.state || '-' }}</td>
+              <td>{{ v.shortCode || '-' }}</td>
+              <td>
+                <label class="switch">
+                  <input type="checkbox" [checked]="v.isActive" (click)="confirmToggleStatus(v, $event)" />
+                  <span class="slider"></span>
+                </label>
+              </td>
+              <td class="actions">
+                <button class="edit-btn" (click)="edit(v)">Edit</button>
+                <button class="delete-btn" (click)="delete(v)">Delete</button>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="7" class="empty-row">No records found</td>
+            </tr>
+          }
         </tbody>
       </table>
     </div>
@@ -165,7 +156,9 @@
         <button (click)="nextPage()" [disabled]="pageNumber === totalPages">Next</button>
         <label for="pageSize">Page Size:</label>
         <select id="pageSize" [value]="pageSize" (change)="changePageSize($event)">
-          <option *ngFor="let s of pageSizeOptions" [value]="s">{{ s }}</option>
+          @for (s of pageSizeOptions; track s) {
+            <option [value]="s">{{ s }}</option>
+          }
         </select>
       </div>
     </div>
@@ -175,179 +168,197 @@
 
 
 <!-- ===================== FILTER MODAL ===================== -->
-<div class="vf-overlay" *ngIf="filterModalOpen()" (click)="closeFilter()">
-  <div class="vf-modal" (click)="$event.stopPropagation()">
+@if (filterModalOpen()) {
+  <div class="vf-overlay" (click)="closeFilter()">
+    <div class="vf-modal" (click)="$event.stopPropagation()">
 
-    <!-- Header -->
-    <div class="vf-header">
-      <div class="vf-header-left">
-        <div class="vf-header-icon">
-          <i class="bi bi-sliders"></i>
+      <!-- Header -->
+      <div class="vf-header">
+        <div class="vf-header-left">
+          <div class="vf-header-icon">
+            <i class="bi bi-sliders"></i>
+          </div>
+          <div>
+            <h3 class="vf-title">Filter Site Locations</h3>
+            <p class="vf-subtitle">Select one or more values per filter</p>
+          </div>
         </div>
-        <div>
-          <h3 class="vf-title">Filter Site Locations</h3>
-          <p class="vf-subtitle">Select one or more values per filter</p>
-        </div>
+        <button class="vf-close-btn" (click)="closeFilter()">
+          <i class="bi bi-x-lg"></i>
+        </button>
       </div>
-      <button class="vf-close-btn" (click)="closeFilter()">
-        <i class="bi bi-x-lg"></i>
-      </button>
-    </div>
 
-    <!-- Active chips inside modal -->
-    <div class="vf-chips" *ngIf="selectedSiteNames.length > 0 || selectedCityNames.length > 0">
-      <span class="vf-chip" *ngFor="let name of selectedSiteNames">
-        <i class="bi bi-building"></i>
-        {{ name }}
-        <button class="vf-chip-remove" (click)="removeSiteName(name)">✕</button>
-      </span>
-      <span class="vf-chip vf-chip-city" *ngFor="let city of selectedCityNames">
-        <i class="bi bi-geo-alt"></i>
-        {{ city }}
-        <button class="vf-chip-remove" (click)="removeCityName(city)">✕</button>
-      </span>
-    </div>
-
-    <!-- Body — two columns -->
-    <div class="vf-body">
-
-      <!-- ── Column 1: Site Name ── -->
-      <div class="vf-col">
-        <div class="vf-col-label">
-          <i class="bi bi-building"></i>
-          Site Name
-          <span class="vf-col-count" *ngIf="selectedSiteNames.length > 0">
-            {{ selectedSiteNames.length }} selected
-          </span>
+      <!-- Active chips inside modal -->
+      @if (selectedSiteNames.length > 0 || selectedCityNames.length > 0) {
+        <div class="vf-chips">
+          @for (name of selectedSiteNames; track name) {
+            <span class="vf-chip">
+              <i class="bi bi-building"></i>
+              {{ name }}
+              <button class="vf-chip-remove" (click)="removeSiteName(name)">✕</button>
+            </span>
+          }
+          @for (city of selectedCityNames; track city) {
+            <span class="vf-chip vf-chip-city">
+              <i class="bi bi-geo-alt"></i>
+              {{ city }}
+              <button class="vf-chip-remove" (click)="removeCityName(city)">✕</button>
+            </span>
+          }
         </div>
+      }
 
-        <div class="vf-trigger" [class.open]="siteNameDropOpen" (click)="siteNameDropOpen = !siteNameDropOpen">
-          <span class="vf-trigger-text">
-            <ng-container *ngIf="selectedSiteNames.length === 0">All Sites</ng-container>
-            <ng-container *ngIf="selectedSiteNames.length > 0">
-              {{ selectedSiteNames.length }} site{{ selectedSiteNames.length > 1 ? 's' : '' }} selected
-            </ng-container>
-          </span>
-          <i class="bi bi-chevron-down vf-chevron"></i>
-        </div>
+      <!-- Body — two columns -->
+      <div class="vf-body">
 
-        <div class="vf-panel" [class.open]="siteNameDropOpen">
-
-          <div class="vf-panel-loading" *ngIf="loadingSiteNames()">
-            <i class="bi bi-arrow-repeat vf-spin"></i>&nbsp;Loading...
+        <!-- Column 1: Site Name -->
+        <div class="vf-col">
+          <div class="vf-col-label">
+            <i class="bi bi-building"></i>
+            Site Name
+            @if (selectedSiteNames.length > 0) {
+              <span class="vf-col-count">{{ selectedSiteNames.length }} selected</span>
+            }
           </div>
 
-          <ng-container *ngIf="!loadingSiteNames()">
-
-            <div class="vf-panel-search">
-              <input type="text" placeholder="Search site..." [(ngModel)]="siteNameSearch"
-                (click)="$event.stopPropagation()" />
-            </div>
-
-            <div class="vf-check-row vf-select-all" (click)="toggleAllSiteNames()">
-              <span class="vf-checkbox"
-                [class.checked]="selectedSiteNames.length === filteredSiteNamesList.length && filteredSiteNamesList.length > 0"
-                [class.indeterminate]="selectedSiteNames.length > 0 && selectedSiteNames.length < filteredSiteNamesList.length">
-                <i class="bi bi-check"
-                  *ngIf="selectedSiteNames.length === filteredSiteNamesList.length && filteredSiteNamesList.length > 0"></i>
-                <i class="bi bi-dash"
-                  *ngIf="selectedSiteNames.length > 0 && selectedSiteNames.length < filteredSiteNamesList.length"></i>
-              </span>
-              <span class="vf-check-label">Select All</span>
-            </div>
-
-            <div class="vf-divider"></div>
-
-            <div class="vf-check-row" *ngFor="let opt of filteredSiteNamesList" (click)="toggleSiteName(opt.value)"
-              [class.selected]="isSiteNameSelected(opt.value)">
-              <span class="vf-checkbox" [class.checked]="isSiteNameSelected(opt.value)">
-                <i class="bi bi-check" *ngIf="isSiteNameSelected(opt.value)"></i>
-              </span>
-              <span class="vf-check-label">{{ opt.value }}</span>
-            </div>
-
-            <div class="vf-panel-empty" *ngIf="filteredSiteNamesList.length === 0">
-              No options found
-            </div>
-
-          </ng-container>
-        </div>
-      </div>
-
-      <!-- ── Column 2: City ── -->
-      <div class="vf-col">
-        <div class="vf-col-label">
-          <i class="bi bi-geo-alt"></i>
-          City
-          <span class="vf-col-count" *ngIf="selectedCityNames.length > 0">
-            {{ selectedCityNames.length }} selected
-          </span>
-        </div>
-
-        <div class="vf-trigger" [class.open]="cityDropOpen" (click)="cityDropOpen = !cityDropOpen">
-          <span class="vf-trigger-text">
-            <ng-container *ngIf="selectedCityNames.length === 0">All Cities</ng-container>
-            <ng-container *ngIf="selectedCityNames.length > 0">
-              {{ selectedCityNames.length }} cit{{ selectedCityNames.length > 1 ? 'ies' : 'y' }} selected
-            </ng-container>
-          </span>
-          <i class="bi bi-chevron-down vf-chevron"></i>
-        </div>
-
-        <div class="vf-panel" [class.open]="cityDropOpen">
-
-          <div class="vf-panel-loading" *ngIf="loadingCities()">
-            <i class="bi bi-arrow-repeat vf-spin"></i>&nbsp;Loading...
+          <div class="vf-trigger" [class.open]="siteNameDropOpen" (click)="siteNameDropOpen = !siteNameDropOpen">
+            <span class="vf-trigger-text">
+              @if (selectedSiteNames.length === 0) {
+                All Sites
+              } @else {
+                {{ selectedSiteNames.length }} site{{ selectedSiteNames.length > 1 ? 's' : '' }} selected
+              }
+            </span>
+            <i class="bi bi-chevron-down vf-chevron"></i>
           </div>
 
-          <ng-container *ngIf="!loadingCities()">
+          <div class="vf-panel" [class.open]="siteNameDropOpen">
 
-            <div class="vf-panel-search">
-              <input type="text" placeholder="Search city..." [(ngModel)]="citySearch"
-                (click)="$event.stopPropagation()" />
-            </div>
+            @if (loadingSiteNames()) {
+              <div class="vf-panel-loading">
+                <i class="bi bi-arrow-repeat vf-spin"></i>&nbsp;Loading...
+              </div>
+            } @else {
+              <div class="vf-panel-search">
+                <input type="text" placeholder="Search site..." [(ngModel)]="siteNameSearch"
+                  (click)="$event.stopPropagation()" />
+              </div>
 
-            <div class="vf-check-row vf-select-all" (click)="toggleAllCityNames()">
-              <span class="vf-checkbox"
-                [class.checked]="selectedCityNames.length === filteredCitiesList.length && filteredCitiesList.length > 0"
-                [class.indeterminate]="selectedCityNames.length > 0 && selectedCityNames.length < filteredCitiesList.length">
-                <i class="bi bi-check"
-                  *ngIf="selectedCityNames.length === filteredCitiesList.length && filteredCitiesList.length > 0"></i>
-                <i class="bi bi-dash"
-                  *ngIf="selectedCityNames.length > 0 && selectedCityNames.length < filteredCitiesList.length"></i>
-              </span>
-              <span class="vf-check-label">Select All</span>
-            </div>
+              <div class="vf-check-row vf-select-all" (click)="toggleAllSiteNames()">
+                <span class="vf-checkbox"
+                  [class.checked]="selectedSiteNames.length === filteredSiteNamesList.length && filteredSiteNamesList.length > 0"
+                  [class.indeterminate]="selectedSiteNames.length > 0 && selectedSiteNames.length < filteredSiteNamesList.length">
+                  @if (selectedSiteNames.length === filteredSiteNamesList.length && filteredSiteNamesList.length > 0) {
+                    <i class="bi bi-check"></i>
+                  }
+                  @if (selectedSiteNames.length > 0 && selectedSiteNames.length < filteredSiteNamesList.length) {
+                    <i class="bi bi-dash"></i>
+                  }
+                </span>
+                <span class="vf-check-label">Select All</span>
+              </div>
 
-            <div class="vf-divider"></div>
+              <div class="vf-divider"></div>
 
-            <div class="vf-check-row" *ngFor="let opt of filteredCitiesList" (click)="toggleCityName(opt.value)"
-              [class.selected]="isCityNameSelected(opt.value)">
-              <span class="vf-checkbox" [class.checked]="isCityNameSelected(opt.value)">
-                <i class="bi bi-check" *ngIf="isCityNameSelected(opt.value)"></i>
-              </span>
-              <span class="vf-check-label">{{ opt.value }}</span>
-            </div>
+              @for (opt of filteredSiteNamesList; track opt.value) {
+                <div class="vf-check-row" (click)="toggleSiteName(opt.value)"
+                  [class.selected]="isSiteNameSelected(opt.value)">
+                  <span class="vf-checkbox" [class.checked]="isSiteNameSelected(opt.value)">
+                    @if (isSiteNameSelected(opt.value)) {
+                      <i class="bi bi-check"></i>
+                    }
+                  </span>
+                  <span class="vf-check-label">{{ opt.value }}</span>
+                </div>
+              }
 
-            <div class="vf-panel-empty" *ngIf="filteredCitiesList.length === 0">
-              No options found
-            </div>
-
-          </ng-container>
+              @if (filteredSiteNamesList.length === 0) {
+                <div class="vf-panel-empty">No options found</div>
+              }
+            }
+          </div>
         </div>
+
+        <!-- Column 2: City -->
+        <div class="vf-col">
+          <div class="vf-col-label">
+            <i class="bi bi-geo-alt"></i>
+            City
+            @if (selectedCityNames.length > 0) {
+              <span class="vf-col-count">{{ selectedCityNames.length }} selected</span>
+            }
+          </div>
+
+          <div class="vf-trigger" [class.open]="cityDropOpen" (click)="cityDropOpen = !cityDropOpen">
+            <span class="vf-trigger-text">
+              @if (selectedCityNames.length === 0) {
+                All Cities
+              } @else {
+                {{ selectedCityNames.length }} cit{{ selectedCityNames.length > 1 ? 'ies' : 'y' }} selected
+              }
+            </span>
+            <i class="bi bi-chevron-down vf-chevron"></i>
+          </div>
+
+          <div class="vf-panel" [class.open]="cityDropOpen">
+
+            @if (loadingCities()) {
+              <div class="vf-panel-loading">
+                <i class="bi bi-arrow-repeat vf-spin"></i>&nbsp;Loading...
+              </div>
+            } @else {
+              <div class="vf-panel-search">
+                <input type="text" placeholder="Search city..." [(ngModel)]="citySearch"
+                  (click)="$event.stopPropagation()" />
+              </div>
+
+              <div class="vf-check-row vf-select-all" (click)="toggleAllCityNames()">
+                <span class="vf-checkbox"
+                  [class.checked]="selectedCityNames.length === filteredCitiesList.length && filteredCitiesList.length > 0"
+                  [class.indeterminate]="selectedCityNames.length > 0 && selectedCityNames.length < filteredCitiesList.length">
+                  @if (selectedCityNames.length === filteredCitiesList.length && filteredCitiesList.length > 0) {
+                    <i class="bi bi-check"></i>
+                  }
+                  @if (selectedCityNames.length > 0 && selectedCityNames.length < filteredCitiesList.length) {
+                    <i class="bi bi-dash"></i>
+                  }
+                </span>
+                <span class="vf-check-label">Select All</span>
+              </div>
+
+              <div class="vf-divider"></div>
+
+              @for (opt of filteredCitiesList; track opt.value) {
+                <div class="vf-check-row" (click)="toggleCityName(opt.value)"
+                  [class.selected]="isCityNameSelected(opt.value)">
+                  <span class="vf-checkbox" [class.checked]="isCityNameSelected(opt.value)">
+                    @if (isCityNameSelected(opt.value)) {
+                      <i class="bi bi-check"></i>
+                    }
+                  </span>
+                  <span class="vf-check-label">{{ opt.value }}</span>
+                </div>
+              }
+
+              @if (filteredCitiesList.length === 0) {
+                <div class="vf-panel-empty">No options found</div>
+              }
+            }
+          </div>
+        </div>
+
+      </div><!-- /vf-body -->
+
+      <!-- Footer -->
+      <div class="vf-footer">
+        <button class="vf-btn-reset" type="button" (click)="resetFilterModal()">
+          <i class="bi bi-arrow-counterclockwise"></i> Reset
+        </button>
+        <button class="vf-btn-apply" type="button" (click)="applyFilter()">
+          <i class="bi bi-search"></i> Apply Filter
+        </button>
       </div>
 
-    </div><!-- /vf-body -->
-
-    <!-- Footer -->
-    <div class="vf-footer">
-      <button class="vf-btn-reset" type="button" (click)="resetFilterModal()">
-        <i class="bi bi-arrow-counterclockwise"></i> Reset
-      </button>
-      <button class="vf-btn-apply" type="button" (click)="applyFilter()">
-        <i class="bi bi-search"></i> Apply Filter
-      </button>
     </div>
-
   </div>
-</div>
+}

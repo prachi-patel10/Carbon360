@@ -5,8 +5,8 @@ import { GeneratorOperation, SearchGeneratorService } from './search-generator-s
 import { FueltypeService } from '../../masters/fueltype/fueltype-service';
 import { SiteLocationMasterService } from '../sitelocationmaster/site-location-master-service';
 import { Router, ActivatedRoute } from '@angular/router';
-import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { DatePipe } from '@angular/common';
 import { DateRangePickerComponent } from '../../../public/date-range-picker-component/date-range-picker-component';
 
 interface GeneratorOperationDisplay extends GeneratorOperation {
@@ -19,7 +19,7 @@ interface GeneratorOperationDisplay extends GeneratorOperation {
 @Component({
   selector: 'app-search-generator',
   standalone: true,
-  imports: [CommonModule, FormsModule, DateRangePickerComponent],
+  imports: [FormsModule, DatePipe, DateRangePickerComponent],
   templateUrl: './search-generator.html',
   styleUrls: ['./search-generator.css']
 })
@@ -40,7 +40,6 @@ export class SearchGenerator implements OnInit, AfterViewInit {
   selectedSite: string[] = [];
   SiteDropdownOpen = false;
 
-  // ✅ signal so Angular detects changes after async router navigation
   chartSiteName = signal<string | null>(null);
 
   // ── Generator ──────────────────────────────────────────────────
@@ -91,7 +90,7 @@ export class SearchGenerator implements OnInit, AfterViewInit {
     private SiteService: SiteLocationMasterService,
     private router: Router,
     private route: ActivatedRoute,
-  ) { }
+  ) {}
 
   // ── Helpers ────────────────────────────────────────────────────
 
@@ -110,13 +109,12 @@ export class SearchGenerator implements OnInit, AfterViewInit {
 
     const toIsoDate = (raw: string | null): string | null => {
       if (!raw) return null;
-      const clean = raw.trim().substring(0, 10); // just "2026-03-01"
+      const clean = raw.trim().substring(0, 10);
       return /^\d{4}-\d{2}-\d{2}$/.test(clean) ? clean : null;
     };
 
     this.route.queryParams.subscribe(params => {
 
-      // ✅ Ignore second fire after URL is cleared
       if (this._chartParamsConsumed) {
         this._chartParamsConsumed = false;
         return;
@@ -143,23 +141,19 @@ export class SearchGenerator implements OnInit, AfterViewInit {
 
         if (params['fuelType']) this.selectedFuels = [params['fuelType'].trim()];
         if (params['generatorName']) this.selectedGenTypes = [params['generatorName'].trim()];
-
-        // ✅ Use signal .set()
         if (params['siteNames']) this.chartSiteName.set(params['siteNames'].trim());
 
         this.searchText.set('');
 
-        const opStart = toIsoDate(params['startDate']); // now returns "2026-03-01"
-        const opEnd = toIsoDate(params['endDate']);   // now returns "2026-03-31"
+        const opStart = toIsoDate(params['startDate']);
+        const opEnd = toIsoDate(params['endDate']);
         if (opStart) this.operationStartDate.set(opStart);
         if (opEnd) this.operationEndDate.set(opEnd);
 
         this.applyPickersIfReady();
 
-        // ✅ Mark consumed BEFORE clearing URL
         this._chartParamsConsumed = true;
 
-        // ✅ Clear URL so browser refresh loads all records
         this.router.navigate([], {
           relativeTo: this.route,
           queryParams: {},
@@ -231,19 +225,16 @@ export class SearchGenerator implements OnInit, AfterViewInit {
       ? this.selectedFuels.map(f => f.trim()).join(',')
       : undefined;
 
-    // ✅ Use signal ()
     const genParam = (this.selectedGenTypes.length > 0 && !this.chartSiteName())
       ? this.selectedGenTypes.map(g => g.trim()).join(',')
       : undefined;
 
-    // ✅ Use signal ()
     const siteParam = this.chartSiteName()
       ? this.chartSiteName()!.trim()
       : this.selectedSite.length > 0
         ? this.selectedSite.map(s => s.trim()).join(',')
         : undefined;
 
-    // ✅ Use signal ()
     const hasChartSiteFilter = !!this.chartSiteName();
     const searchParam = hasChartSiteFilter
       ? undefined
@@ -279,7 +270,6 @@ export class SearchGenerator implements OnInit, AfterViewInit {
         this.totalRecordsCount.set(total);
         this.totalPagesCount.set(Math.ceil(total / this.pageSize) || 1);
 
-        // Ensure chart-supplied generator names appear in dropdown
         if (this.selectedGenTypes.length > 0) {
           this.selectedGenTypes.forEach(name => {
             const exists = this.generatorTypes.some(g => g.gen_name === name);
@@ -287,7 +277,6 @@ export class SearchGenerator implements OnInit, AfterViewInit {
           });
         }
 
-        // ✅ Use signal ()
         if (this.chartSiteName() && mapped.length > 0) {
           const uniqueGenNames: string[] = [
             ...new Set<string>(
@@ -330,8 +319,6 @@ export class SearchGenerator implements OnInit, AfterViewInit {
 
   toggleSiteDropDown(): void {
     this.SiteDropdownOpen = !this.SiteDropdownOpen;
-
-    // ✅ When opening, sync chartSiteName into selectedSite so checkbox shows checked
     if (this.SiteDropdownOpen && this.chartSiteName()) {
       const name = this.chartSiteName()!;
       if (!this.selectedSite.includes(name)) {
@@ -340,14 +327,12 @@ export class SearchGenerator implements OnInit, AfterViewInit {
     }
   }
 
-  // ✅ Check both selectedSite array AND chartSiteName signal
   isSiteSelected(name: string): boolean {
     return this.selectedSite.includes(name) ||
       (!!this.chartSiteName() && this.chartSiteName() === name);
   }
 
   toggleSite(name: string): void {
-    // ✅ If unchecking the chart-drilled site, clear chartSiteName signal too
     if (this.chartSiteName() === name) {
       this.chartSiteName.set(null);
     }
@@ -357,7 +342,7 @@ export class SearchGenerator implements OnInit, AfterViewInit {
   }
 
   toggleSelectAllSite(): void {
-    this.chartSiteName.set(null);                          // ✅ signal
+    this.chartSiteName.set(null);
     this.selectedSite = this.selectedSite.length === this.Sitename.length
       ? [] : this.Sitename.map((s: any) => s.siteName ?? s.SiteName ?? s.site_name ?? s.name);
     this.applyFilters();
@@ -365,12 +350,12 @@ export class SearchGenerator implements OnInit, AfterViewInit {
 
   clearSite(): void {
     this.selectedSite = [];
-    this.chartSiteName.set(null);                          // ✅ signal
+    this.chartSiteName.set(null);
     this.applyFilters();
   }
 
   clearChartSite(): void {
-    this.chartSiteName.set(null);                          // ✅ signal
+    this.chartSiteName.set(null);
     this.selectedSite = [];
     this.selectedGenTypes = [];
     this.applyFilters();
@@ -387,20 +372,20 @@ export class SearchGenerator implements OnInit, AfterViewInit {
       this.selectedGenTypes = this.selectedGenTypes.filter(g => g !== name);
     else
       this.selectedGenTypes.push(name);
-    this.chartSiteName.set(null);                          // ✅ signal
+    this.chartSiteName.set(null);
     this.applyFilters();
   }
 
   toggleSelectAllGen(): void {
     this.selectedGenTypes = this.selectedGenTypes.length === this.generatorTypes.length
       ? [] : this.generatorTypes.map(g => g.gen_name);
-    this.chartSiteName.set(null);                          // ✅ signal
+    this.chartSiteName.set(null);
     this.applyFilters();
   }
 
   clearGenTypes(): void {
     this.selectedGenTypes = [];
-    this.chartSiteName.set(null);                          // ✅ signal
+    this.chartSiteName.set(null);
     this.applyFilters();
   }
 
@@ -418,7 +403,7 @@ export class SearchGenerator implements OnInit, AfterViewInit {
 
   onSearch(event: any): void {
     this.searchText.set(event.target.value);
-    this.chartSiteName.set(null);                          // ✅ signal
+    this.chartSiteName.set(null);
     this.applyFilters();
   }
 
@@ -452,7 +437,7 @@ export class SearchGenerator implements OnInit, AfterViewInit {
     this.selectedFuels = []; this.fuelDropdownOpen = false;
     this.selectedSite = []; this.SiteDropdownOpen = false;
     this.selectedGenTypes = []; this.genDropdownOpen = false;
-    this.chartSiteName.set(null);                          // ✅ signal
+    this.chartSiteName.set(null);
     this.searchText.set('');
     this.operationStartDate.set(null); this.operationEndDate.set(null);
     this.entryStartDate.set(null); this.entryEndDate.set(null);
@@ -551,7 +536,6 @@ export class SearchGenerator implements OnInit, AfterViewInit {
 
   exportExcel(): void {
     const params: any = {};
-    // ✅ Use signal ()
     if (this.searchText() && !this.chartSiteName())
       params.search = this.searchText();
     if (this.selectedFuels.length > 0)
@@ -589,7 +573,6 @@ export class SearchGenerator implements OnInit, AfterViewInit {
     const y = date.getFullYear();
     const m = String(date.getMonth() + 1).padStart(2, '0');
     const d = String(date.getDate()).padStart(2, '0');
-    return `${y}-${m}-${d}`; // "2026-03-01" — no UTC shift
+    return `${y}-${m}-${d}`;
   }
-
 }

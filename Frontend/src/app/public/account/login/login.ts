@@ -1,82 +1,79 @@
-import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component } from '@angular/core';
+import { Component } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { LoginService } from './login-service';
 import { ToastService } from '../../../core/toast/toastservice';
-import { jwtDecode } from "jwt-decode";
-
+import { jwtDecode } from 'jwt-decode';
 
 @Component({
   selector: 'app-login',
-  imports: [ReactiveFormsModule, CommonModule,RouterLink],
+  imports: [ReactiveFormsModule, RouterLink],
   templateUrl: './login.html',
   styleUrls: ['./login.css'],
 })
 export class Login {
-showPassword: boolean = false;
-loginData: FormGroup = new FormGroup({
-  Email: new FormControl('', [
-    Validators.required,
-     Validators.pattern(/^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/)
-  ]),
-  Password: new FormControl('', [
-    Validators.required,
-    Validators.minLength(3),
-    Validators.maxLength(20)
-  ])
-});
+
+  showPassword: boolean = false;
+
+  loginData: FormGroup = new FormGroup({
+    Email: new FormControl('', [
+      Validators.required,
+      Validators.pattern(/^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/)
+    ]),
+    Password: new FormControl('', [
+      Validators.required,
+      Validators.minLength(3),
+      Validators.maxLength(20)
+    ])
+  });
 
   constructor(
     private _router: Router,
     private _userService: LoginService,
     private toastr: ToastService
-  ) { }
+  ) {}
 
- login() {
-  if (this.loginData.invalid) {
-    this.loginData.markAllAsTouched();
-    return;
+  login() {
+    if (this.loginData.invalid) {
+      this.loginData.markAllAsTouched();
+      return;
+    }
+
+    const loginObj = this.loginData.value;
+
+    this._userService.loginUser(loginObj).subscribe({
+      next: (res: any) => {
+        const token = res.data.token;
+
+        const decoded: any = jwtDecode(token);
+
+        const roles =
+          decoded['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
+
+        const name =
+          decoded['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'];
+
+        const userData = {
+          name: name,
+          firstName: res.data.firstName,
+          roles: Array.isArray(roles) ? roles : [roles],
+          currentRole: Array.isArray(roles) ? roles[0] : roles,
+          token: token
+        };
+
+        localStorage.setItem('user', JSON.stringify(userData));
+        localStorage.setItem('token', token);
+
+        this._router.navigate(['/dashboard']);
+      },
+      error: (err) => {
+        console.log('HTTP error:', err);
+        this.toastr.error('Invalid username or password');
+      }
+    });
   }
 
-  const loginObj = this.loginData.value;
-
-  this._userService.loginUser(loginObj).subscribe({
-   next: (res: any) => {
-
-  const token = res.data.token;
-
-  // Decode JWT
-  const decoded: any = jwtDecode(token);
-
-  // Extract roles from claim
-  const roles =
-    decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
-
-  const name =
-    decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"];
-
-  const userData = {
-    name: name,
-    firstName: res.data.firstName,
-    roles: Array.isArray(roles) ? roles : [roles], // handle single role case
-    currentRole: Array.isArray(roles) ? roles[0] : roles,
-    token: token
-  };
-
-  localStorage.setItem('user', JSON.stringify(userData));
-  localStorage.setItem('token', token);
-
-  this._router.navigate(['/dashboard']);
-},
-    error: (err) => {
-      console.log('HTTP error:', err);
-      this.toastr.error("Invalid username or password");
-    }
-  });
-}
-
-togglePassword() {
-  this.showPassword = !this.showPassword;
-}
+  togglePassword() {
+    this.showPassword = !this.showPassword;
+  }
 }
