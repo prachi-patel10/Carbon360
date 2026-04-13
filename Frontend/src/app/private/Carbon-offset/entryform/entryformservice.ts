@@ -45,14 +45,12 @@ saveDraft(payload: any) {
     return this.http.post(`${this.apiUrl}/insert`, payload);
   }
 
-getTreeDetails(treeId: string, treeCount: number) {
-  return this.http.post<any>(
-    `${environment.apiBaseUrl}/Tree/get-tree-details`,
-    {
-      treeId: treeId,     
-      treeCount: treeCount 
-    }
-  );
+check(projectId: string) {
+  return this.http.get(`${this.apiUrl}/check/${projectId}`);
+}
+
+getById(id: number) {
+  return this.http.get(`${this.apiUrl}/${id}`);
 }
 
 }

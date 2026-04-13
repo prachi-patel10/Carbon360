@@ -114,16 +114,52 @@ onYearChange() {
   });
 }
 onProjectChange() {
-  const selectedId = this.form.value.projectId;
-  console.log("Selected ProjectId:", selectedId);
-  const project = this.projects.find(p => p.projectId == selectedId);
-  if (project) {
-    this.summary.set({
-      ...this.summary(),
-      previousYearEmission: project.previousYearEmission || 0
-    });
-    this.calculateSummary();
+const projectId = String(this.form.value.projectId);
+  if (!projectId) return;
+
+ this.service.check(projectId).subscribe({
+  next: (res: any) => {
+console.log("Selected ProjectId:", this.form.value.projectId);
+    if (!res || Object.keys(res).length === 0) {
+      this.draftId = 0;
+      this.addedTrees.set([]);
+      this.calculateSummary();
+      return;
+    }
+
+    if (res.isDraft) {
+      this.service.getById(res.offsetEntryId).subscribe((data: any) => {
+  console.log("FULL DATA:", data); // 🔥 ADD THIS
+
+  this.draftId = data.header.offsetEntryId;
+
+  const trees = data.details.map((t: any) => ({
+    treeId: t.treeId,
+    treeName: t.treeName,
+    co2: t.co2Total / t.treeCount,
+    count: t.treeCount,
+    total: t.co2Total
+  }));
+
+  console.log("TREES:", trees); // 🔥 ADD THIS
+
+  this.addedTrees.set(trees);
+  this.calculateSummary();
+});
+    }
+  },
+
+  error: (err) => {
+    // 👉 THIS WILL HANDLE 204 ALSO SOMETIMES
+    if (err.status === 204) {
+      this.draftId = 0;
+      this.addedTrees.set([]);
+      this.calculateSummary();
+    } else {
+      console.error("Check API error:", err);
+    }
   }
+});
 }
 
 calculateSummary() {
@@ -170,8 +206,7 @@ loadEntriesByYear(year: number) {
       const trees = res?.data || [];
 
       this.treeMaster = trees.map((t: any) => ({
-  treeId: t.treeId || t.TreeId,   // 🔥 keep encrypted
-  rawId: t.id || t.treeIdRaw || t.TreeIdRaw, // if available
+  treeId: t.treeId,   // ✅ ALWAYS encoded
   treeName: t.treeName,
   co2: t.co2AbsorptionPerYear
 }));
@@ -208,16 +243,16 @@ addTree() {
   const total = selectedTree.co2 * this.treeCount;
 
   // ✅ STORE LOCALLY ONLY
-  this.addedTrees.update(list => [
-    ...list,
-    {
-      treeId: selectedTree.treeId,
-      treeName: selectedTree.treeName,
-      co2: selectedTree.co2,
-      count: this.treeCount,
-      total: total
-    }
-  ]);
+ this.addedTrees.update(list => [
+  ...list,
+  {
+    treeId: selectedTree.treeId, // ✅ ALWAYS encoded string
+    treeName: selectedTree.treeName,
+    co2: selectedTree.co2,
+    count: this.treeCount,
+    total: total
+  }
+]);
 
   // ✅ UPDATE SUMMARY
   this.calculateSummary();
@@ -264,7 +299,7 @@ generateYears() {
   }
 
   const payload = {
-    offsetEntryId: this.draftId || 0,   // ✅ allow direct save
+   offsetEntryId: this.draftId || 0,   // ✅ allow direct save
     projectId: String(projectId),
     financialYear: year,
     trees: this.addedTrees().map(t => ({
@@ -361,15 +396,15 @@ saveDraft() {
   }
 
   const payload = {
-    offsetEntryId: 0, // no dependency
-    projectId: String(projectId),
-    entryBy: 'CurrentUser',
-    financialYear: year,   // ✅ ADD THIS
-    trees: this.addedTrees().map(t => ({
-      treeId: t.treeId,
-      treeCount: t.count
-    }))
-  };
+  offsetEntryId: this.draftId || 0,   // 🔥 FIX (was always 0 ❌)
+  projectId: String(projectId),
+  entryBy: 'CurrentUser',
+  financialYear: year,
+  trees: this.addedTrees().map(t => ({
+    treeId: t.treeId,
+    treeCount: t.count
+  }))
+};
 
   this.service.saveDraft(payload).subscribe({
     next: (res: any) => {

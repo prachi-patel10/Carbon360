@@ -60,7 +60,7 @@ namespace ProjectApp.Repository.Services.OffSet
             {
                 details.Add(new
                 {
-                    TreeId = reader["TreeId"],
+                    TreeId = _encoder.Encode(Convert.ToInt32(reader["TreeId"])), // ✅ FIX HERE
                     TreeName = reader["TreeName"],
                     TreeCount = reader["TreeCount"],
                     Co2Total = reader["Co2Total"]

@@ -173,7 +173,6 @@ namespace ProjectApp.Repository.Services.Masters.PlantationProject
             cmd.CommandText = "USP_CB_ProjectByYear";
             cmd.CommandType = CommandType.StoredProcedure;
 
-            // ✅ NEW SQL PARAMETER
             var fyParam = cmd.CreateParameter();
             fyParam.ParameterName = "@FinancialYear";
             fyParam.DbType = DbType.String;
@@ -184,9 +183,11 @@ namespace ProjectApp.Repository.Services.Masters.PlantationProject
 
             while (await reader.ReadAsync())
             {
+                int rawId = Convert.ToInt32(reader["ProjectId"]);
+
                 list.Add(new ProjectByYearDTO
                 {
-                    ProjectId = Convert.ToInt32(reader["ProjectId"]),
+                    ProjectId = _encoder.Encode(rawId),   // ✅ FIX HERE
                     ProjectName = reader["ProjectName"].ToString(),
                     PreviousYearEmission = Convert.ToDecimal(reader["PreviousYearEmission"])
                 });
