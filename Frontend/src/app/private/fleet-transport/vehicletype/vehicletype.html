@@ -6,41 +6,33 @@
 
       <div class="form-group">
         <label>Vehicle Type Name <span class="req">*</span></label>
-        <input type="text"
-               formControlName="vehicle_type_name"
-               placeholder="Enter Vehicle Type Name"
-               [class.input-error]="vehicleForm.get('vehicle_type_name')?.invalid
-                                 && vehicleForm.get('vehicle_type_name')?.touched" />
-        <small class="error-text"
-               *ngIf="vehicleForm.get('vehicle_type_name')?.invalid
-                   && vehicleForm.get('vehicle_type_name')?.touched">
-          Vehicle Type Name is required
-        </small>
+        <input type="text" formControlName="vehicle_type_name"
+          placeholder="Enter Vehicle Type Name"
+          [class.input-error]="vehicleForm.get('vehicle_type_name')?.invalid && vehicleForm.get('vehicle_type_name')?.touched" />
+        @if (vehicleForm.get('vehicle_type_name')?.invalid && vehicleForm.get('vehicle_type_name')?.touched) {
+          <small class="error-text">Vehicle Type Name is required</small>
+        }
       </div>
 
       <div class="form-group">
         <label>Vehicle Category <span class="req">*</span></label>
         <select formControlName="categoryId"
-                [class.input-error]="vehicleForm.get('categoryId')?.invalid
-                                  && vehicleForm.get('categoryId')?.touched"
-                [style.color]="!vehicleForm.get('categoryId')?.value ? '#999' : '#000'">
+          [class.input-error]="vehicleForm.get('categoryId')?.invalid && vehicleForm.get('categoryId')?.touched"
+          [style.color]="!vehicleForm.get('categoryId')?.value ? '#999' : '#000'">
           <option value="" disabled>Select Category</option>
           <option value="1" style="color:#000">LDV</option>
           <option value="2" style="color:#000">MDV</option>
           <option value="3" style="color:#000">HDV</option>
         </select>
-        <small class="error-text"
-               *ngIf="vehicleForm.get('categoryId')?.invalid
-                   && vehicleForm.get('categoryId')?.touched">
-          Category is required
-        </small>
+        @if (vehicleForm.get('categoryId')?.invalid && vehicleForm.get('categoryId')?.touched) {
+          <small class="error-text">Category is required</small>
+        }
       </div>
 
       <div class="form-group">
         <label>Description</label>
-        <input type="text"
-               formControlName="description"
-               placeholder="Enter Description" />
+        <input type="text" formControlName="description"
+          placeholder="Enter Description" />
       </div>
 
       <div class="form-actions">
@@ -61,30 +53,26 @@
         <div class="search-left">
           <div class="search-wrap">
             <i class="bi bi-search search-icon"></i>
-            <input type="text"
-                   class="search-input"
-                   placeholder="Quick Search"
-                   formControlName="searchText" />
+            <input type="text" class="search-input" placeholder="Quick Search"
+              formControlName="searchText" />
           </div>
         </div>
-
         <div class="search-right">
           <div class="status-toggle">
             <span>Active Only</span>
             <label class="switch">
               <input type="checkbox"
-                     [checked]="onlyActive() === true"
-                     (change)="onActiveFilterChange($event)" />
+                [checked]="onlyActive() === true"
+                (change)="onActiveFilterChange($event)" />
               <span class="slider"></span>
             </label>
           </div>
-
           <button type="button" class="filter-btn" (click)="openFilterModal()">
             <i class="bi bi-sliders"></i>
             <span>Filter</span>
-            <span class="filter-badge" *ngIf="totalFilterCount > 0">
-              {{ totalFilterCount }}
-            </span>
+            @if (totalFilterCount > 0) {
+              <span class="filter-badge">{{ totalFilterCount }}</span>
+            }
           </button>
         </div>
       </div>
@@ -109,24 +97,29 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let v of vehicleTypes()">
-            <td>{{ v.vehicle_type_name }}</td>
-            <td>{{ v.categoryName || '-' }}</td>
-            <td>{{ v.description  || '-' }}</td>
-            <td>
-              <label class="switch">
-                <input type="checkbox" [checked]="v.isActive" (change)="toggleActive(v)" />
-                <span class="slider"></span>
-              </label>
-            </td>
-            <td class="actions">
-              <button class="edit-btn"   (click)="edit(v)">Edit</button>
-              <button class="delete-btn" (click)="deleteUI(v)">Delete</button>
-            </td>
-          </tr>
-          <tr *ngIf="vehicleTypes().length === 0">
-            <td colspan="5" class="empty-row">No records found</td>
-          </tr>
+          @for (v of vehicleTypes(); track v.vehicle_type_id) {
+            <tr>
+              <td>{{ v.vehicle_type_name }}</td>
+              <td>{{ v.categoryName || '-' }}</td>
+              <td>{{ v.description || '-' }}</td>
+              <td>
+                <label class="switch">
+                  <input type="checkbox"
+                    [checked]="v.isActive"
+                    (change)="toggleActive(v)" />
+                  <span class="slider"></span>
+                </label>
+              </td>
+              <td class="actions">
+                <button class="edit-btn" (click)="edit(v)">Edit</button>
+                <button class="delete-btn" (click)="deleteUI(v)">Delete</button>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="5" class="empty-row">No records found</td>
+            </tr>
+          }
         </tbody>
       </table>
     </div>
@@ -140,7 +133,9 @@
         <button (click)="nextPage()" [disabled]="currentPage() === totalPages()">Next</button>
         <label for="pageSize">Page Size:</label>
         <select id="pageSize" [value]="pageSize()" (change)="onPageSizeChange($event)">
-          <option *ngFor="let s of pageSizeOptions" [value]="s">{{ s }}</option>
+          @for (s of pageSizeOptions; track s) {
+            <option [value]="s">{{ s }}</option>
+          }
         </select>
       </div>
     </div>
@@ -148,190 +143,182 @@
   </div>
 </div>
 
+<!-- ================= FILTER MODAL ================= -->
+@if (filterModalOpen()) {
+  <div class="vf-overlay" (click)="closeFilterModal()">
+    <div class="vf-modal" (click)="$event.stopPropagation()">
 
-<!-- ===================== FILTER MODAL ===================== -->
-<div class="vf-overlay" *ngIf="filterModalOpen()" (click)="closeFilterModal()">
-  <div class="vf-modal" (click)="$event.stopPropagation()">
-
-    <!-- Header -->
-    <div class="vf-header">
-      <div class="vf-header-left">
-        <div class="vf-header-icon">
-          <i class="bi bi-sliders"></i>
+      <div class="vf-header">
+        <div class="vf-header-left">
+          <div class="vf-header-icon"><i class="bi bi-sliders"></i></div>
+          <div>
+            <h3 class="vf-title">Filter Vehicle Types</h3>
+            <p class="vf-subtitle">Select one or more values per filter</p>
+          </div>
         </div>
-        <div>
-          <h3 class="vf-title">Filter Vehicle Types</h3>
-          <p class="vf-subtitle">Select one or more values per filter</p>
-        </div>
+        <button class="vf-close-btn" (click)="closeFilterModal()">
+          <i class="bi bi-x-lg"></i>
+        </button>
       </div>
-      <button class="vf-close-btn" (click)="closeFilterModal()">
-        <i class="bi bi-x-lg"></i>
-      </button>
-    </div>
 
-    <!-- Active chips -->
-    <div class="vf-chips"
-         *ngIf="selectedVehicleNames.length > 0 || selectedCategoryIds.length > 0">
-
-      <!-- Vehicle name chips -->
-      <span class="vf-chip" *ngFor="let name of selectedVehicleNames">
-        <i class="bi bi-tag"></i>
-        {{ name }}
-        <button class="vf-chip-remove" (click)="removeVehicleName(name)">✕</button>
-      </span>
-
-      <!-- Category chips — display label, remove by id -->
-      <span class="vf-chip vf-chip-cat" *ngFor="let id of selectedCategoryIds">
-        <i class="bi bi-grid"></i>
-        {{ getCategoryLabel(id) }}
-        <button class="vf-chip-remove" (click)="removeCategory(id)">✕</button>
-      </span>
-
-    </div>
-    <div class="vf-body">
-      <div class="vf-col">
-        <div class="vf-col-label">
-          <i class="bi bi-tag"></i>
-          Vehicle Type Name
-          <span class="vf-col-count" *ngIf="selectedVehicleNames.length > 0">
-            {{ selectedVehicleNames.length }} selected
-          </span>
+      @if (selectedVehicleNames.length > 0 || selectedCategoryIds.length > 0) {
+        <div class="vf-chips">
+          @for (name of selectedVehicleNames; track name) {
+            <span class="vf-chip">
+              <i class="bi bi-tag"></i>
+              {{ name }}
+              <button class="vf-chip-remove" (click)="removeVehicleName(name)">✕</button>
+            </span>
+          }
+          @for (id of selectedCategoryIds; track id) {
+            <span class="vf-chip vf-chip-cat">
+              <i class="bi bi-grid"></i>
+              {{ getCategoryLabel(id) }}
+              <button class="vf-chip-remove" (click)="removeCategory(id)">✕</button>
+            </span>
+          }
         </div>
+      }
 
-        <div class="vf-trigger"
-             [class.open]="vehicleNameDropOpen"
-             (click)="vehicleNameDropOpen = !vehicleNameDropOpen">
-          <span class="vf-trigger-text">
-            <ng-container *ngIf="selectedVehicleNames.length === 0">All Types</ng-container>
-            <ng-container *ngIf="selectedVehicleNames.length > 0">
-              {{ selectedVehicleNames.length }}
-              type{{ selectedVehicleNames.length > 1 ? 's' : '' }} selected
-            </ng-container>
-          </span>
-          <i class="bi bi-chevron-down vf-chevron"></i>
-        </div>
+      <div class="vf-body">
 
-        <div class="vf-panel" [class.open]="vehicleNameDropOpen">
-
-          <div class="vf-panel-loading" *ngIf="loadingVehicleNames()">
-            <i class="bi bi-arrow-repeat vf-spin"></i>&nbsp;Loading...
+        <!-- Vehicle Type Name column -->
+        <div class="vf-col">
+          <div class="vf-col-label">
+            <i class="bi bi-tag"></i> Vehicle Type Name
+            @if (selectedVehicleNames.length > 0) {
+              <span class="vf-col-count">{{ selectedVehicleNames.length }} selected</span>
+            }
           </div>
 
-          <ng-container *ngIf="!loadingVehicleNames()">
-
-            <div class="vf-check-row vf-select-all" (click)="toggleAllVehicleNames()">
-              <span class="vf-checkbox"
-                    [class.checked]="selectedVehicleNames.length === vehicleNamesList.length
-                                  && vehicleNamesList.length > 0"
-                    [class.indeterminate]="selectedVehicleNames.length > 0
-                                       && selectedVehicleNames.length < vehicleNamesList.length">
-                <i class="bi bi-check"
-                   *ngIf="selectedVehicleNames.length === vehicleNamesList.length
-                       && vehicleNamesList.length > 0"></i>
-                <i class="bi bi-dash"
-                   *ngIf="selectedVehicleNames.length > 0
-                       && selectedVehicleNames.length < vehicleNamesList.length"></i>
-              </span>
-              <span class="vf-check-label">Select All</span>
-            </div>
-
-            <div class="vf-divider"></div>
-
-            <div class="vf-check-row"
-                 *ngFor="let opt of vehicleNamesList"
-                 (click)="toggleVehicleName(opt.value)"
-                 [class.selected]="isVehicleNameSelected(opt.value)">
-              <span class="vf-checkbox" [class.checked]="isVehicleNameSelected(opt.value)">
-                <i class="bi bi-check" *ngIf="isVehicleNameSelected(opt.value)"></i>
-              </span>
-              <span class="vf-check-label">{{ opt.value }}</span>
-            </div>
-
-            <div class="vf-panel-empty" *ngIf="vehicleNamesList.length === 0">
-              No options found
-            </div>
-
-          </ng-container>
-        </div>
-      </div>
-
-      <div class="vf-col">
-        <div class="vf-col-label">
-          <i class="bi bi-grid"></i>
-          Vehicle Category
-          <span class="vf-col-count" *ngIf="selectedCategoryIds.length > 0">
-            {{ selectedCategoryIds.length }} selected
-          </span>
-        </div>
-
-        <div class="vf-trigger"
-             [class.open]="categoryDropOpen"
-             (click)="categoryDropOpen = !categoryDropOpen">
-          <span class="vf-trigger-text">
-            <ng-container *ngIf="selectedCategoryIds.length === 0">All Categories</ng-container>
-            <ng-container *ngIf="selectedCategoryIds.length > 0">
-              {{ selectedCategoryIds.length }}
-              categor{{ selectedCategoryIds.length > 1 ? 'ies' : 'y' }} selected
-            </ng-container>
-          </span>
-          <i class="bi bi-chevron-down vf-chevron"></i>
-        </div>
-
-        <div class="vf-panel" [class.open]="categoryDropOpen">
-
-          <div class="vf-panel-loading" *ngIf="loadingCategories()">
-            <i class="bi bi-arrow-repeat vf-spin"></i>&nbsp;Loading...
+          <div class="vf-trigger" [class.open]="vehicleNameDropOpen"
+            (click)="vehicleNameDropOpen = !vehicleNameDropOpen">
+            <span class="vf-trigger-text">
+              @if (selectedVehicleNames.length === 0) {
+                All Types
+              } @else {
+                {{ selectedVehicleNames.length }} type{{ selectedVehicleNames.length > 1 ? 's' : '' }} selected
+              }
+            </span>
+            <i class="bi bi-chevron-down vf-chevron"></i>
           </div>
 
-          <ng-container *ngIf="!loadingCategories()">
+          <div class="vf-panel" [class.open]="vehicleNameDropOpen">
+            @if (loadingVehicleNames()) {
+              <div class="vf-panel-loading">
+                <i class="bi bi-arrow-repeat vf-spin"></i>&nbsp;Loading...
+              </div>
+            } @else {
+              <div class="vf-check-row vf-select-all" (click)="toggleAllVehicleNames()">
+                <span class="vf-checkbox"
+                  [class.checked]="selectedVehicleNames.length === vehicleNamesList.length && vehicleNamesList.length > 0"
+                  [class.indeterminate]="selectedVehicleNames.length > 0 && selectedVehicleNames.length < vehicleNamesList.length">
+                  @if (selectedVehicleNames.length === vehicleNamesList.length && vehicleNamesList.length > 0) {
+                    <i class="bi bi-check"></i>
+                  } @else if (selectedVehicleNames.length > 0 && selectedVehicleNames.length < vehicleNamesList.length) {
+                    <i class="bi bi-dash"></i>
+                  }
+                </span>
+                <span class="vf-check-label">Select All</span>
+              </div>
 
-            <div class="vf-check-row vf-select-all" (click)="toggleAllCategories()">
-              <span class="vf-checkbox"
-                    [class.checked]="selectedCategoryIds.length === categoryList.length
-                                  && categoryList.length > 0"
-                    [class.indeterminate]="selectedCategoryIds.length > 0
-                                       && selectedCategoryIds.length < categoryList.length">
-                <i class="bi bi-check"
-                   *ngIf="selectedCategoryIds.length === categoryList.length
-                       && categoryList.length > 0"></i>
-                <i class="bi bi-dash"
-                   *ngIf="selectedCategoryIds.length > 0
-                       && selectedCategoryIds.length < categoryList.length"></i>
-              </span>
-              <span class="vf-check-label">Select All</span>
-            </div>
+              <div class="vf-divider"></div>
 
-            <div class="vf-divider"></div>
+              @for (opt of vehicleNamesList; track opt.value) {
+                <div class="vf-check-row"
+                  [class.selected]="isVehicleNameSelected(opt.value)"
+                  (click)="toggleVehicleName(opt.value)">
+                  <span class="vf-checkbox"
+                    [class.checked]="isVehicleNameSelected(opt.value)">
+                    @if (isVehicleNameSelected(opt.value)) {
+                      <i class="bi bi-check"></i>
+                    }
+                  </span>
+                  <span class="vf-check-label">{{ opt.value }}</span>
+                </div>
+              }
 
-            <div class="vf-check-row"
-                 *ngFor="let opt of categoryList"
-                 (click)="toggleCategory(opt.id)"
-                 [class.selected]="isCategorySelected(opt.id)">
-              <span class="vf-checkbox" [class.checked]="isCategorySelected(opt.id)">
-                <i class="bi bi-check" *ngIf="isCategorySelected(opt.id)"></i>
-              </span>
-              <span class="vf-check-label">{{ opt.value }}</span>
-            </div>
-
-            <div class="vf-panel-empty" *ngIf="categoryList.length === 0">
-              No options found
-            </div>
-
-          </ng-container>
+              @if (vehicleNamesList.length === 0) {
+                <div class="vf-panel-empty">No options found</div>
+              }
+            }
+          </div>
         </div>
+
+        <!-- Vehicle Category column -->
+        <div class="vf-col">
+          <div class="vf-col-label">
+            <i class="bi bi-grid"></i> Vehicle Category
+            @if (selectedCategoryIds.length > 0) {
+              <span class="vf-col-count">{{ selectedCategoryIds.length }} selected</span>
+            }
+          </div>
+
+          <div class="vf-trigger" [class.open]="categoryDropOpen"
+            (click)="categoryDropOpen = !categoryDropOpen">
+            <span class="vf-trigger-text">
+              @if (selectedCategoryIds.length === 0) {
+                All Categories
+              } @else {
+                {{ selectedCategoryIds.length }} categor{{ selectedCategoryIds.length > 1 ? 'ies' : 'y' }} selected
+              }
+            </span>
+            <i class="bi bi-chevron-down vf-chevron"></i>
+          </div>
+
+          <div class="vf-panel" [class.open]="categoryDropOpen">
+            @if (loadingCategories()) {
+              <div class="vf-panel-loading">
+                <i class="bi bi-arrow-repeat vf-spin"></i>&nbsp;Loading...
+              </div>
+            } @else {
+              <div class="vf-check-row vf-select-all" (click)="toggleAllCategories()">
+                <span class="vf-checkbox"
+                  [class.checked]="selectedCategoryIds.length === categoryList.length && categoryList.length > 0"
+                  [class.indeterminate]="selectedCategoryIds.length > 0 && selectedCategoryIds.length < categoryList.length">
+                  @if (selectedCategoryIds.length === categoryList.length && categoryList.length > 0) {
+                    <i class="bi bi-check"></i>
+                  } @else if (selectedCategoryIds.length > 0 && selectedCategoryIds.length < categoryList.length) {
+                    <i class="bi bi-dash"></i>
+                  }
+                </span>
+                <span class="vf-check-label">Select All</span>
+              </div>
+
+              <div class="vf-divider"></div>
+
+              @for (opt of categoryList; track opt.id) {
+                <div class="vf-check-row"
+                  [class.selected]="isCategorySelected(opt.id)"
+                  (click)="toggleCategory(opt.id)">
+                  <span class="vf-checkbox"
+                    [class.checked]="isCategorySelected(opt.id)">
+                    @if (isCategorySelected(opt.id)) {
+                      <i class="bi bi-check"></i>
+                    }
+                  </span>
+                  <span class="vf-check-label">{{ opt.value }}</span>
+                </div>
+              }
+
+              @if (categoryList.length === 0) {
+                <div class="vf-panel-empty">No options found</div>
+              }
+            }
+          </div>
+        </div>
+
+      </div>
+
+      <div class="vf-footer">
+        <button class="vf-btn-reset" type="button" (click)="resetFilter()">
+          <i class="bi bi-arrow-counterclockwise"></i> Reset
+        </button>
+        <button class="vf-btn-apply" type="button" (click)="applyFilter()">
+          <i class="bi bi-search"></i> Apply Filter
+        </button>
       </div>
 
     </div>
-
-    <!-- Footer -->
-    <div class="vf-footer">
-      <button class="vf-btn-reset" type="button" (click)="resetFilter()">
-        <i class="bi bi-arrow-counterclockwise"></i> Reset
-      </button>
-      <button class="vf-btn-apply" type="button" (click)="applyFilter()">
-        <i class="bi bi-search"></i> Apply Filter
-      </button>
-    </div>
-
   </div>
-</div>
+}

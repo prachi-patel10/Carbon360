@@ -30,40 +30,47 @@
               <div class="fuel-multiselect" [class.open]="fuelDropdownOpen">
                 <div class="fuel-trigger" (click)="toggleFuelDropdown()">
                   <div class="fuel-tags">
-                    <!-- FIXED: [style.display] instead of *ngIf -->
-                    <span
-                      [style.display]="selectedFuels.length === 0 ? 'inline-flex' : 'none'"
-                      class="placeholder">
-                      <i class="fas fa-gas-pump placeholder-icon"></i> Select Fuel Type
-                    </span>
-                    <span *ngFor="let f of selectedFuels" class="fuel-tag">
-                      {{ f }}
-                      <span class="remove"
-                        (click)="$event.stopPropagation(); toggleFuel(f)">✕</span>
-                    </span>
+                    @if (selectedFuels.length === 0) {
+                      <span class="placeholder">
+                        <i class="fas fa-gas-pump placeholder-icon"></i> Select Fuel Type
+                      </span>
+                    }
+                    @for (f of selectedFuels; track f) {
+                      <span class="fuel-tag">
+                        {{ f }}
+                        <span class="remove"
+                          (click)="$event.stopPropagation(); toggleFuel(f)">✕</span>
+                      </span>
+                    }
                   </div>
                   <span class="arrow">&#9660;</span>
                 </div>
-                <div class="fuel-dropdown" *ngIf="fuelDropdownOpen">
-                  <div class="fuel-dropdown-header">
-                    <span>{{ selectedFuels.length }} selected</span>
-                    <button type="button" class="clear-btn" (click)="clearFuels()">Clear all</button>
+
+                @if (fuelDropdownOpen) {
+                  <div class="fuel-dropdown">
+                    <div class="fuel-dropdown-header">
+                      <span>{{ selectedFuels.length }} selected</span>
+                      <button type="button" class="clear-btn" (click)="clearFuels()">
+                        Clear all
+                      </button>
+                    </div>
+                    <label class="fuel-option select-all-option">
+                      <input type="checkbox"
+                        [checked]="selectedFuels.length === fuelTypes.length"
+                        [indeterminate]="selectedFuels.length > 0 && selectedFuels.length < fuelTypes.length"
+                        (change)="toggleSelectAll()" />
+                      <span>Select all</span>
+                    </label>
+                    @for (fuel of fuelTypes; track fuel.fuel_name) {
+                      <label class="fuel-option" [class.selected]="isFuelSelected(fuel.fuel_name)">
+                        <input type="checkbox"
+                          [checked]="isFuelSelected(fuel.fuel_name)"
+                          (change)="toggleFuel(fuel.fuel_name)" />
+                        <span>{{ fuel.fuel_name }}</span>
+                      </label>
+                    }
                   </div>
-                  <label class="fuel-option select-all-option">
-                    <input type="checkbox"
-                      [checked]="selectedFuels.length === fuelTypes.length"
-                      [indeterminate]="selectedFuels.length > 0 && selectedFuels.length < fuelTypes.length"
-                      (change)="toggleSelectAll()" />
-                    <span>Select all</span>
-                  </label>
-                  <label class="fuel-option" *ngFor="let fuel of fuelTypes"
-                    [class.selected]="isFuelSelected(fuel.fuel_name)">
-                    <input type="checkbox"
-                      [checked]="isFuelSelected(fuel.fuel_name)"
-                      (change)="toggleFuel(fuel.fuel_name)" />
-                    <span>{{ fuel.fuel_name }}</span>
-                  </label>
-                </div>
+                }
               </div>
             </div>
 
@@ -75,55 +82,54 @@
               <div class="category-multiselect" [class.open]="categoryDropdownOpen">
                 <div class="category-trigger" (click)="toggleCategoryDropdown()">
                   <div class="category-tags">
-
-                    <ng-container *ngIf="chartCategory(); else normalCategoryTags">
+                    @if (chartCategory()) {
                       <span class="category-tag">
                         {{ chartCategory() }}
                         <span class="remove"
                           (click)="$event.stopPropagation(); clearChartCategory()">✕</span>
                       </span>
-                    </ng-container>
-
-                    <ng-template #normalCategoryTags>
-                      <!-- FIXED: [style.display] instead of *ngIf -->
-                      <span
-                        [style.display]="selectedCategories.length === 0 ? 'inline-flex' : 'none'"
-                        class="placeholder">
+                    } @else if (selectedCategories.length === 0) {
+                      <span class="placeholder">
                         <i class="fas fa-layer-group placeholder-icon"></i> Select Category
                       </span>
-                      <span *ngFor="let c of selectedCategories" class="category-tag">
-                        {{ c }}
-                        <span class="remove"
-                          (click)="$event.stopPropagation(); toggleCategory(c)">✕</span>
-                      </span>
-                    </ng-template>
-
+                    } @else {
+                      @for (c of selectedCategories; track c) {
+                        <span class="category-tag">
+                          {{ c }}
+                          <span class="remove"
+                            (click)="$event.stopPropagation(); toggleCategory(c)">✕</span>
+                        </span>
+                      }
+                    }
                   </div>
                   <span class="arrow">&#9660;</span>
                 </div>
 
-                <div class="category-dropdown"
-                  *ngIf="categoryDropdownOpen && !chartCategory()">
-                  <div class="category-dropdown-header">
-                    <span>{{ selectedCategories.length }} selected</span>
-                    <button type="button" class="clear-btn"
-                      (click)="clearCategories()">Clear all</button>
+                @if (categoryDropdownOpen && !chartCategory()) {
+                  <div class="category-dropdown">
+                    <div class="category-dropdown-header">
+                      <span>{{ selectedCategories.length }} selected</span>
+                      <button type="button" class="clear-btn"
+                        (click)="clearCategories()">Clear all</button>
+                    </div>
+                    <label class="category-option select-all-option">
+                      <input type="checkbox"
+                        [checked]="selectedCategories.length === vehicleCategories.length"
+                        [indeterminate]="selectedCategories.length > 0 && selectedCategories.length < vehicleCategories.length"
+                        (change)="toggleSelectAllCategories()" />
+                      <span>Select all</span>
+                    </label>
+                    @for (cat of vehicleCategories; track cat.name) {
+                      <label class="category-option"
+                        [class.selected]="isCategorySelected(cat.name)">
+                        <input type="checkbox"
+                          [checked]="isCategorySelected(cat.name)"
+                          (change)="toggleCategory(cat.name)" />
+                        <span>{{ cat.name }}</span>
+                      </label>
+                    }
                   </div>
-                  <label class="category-option select-all-option">
-                    <input type="checkbox"
-                      [checked]="selectedCategories.length === vehicleCategories.length"
-                      [indeterminate]="selectedCategories.length > 0 && selectedCategories.length < vehicleCategories.length"
-                      (change)="toggleSelectAllCategories()" />
-                    <span>Select all</span>
-                  </label>
-                  <label class="category-option" *ngFor="let cat of vehicleCategories"
-                    [class.selected]="isCategorySelected(cat.name)">
-                    <input type="checkbox"
-                      [checked]="isCategorySelected(cat.name)"
-                      (change)="toggleCategory(cat.name)" />
-                    <span>{{ cat.name }}</span>
-                  </label>
-                </div>
+                }
               </div>
             </div>
 
@@ -135,41 +141,47 @@
               <div class="vehicle-multiselect" [class.open]="vehicleDropdownOpen">
                 <div class="vehicle-trigger" (click)="toggleVehicleDropdown()">
                   <div class="vehicle-tags">
-                    <!-- FIXED: [style.display] instead of *ngIf -->
-                    <span
-                      [style.display]="selectedVehicles.length === 0 ? 'inline-flex' : 'none'"
-                      class="placeholder">
-                      <i class="fas fa-car placeholder-icon"></i> Select Vehicle Type
-                    </span>
-                    <span *ngFor="let v of selectedVehicles" class="vehicle-tag">
-                      {{ v }}
-                      <span class="remove"
-                        (click)="$event.stopPropagation(); toggleVehicle(v)">✕</span>
-                    </span>
+                    @if (selectedVehicles.length === 0) {
+                      <span class="placeholder">
+                        <i class="fas fa-car placeholder-icon"></i> Select Vehicle Type
+                      </span>
+                    }
+                    @for (v of selectedVehicles; track v) {
+                      <span class="vehicle-tag">
+                        {{ v }}
+                        <span class="remove"
+                          (click)="$event.stopPropagation(); toggleVehicle(v)">✕</span>
+                      </span>
+                    }
                   </div>
                   <span class="arrow">&#9660;</span>
                 </div>
-                <div class="vehicle-dropdown" *ngIf="vehicleDropdownOpen">
-                  <div class="vehicle-dropdown-header">
-                    <span>{{ selectedVehicles.length }} selected</span>
-                    <button type="button" class="clear-btn"
-                      (click)="clearVehicles()">Clear all</button>
+
+                @if (vehicleDropdownOpen) {
+                  <div class="vehicle-dropdown">
+                    <div class="vehicle-dropdown-header">
+                      <span>{{ selectedVehicles.length }} selected</span>
+                      <button type="button" class="clear-btn"
+                        (click)="clearVehicles()">Clear all</button>
+                    </div>
+                    <label class="vehicle-option select-all-option">
+                      <input type="checkbox"
+                        [checked]="selectedVehicles.length === vehicleTypes.length"
+                        [indeterminate]="selectedVehicles.length > 0 && selectedVehicles.length < vehicleTypes.length"
+                        (change)="toggleSelectAllVehicles()" />
+                      <span>Select all</span>
+                    </label>
+                    @for (vehicle of vehicleTypes; track vehicle.vehicle_type_name) {
+                      <label class="vehicle-option"
+                        [class.selected]="isVehicleSelected(vehicle.vehicle_type_name)">
+                        <input type="checkbox"
+                          [checked]="isVehicleSelected(vehicle.vehicle_type_name)"
+                          (change)="toggleVehicle(vehicle.vehicle_type_name)" />
+                        <span>{{ vehicle.vehicle_type_name }}</span>
+                      </label>
+                    }
                   </div>
-                  <label class="vehicle-option select-all-option">
-                    <input type="checkbox"
-                      [checked]="selectedVehicles.length === vehicleTypes.length"
-                      [indeterminate]="selectedVehicles.length > 0 && selectedVehicles.length < vehicleTypes.length"
-                      (change)="toggleSelectAllVehicles()" />
-                    <span>Select all</span>
-                  </label>
-                  <label class="vehicle-option" *ngFor="let vehicle of vehicleTypes"
-                    [class.selected]="isVehicleSelected(vehicle.vehicle_type_name)">
-                    <input type="checkbox"
-                      [checked]="isVehicleSelected(vehicle.vehicle_type_name)"
-                      (change)="toggleVehicle(vehicle.vehicle_type_name)" />
-                    <span>{{ vehicle.vehicle_type_name }}</span>
-                  </label>
-                </div>
+                }
               </div>
             </div>
 
@@ -177,7 +189,6 @@
 
           <!-- Row 2: Date pickers -->
           <div class="filter-row-dates">
-
             <div class="filter-field date-filter-field">
               <label class="filter-label">
                 <i class="fas fa-calendar-alt"></i> Operation Date
@@ -187,7 +198,6 @@
                 (rangeSelected)="onOperationDateRangeSelected($event)">
               </app-date-range-picker-component>
             </div>
-
             <div class="filter-field date-filter-field">
               <label class="filter-label">
                 <i class="fas fa-calendar-alt"></i> Reported Date
@@ -197,14 +207,14 @@
                 (rangeSelected)="onEntryDateRangeSelected($event)">
               </app-date-range-picker-component>
             </div>
-
           </div>
 
           <!-- Row 3: Search + Reset -->
           <div class="filter-row-search">
             <div class="search-wrap">
               <i class="fas fa-search search-icon"></i>
-              <input type="text" class="search-input" placeholder="Search by vehicle no., report ID, fuel type..."
+              <input type="text" class="search-input"
+                placeholder="Search by vehicle no., report ID, fuel type..."
                 [value]="searchText()" (input)="onSearch($event)" />
             </div>
             <button type="button" class="btn-reset" (click)="resetFilters()">
@@ -257,34 +267,40 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let e of paginatedData()" [class.blink-row]="e.blinkFlag">
-              <td class="col-actions">
-                <div class="action-btns">
-                  <button class="btn-open" (click)="openTrip(e.tripId)" title="View Details">
-                    <i class="fas fa-eye"></i>
-                  </button>
-                  <button class="btn-pdf-download" (click)="downloadTrip(e.tripId)"
-                    [disabled]="isLoading(e.tripId)"
-                    [title]="isLoading(e.tripId) ? 'Generating...' : 'Download PDF'">
-                    <i *ngIf="!isLoading(e.tripId)" class="fas fa-file-pdf"></i>
-                    <i *ngIf="isLoading(e.tripId)" class="fas fa-spinner fa-spin"></i>
-                  </button>
-                </div>
-              </td>
-              <td class="report-color">{{ e.reportId }}</td>
-              <td>{{ e.vehicleNumber }}</td>
-              <td class="emission-value">{{ e.totalEmission }}</td>
-              <td>{{ e.vehicleType }}</td>
-              <td>{{ e.fuelType }}</td>
-              <td>{{ e.entryDate | date:'dd-MMM-yyyy' }}</td>
-              <td>{{ e.tripStartDateTime | date:'dd-MMM-yyyy' }}</td>
-              <td>{{ e.tripEndDateTime | date:'dd-MMM-yyyy' }}</td>
-              <td>{{ e.distanceKm }}</td>
-              <td>{{ e.fuelConsumedLtr }}</td>
-            </tr>
-            <tr *ngIf="paginatedData().length === 0">
-              <td colspan="11" class="text-center py-4 text-muted">No records found.</td>
-            </tr>
+            @for (e of paginatedData(); track e.tripId) {
+              <tr [class.blink-row]="e.blinkFlag">
+                <td class="col-actions">
+                  <div class="action-btns">
+                    <button class="btn-open" (click)="openTrip(e.tripId)" title="View Details">
+                      <i class="fas fa-eye"></i>
+                    </button>
+                    <button class="btn-pdf-download" (click)="downloadTrip(e.tripId)"
+                      [disabled]="isLoading(e.tripId)"
+                      [title]="isLoading(e.tripId) ? 'Generating...' : 'Download PDF'">
+                      @if (isLoading(e.tripId)) {
+                        <i class="fas fa-spinner fa-spin"></i>
+                      } @else {
+                        <i class="fas fa-file-pdf"></i>
+                      }
+                    </button>
+                  </div>
+                </td>
+                <td class="report-color">{{ e.reportId }}</td>
+                <td>{{ e.vehicleNumber }}</td>
+                <td class="emission-value">{{ e.totalEmission }}</td>
+                <td>{{ e.vehicleType }}</td>
+                <td>{{ e.fuelType }}</td>
+                <td>{{ e.entryDate | date:'dd-MMM-yyyy' }}</td>
+                <td>{{ e.tripStartDateTime | date:'dd-MMM-yyyy' }}</td>
+                <td>{{ e.tripEndDateTime | date:'dd-MMM-yyyy' }}</td>
+                <td>{{ e.distanceKm }}</td>
+                <td>{{ e.fuelConsumedLtr }}</td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="11" class="text-center py-4 text-muted">No records found.</td>
+              </tr>
+            }
           </tbody>
         </table>
       </div>
@@ -302,10 +318,10 @@
           </select>
         </div>
         <div class="pagination">
-          <button (click)="goToPage(currentPage()-1)"
+          <button (click)="goToPage(currentPage() - 1)"
             [disabled]="currentPage() === 1">Prev</button>
           <span class="page-info">Page {{ currentPage() }} of {{ totalPages() }}</span>
-          <button (click)="goToPage(currentPage()+1)"
+          <button (click)="goToPage(currentPage() + 1)"
             [disabled]="currentPage() === totalPages()">Next</button>
         </div>
       </div>

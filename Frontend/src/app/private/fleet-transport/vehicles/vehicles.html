@@ -1,152 +1,143 @@
 <div class="container">
 
   <!-- ================= CREATE / EDIT FORM ================= -->
-<div class="card">
-  <form [formGroup]="vehicleForm" (ngSubmit)="saveVehicle()" class="form-grid">
+  <div class="card">
+    <form [formGroup]="vehicleForm" (ngSubmit)="saveVehicle()" class="form-grid">
 
-    <!-- Vehicle Number -->
-    <div class="form-group">
-      <label>Vehicle Number <span class="req">*</span></label>
-      <input type="text" formControlName="vehicle_number"
-        placeholder="Vehicle Number"
-        (input)="onVehicleNumberChange($event)" />
-      <small class="error-text"
-        *ngIf="vehicleForm.get('vehicle_number')?.touched && vehicleForm.get('vehicle_number')?.hasError('required')">
-        Vehicle Number is required
-      </small>
-      <small class="error-text"
-        *ngIf="vehicleForm.get('vehicle_number')?.touched && vehicleForm.get('vehicle_number')?.hasError('pattern')">
-        Invalid format. Use: DL12AB1234 or DL12A1234
-      </small>
-    </div>
-
-    <!-- Vehicle Type -->
-    <div class="form-group">
-      <label>Vehicle Type <span class="req">*</span></label>
-      <select formControlName="vehicle_type_id"
-        [style.color]="!vehicleForm.get('vehicle_type_id')?.value ? '#999' : '#000'">
-        <option value="" disabled>Select Vehicle Type</option>
-        <option *ngFor="let vt of vehicleTypes()" [value]="vt.vehicle_type_id" style="color:#000">
-          {{ vt.vehicle_type_name }}
-        </option>
-      </select>
-      <small class="error-text"
-        *ngIf="vehicleForm.get('vehicle_type_id')?.touched && vehicleForm.get('vehicle_type_id')?.hasError('required')">
-        Please select a Vehicle Type
-      </small>
-    </div>
-
-    <!-- Fuel -->
-    <div class="form-group">
-      <label>Fuel <span class="req">*</span></label>
-      <select formControlName="fuel_id"
-        [style.color]="!vehicleForm.get('fuel_id')?.value ? '#999' : '#000'">
-        <option value="" disabled>Select Fuel</option>
-        <option *ngFor="let f of fuelTypes()" [value]="f.fuel_id" style="color:#000">
-          {{ f.fuel_name }}
-        </option>
-      </select>
-      <small class="error-text"
-        *ngIf="vehicleForm.get('fuel_id')?.touched && vehicleForm.get('fuel_id')?.hasError('required')">
-        Please select a Fuel Type
-      </small>
-    </div>
-
-    <!-- Department -->
-    <div class="form-group">
-      <label>Department <span class="req">*</span></label>
-      <select formControlName="department_id"
-        [style.color]="!vehicleForm.get('department_id')?.value ? '#999' : '#000'">
-        <option value="" disabled>Select Department</option>
-        <option *ngFor="let d of departments()" [value]="d.department_id" style="color:#000">
-          {{ d.department_name }}
-        </option>
-      </select>
-      <small class="error-text"
-        *ngIf="vehicleForm.get('department_id')?.touched && vehicleForm.get('department_id')?.hasError('required')">
-        Please select a Department
-      </small>
-    </div>
-
-    <!-- Engine Capacity -->
-    <div class="form-group">
-      <label>Engine Capacity<span class="req">*</span></label>
-      <input type="number" formControlName="engine_capacity" placeholder="Engine Capacity" />
-      <small class="error-text"
-        *ngIf="vehicleForm.get('engine_capacity')?.touched && vehicleForm.get('engine_capacity')?.hasError('required')">
-        Engine Capacity is required
-      </small>
-      <small class="error-text"
-        *ngIf="vehicleForm.get('engine_capacity')?.touched && vehicleForm.get('engine_capacity')?.hasError('min')">
-        Engine Capacity must be greater than 0
-      </small>
-      <small class="error-text"
-        *ngIf="vehicleForm.get('engine_capacity')?.touched && vehicleForm.get('engine_capacity')?.hasError('max')">
-        Engine Capacity must not exceed 10000 cc
-      </small>
-    </div>
-
-    <!-- Emission Standard -->
-    <div class="form-group">
-      <label>Emission Standard <span class="req">*</span></label>
-      <select formControlName="emission_standard"
-        [style.color]="!vehicleForm.get('emission_standard')?.value ? '#999' : '#000'">
-        <option value="" disabled>Select Emission Standard</option>
-        <option value="BS4" style="color:#000">BS4</option>
-        <option value="BS6" style="color:#000">BS6</option>
-      </select>
-      <small class="error-text"
-        *ngIf="vehicleForm.get('emission_standard')?.touched && vehicleForm.get('emission_standard')?.hasError('required')">
-        Please select an Emission Standard
-      </small>
-    </div>
-
-    <!-- Actions -->
-    <div class="form-actions">
-      <div class="status-toggle">
-        <span>Active</span>
-        <label class="switch">
-          <input type="checkbox" formControlName="isActive" />
-          <span class="slider"></span>
-        </label>
+      <div class="form-group">
+        <label>Vehicle Number <span class="req">*</span></label>
+        <input type="text" formControlName="vehicle_number"
+          placeholder="Vehicle Number"
+          (input)="onVehicleNumberChange($event)" />
+        @if (vehicleForm.get('vehicle_number')?.touched && vehicleForm.get('vehicle_number')?.hasError('required')) {
+          <small class="error-text">Vehicle Number is required</small>
+        }
+        @if (vehicleForm.get('vehicle_number')?.touched && vehicleForm.get('vehicle_number')?.hasError('pattern')) {
+          <small class="error-text">Invalid format. Use: DL12AB1234 or DL12A1234</small>
+        }
       </div>
-      <button type="submit" class="save-btn">
-        {{ isEditMode() ? 'Update' : 'Save' }}
-      </button>
-      <button type="button" class="btn-reset" (click)="resetForm()">Reset</button>
-    </div>
 
-  </form>
-</div>
+      <div class="form-group">
+        <label>Vehicle Type <span class="req">*</span></label>
+        <select formControlName="vehicle_type_id"
+          [style.color]="!vehicleForm.get('vehicle_type_id')?.value ? '#999' : '#000'">
+          <option value="" disabled>Select Vehicle Type</option>
+          @for (vt of vehicleTypes(); track vt.vehicle_type_id) {
+            <option [value]="vt.vehicle_type_id" style="color:#000">
+              {{ vt.vehicle_type_name }}
+            </option>
+          }
+        </select>
+        @if (vehicleForm.get('vehicle_type_id')?.touched && vehicleForm.get('vehicle_type_id')?.hasError('required')) {
+          <small class="error-text">Please select a Vehicle Type</small>
+        }
+      </div>
+
+      <div class="form-group">
+        <label>Fuel <span class="req">*</span></label>
+        <select formControlName="fuel_id"
+          [style.color]="!vehicleForm.get('fuel_id')?.value ? '#999' : '#000'">
+          <option value="" disabled>Select Fuel</option>
+          @for (f of fuelTypes(); track f.fuel_id) {
+            <option [value]="f.fuel_id" style="color:#000">{{ f.fuel_name }}</option>
+          }
+        </select>
+        @if (vehicleForm.get('fuel_id')?.touched && vehicleForm.get('fuel_id')?.hasError('required')) {
+          <small class="error-text">Please select a Fuel Type</small>
+        }
+      </div>
+
+      <div class="form-group">
+        <label>Department <span class="req">*</span></label>
+        <select formControlName="department_id"
+          [style.color]="!vehicleForm.get('department_id')?.value ? '#999' : '#000'">
+          <option value="" disabled>Select Department</option>
+          @for (d of departments(); track d.department_id) {
+            <option [value]="d.department_id" style="color:#000">
+              {{ d.department_name }}
+            </option>
+          }
+        </select>
+        @if (vehicleForm.get('department_id')?.touched && vehicleForm.get('department_id')?.hasError('required')) {
+          <small class="error-text">Please select a Department</small>
+        }
+      </div>
+
+      <div class="form-group">
+        <label>Engine Capacity <span class="req">*</span></label>
+        <input type="number" formControlName="engine_capacity"
+          placeholder="Engine Capacity" />
+        @if (vehicleForm.get('engine_capacity')?.touched && vehicleForm.get('engine_capacity')?.hasError('required')) {
+          <small class="error-text">Engine Capacity is required</small>
+        }
+        @if (vehicleForm.get('engine_capacity')?.touched && vehicleForm.get('engine_capacity')?.hasError('min')) {
+          <small class="error-text">Engine Capacity must be greater than 0</small>
+        }
+        @if (vehicleForm.get('engine_capacity')?.touched && vehicleForm.get('engine_capacity')?.hasError('max')) {
+          <small class="error-text">Engine Capacity must not exceed 10000 cc</small>
+        }
+      </div>
+
+      <div class="form-group">
+        <label>Emission Standard <span class="req">*</span></label>
+        <select formControlName="emission_standard"
+          [style.color]="!vehicleForm.get('emission_standard')?.value ? '#999' : '#000'">
+          <option value="" disabled>Select Emission Standard</option>
+          <option value="BS4" style="color:#000">BS4</option>
+          <option value="BS6" style="color:#000">BS6</option>
+        </select>
+        @if (vehicleForm.get('emission_standard')?.touched && vehicleForm.get('emission_standard')?.hasError('required')) {
+          <small class="error-text">Please select an Emission Standard</small>
+        }
+      </div>
+
+      <div class="form-actions">
+        <div class="status-toggle">
+          <span>Active</span>
+          <label class="switch">
+            <input type="checkbox" formControlName="isActive" />
+            <span class="slider"></span>
+          </label>
+        </div>
+        <button type="submit" class="save-btn">
+          {{ isEditMode() ? 'Update' : 'Save' }}
+        </button>
+        <button type="button" class="btn-reset" (click)="resetForm()">Reset</button>
+      </div>
+
+    </form>
+  </div>
 
   <!-- ================= TABLE CARD ================= -->
   <div class="card">
 
-    <!-- Search row -->
     <div class="search-row">
       <div class="search-left">
         <div class="search-wrap">
           <i class="fas fa-search search-icon"></i>
-          <input type="text" class="search-input" placeholder="Quick Search" [ngModel]="searchText()"
-            (ngModelChange)="searchText.set($event)" (input)="onSearchInput($event)" />
+          <input type="text" class="search-input" placeholder="Quick Search"
+            [ngModel]="searchText()" (ngModelChange)="searchText.set($event)"
+            (input)="onSearchInput($event)" />
         </div>
       </div>
       <div class="search-right">
         <div class="status-toggle">
           <span>Active Only</span>
           <label class="switch">
-            <input type="checkbox" [checked]="activeFilter()" (change)="onActiveFilterChange($event)" />
+            <input type="checkbox"
+              [checked]="activeFilter()"
+              (change)="onActiveFilterChange($event)" />
             <span class="slider"></span>
           </label>
         </div>
-
-        <!-- Filter button with badge -->
         <button class="filter-btn" (click)="openVehicleFilter()">
           <i class="fas fa-sliders-h"></i>
           <span>Filter</span>
-          <span class="filter-badge" *ngIf="selectedFuelIds.length + selectedVehicleTypeIds.length > 0">
-            {{ selectedFuelIds.length + selectedVehicleTypeIds.length }}
-          </span>
+          @if (selectedFuelIds.length + selectedVehicleTypeIds.length > 0) {
+            <span class="filter-badge">
+              {{ selectedFuelIds.length + selectedVehicleTypeIds.length }}
+            </span>
+          }
         </button>
       </div>
     </div>
@@ -179,27 +170,32 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let v of vehicles()">
-            <td>{{ v.vehicle_number }}</td>
-            <td>{{ v.vehicle_type_name || '-' }}</td>
-            <td>{{ v.fuel_name || '-' }}</td>
-            <td>{{ v.department_name || '-' }}</td>
-            <td>{{ v.engine_capacity || '-' }}</td>
-            <td>{{ v.emission_standard || '-' }}</td>
-            <td>
-              <label class="switch">
-                <input type="checkbox" [checked]="v.isActive" (change)="toggleStatus(v)" />
-                <span class="slider"></span>
-              </label>
-            </td>
-            <td class="actions">
-              <button class="edit-btn" (click)="editVehicle(v)">Edit</button>
-              <button class="delete-btn" (click)="deleteVehicle(v)">Delete</button>
-            </td>
-          </tr>
-          <tr *ngIf="vehicles().length === 0">
-            <td colspan="8" class="empty-row">No records found</td>
-          </tr>
+          @for (v of vehicles(); track v.vehicle_id) {
+            <tr>
+              <td>{{ v.vehicle_number }}</td>
+              <td>{{ v.vehicle_type_name || '-' }}</td>
+              <td>{{ v.fuel_name || '-' }}</td>
+              <td>{{ v.department_name || '-' }}</td>
+              <td>{{ v.engine_capacity || '-' }}</td>
+              <td>{{ v.emission_standard || '-' }}</td>
+              <td>
+                <label class="switch">
+                  <input type="checkbox"
+                    [checked]="v.isActive"
+                    (change)="toggleStatus(v)" />
+                  <span class="slider"></span>
+                </label>
+              </td>
+              <td class="actions">
+                <button class="edit-btn" (click)="editVehicle(v)">Edit</button>
+                <button class="delete-btn" (click)="deleteVehicle(v)">Delete</button>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="8" class="empty-row">No records found</td>
+            </tr>
+          }
         </tbody>
       </table>
     </div>
@@ -208,186 +204,197 @@
     <div class="pagination-info">
       <span>Total Records: <b>{{ totalRecords() }}</b></span>
       <div class="pagination-controls">
-        <button (click)="previousPage()" [disabled]="pageNumber() <= 1">
-          Previous
-        </button>
+        <button (click)="previousPage()" [disabled]="pageNumber() <= 1">Previous</button>
         <span>Page {{ pageNumber() }} of {{ totalPages() }}</span>
-        <button (click)="nextPage()" [disabled]="pageNumber() >= totalPages()">
-          Next
-        </button>
+        <button (click)="nextPage()" [disabled]="pageNumber() >= totalPages()">Next</button>
         <label for="pageSize">Page Size:</label>
         <select id="pageSize" [value]="pageSize()" (change)="onPageSizeChange($event)">
-          <option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</option>
+          @for (size of pageSizeOptions; track size) {
+            <option [value]="size">{{ size }}</option>
+          }
         </select>
       </div>
     </div>
   </div>
 
   <!-- ================= FILTER MODAL ================= -->
-  <div class="vf-overlay" *ngIf="vehicleFilterModalOpen()" (click)="closeVehicleFilter()">
-    <div class="vf-modal" (click)="$event.stopPropagation()">
+  @if (vehicleFilterModalOpen()) {
+    <div class="vf-overlay" (click)="closeVehicleFilter()">
+      <div class="vf-modal" (click)="$event.stopPropagation()">
 
-      <!-- Header -->
-      <div class="vf-header">
-        <div class="vf-header-left">
-          <div class="vf-header-icon">
-            <i class="fas fa-sliders-h"></i>
+        <div class="vf-header">
+          <div class="vf-header-left">
+            <div class="vf-header-icon"><i class="fas fa-sliders-h"></i></div>
+            <div>
+              <h3 class="vf-title">Filter Vehicles</h3>
+              <p class="vf-subtitle">Select one or more values per filter</p>
+            </div>
           </div>
-          <div>
-            <h3 class="vf-title">Filter Vehicles</h3>
-            <p class="vf-subtitle">Select one or more values per filter</p>
-          </div>
+          <button class="vf-close-btn" (click)="closeVehicleFilter()">
+            <i class="fas fa-times"></i>
+          </button>
         </div>
-        <button class="vf-close-btn" (click)="closeVehicleFilter()">
-          <i class="fas fa-times"></i>
-        </button>
-      </div>
 
-      <!-- Active chips showing applied filters -->
-      <div class="vf-chips" *ngIf="selectedFuelIds.length > 0 || selectedVehicleTypeIds.length > 0">
-        <span class="vf-chip" *ngFor="let id of selectedVehicleTypeIds">
-          <i class="fas fa-car"></i>
-          {{ getVehicleTypeName(id) }}
-          <button class="vf-chip-remove" (click)="toggleVehicleType(id)">✕</button>
-        </span>
-        <span class="vf-chip vf-chip-fuel" *ngFor="let id of selectedFuelIds">
-          <i class="fas fa-gas-pump"></i>
-          {{ getFuelName(id) }}
-          <button class="vf-chip-remove" (click)="toggleFuel(id)">✕</button>
-        </span>
-      </div>
-
-      <!-- Body: two filter columns -->
-      <div class="vf-body">
-
-        <!-- Fuel Type -->
-        <div class="vf-col">
-          <div class="vf-col-label">
-            <i class="fas fa-gas-pump"></i> Fuel Type
-            <span class="vf-col-count" *ngIf="selectedFuelIds.length > 0">
-              {{ selectedFuelIds.length }} selected
-            </span>
+        @if (selectedFuelIds.length > 0 || selectedVehicleTypeIds.length > 0) {
+          <div class="vf-chips">
+            @for (id of selectedVehicleTypeIds; track id) {
+              <span class="vf-chip">
+                <i class="fas fa-car"></i>
+                {{ getVehicleTypeName(id) }}
+                <button class="vf-chip-remove" (click)="toggleVehicleType(id)">✕</button>
+              </span>
+            }
+            @for (id of selectedFuelIds; track id) {
+              <span class="vf-chip vf-chip-fuel">
+                <i class="fas fa-gas-pump"></i>
+                {{ getFuelName(id) }}
+                <button class="vf-chip-remove" (click)="toggleFuel(id)">✕</button>
+              </span>
+            }
           </div>
+        }
 
-          <div class="vf-trigger" [class.open]="fuelDropOpen" (click)="fuelDropOpen = !fuelDropOpen">
-            <span class="vf-trigger-text">
-              <ng-container *ngIf="selectedFuelIds.length === 0">All Fuel Types</ng-container>
-              <ng-container *ngIf="selectedFuelIds.length > 0">
-                {{ selectedFuelIds.length }} fuel{{ selectedFuelIds.length > 1 ? 's' : '' }} selected
-              </ng-container>
-            </span>
-            <i class="fas fa-chevron-down vf-chevron"></i>
-          </div>
+        <div class="vf-body">
 
-          <div class="vf-panel" [class.open]="fuelDropOpen">
-
-            <!-- Loading state -->
-            <div class="vf-panel-loading" *ngIf="loadingFuelTypes()">
-              <i class="fas fa-spinner fa-spin"></i> Loading...
+          <!-- Fuel Type column -->
+          <div class="vf-col">
+            <div class="vf-col-label">
+              <i class="fas fa-gas-pump"></i> Fuel Type
+              @if (selectedFuelIds.length > 0) {
+                <span class="vf-col-count">{{ selectedFuelIds.length }} selected</span>
+              }
             </div>
 
-            <ng-container *ngIf="!loadingFuelTypes()">
-              <div class="vf-check-row vf-select-all" (click)="toggleAllFuels()">
-                <span class="vf-checkbox"
-                  [class.checked]="selectedFuelIds.length === fuelTypesList.length && fuelTypesList.length > 0"
-                  [class.indeterminate]="selectedFuelIds.length > 0 && selectedFuelIds.length < fuelTypesList.length">
-                  <i class="fas fa-check"
-                    *ngIf="selectedFuelIds.length === fuelTypesList.length && fuelTypesList.length > 0"></i>
-                  <i class="fas fa-minus"
-                    *ngIf="selectedFuelIds.length > 0 && selectedFuelIds.length < fuelTypesList.length"></i>
-                </span>
-                <span class="vf-check-label">Select All</span>
-              </div>
-
-              <div class="vf-divider"></div>
-
-              <div class="vf-check-row" *ngFor="let fuel of fuelTypesList" (click)="toggleFuel(fuel.fuel_id)"
-                [class.selected]="selectedFuelIds.includes(fuel.fuel_id)">
-                <span class="vf-checkbox" [class.checked]="selectedFuelIds.includes(fuel.fuel_id)">
-                  <i class="fas fa-check" *ngIf="selectedFuelIds.includes(fuel.fuel_id)"></i>
-                </span>
-                <span class="vf-check-label">{{ fuel.fuel_name }}</span>
-              </div>
-
-              <div class="vf-panel-empty" *ngIf="fuelTypesList.length === 0">
-                No fuel types found
-              </div>
-            </ng-container>
-
-          </div>
-        </div>
-
-        <!-- Vehicle Type -->
-        <div class="vf-col">
-          <div class="vf-col-label">
-            <i class="fas fa-car"></i> Vehicle Type
-            <span class="vf-col-count" *ngIf="selectedVehicleTypeIds.length > 0">
-              {{ selectedVehicleTypeIds.length }} selected
-            </span>
-          </div>
-
-          <div class="vf-trigger" [class.open]="vtypeDropOpen" (click)="vtypeDropOpen = !vtypeDropOpen">
-            <span class="vf-trigger-text">
-              <ng-container *ngIf="selectedVehicleTypeIds.length === 0">All Vehicle Types</ng-container>
-              <ng-container *ngIf="selectedVehicleTypeIds.length > 0">
-                {{ selectedVehicleTypeIds.length }} type{{ selectedVehicleTypeIds.length > 1 ? 's' : '' }} selected
-              </ng-container>
-            </span>
-            <i class="fas fa-chevron-down vf-chevron"></i>
-          </div>
-
-          <div class="vf-panel" [class.open]="vtypeDropOpen">
-
-            <!-- Loading state -->
-            <div class="vf-panel-loading" *ngIf="loadingVehicleTypes()">
-              <i class="fas fa-spinner fa-spin"></i> Loading...
+            <div class="vf-trigger" [class.open]="fuelDropOpen"
+              (click)="fuelDropOpen = !fuelDropOpen">
+              <span class="vf-trigger-text">
+                @if (selectedFuelIds.length === 0) {
+                  All Fuel Types
+                } @else {
+                  {{ selectedFuelIds.length }} fuel{{ selectedFuelIds.length > 1 ? 's' : '' }} selected
+                }
+              </span>
+              <i class="fas fa-chevron-down vf-chevron"></i>
             </div>
 
-            <ng-container *ngIf="!loadingVehicleTypes()">
-              <div class="vf-check-row vf-select-all" (click)="toggleAllVehicleTypes()">
-                <span class="vf-checkbox"
-                  [class.checked]="selectedVehicleTypeIds.length === vehicleTypesList.length && vehicleTypesList.length > 0"
-                  [class.indeterminate]="selectedVehicleTypeIds.length > 0 && selectedVehicleTypeIds.length < vehicleTypesList.length">
-                  <i class="fas fa-check"
-                    *ngIf="selectedVehicleTypeIds.length === vehicleTypesList.length && vehicleTypesList.length > 0"></i>
-                  <i class="fas fa-minus"
-                    *ngIf="selectedVehicleTypeIds.length > 0 && selectedVehicleTypeIds.length < vehicleTypesList.length"></i>
-                </span>
-                <span class="vf-check-label">Select All</span>
-              </div>
+            <div class="vf-panel" [class.open]="fuelDropOpen">
+              @if (loadingFuelTypes()) {
+                <div class="vf-panel-loading">
+                  <i class="fas fa-spinner fa-spin"></i> Loading...
+                </div>
+              } @else {
+                <div class="vf-check-row vf-select-all" (click)="toggleAllFuels()">
+                  <span class="vf-checkbox"
+                    [class.checked]="selectedFuelIds.length === fuelTypesList.length && fuelTypesList.length > 0"
+                    [class.indeterminate]="selectedFuelIds.length > 0 && selectedFuelIds.length < fuelTypesList.length">
+                    @if (selectedFuelIds.length === fuelTypesList.length && fuelTypesList.length > 0) {
+                      <i class="fas fa-check"></i>
+                    } @else if (selectedFuelIds.length > 0 && selectedFuelIds.length < fuelTypesList.length) {
+                      <i class="fas fa-minus"></i>
+                    }
+                  </span>
+                  <span class="vf-check-label">Select All</span>
+                </div>
 
-              <div class="vf-divider"></div>
+                <div class="vf-divider"></div>
 
-              <div class="vf-check-row" *ngFor="let vt of vehicleTypesList"
-                (click)="toggleVehicleType(vt.vehicle_type_id)"
-                [class.selected]="selectedVehicleTypeIds.includes(vt.vehicle_type_id)">
-                <span class="vf-checkbox" [class.checked]="selectedVehicleTypeIds.includes(vt.vehicle_type_id)">
-                  <i class="fas fa-check" *ngIf="selectedVehicleTypeIds.includes(vt.vehicle_type_id)"></i>
-                </span>
-                <span class="vf-check-label">{{ vt.vehicle_type_name }}</span>
-              </div>
+                @for (fuel of fuelTypesList; track fuel.fuel_id) {
+                  <div class="vf-check-row"
+                    [class.selected]="selectedFuelIds.includes(fuel.fuel_id)"
+                    (click)="toggleFuel(fuel.fuel_id)">
+                    <span class="vf-checkbox"
+                      [class.checked]="selectedFuelIds.includes(fuel.fuel_id)">
+                      @if (selectedFuelIds.includes(fuel.fuel_id)) {
+                        <i class="fas fa-check"></i>
+                      }
+                    </span>
+                    <span class="vf-check-label">{{ fuel.fuel_name }}</span>
+                  </div>
+                }
 
-              <div class="vf-panel-empty" *ngIf="vehicleTypesList.length === 0">
-                No vehicle types found
-              </div>
-            </ng-container>
-
+                @if (fuelTypesList.length === 0) {
+                  <div class="vf-panel-empty">No fuel types found</div>
+                }
+              }
+            </div>
           </div>
+
+          <!-- Vehicle Type column -->
+          <div class="vf-col">
+            <div class="vf-col-label">
+              <i class="fas fa-car"></i> Vehicle Type
+              @if (selectedVehicleTypeIds.length > 0) {
+                <span class="vf-col-count">{{ selectedVehicleTypeIds.length }} selected</span>
+              }
+            </div>
+
+            <div class="vf-trigger" [class.open]="vtypeDropOpen"
+              (click)="vtypeDropOpen = !vtypeDropOpen">
+              <span class="vf-trigger-text">
+                @if (selectedVehicleTypeIds.length === 0) {
+                  All Vehicle Types
+                } @else {
+                  {{ selectedVehicleTypeIds.length }} type{{ selectedVehicleTypeIds.length > 1 ? 's' : '' }} selected
+                }
+              </span>
+              <i class="fas fa-chevron-down vf-chevron"></i>
+            </div>
+
+            <div class="vf-panel" [class.open]="vtypeDropOpen">
+              @if (loadingVehicleTypes()) {
+                <div class="vf-panel-loading">
+                  <i class="fas fa-spinner fa-spin"></i> Loading...
+                </div>
+              } @else {
+                <div class="vf-check-row vf-select-all" (click)="toggleAllVehicleTypes()">
+                  <span class="vf-checkbox"
+                    [class.checked]="selectedVehicleTypeIds.length === vehicleTypesList.length && vehicleTypesList.length > 0"
+                    [class.indeterminate]="selectedVehicleTypeIds.length > 0 && selectedVehicleTypeIds.length < vehicleTypesList.length">
+                    @if (selectedVehicleTypeIds.length === vehicleTypesList.length && vehicleTypesList.length > 0) {
+                      <i class="fas fa-check"></i>
+                    } @else if (selectedVehicleTypeIds.length > 0 && selectedVehicleTypeIds.length < vehicleTypesList.length) {
+                      <i class="fas fa-minus"></i>
+                    }
+                  </span>
+                  <span class="vf-check-label">Select All</span>
+                </div>
+
+                <div class="vf-divider"></div>
+
+                @for (vt of vehicleTypesList; track vt.vehicle_type_id) {
+                  <div class="vf-check-row"
+                    [class.selected]="selectedVehicleTypeIds.includes(vt.vehicle_type_id)"
+                    (click)="toggleVehicleType(vt.vehicle_type_id)">
+                    <span class="vf-checkbox"
+                      [class.checked]="selectedVehicleTypeIds.includes(vt.vehicle_type_id)">
+                      @if (selectedVehicleTypeIds.includes(vt.vehicle_type_id)) {
+                        <i class="fas fa-check"></i>
+                      }
+                    </span>
+                    <span class="vf-check-label">{{ vt.vehicle_type_name }}</span>
+                  </div>
+                }
+
+                @if (vehicleTypesList.length === 0) {
+                  <div class="vf-panel-empty">No vehicle types found</div>
+                }
+              }
+            </div>
+          </div>
+
         </div>
 
-      </div><!-- /vf-body -->
+        <div class="vf-footer">
+          <button class="vf-btn-reset" (click)="resetVehicleFilter()">
+            <i class="fas fa-rotate-left"></i> Reset
+          </button>
+          <button class="vf-btn-apply" (click)="applyVehicleFilter()">
+            <i class="fas fa-search"></i> Apply Filter
+          </button>
+        </div>
 
-      <!-- Footer -->
-      <div class="vf-footer">
-        <button class="vf-btn-reset" (click)="resetVehicleFilter()">
-          <i class="fas fa-rotate-left"></i> Reset
-        </button>
-        <button class="vf-btn-apply" (click)="applyVehicleFilter()">
-          <i class="fas fa-search"></i> Apply Filter
-        </button>
       </div>
-
-    </div><!-- /vf-modal -->
-  </div><!-- /vf-overlay -->
+    </div>
+  }
 
 </div>

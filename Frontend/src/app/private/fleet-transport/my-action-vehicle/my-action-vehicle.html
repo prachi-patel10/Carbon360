@@ -1,12 +1,5 @@
 <div class="generator-report-container py-4">
-  <!-- <div class="d-flex justify-content-between align-items-center mb-4">
-      <h2 class="page-title">
-        <i class="fas fa-truck text-primary me-2"></i>
-        Vehicle Trip Emission Records
-      </h2>
-    </div> -->
-
-  <div class=" generator-page">
+  <div class="generator-page">
     <div class="table-responsive">
       <table class="generator-table">
         <thead>
@@ -33,70 +26,59 @@
             <th (click)="sort('runHours')" class="sortable">
               Run Hours <span class="sort-icon">{{ getSortIcon('runHours') }}</span>
             </th>
-            
             <th class="text-center">Action</th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let e of trips()" [class.blink-row]="e.blink">
-            <td class="report-color">{{ e.reportId }}</td>
-            <td>{{ e.vehicleNumber }}</td>
+          @for (e of trips(); track e.tripId) {
+            <tr [class.blink-row]="e.blink">
+              <td class="report-color">{{ e.reportId }}</td>
+              <td>{{ e.vehicleNumber }}</td>
               <td class="emission-value">{{ e.totalEmission }}</td>
-            <td>{{ e.fromCity }} - {{ e.toCity }}</td>
-
-            <!-- <td>{{ e.tripStartDateTime | date:'short' }}</td>
-
-              <td>{{ e.tripEndDateTime | date:'short' }}</td> -->
-            <td>{{ e.entryDate | date: 'dd-MMM-yyyy' }}</td>
-            <td>{{ e.fuelType }}</td>
-
-            <td>{{ e.runHours }}</td>
-
-          
-
-            <td class="action-btn">
-              <button class="btn-edit" (click)="editTrip(e.tripId)">
-                <i class="fa fa-edit"></i>
-              </button>
-            </td>
-          </tr>
-
-          <tr *ngIf="trips().length === 0">
-            <td colspan="6" class="text-center no-data">No records found</td>
-          </tr>
+              <td>{{ e.fromCity }} - {{ e.toCity }}</td>
+              <td>{{ e.entryDate | date: 'dd-MMM-yyyy' }}</td>
+              <td>{{ e.fuelType }}</td>
+              <td>{{ e.runHours }}</td>
+              <td class="action-btn">
+                <button class="btn-edit" (click)="editTrip(e.tripId)">
+                  <i class="fa fa-edit"></i>
+                </button>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="8" class="text-center no-data">No records found</td>
+            </tr>
+          }
         </tbody>
       </table>
     </div>
 
     <!-- Pagination -->
-
     <div class="table-footer">
       <div class="total-records">
         Total Records : <b>{{ totalRecords() }}</b>
       </div>
-
       <div class="page-size">
         Show
         <select (change)="changePageSize($event)">
-          <option>5</option>
-          <option selected>10</option>
-          <option>20</option>
-          <option>50</option>
+          <option value="5">5</option>
+          <option value="10" selected>10</option>
+          <option value="20">20</option>
+          <option value="50">50</option>
         </select>
         entries
       </div>
-
       <div class="pagination">
         <button (click)="goToPage(currentPage() - 1)" [disabled]="currentPage() === 1">
           Prev
         </button>
-
-        <span class="page-info"> Page {{ currentPage() }} of {{ totalPages() }} </span>
-
+        <span class="page-info">Page {{ currentPage() }} of {{ totalPages() }}</span>
         <button (click)="goToPage(currentPage() + 1)" [disabled]="currentPage() === totalPages()">
           Next
         </button>
       </div>
     </div>
+
   </div>
 </div>
