@@ -34,6 +34,7 @@ import { MasterTreeComponent } from './private/Carbon-offset/tree-master/tree-ma
 import { ProjectComponent } from './private/Carbon-offset/plantation-project/plantation-project';
 import { FinalEntryComponent } from './private/Carbon-offset/finalform/finalform';
 import { SearchPlantationProject } from './private/Carbon-offset/search-plantation-project/search-plantation-project';
+import { MyactionPlantationProject } from './private/Carbon-offset/myaction-plantation-project/myaction-plantation-project';
 
 export const routes: Routes = [
 
@@ -89,6 +90,7 @@ export const routes: Routes = [
 
             { path: 'Ngoentryform', component: EntryFormComponent },
             { path: 'Treemaster', component: MasterTreeComponent },
+            { path: 'MyactionPlantationproject', component: MyactionPlantationProject },
             { path: 'Plantationproject', component: ProjectComponent },
             { path: 'Finalform', component: FinalEntryComponent },
 

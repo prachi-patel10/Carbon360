@@ -202,6 +202,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     else if (url.includes('Ngoentryform')) this.pageTitle = 'Initiative Planner';
     else if (url.includes('Finalform')) this.pageTitle = 'Final form';
     else if (url.includes('SearchPlantationProject')) this.pageTitle = 'Search Plantation Project';
+    else if (url.includes('MyactionPlantationproject')) this.pageTitle = 'Actions Plantation Project';
 
 
     else this.pageTitle = 'Statistics';
@@ -359,7 +360,8 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   isAnyCarbonActive(): boolean {
     return this.router.url.includes('NgoMaster') ||
       this.router.url.includes('Plantationproject') ||
-      this.router.url.includes('Ngoentryform');
+      this.router.url.includes('Ngoentryform')||
+    this.router.url.includes('MyactionPlantationproject');
   }
 
   // Label for tooltip

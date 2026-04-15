@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Actions Plantation Project</title>
+  <link rel="stylesheet" href="myaction-plantation-project.css" />
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="brand">
+      <span class="brand-name">CARBON<span class="brand-bold">360</span></span>
+      <span class="brand-sub">TRACK · ANALYZE · IMPROVE</span>
+    </div>
+    <nav class="nav-icons">
+      <button class="nav-btn" title="Dashboard">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      </button>
+      <button class="nav-btn" title="Vehicles">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M5 17H3v-5l2-5h14l2 5v5h-2M5 17a2 2 0 1 0 4 0 2 2 0 0 0-4 0zm10 0a2 2 0 1 0 4 0 2 2 0 0 0-4 0z"/></svg>
+      </button>
+      <button class="nav-btn active" title="Generator">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+      </button>
+      <button class="nav-btn" title="Plantation">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M12 22V12M12 12C12 7 7 4 3 6c0 5 4 8 9 6zM12 12c0-5 5-8 9-6-1 5-5 8-9 6z"/></svg>
+      </button>
+    </nav>
+  </aside>
+
+  <!-- Main Content -->
+  <div class="main">
+
+    <!-- Top Bar -->
+    <header class="topbar">
+      <button class="menu-btn">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <h1 class="page-title">Actions Plantation Project</h1>
+      <div class="avatar">P</div>
+    </header>
+
+    <!-- Table Container -->
+    <div class="table-wrapper">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>REPORT ID <span class="sort-icon">⇅</span></th>
+            <th>PROJECT NAME <span class="sort-icon">⇅</span></th>
+            <th>TOTAL TREES PLANTED <span class="sort-icon">⇅</span></th>
+            <th>REPORTED DATE <span class="sort-icon">⇅</span></th>
+            <th>SPECIES TYPE <span class="sort-icon">⇅</span></th>
+            <th>AREA (ACRES) <span class="sort-icon">⇅</span></th>
+            <th>SURVIVAL RATE (%) <span class="sort-icon">⇅</span></th>
+            <th>CO₂ OFFSET (KG) <span class="sort-icon">⇅</span></th>
+            <th>ACTION</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="report-id">WH1/PP/2026/0004</td>
+            <td>Green Valley Initiative</td>
+            <td class="emission">1200</td>
+            <td>02-Apr-2026</td>
+            <td>Mango, Neem</td>
+            <td>5.4</td>
+            <td>88</td>
+            <td>4800</td>
+            <td><button class="action-btn" title="Edit">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </button></td>
+          </tr>
+          <tr>
+            <td class="report-id">LH1/PP/2026/0002</td>
+            <td>Urban Forest Project</td>
+            <td class="emission">850</td>
+            <td>30-Mar-2026</td>
+            <td>Teak, Bamboo</td>
+            <td>3.2</td>
+            <td>92</td>
+            <td>3400</td>
+            <td><button class="action-btn" title="Edit">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </button></td>
+          </tr>
+          <tr>
+            <td class="report-id">S1/PP/2026/0004</td>
+            <td>Riverside Reforestation</td>
+            <td class="emission">640</td>
+            <td>26-Mar-2026</td>
+            <td>Peepal, Banyan</td>
+            <td>2.8</td>
+            <td>79</td>
+            <td>2560</td>
+            <td><button class="action-btn" title="Edit">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Footer -->
+    <div class="table-footer">
+      <span class="record-count">Total Records : 3</span>
+      <div class="pagination-center">
+        <label>Show
+          <select class="show-select">
+            <option>10</option>
+            <option>25</option>
+            <option>50</option>
+          </select>
+        </label>
+      </div>
+      <div class="pagination-controls">
+        <button class="page-btn" disabled>Prev</button>
+        <span class="page-info">Page 1 of 1</span>
+        <button class="page-btn" disabled>Next</button>
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>

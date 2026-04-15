@@ -1,0 +1,353 @@
+/* ==========================================
+   CARBON360 — Plantation Project Page CSS
+   ========================================== */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --green-dark:    #1a4a1a;
+  --green-primary: #2d6e2d;
+  --green-header:  #1e5c1e;
+  --green-brand:   #2e7d32;
+  --green-accent:  #4caf50;
+  --yellow-row:    #fffde7;
+  --yellow-border: #fff9c4;
+  --orange-val:    #e65100;
+  --text-dark:     #1a1a1a;
+  --text-mid:      #444444;
+  --text-light:    #777777;
+  --white:         #ffffff;
+  --sidebar-w:     56px;
+  --header-h:      52px;
+  --border-radius: 4px;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-size: 13px;
+  background: #f4f6f4;
+  color: var(--text-dark);
+  display: flex;
+  min-height: 100vh;
+}
+
+/* ── Sidebar ── */
+.sidebar {
+  width: var(--sidebar-w);
+  background: var(--green-dark);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0;
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  z-index: 100;
+}
+
+.brand {
+  background: var(--green-brand);
+  width: 100%;
+  padding: 10px 6px 8px;
+  text-align: center;
+  line-height: 1.2;
+}
+
+.brand-name {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--white);
+  letter-spacing: 0.5px;
+}
+
+.brand-bold {
+  color: #a5d6a7;
+}
+
+.brand-sub {
+  display: block;
+  font-size: 7px;
+  color: #a5d6a7;
+  letter-spacing: 0.4px;
+  margin-top: 2px;
+}
+
+.nav-icons {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 12px 0;
+  width: 100%;
+}
+
+.nav-btn {
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: transparent;
+  color: #a5d6a7;
+  cursor: pointer;
+  border-radius: var(--border-radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, color 0.15s;
+}
+
+.nav-btn:hover {
+  background: rgba(255,255,255,0.1);
+  color: var(--white);
+}
+
+.nav-btn.active {
+  background: rgba(255,255,255,0.18);
+  color: var(--white);
+}
+
+/* ── Main ── */
+.main {
+  margin-left: var(--sidebar-w);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* ── Topbar ── */
+.topbar {
+  height: var(--header-h);
+  background: var(--white);
+  border-bottom: 1px solid #ddd;
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  gap: 14px;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.menu-btn {
+  background: var(--green-dark);
+  border: none;
+  color: var(--white);
+  width: 32px;
+  height: 32px;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+
+.menu-btn:hover {
+  background: var(--green-primary);
+}
+
+.page-title {
+  flex: 1;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-dark);
+  text-align: center;
+  letter-spacing: 0.2px;
+}
+
+.avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--green-primary);
+  color: var(--white);
+  font-size: 14px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* ── Table Wrapper ── */
+.table-wrapper {
+  flex: 1;
+  padding: 20px 20px 0;
+  overflow-x: auto;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid #c8e6c9;
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--white);
+}
+
+/* ── Table Header ── */
+.data-table thead tr {
+  background: var(--green-header);
+}
+
+.data-table thead th {
+  padding: 12px 14px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--white);
+  letter-spacing: 0.4px;
+  white-space: nowrap;
+  border-right: 1px solid rgba(255,255,255,0.12);
+  user-select: none;
+}
+
+.data-table thead th:last-child {
+  border-right: none;
+  text-align: center;
+}
+
+.sort-icon {
+  opacity: 0.7;
+  margin-left: 4px;
+  font-size: 10px;
+}
+
+/* ── Table Body ── */
+.data-table tbody tr {
+  background: var(--yellow-row);
+  border-bottom: 1px solid var(--yellow-border);
+  transition: background 0.12s;
+}
+
+.data-table tbody tr:hover {
+  background: #fff8e1;
+}
+
+.data-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.data-table tbody td {
+  padding: 13px 14px;
+  font-size: 13px;
+  color: var(--text-dark);
+  white-space: nowrap;
+  border-right: 1px solid #f0ead0;
+}
+
+.data-table tbody td:last-child {
+  border-right: none;
+  text-align: center;
+}
+
+/* Report ID highlight */
+.report-id {
+  color: var(--green-primary) !important;
+  font-weight: 700;
+}
+
+/* Emission / numeric highlight */
+.emission {
+  color: var(--orange-val) !important;
+  font-weight: 700;
+}
+
+/* ── Action Button ── */
+.action-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--green-primary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: 3px;
+  transition: color 0.15s, background 0.15s;
+}
+
+.action-btn:hover {
+  color: var(--green-dark);
+  background: rgba(45, 110, 45, 0.1);
+}
+
+/* ── Footer ── */
+.table-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  font-size: 13px;
+  color: var(--text-mid);
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.record-count {
+  font-weight: 500;
+}
+
+.pagination-center {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-mid);
+}
+
+.show-select {
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  padding: 3px 6px;
+  font-size: 13px;
+  background: var(--white);
+  color: var(--text-dark);
+  cursor: pointer;
+  margin-left: 4px;
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.page-btn {
+  padding: 5px 14px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  background: var(--white);
+  font-size: 12px;
+  color: var(--text-mid);
+  cursor: pointer;
+  transition: background 0.12s;
+}
+
+.page-btn:hover:not(:disabled) {
+  background: #f0f0f0;
+}
+
+.page-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: #f5f5f5;
+}
+
+.page-info {
+  font-size: 13px;
+  color: var(--text-mid);
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .page-title { font-size: 13px; }
+  .table-wrapper { padding: 12px 10px 0; }
+  .table-footer { padding: 12px 10px; }
+}
