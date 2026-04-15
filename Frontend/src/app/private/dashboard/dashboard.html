@@ -855,12 +855,12 @@
           <div class="banner-right">
             <!-- ── Date Range Picker ── -->
             <app-date-range-picker-component
-              pickerId="dashboardRange"
-              [startDate]="startDate() ? startDate()!.toISOString() : null"
-              [endDate]="endDate() ? endDate()!.toISOString() : null"
-              (rangeSelected)="onDateRangeSelected($event)"
-            >
-            </app-date-range-picker-component>
+  pickerId="dashboardRange"
+  [startDate]="toDateStr(startDate()) ?? null"
+  [endDate]="toDateStr(endDate()) ?? null"
+  (rangeSelected)="onDateRangeSelected($event)"
+>
+</app-date-range-picker-component>
 
             <a class="gov-sync-btn">
               <svg

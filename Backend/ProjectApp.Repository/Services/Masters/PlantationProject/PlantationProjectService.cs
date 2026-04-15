@@ -184,12 +184,12 @@ namespace ProjectApp.Repository.Services.Masters.PlantationProject
             while (await reader.ReadAsync())
             {
                 int rawId = Convert.ToInt32(reader["ProjectId"]);
-
                 list.Add(new ProjectByYearDTO
                 {
-                    ProjectId = _encoder.Encode(rawId),   // ✅ FIX HERE
+                    ProjectId = _encoder.Encode(rawId),
                     ProjectName = reader["ProjectName"].ToString(),
-                    PreviousYearEmission = Convert.ToDecimal(reader["PreviousYearEmission"])
+                    PreviousYearEmission = Convert.ToDecimal(reader["PreviousYearEmission"]),
+                    CurrentYearEmission = Convert.ToDecimal(reader["CurrentYearEmission"])  // ← add this
                 });
             }
 

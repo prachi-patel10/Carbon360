@@ -11,5 +11,7 @@ namespace ProjectApp.Core.DTOs.Masters.PlantationProject
         public string ProjectId { get; set; }
         public string ProjectName { get; set; }
         public decimal PreviousYearEmission { get; set; }
+
+        public decimal CurrentYearEmission { get; set; }
     }
 }
