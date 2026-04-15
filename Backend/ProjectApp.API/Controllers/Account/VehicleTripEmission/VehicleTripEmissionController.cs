@@ -105,12 +105,12 @@ namespace ProjectApp.API.Controllers.Account.VehicleTripEmission
     [FromQuery] List<string>? fuelType = null,
     [FromQuery] List<string>? vehicleCategory = null,
     [FromQuery] List<string>? vehicleType = null,
-    [FromQuery] DateTime? opStart = null,       
-    [FromQuery] DateTime? opEnd = null,          
-    [FromQuery] DateTime? entryStart = null,     
-    [FromQuery] DateTime? entryEnd = null,       
+    [FromQuery] DateTime? opStart = null,
+    [FromQuery] DateTime? opEnd = null,
+    [FromQuery] DateTime? entryStart = null,
+    [FromQuery] DateTime? entryEnd = null,
     [FromQuery] int? statusId = null,
-    [FromQuery] int page = 1,                    
+    [FromQuery] int page = 1,
     [FromQuery] int pageSize = 10,
     [FromQuery] string sortColumn = "EntryDate",
     [FromQuery] string sortDirection = "DESC")
@@ -142,7 +142,7 @@ namespace ProjectApp.API.Controllers.Account.VehicleTripEmission
             });
         }
 
-        
+
 
         [HttpGet("pdf/{hashId}")]
         public async Task<IActionResult> GetTripDetailsForPDF(string hashId)
@@ -164,7 +164,7 @@ namespace ProjectApp.API.Controllers.Account.VehicleTripEmission
     [FromQuery] DateTime? entryStart = null,
     [FromQuery] DateTime? entryEnd = null,
     [FromQuery] string sortColumn = "EntryDate",
-    [FromQuery] string sortDirection = "DESC")        // ✅ make sure this param exists
+    [FromQuery] string sortDirection = "DESC")
         {
             var fileBytes = await _service.ExportVehicleTripsExcel(
                 search,
@@ -176,7 +176,7 @@ namespace ProjectApp.API.Controllers.Account.VehicleTripEmission
                 entryStart,
                 entryEnd,
                 sortColumn,
-                sortDirection    // ✅ make sure this is passed
+                sortDirection
             );
 
             return File(
@@ -222,6 +222,13 @@ namespace ProjectApp.API.Controllers.Account.VehicleTripEmission
         {
             var data = await _service.GetCorporatePendingTripsAsync();
             return Ok(data);
+        }
+
+        [HttpGet("workflow-actions/{hashId}")]
+        public async Task<IActionResult> GetWorkflowActions(string hashId)
+        {
+            var actions = await _service.GetWorkflowActionsAsync(hashId);
+            return Ok(actions);
         }
 
     }

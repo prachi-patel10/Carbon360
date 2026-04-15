@@ -48,15 +48,6 @@ export class TripComponent implements OnInit {
 
   readonly GWP_CH4 = 28;
   readonly GWP_N2O = 265;
-
-  // ✅ Workflow IDs matching your SP/DB — CB_MasterWorkflow table
-  // Corporate: Approve = workflowId 1, Reject = workflowId 2
-  // Reporter:  Resubmit = workflowId 3
-  // Adjust these IDs to match your actual CB_MasterWorkflow table values
-  private readonly WORKFLOW_APPROVE = { workflowId: 1, actionName: 'Approve', actionId: 1, nextStatusId: 2 };
-  private readonly WORKFLOW_REJECT = { workflowId: 2, actionName: 'Reject', actionId: 2, nextStatusId: 3 };
-  private readonly WORKFLOW_RESUBMIT = { workflowId: 3, actionName: 'Resubmit', actionId: 3, nextStatusId: 1 };
-
   constructor(
     private fb: FormBuilder,
     private tripService: TripService,
@@ -140,30 +131,17 @@ export class TripComponent implements OnInit {
     }).then(() => this.router.navigate(['/dashboard/MyActionVehicle']));
   }
 
-  // ═══════════════════════════════════════════════════════════════
-  //  ✅ DERIVE WORKFLOW ACTIONS LOCALLY — no API call needed
-  //  Mirrors what USP_CB_GetWorkflowActions SP returns based on
-  //  statusId (CurrentStatusId) + role (RoleId)
-  // ═══════════════════════════════════════════════════════════════
-  private buildWorkflowActions(statusId: number, role: string): any[] {
-    if (role === 'corporate' && statusId === 1) {
-      // Corporate sees submitted records → can Approve or Reject
-      return [this.WORKFLOW_APPROVE, this.WORKFLOW_REJECT];
-    }
-    if (role === 'reporter' && statusId === 3) {
-      // Reporter sees rejected records → can Resubmit
-      return [this.WORKFLOW_RESUBMIT];
-    }
-    // Any other combination → no actions
-    return [];
-  }
 
   loadTrip(id: string) {
-    // ✅ ONLY these 2 — no actions call at all
     const requests: any = {
       trip: this.tripService.getTripById(id),
-      history: this.tripService.getTripFullDetails(id)
+      history: this.tripService.getTripFullDetails(id),
+      actions: this.tripService.getWorkflowActions(id)
     };
+
+    // if (this.pageSource !== 'search') {
+    //   requests.actions = this.tripService.getTripById(id);
+    // }
 
     forkJoin(requests).subscribe({
       next: (results: any) => {
@@ -198,14 +176,10 @@ export class TripComponent implements OnInit {
           + (this.totalCH4 * this.GWP_CH4)
           + (this.totalNO2 * this.GWP_N2O);
 
-        // ✅ Build actions locally — no API call
-        if (this.pageSource === 'myaction') {
-          this.workflowActions = this.buildWorkflowActions(this.currentStatusId, this.userRole);
-          this.isResubmitMode = this.workflowActions.some(a => a.actionName === 'Resubmit');
-        } else {
-          this.workflowActions = [];
-          this.isResubmitMode = false;
-        }
+        this.workflowActions = results.actions ?? [];
+      this.isResubmitMode = this.workflowActions.some(
+        (a: any) => a.actionName === 'Resubmit'
+      );
 
         this.tripHistory = results.history?.History || [];
 
@@ -268,23 +242,29 @@ export class TripComponent implements OnInit {
     return this.userRole === 'reporter' && this.mode === 'add';
   }
 
-  canResubmit(): boolean {
-    return (
-      this.userRole === 'reporter' &&
-      this.currentStatusId === 3 &&
-      this.pageSource === 'myaction' &&
-      this.isEditMode
-    );
-  }
+  // canResubmit(): boolean {
+  //   // return (
+  //   //   this.userRole === 'reporter' &&
+  //   //   this.currentStatusId === 3 &&
+  //   //   this.pageSource === 'myaction' &&
+  //   //   this.isEditMode
+  //   // );
+  //   return this.workflowActions.some(a => a.actionName === 'Resubmit');
+  // }
 
-  canCorporateAction(): boolean {
-    return (
-      this.userRole === 'corporate' &&
-      this.currentStatusId === 1 &&
-      this.pageSource === 'myaction' &&
-      this.isReviewMode
+  canApproveReject(): boolean {
+    return this.workflowActions.some(
+      a => a.actionName === 'Approve' || a.actionName === 'Reject'
     );
   }
+  // canCorporateAction(): boolean {
+  //   return (
+  //     this.userRole === 'corporate' &&
+  //     this.currentStatusId === 1 &&
+  //     this.pageSource === 'myaction' &&
+  //     this.isReviewMode
+  //   );
+  // }
 
   showResultCard(): boolean {
     return this.isViewMode || this.isReviewMode || this.isEditMode || this.isResubmitMode;
@@ -494,5 +474,5 @@ export class TripComponent implements OnInit {
     return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
   }
 
-  exportExcel() { /* keep existing */ }
+
 }

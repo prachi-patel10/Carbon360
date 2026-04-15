@@ -58,12 +58,9 @@ updateTrip(tripId: string, data: any): Observable<any> {
   );
 }
 
-//   getWorkflowActions(tripId: string): Observable<any> {
-//   return this.http.get(
-//     `${this.apiUrl}/VehicleTripEmission/${tripId}/actions`
-//   );
-// }
-
+getWorkflowActions(tripId: string): Observable<any> {
+  return this.http.get(`${this.apiUrl}/VehicleTripEmission/workflow-actions/${tripId}`);
+}
  downloadTripPdf(tripId: string) {
     return this.http.get(`${this.apiUrl}/trip-pdf/${tripId}`, {
       responseType: 'blob'  
