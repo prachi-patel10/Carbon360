@@ -547,6 +547,82 @@ namespace ProjectApp.Repository.Services.Common
         //        return stream.ToArray();
         //    }
 
+
+        public static async Task<byte[]> ExportPieChartExcelGeneratorSecondAsync(
+List<Dictionary<string, object>> rows,
+string sheetName,
+string title)
+        {
+            if (rows == null || !rows.Any())
+                return Array.Empty<byte>();
+
+            var workbook = new XSSFWorkbook();
+            var sheet = workbook.CreateSheet(sheetName);
+
+            // TITLE
+            var titleRow = sheet.CreateRow(0);
+            titleRow.CreateCell(0).SetCellValue(title);
+
+            // HEADER
+            var headerRow = sheet.CreateRow(2);
+            headerRow.CreateCell(0).SetCellValue("Category");
+            headerRow.CreateCell(1).SetCellValue("Value");
+
+            // DATA
+            int rowIndex = 3;
+            foreach (var row in rows)
+            {
+                var excelRow = sheet.CreateRow(rowIndex++);
+                excelRow.CreateCell(0).SetCellValue(row.Values.First()?.ToString());
+                excelRow.CreateCell(1).SetCellValue(Convert.ToDouble(row.Values.Last()));
+            }
+
+            int dataStartRow = 3;
+            int dataEndRow = rowIndex - 1;
+
+            // AUTO SIZE
+            sheet.AutoSizeColumn(0);
+            sheet.AutoSizeColumn(1);
+
+            // ==========================
+            // :white_check_mark: PIE CHART
+            // ==========================
+            var drawing = (XSSFDrawing)sheet.CreateDrawingPatriarch();
+
+            var anchor = drawing.CreateAnchor(0, 0, 0, 0, 3, 2, 12, 20);
+
+            var chart = drawing.CreateChart(anchor);
+            chart.SetTitle(title);
+
+            var legend = chart.GetOrCreateLegend();
+            legend.Position = LegendPosition.Right;
+
+            var dataFactory = chart.ChartDataFactory;
+
+            var pieData = dataFactory.CreatePieChartData<string, double>();
+
+            var categories = DataSources.FromStringCellRange(
+                sheet,
+                new CellRangeAddress(dataStartRow, dataEndRow, 0, 0)
+            );
+
+            var values = DataSources.FromNumericCellRange(
+                sheet,
+                new CellRangeAddress(dataStartRow, dataEndRow, 1, 1)
+            );
+
+            var series = pieData.AddSeries(categories, values);
+            series.SetTitle("Run Hours");
+
+            chart.Plot(pieData);
+
+            // WRITE
+            using var stream = new MemoryStream();
+            workbook.Write(stream);
+
+            return await Task.FromResult(stream.ToArray());
+        }
+
         public static async Task<byte[]> ExportExcelWithLineChartAsync<T>(
     IEnumerable<T> data,
     Dictionary<string, string> columnMappings,
@@ -834,26 +910,25 @@ namespace ProjectApp.Repository.Services.Common
         }
 
         public static async Task<byte[]> ExportDynamicPivotExcelWithChartAsync(
-    List<Dictionary<string, object>> rows,
-    string sheetName,
-    string title)
+ List<Dictionary<string, object>> rows,
+ string sheetName,
+ string title)
         {
             if (rows == null || !rows.Any())
                 return Array.Empty<byte>();
 
-
             var workbook = new XSSFWorkbook();
             var sheet = workbook.CreateSheet(sheetName);
 
-            // -----------------------
+            // ==========================
             // TITLE
-            // -----------------------
+            // ==========================
             var titleRow = sheet.CreateRow(0);
             titleRow.CreateCell(0).SetCellValue(title);
 
-            // -----------------------
+            // ==========================
             // HEADER
-            // -----------------------
+            // ==========================
             var headerRow = sheet.CreateRow(2);
             int colCount = rows.First().Keys.Count;
 
@@ -882,8 +957,11 @@ namespace ProjectApp.Repository.Services.Common
                 }
             }
 
+            int dataStartRow = 3;
+            int dataEndRow = rowIndex - 1;
+
             // ==========================
-            // STYLES (UI LOOK)
+            // STYLES
             // ==========================
             var headerStyle = workbook.CreateCellStyle();
             headerStyle.FillForegroundColor = IndexedColors.DarkGreen.Index;
@@ -894,67 +972,80 @@ namespace ProjectApp.Repository.Services.Common
             headerFont.IsBold = true;
             headerStyle.SetFont(headerFont);
 
-            var totalStyle = workbook.CreateCellStyle();
-            totalStyle.FillForegroundColor = IndexedColors.LightGreen.Index;
-            totalStyle.FillPattern = FillPattern.SolidForeground;
-
-            var boldFont = workbook.CreateFont();
-            boldFont.IsBold = true;
-            totalStyle.SetFont(boldFont);
-
-            // ==========================
-            // APPLY HEADER STYLE
-            // ==========================
             for (int i = 0; i < colCount; i++)
             {
                 headerRow.GetCell(i).CellStyle = headerStyle;
             }
 
             // ==========================
-            // TOTAL ROW
-            // ==========================
-            var totalRow = sheet.CreateRow(rowIndex);
-
-            totalRow.CreateCell(0).SetCellValue("Total");
-
-            for (int c = 1; c < colCount; c++)
-            {
-                double sum = 0;
-                for (int r = 3; r < rowIndex; r++)
-                {
-                    var cell = sheet.GetRow(r).GetCell(c);
-                    if (cell != null && cell.CellType == CellType.Numeric)
-                    {
-                        sum += cell.NumericCellValue;
-                    }
-                }
-                totalRow.CreateCell(c).SetCellValue(sum);
-            }
-
-            // style total row
-            for (int i = 0; i < colCount; i++)
-            {
-                totalRow.GetCell(i).CellStyle = totalStyle;
-            }
-
-            rowIndex++; // move past total row
-
-            // ==========================
-            // AUTO SIZE COLUMNS
+            // AUTO SIZE
             // ==========================
             for (int i = 0; i < colCount; i++)
                 sheet.AutoSizeColumn(i);
 
             // ==========================
-            // WRITE TO STREAM
+            // :white_check_mark: CHART CREATION START
+            // ==========================
+            var drawing = (XSSFDrawing)sheet.CreateDrawingPatriarch();
+
+            var anchor = drawing.CreateAnchor(
+                0, 0, 0, 0,
+                0, rowIndex + 2,   // start col,row
+                10, rowIndex + 20  // end col,row
+            );
+
+            var chart = drawing.CreateChart(anchor);
+            chart.SetTitle("Monthly Emission Trend");
+            //chart.SetTitleOverlay(false);
+
+            var legend = chart.GetOrCreateLegend();
+            legend.Position = LegendPosition.Bottom;
+
+            var dataFactory = chart.ChartDataFactory;
+            var axisFactory = chart.ChartAxisFactory;
+
+            //var bottomAxis = axisFactory.CreateCategoryAxis(AxisPosition.Bottom);
+            //bottomAxis.SetTitle("Month");
+
+            //var leftAxis = axisFactory.CreateValueAxis(AxisPosition.Left);
+            //leftAxis.SetTitle("kg");
+            //leftAxis.Crosses = AxisCrosses.AutoZero;
+            var bottomAxis = axisFactory.CreateCategoryAxis(AxisPosition.Bottom);
+
+            var leftAxis = axisFactory.CreateValueAxis(AxisPosition.Left);
+            leftAxis.Crosses = AxisCrosses.AutoZero;
+
+            var lineChartData = dataFactory.CreateLineChartData<string, double>();
+
+            // X-axis (Month column)
+            var xs = DataSources.FromStringCellRange(
+                sheet,
+                new CellRangeAddress(dataStartRow, dataEndRow, 0, 0)
+            );
+
+            // Y-axis (all emission columns)
+            for (int i = 1; i < colCount; i++)
+            {
+                var ys = DataSources.FromNumericCellRange(
+                    sheet,
+                    new CellRangeAddress(dataStartRow, dataEndRow, i, i)
+                );
+
+                var series = lineChartData.AddSeries(xs, ys);
+                series.SetTitle(headerRow.GetCell(i).StringCellValue);
+            }
+
+            chart.Plot(lineChartData, bottomAxis, leftAxis);
+
+            // ==========================
+            // WRITE FILE
             // ==========================
             using var stream = new MemoryStream();
             workbook.Write(stream);
 
             return await Task.FromResult(stream.ToArray());
         }
-
-public static async Task<byte[]> ExportVehicleTypePieChartAsync(
+        public static async Task<byte[]> ExportVehicleTypePieChartAsync(
     List<string> labels,
     List<decimal> values,
     string sheetName = "Sheet1",

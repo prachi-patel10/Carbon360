@@ -967,7 +967,7 @@ namespace ProjectApp.Repository.Services.Charts
                 return dict;
             }).ToList();
 
-            return await ExcelExportHelper.ExportDynamicPivotExcelWithChartAsync(
+            return await ExcelExportHelper.ExportPieChartExcelGeneratorSecondAsync(
                 exportRows,
                 "Generator Run Hours",
                 $"Generator Run Hours Pie Chart - {fromDate:yyyy-MM-dd}_to_{toDate:yyyy-MM-dd}"

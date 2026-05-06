@@ -958,7 +958,8 @@ namespace ProjectApp.Repository.Services.GeneratorOperation
             command.CommandType = CommandType.StoredProcedure;
 
             command.Parameters.Add(new SqlParameter("@Search", (object)search ?? DBNull.Value));
-            command.Parameters.Add(new SqlParameter("@GeneratorName", (object)generatorName ?? DBNull.Value));
+            //command.Parameters.Add(new SqlParameter("@GeneratorName", (object)generatorName ?? DBNull.Value));
+            command.Parameters.Add(new SqlParameter("@GeneratorNames", (object)generatorName ?? DBNull.Value));
             command.Parameters.Add(new SqlParameter("@FuelTypes", (object)fuelTypes ?? DBNull.Value));
             command.Parameters.Add(new SqlParameter("@StartDate", (object)startDate ?? DBNull.Value));
             command.Parameters.Add(new SqlParameter("@EndDate", (object)endDate ?? DBNull.Value));
